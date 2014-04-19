@@ -27,7 +27,10 @@ public:
     const char *get_file_name(int idx) const;
     uint64_t get_file_size(int idx) const;
     uint64_t get_file_offset(int idx) const;
-    bool read_file_data( int idx, void *data ) const;
+    int get_file_idx(const char *name) const;
+    int find_file_idx(const char *name_part) const;
+
+    bool read_file_data(int idx, void *data) const;
 
     uint64_t get_part_size() const { return m_part_size; }
 
