@@ -5,7 +5,11 @@
 #include "qdf.h"
 #include <cstdlib>
 #include <map>
-#include <sys/stat.h>
+#ifdef _WIN32
+    #include <direct.h>
+#else
+    #include <sys/stat.h>
+#endif
 
 //------------------------------------------------------------
 
@@ -20,7 +24,11 @@ static void create_path(const char *dir)
         if (*p == '/')
         {
             *p = 0;
+#ifdef _WIN32
+            _mkdir(tmp.c_str());
+#else
             mkdir(tmp.c_str(), S_IRWXU);
+#endif
             *p = '/';
         }
     }
