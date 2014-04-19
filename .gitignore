@@ -1,0 +1,14 @@
+bin/
+obj/
+*.xcuserdata
+*.pbxuser
+*.xcuserstate
+*.xcscheme
+*.xccheckout
+*.xcbkptlist
+xcschememanagement.plist
+*.suo
+*.ncb
+*.sdf
+*.vcproj.*.user
+*.vcxproj.user

@@ -44,7 +44,7 @@ private:
         uint64_t size;
     };
 
-    uint32_t m_part_size;
+    uint64_t m_part_size;
     std::vector<FILE *> m_rds;
     std::vector<qdf_file_info> m_fis;
 };

@@ -71,12 +71,14 @@ bool qdf_archive::open(const char *name)
         //read name until \0
         for (char c = fi_buf[offset++]; c; c = fi_buf[offset++])
         {
-            if(c=='\\')
-                c='/';
+            if (c == '\\')
+                c = '/';
 
             info.name.push_back(c);
         }
     }
+
+    m_part_size = header.data_split_size;
 
     return true;
 }
@@ -85,7 +87,7 @@ bool qdf_archive::open(const char *name)
 
 void qdf_archive::close()
 {
-    for(auto &f: m_rds)
+    for (auto &f: m_rds)
         fclose(f);
 
     m_part_size = 0;
@@ -127,7 +129,7 @@ uint64_t qdf_archive::get_file_offset(int idx) const
 
 int qdf_archive::get_file_idx(const char *name) const
 {
-    if(!name)
+    if (!name)
         return 0;
 
     //should use std::map instead
@@ -142,7 +144,7 @@ int qdf_archive::get_file_idx(const char *name) const
 
 int qdf_archive::find_file_idx(const char *name_part) const
 {
-    if(!name_part)
+    if (!name_part)
         return 0;
 
     for (int i = 0; i < get_files_count(); ++i)
