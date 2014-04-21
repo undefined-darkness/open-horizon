@@ -6,6 +6,7 @@ obj/
 *.xcscheme
 *.xccheckout
 *.xcbkptlist
+*.xcsettings
 xcschememanagement.plist
 *.suo
 *.ncb
