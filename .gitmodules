@@ -1,0 +1,3 @@
+[submodule "deps/nya-engine"]
+	path = deps/nya-engine
+	url = https://code.google.com/p/nya-engine/
