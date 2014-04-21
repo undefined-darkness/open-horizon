@@ -270,9 +270,9 @@ public:
         if (brake < 0.01f && throttle < 0.01f)
         {
             if (m_speed < m_params.move.speed.speedCruising)
-                throttle = fminf((m_params.move.speed.speedCruising - m_speed) * 0.1f, 0.1f);
+                throttle = std::min((m_params.move.speed.speedCruising - m_speed) * 0.1f, 0.1f);
             else if (m_speed > m_params.move.speed.speedCruising)
-                brake = fminf((m_speed - m_params.move.speed.speedCruising) * 0.1f, 0.1f);
+                brake = std::min((m_speed - m_params.move.speed.speedCruising) * 0.1f, 0.1f);
         }
 
         //afterburner
@@ -787,6 +787,10 @@ int main(void)
     std::string plane_name = "f22a"; //b02a pkfa su25 su33 su34 su35 f22a kwmr
     std::string location_name = "ms01"; //ms01 ms50 ms10
 
+#ifndef _WIN32
+    chdir(nya_system::get_app_path());
+#endif
+
     qdf_resources_provider qdfp;
     if (!qdfp.open_archive("datafile.qdf"))
     {
@@ -856,8 +860,6 @@ int main(void)
     }
 
     glfwMakeContextCurrent(window);
-
-    chdir(nya_system::get_app_path());
 
     aircraft player_plane;
     player_plane.load(plane_name.c_str());
@@ -960,7 +962,7 @@ int main(void)
         location.draw_landscape();
         land_shader.internal().unset();
 
-        test.draw();
+        //test.draw();
 
         nya_render::set_modelview_matrix(nya_scene::get_camera()->get_view_matrix());
 
