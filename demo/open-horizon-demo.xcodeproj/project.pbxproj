@@ -1,0 +1,384 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F503E4DB19048C6700C3590A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E4DA19048C6700C3590A /* Cocoa.framework */; };
+		F503E51519048CC100C3590A /* fhm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E50E19048CC100C3590A /* fhm.cpp */; };
+		F503E51619048CC100C3590A /* open_horizon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E50F19048CC100C3590A /* open_horizon.cpp */; };
+		F503E51719048CC100C3590A /* shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E51019048CC100C3590A /* shared.cpp */; };
+		F503E51819048CC100C3590A /* plane_params.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E51319048CC100C3590A /* plane_params.cpp */; };
+		F503E52219048E1200C3590A /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E51F19048D4A00C3590A /* libnya_engine.a */; };
+		F503E52419048E2D00C3590A /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52319048E2D00C3590A /* libglfw3.a */; };
+		F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52519048E5000C3590A /* OpenGL.framework */; };
+		F503E52919048E7300C3590A /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52819048E7300C3590A /* IOKit.framework */; };
+		F503E52C1904907200C3590A /* qdf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E52A1904907200C3590A /* qdf.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F503E51E19048D4A00C3590A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F503E51919048D4A00C3590A /* nya_engine.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F25931E215D857C40092C7D8;
+			remoteInfo = nya_engine;
+		};
+		F503E52019048D4A00C3590A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F503E51919048D4A00C3590A /* nya_engine.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F23AB544168DBA16004B116E;
+			remoteInfo = nya_engine_ios;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F503E4D719048C6700C3590A /* open-horizon-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "open-horizon-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F503E4DA19048C6700C3590A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		F503E4DD19048C6700C3590A /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		F503E4DE19048C6700C3590A /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		F503E4DF19048C6700C3590A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		F503E4E219048C6700C3590A /* open-horizon-demo-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "open-horizon-demo-Info.plist"; sourceTree = "<group>"; };
+		F503E4F919048C6700C3590A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		F503E50E19048CC100C3590A /* fhm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fhm.cpp; sourceTree = "<group>"; };
+		F503E50F19048CC100C3590A /* open_horizon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = open_horizon.cpp; sourceTree = "<group>"; };
+		F503E51019048CC100C3590A /* shared.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shared.cpp; sourceTree = "<group>"; };
+		F503E51119048CC100C3590A /* fhm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fhm.h; sourceTree = "<group>"; };
+		F503E51219048CC100C3590A /* shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shared.h; sourceTree = "<group>"; };
+		F503E51319048CC100C3590A /* plane_params.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = plane_params.cpp; sourceTree = "<group>"; };
+		F503E51419048CC100C3590A /* plane_params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = plane_params.h; sourceTree = "<group>"; };
+		F503E51919048D4A00C3590A /* nya_engine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = nya_engine.xcodeproj; path = "../deps/nya-engine/build/xcode/nya_engine.xcodeproj"; sourceTree = "<group>"; };
+		F503E52319048E2D00C3590A /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../deps/glfw/lib/libglfw3.a; sourceTree = "<group>"; };
+		F503E52519048E5000C3590A /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		F503E52819048E7300C3590A /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		F503E52A1904907200C3590A /* qdf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qdf.cpp; path = ../qdf.cpp; sourceTree = "<group>"; };
+		F503E52B1904907200C3590A /* qdf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qdf.h; path = ../qdf.h; sourceTree = "<group>"; };
+		F503E52E1904913500C3590A /* qdf_provider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qdf_provider.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F503E4D419048C6700C3590A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F503E52919048E7300C3590A /* IOKit.framework in Frameworks */,
+				F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */,
+				F503E52419048E2D00C3590A /* libglfw3.a in Frameworks */,
+				F503E52219048E1200C3590A /* libnya_engine.a in Frameworks */,
+				F503E4DB19048C6700C3590A /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F503E4CE19048C6700C3590A = {
+			isa = PBXGroup;
+			children = (
+				F503E52A1904907200C3590A /* qdf.cpp */,
+				F503E52B1904907200C3590A /* qdf.h */,
+				F503E51919048D4A00C3590A /* nya_engine.xcodeproj */,
+				F503E50E19048CC100C3590A /* fhm.cpp */,
+				F503E51119048CC100C3590A /* fhm.h */,
+				F503E50F19048CC100C3590A /* open_horizon.cpp */,
+				F503E51319048CC100C3590A /* plane_params.cpp */,
+				F503E51419048CC100C3590A /* plane_params.h */,
+				F503E52E1904913500C3590A /* qdf_provider.h */,
+				F503E51019048CC100C3590A /* shared.cpp */,
+				F503E51219048CC100C3590A /* shared.h */,
+				F503E4E019048C6700C3590A /* open-horizon-demo */,
+				F503E4D919048C6700C3590A /* Frameworks */,
+				F503E4D819048C6700C3590A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F503E4D819048C6700C3590A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F503E4D719048C6700C3590A /* open-horizon-demo.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F503E4D919048C6700C3590A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F503E52819048E7300C3590A /* IOKit.framework */,
+				F503E52519048E5000C3590A /* OpenGL.framework */,
+				F503E52319048E2D00C3590A /* libglfw3.a */,
+				F503E4DA19048C6700C3590A /* Cocoa.framework */,
+				F503E4F919048C6700C3590A /* XCTest.framework */,
+				F503E4DC19048C6700C3590A /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F503E4DC19048C6700C3590A /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F503E4DD19048C6700C3590A /* AppKit.framework */,
+				F503E4DE19048C6700C3590A /* CoreData.framework */,
+				F503E4DF19048C6700C3590A /* Foundation.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		F503E4E019048C6700C3590A /* open-horizon-demo */ = {
+			isa = PBXGroup;
+			children = (
+				F503E4E119048C6700C3590A /* Supporting Files */,
+			);
+			path = "open-horizon-demo";
+			sourceTree = "<group>";
+		};
+		F503E4E119048C6700C3590A /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				F503E4E219048C6700C3590A /* open-horizon-demo-Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		F503E51A19048D4A00C3590A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F503E51F19048D4A00C3590A /* libnya_engine.a */,
+				F503E52119048D4A00C3590A /* libnya_engine_ios.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F503E4D619048C6700C3590A /* open-horizon-demo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F503E50819048C6700C3590A /* Build configuration list for PBXNativeTarget "open-horizon-demo" */;
+			buildPhases = (
+				F503E4D319048C6700C3590A /* Sources */,
+				F503E4D419048C6700C3590A /* Frameworks */,
+				F503E4D519048C6700C3590A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "open-horizon-demo";
+			productName = "open-horizon-demo";
+			productReference = F503E4D719048C6700C3590A /* open-horizon-demo.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F503E4CF19048C6700C3590A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+			};
+			buildConfigurationList = F503E4D219048C6700C3590A /* Build configuration list for PBXProject "open-horizon-demo" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F503E4CE19048C6700C3590A;
+			productRefGroup = F503E4D819048C6700C3590A /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = F503E51A19048D4A00C3590A /* Products */;
+					ProjectRef = F503E51919048D4A00C3590A /* nya_engine.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				F503E4D619048C6700C3590A /* open-horizon-demo */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		F503E51F19048D4A00C3590A /* libnya_engine.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libnya_engine.a;
+			remoteRef = F503E51E19048D4A00C3590A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F503E52119048D4A00C3590A /* libnya_engine_ios.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libnya_engine_ios.a;
+			remoteRef = F503E52019048D4A00C3590A /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F503E4D519048C6700C3590A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F503E4D319048C6700C3590A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F503E51819048CC100C3590A /* plane_params.cpp in Sources */,
+				F503E52C1904907200C3590A /* qdf.cpp in Sources */,
+				F503E51519048CC100C3590A /* fhm.cpp in Sources */,
+				F503E51619048CC100C3590A /* open_horizon.cpp in Sources */,
+				F503E51719048CC100C3590A /* shared.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		F503E50619048C6700C3590A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CONFIGURATION_BUILD_DIR = ../bin/mac_debug;
+				CONFIGURATION_TEMP_DIR = ../obj/mac_debug;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				OBJROOT = ../obj/;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SYMROOT = ../bin/;
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw/include/ ../deps/nya-engine/";
+			};
+			name = Debug;
+		};
+		F503E50719048C6700C3590A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CONFIGURATION_BUILD_DIR = ../bin/mac_release;
+				CONFIGURATION_TEMP_DIR = ../obj/mac_release;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				OBJROOT = ../obj/;
+				SDKROOT = macosx;
+				SYMROOT = ../bin/;
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw/include/ ../deps/nya-engine/";
+			};
+			name = Release;
+		};
+		F503E50919048C6700C3590A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "open-horizon-demo-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/vlad/Development/open-horizon/deps/glfw/lib",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		F503E50A19048C6700C3590A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "open-horizon-demo-Info.plist";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/vlad/Development/open-horizon/deps/glfw/lib",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F503E4D219048C6700C3590A /* Build configuration list for PBXProject "open-horizon-demo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F503E50619048C6700C3590A /* Debug */,
+				F503E50719048C6700C3590A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F503E50819048C6700C3590A /* Build configuration list for PBXNativeTarget "open-horizon-demo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F503E50919048C6700C3590A /* Debug */,
+				F503E50A19048C6700C3590A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F503E4CF19048C6700C3590A /* Project object */;
+}
