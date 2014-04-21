@@ -130,14 +130,14 @@ uint64_t qdf_archive::get_file_offset(int idx) const
 int qdf_archive::get_file_idx(const char *name) const
 {
     if (!name)
-        return 0;
+        return -1;
 
     //should use std::map instead
     for (int i = 0; i < get_files_count(); ++i)
         if (m_fis[i].name == name)
             return i;
 
-    return 0;
+    return -1;
 }
 
 //------------------------------------------------------------
@@ -145,28 +145,40 @@ int qdf_archive::get_file_idx(const char *name) const
 int qdf_archive::find_file_idx(const char *name_part) const
 {
     if (!name_part)
-        return 0;
+        return -1;
 
     for (int i = 0; i < get_files_count(); ++i)
         if (strstr(m_fis[i].name.c_str(), name_part))
             return i;
 
-    return 0;
+    return -1;
 }
 
 //------------------------------------------------------------
 
-bool qdf_archive::read_file_data( int idx, void *data ) const
+bool qdf_archive::read_file_data(int idx, void *data) const
+{
+    return read_file_data(idx, data, get_file_size(idx));
+}
+
+//------------------------------------------------------------
+
+bool qdf_archive::read_file_data(int idx, void *data, uint64_t size, uint64_t offset) const
 {
     if (idx < 0 || idx >= int(m_fis.size()) || !m_part_size || !data)
         return false;
 
     const qdf_file_info &info=m_fis[idx];
 
-    const int fidx1 = int(info.offset / m_part_size);
-    const int fidx2 = int((info.offset + info.size) / m_part_size);
+    if(size + offset > info.size)
+        return false;
 
-    const size_t offset1 = size_t(info.offset - fidx1 * m_part_size);
+    offset += info.offset;
+
+    const int fidx1 = int(offset / m_part_size);
+    const int fidx2 = int((offset + size) / m_part_size);
+
+    const size_t offset1 = size_t(offset - fidx1 * m_part_size);
 
     //check if file has been split between 2 parts of the archive
     if (fidx1 != fidx2)
@@ -178,12 +190,12 @@ bool qdf_archive::read_file_data( int idx, void *data ) const
             return false;
 
         fseek(m_rds[fidx2], 0, SEEK_SET);
-        const size_t size2 = info.size - size1;
+        const size_t size2 = size - size1;
         return fread((char *)data + size1, 1, size2, m_rds[fidx2]) == size2;
     }
 
     fseek(m_rds[fidx1], offset1, SEEK_SET);
-    return fread(data, 1, info.size, m_rds[fidx1]) == info.size;
+    return fread(data, 1, size, m_rds[fidx1]) == size;
 }
 
 //------------------------------------------------------------

@@ -31,6 +31,7 @@ public:
     int find_file_idx(const char *name_part) const;
 
     bool read_file_data(int idx, void *data) const;
+    bool read_file_data(int idx, void *data, uint64_t size, uint64_t offset = 0) const;
 
     uint64_t get_part_size() const { return m_part_size; }
 
