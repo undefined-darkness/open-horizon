@@ -124,6 +124,8 @@ protected:
     int m_location_objects_light_dir_idx;
 };
 
+//------------------------------------------------------------
+
 class ndxr_mesh: public fhm_mesh
 {
 public:
