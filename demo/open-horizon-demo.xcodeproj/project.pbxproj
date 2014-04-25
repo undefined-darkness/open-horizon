@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		F503E4DB19048C6700C3590A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E4DA19048C6700C3590A /* Cocoa.framework */; };
-		F503E51519048CC100C3590A /* fhm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E50E19048CC100C3590A /* fhm.cpp */; };
+		F503E51519048CC100C3590A /* fhm_mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E50E19048CC100C3590A /* fhm_mesh.cpp */; };
 		F503E51619048CC100C3590A /* open_horizon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E50F19048CC100C3590A /* open_horizon.cpp */; };
 		F503E51719048CC100C3590A /* shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E51019048CC100C3590A /* shared.cpp */; };
 		F503E51819048CC100C3590A /* plane_params.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E51319048CC100C3590A /* plane_params.cpp */; };
@@ -17,6 +17,8 @@
 		F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52519048E5000C3590A /* OpenGL.framework */; };
 		F503E52919048E7300C3590A /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52819048E7300C3590A /* IOKit.framework */; };
 		F503E52C1904907200C3590A /* qdf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E52A1904907200C3590A /* qdf.cpp */; };
+		F506E39719085012002CF23C /* fhm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F506E39619085012002CF23C /* fhm.cpp */; };
+		F5BF995B190A4462005A8AF5 /* fhm_location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5BF9959190A4462005A8AF5 /* fhm_location.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,10 +46,10 @@
 		F503E4DF19048C6700C3590A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		F503E4E219048C6700C3590A /* open-horizon-demo-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "open-horizon-demo-Info.plist"; sourceTree = "<group>"; };
 		F503E4F919048C6700C3590A /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
-		F503E50E19048CC100C3590A /* fhm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fhm.cpp; sourceTree = "<group>"; };
+		F503E50E19048CC100C3590A /* fhm_mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fhm_mesh.cpp; sourceTree = "<group>"; };
 		F503E50F19048CC100C3590A /* open_horizon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = open_horizon.cpp; sourceTree = "<group>"; };
 		F503E51019048CC100C3590A /* shared.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shared.cpp; sourceTree = "<group>"; };
-		F503E51119048CC100C3590A /* fhm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fhm.h; sourceTree = "<group>"; };
+		F503E51119048CC100C3590A /* fhm_mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fhm_mesh.h; sourceTree = "<group>"; };
 		F503E51219048CC100C3590A /* shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shared.h; sourceTree = "<group>"; };
 		F503E51319048CC100C3590A /* plane_params.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = plane_params.cpp; sourceTree = "<group>"; };
 		F503E51419048CC100C3590A /* plane_params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = plane_params.h; sourceTree = "<group>"; };
@@ -58,6 +60,10 @@
 		F503E52A1904907200C3590A /* qdf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qdf.cpp; path = ../qdf.cpp; sourceTree = "<group>"; };
 		F503E52B1904907200C3590A /* qdf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qdf.h; path = ../qdf.h; sourceTree = "<group>"; };
 		F503E52E1904913500C3590A /* qdf_provider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qdf_provider.h; sourceTree = "<group>"; };
+		F506E39319084E01002CF23C /* fhm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fhm.h; path = ../fhm.h; sourceTree = "<group>"; };
+		F506E39619085012002CF23C /* fhm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fhm.cpp; path = ../fhm.cpp; sourceTree = "<group>"; };
+		F5BF9959190A4462005A8AF5 /* fhm_location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fhm_location.cpp; sourceTree = "<group>"; };
+		F5BF995A190A4462005A8AF5 /* fhm_location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fhm_location.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,11 +85,15 @@
 		F503E4CE19048C6700C3590A = {
 			isa = PBXGroup;
 			children = (
+				F506E39619085012002CF23C /* fhm.cpp */,
+				F506E39319084E01002CF23C /* fhm.h */,
 				F503E52A1904907200C3590A /* qdf.cpp */,
 				F503E52B1904907200C3590A /* qdf.h */,
 				F503E51919048D4A00C3590A /* nya_engine.xcodeproj */,
-				F503E50E19048CC100C3590A /* fhm.cpp */,
-				F503E51119048CC100C3590A /* fhm.h */,
+				F5BF9959190A4462005A8AF5 /* fhm_location.cpp */,
+				F5BF995A190A4462005A8AF5 /* fhm_location.h */,
+				F503E50E19048CC100C3590A /* fhm_mesh.cpp */,
+				F503E51119048CC100C3590A /* fhm_mesh.h */,
 				F503E50F19048CC100C3590A /* open_horizon.cpp */,
 				F503E51319048CC100C3590A /* plane_params.cpp */,
 				F503E51419048CC100C3590A /* plane_params.h */,
@@ -237,8 +247,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				F503E51819048CC100C3590A /* plane_params.cpp in Sources */,
+				F5BF995B190A4462005A8AF5 /* fhm_location.cpp in Sources */,
 				F503E52C1904907200C3590A /* qdf.cpp in Sources */,
-				F503E51519048CC100C3590A /* fhm.cpp in Sources */,
+				F503E51519048CC100C3590A /* fhm_mesh.cpp in Sources */,
+				F506E39719085012002CF23C /* fhm.cpp in Sources */,
 				F503E51619048CC100C3590A /* open_horizon.cpp in Sources */,
 				F503E51719048CC100C3590A /* shared.cpp in Sources */,
 			);

@@ -5,7 +5,8 @@
 #include "GLFW/glfw3.h"
 
 #include "plane_params.h"
-#include "fhm.h"
+#include "fhm_mesh.h"
+#include "fhm_location.h"
 #include "qdf_provider.h"
 
 #include "render/vbo.h"
@@ -414,7 +415,7 @@ private:
         return target;
     }
 
-    ndxr_mesh m_mesh;
+    fhm_mesh m_mesh;
     float m_speed;
     float m_thrust_time;
     nya_math::vec3 m_pos;
@@ -867,7 +868,7 @@ int main(void)
 
     nya_render::set_clear_color(0.4, 0.5, 0.9, 1.0);
 
-    fhm_mesh location;
+    fhm_location location;
     location.load((std::string("Map/") + location_name + ".fhm").c_str());
     location.load((std::string("Map/") + location_name + "_mpt.fhm").c_str());
 
