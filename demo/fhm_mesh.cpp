@@ -69,7 +69,7 @@ void fhm_mesh::set_ndxr_texture(int lod_idx, const char *semantics, const char *
 
     nya_scene::texture tex;
     tex.load(file_name);
-    for (int i = 0; i < lods[lod_idx].mesh.get_materials_count(); ++i)
+    for (int i = 0; i < lods[lod_idx].mesh.get_groups_count(); ++i)
         lods[lod_idx].mesh.modify_material(i).set_texture(semantics, tex);
 }
 
@@ -212,12 +212,12 @@ bool fhm_mesh::read_mnt(memory_reader &reader, fhm_mesh_load_data &load_data)
     fhm_mesh_load_data::mnt mnt;
     for (int i = 0; i < header.bones_count; ++i)
     {
-        int b = mnt.skeleton.add_bone(bones[i].name.c_str(), nya_math::vec3(), bones[i].parent, true);
+        int b = mnt.skeleton.add_bone(bones[i].name.c_str(), nya_math::vec3(), nya_math::quat(), bones[i].parent, true);
         assert(b == i);
     }
 
     load_data.skeletons.push_back(mnt);
-
+    
     return true;
 }
 
@@ -470,7 +470,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                     else
                     {
                         if (is_quat) //if (kfm1.bones[j].unknown2 == 1031)
-                            anim.anim.add_bone_rot_frame(aidx, k * frame_time, nya_math::quat(value.x, value.y, value.z, value.w)); //base[idx].irot*
+                            anim.anim.add_bone_rot_frame(aidx, k * frame_time, base[idx].irot*nya_math::quat(value.x, value.y, value.z, value.w)); //base[idx].irot*
                         else //if (kfm1.bones[j].unknown2 == 773)
                             anim.anim.add_bone_pos_frame(aidx, k * frame_time, value.xyz() - base[idx].pos);
                     }
@@ -483,27 +483,28 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                 nya_render::skeleton s;
                 for (int i = 0; i < skeleton.get_bones_count(); ++i)
                 {
-                    const int b = s.add_bone(skeleton.get_bone_name(i), base[i].get_fake_pos(base), skeleton.get_bone_parent_idx(i), true);
+                    const int b = s.add_bone(skeleton.get_bone_name(i), base[i].get_pos(base), base[i].get_rot(base), skeleton.get_bone_parent_idx(i), true);
+                    //const int b = s.add_bone(skeleton.get_bone_name(i), base[i].get_fake_pos(base), nya_math::quat(), skeleton.get_bone_parent_idx(i), true);
                     assert(i == b);
                 }
-
+                
                 load_data.skeletons[skeleton_idx].skeleton = s;
             }
-
+            
             //printf("    frame %d bones %d\n", k, int(f.bones.size()));
             first_anim = false;
         }
-
+        
         load_data.animations.back().animations[kfm1.name].create(anim);
         //printf("duration %.2fs\n", anim.anim.get_duration()/1000.0f);
     }
-
+    
     return true;
 }
 
 //------------------------------------------------------------
 
-bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) //ToDo: add materials, reduce groups to materials count, load textures by hash
+bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) //ToDo: add ToDo: add materials, reduce groups to materials count, load textures by hash
 {
     struct ndxr_header
     {
@@ -512,7 +513,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
         ushort unknown2;
         ushort unknown3;
         ushort groups_count;
-        ushort bone_min_idx; //if skeleton not presented, 
+        ushort bone_min_idx; //if skeleton not presented,
         ushort bone_max_idx; //this two may be strange
 
         uint offset_to_indices; //from header (+48)
@@ -622,7 +623,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     {
         //print_data(reader, reader.get_offset(), sizeof(group_header));
 
-        //unknown_struct &u = 
+        //unknown_struct &u =
         groups[i].header = reader.read<ndxr_group_header>();
 
         //float *f = groups[i].header.origin;
@@ -711,9 +712,10 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     auto &mat = mesh.materials.back();
     nya_scene::shader plane_shader;
     plane_shader.load("shaders/player_plane.nsh");
-    mat.set_shader(plane_shader);
+    auto &p=mat.get_pass(mat.add_pass(nya_scene::material::default_pass));
+    p.set_shader(plane_shader);
     mat.set_param(mat.get_param_idx("light dir"), light_dir.x, light_dir.y, light_dir.z, 0.0f);
-    mat.set_cull_face(true, nya_render::cull_face::ccw);
+    p.get_state().set_cull_face(true, nya_render::cull_face::ccw);
     //mat.set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha); //ToDo: transparency
     mesh.groups.resize(header.groups_count);
     l.groups.resize(header.groups_count);
@@ -776,12 +778,12 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                     }
                     break;
 
-               // case 4865: stride = 11 * 4; break;
-                //case 4371:
-                //  stride = 8*sizeof(float), rg.vbo.set_tc(0, 4 * sizeof(float), 3); break;
-                //case 4096:
-                //  stride = 3*sizeof(float), rg.vbo.set_tc(0, 4 * sizeof(float), 3); break;
-                
+                    // case 4865: stride = 11 * 4; break;
+                    //case 4371:
+                    //  stride = 8*sizeof(float), rg.vbo.set_tc(0, 4 * sizeof(float), 3); break;
+                    //case 4096:
+                    //  stride = 3*sizeof(float), rg.vbo.set_tc(0, 4 * sizeof(float), 3); break;
+
                 default:
                     //printf("ERROR: invalid stride. Vertex format: %d\n", rgf.header.vertex_format);
                     continue;
@@ -846,13 +848,13 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             a.second.set_speed(0.0f);
             a.second.set_loop(false);
             l.mesh.set_anim(a.second, layer++);
-
+            
             //if (lods.size() == 1) printf("anim %s\n", a.first.c_str());
         }
-
+        
         l.mesh.update(0);
     }
-
+    
     return true;
 }
 
@@ -873,13 +875,13 @@ void fhm_mesh::draw(int lod_idx)
         {
             l.mesh.set_pos(m_pos + m_rot.rotate(l.mesh.get_bone_pos(g.bone_idx, true)));
             l.mesh.set_rot(m_rot * l.mesh.get_bone_rot(g.bone_idx, true));
-            l.mesh.draw(i);
+            l.mesh.draw_group(i);
             continue;
         }
 
         l.mesh.set_pos(m_pos);
         l.mesh.set_rot(m_rot);
-        l.mesh.draw(i);
+        l.mesh.draw_group(i);
     }
 }
 

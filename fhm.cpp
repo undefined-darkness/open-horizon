@@ -14,7 +14,7 @@ bool fhm_file::open(const char *name)
     m_data = nya_resources::get_resources_provider().access(name);
     if (!m_data)
     {
-        nya_resources::get_log()<<"unable to open fhm file\n";
+        nya_resources::log()<<"unable to open fhm file\n";
         return false;
     }
 

@@ -347,7 +347,7 @@
 				INFOPLIST_FILE = "open-horizon-demo-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"/Users/vlad/Development/open-horizon/deps/glfw/lib",
+					../deps/glfw/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -362,7 +362,7 @@
 				INFOPLIST_FILE = "open-horizon-demo-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"/Users/vlad/Development/open-horizon/deps/glfw/lib",
+					../deps/glfw/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;

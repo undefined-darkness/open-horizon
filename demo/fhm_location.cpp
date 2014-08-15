@@ -452,8 +452,8 @@ void fhm_location::draw_col(int col_idx)
 
 void fhm_location::draw_mptx()
 {
-    const nya_math::frustum &f = nya_scene::get_camera()->get_frustum();
-    const nya_math::vec3 &cp = nya_scene::get_camera()->get_pos();
+    const nya_math::frustum &f = nya_scene::get_camera().get_frustum();
+    const nya_math::vec3 &cp = nya_scene::get_camera().get_pos();
 
     for (auto &mesh:mptx_meshes)
     {

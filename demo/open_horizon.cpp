@@ -100,9 +100,7 @@ void plane_camera::add_delta_pos(float dx, float dy, float dz)
 
 void plane_camera::set_aspect(float aspect)
 {
-    nya_scene::camera_proxy cam = nya_scene::get_camera();
-    if (cam.is_valid())
-        cam->set_proj(55.0, aspect, 1.0, 25000.0);
+    nya_scene::get_camera().set_proj(55.0, aspect, 1.0, 25000.0);
                       //1300.0);
     update();
 }
@@ -111,10 +109,6 @@ void plane_camera::set_aspect(float aspect)
 
 void plane_camera::update()
 {
-    nya_scene::camera_proxy cam = nya_scene::get_camera();
-    if (!cam.is_valid())
-        return;
-
     nya_math::quat r = m_rot;
     r.v.x = -r.v.x, r.v.y = -r.v.y;
 
@@ -122,7 +116,7 @@ void plane_camera::update()
     //nya_math::vec3 r=m_drot+m_rot;
 
     //cam->set_rot(r.y*180.0f/3.14f,r.x*180.0f/3.14f,0.0);
-    cam->set_rot(r);
+    nya_scene::get_camera().set_rot(r);
 
     //nya_math::quat rot(-r.x,-r.y,0.0f);
     //rot=rot*m_rot;
@@ -131,7 +125,7 @@ void plane_camera::update()
     r.v.x = -r.v.x, r.v.y = -r.v.y;
     nya_math::vec3 pos = m_pos + r.rotate(m_dpos);
 
-    cam->set_pos(pos.x, pos.y, pos.z);
+    nya_scene::get_camera().set_pos(pos.x, pos.y, pos.z);
 }
 
 //------------------------------------------------------------
@@ -954,7 +948,7 @@ int main(void)
 
         //nya_render::set_color(1,1,1,1);
 
-        nya_render::set_modelview_matrix(nya_scene::get_camera()->get_view_matrix());
+        nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
 
         nya_render::depth_test::enable(nya_render::depth_test::not_greater);
         nya_render::cull_face::enable(nya_render::cull_face::ccw);
@@ -965,7 +959,7 @@ int main(void)
 
         //test.draw();
 
-        nya_render::set_modelview_matrix(nya_scene::get_camera()->get_view_matrix());
+        nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
 
         location.draw_mptx();
 
