@@ -26,6 +26,7 @@ void main()
 uniform sampler2D amb_map;
 uniform sampler2D base_map;
 uniform sampler2D spec_map;
+
 uniform vec4 camera_pos;
 uniform vec4 light_dir;
 
@@ -39,5 +40,7 @@ void main()
     vec3 h=normalize(light_dir.xyz+v);
     float sp=pow(max(0.0,dot(normal,h)),50.0);
 
-	gl_FragColor=vec4(base.rgb*vec3(amb.rgb*0.7+0.3*max(0.0,dot(normal,light_dir.xyz)))+spec.xyz*sp,base.a);
+    vec3 s=spec.xyz*sp;
+
+	gl_FragColor=vec4(base.rgb*vec3(amb.rgb*0.7+0.3*max(0.0,dot(normal,light_dir.xyz)))+s,base.a+length(s));
 }

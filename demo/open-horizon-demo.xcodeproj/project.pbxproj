@@ -19,6 +19,8 @@
 		F503E52C1904907200C3590A /* qdf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E52A1904907200C3590A /* qdf.cpp */; };
 		F506E39719085012002CF23C /* fhm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F506E39619085012002CF23C /* fhm.cpp */; };
 		F5BF995B190A4462005A8AF5 /* fhm_location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5BF9959190A4462005A8AF5 /* fhm_location.cpp */; };
+		F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D7969F19B3432C006269F0 /* pugixml.cpp */; };
+		F5D796A619B35471006269F0 /* aircraft.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D796A419B35471006269F0 /* aircraft.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -62,8 +64,15 @@
 		F503E52E1904913500C3590A /* qdf_provider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qdf_provider.h; sourceTree = "<group>"; };
 		F506E39319084E01002CF23C /* fhm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fhm.h; path = ../fhm.h; sourceTree = "<group>"; };
 		F506E39619085012002CF23C /* fhm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fhm.cpp; path = ../fhm.cpp; sourceTree = "<group>"; };
+		F56CCB0419B3D955000D9163 /* xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xml.h; sourceTree = "<group>"; };
 		F5BF9959190A4462005A8AF5 /* fhm_location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fhm_location.cpp; sourceTree = "<group>"; };
 		F5BF995A190A4462005A8AF5 /* fhm_location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fhm_location.h; sourceTree = "<group>"; };
+		F5D7969F19B3432C006269F0 /* pugixml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pugixml.cpp; path = "../deps/pugixml-1.4/src/pugixml.cpp"; sourceTree = "<group>"; };
+		F5D796A019B3432C006269F0 /* pugiconfig.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugiconfig.hpp; path = "../deps/pugixml-1.4/src/pugiconfig.hpp"; sourceTree = "<group>"; };
+		F5D796A119B3432C006269F0 /* pugixml.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugixml.hpp; path = "../deps/pugixml-1.4/src/pugixml.hpp"; sourceTree = "<group>"; };
+		F5D796A419B35471006269F0 /* aircraft.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aircraft.cpp; sourceTree = "<group>"; };
+		F5D796A519B35471006269F0 /* aircraft.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aircraft.h; sourceTree = "<group>"; };
+		F5D796A719B3CC04006269F0 /* screen_quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = screen_quad.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,24 +94,28 @@
 		F503E4CE19048C6700C3590A = {
 			isa = PBXGroup;
 			children = (
+				F5D796A419B35471006269F0 /* aircraft.cpp */,
+				F5D796A519B35471006269F0 /* aircraft.h */,
 				F506E39619085012002CF23C /* fhm.cpp */,
 				F506E39319084E01002CF23C /* fhm.h */,
-				F503E52A1904907200C3590A /* qdf.cpp */,
-				F503E52B1904907200C3590A /* qdf.h */,
-				F503E51919048D4A00C3590A /* nya_engine.xcodeproj */,
 				F5BF9959190A4462005A8AF5 /* fhm_location.cpp */,
 				F5BF995A190A4462005A8AF5 /* fhm_location.h */,
 				F503E50E19048CC100C3590A /* fhm_mesh.cpp */,
 				F503E51119048CC100C3590A /* fhm_mesh.h */,
+				F503E52A1904907200C3590A /* qdf.cpp */,
+				F503E52B1904907200C3590A /* qdf.h */,
+				F503E52E1904913500C3590A /* qdf_provider.h */,
 				F503E50F19048CC100C3590A /* open_horizon.cpp */,
 				F503E51319048CC100C3590A /* plane_params.cpp */,
 				F503E51419048CC100C3590A /* plane_params.h */,
-				F503E52E1904913500C3590A /* qdf_provider.h */,
+				F5D796A719B3CC04006269F0 /* screen_quad.h */,
 				F503E51019048CC100C3590A /* shared.cpp */,
 				F503E51219048CC100C3590A /* shared.h */,
+				F56CCB0419B3D955000D9163 /* xml.h */,
 				F503E4E019048C6700C3590A /* open-horizon-demo */,
 				F503E4D919048C6700C3590A /* Frameworks */,
 				F503E4D819048C6700C3590A /* Products */,
+				F5D796A319B34350006269F0 /* deps */,
 			);
 			sourceTree = "<group>";
 		};
@@ -160,6 +173,25 @@
 				F503E52119048D4A00C3590A /* libnya_engine_ios.a */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F5D7969C19B342ED006269F0 /* pugixml */ = {
+			isa = PBXGroup;
+			children = (
+				F5D7969F19B3432C006269F0 /* pugixml.cpp */,
+				F5D796A019B3432C006269F0 /* pugiconfig.hpp */,
+				F5D796A119B3432C006269F0 /* pugixml.hpp */,
+			);
+			name = pugixml;
+			sourceTree = "<group>";
+		};
+		F5D796A319B34350006269F0 /* deps */ = {
+			isa = PBXGroup;
+			children = (
+				F5D7969C19B342ED006269F0 /* pugixml */,
+				F503E51919048D4A00C3590A /* nya_engine.xcodeproj */,
+			);
+			name = deps;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -248,9 +280,11 @@
 			files = (
 				F503E51819048CC100C3590A /* plane_params.cpp in Sources */,
 				F5BF995B190A4462005A8AF5 /* fhm_location.cpp in Sources */,
+				F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */,
 				F503E52C1904907200C3590A /* qdf.cpp in Sources */,
 				F503E51519048CC100C3590A /* fhm_mesh.cpp in Sources */,
 				F506E39719085012002CF23C /* fhm.cpp in Sources */,
+				F5D796A619B35471006269F0 /* aircraft.cpp in Sources */,
 				F503E51619048CC100C3590A /* open_horizon.cpp in Sources */,
 				F503E51719048CC100C3590A /* shared.cpp in Sources */,
 			);
@@ -298,7 +332,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SYMROOT = ../bin/;
-				USER_HEADER_SEARCH_PATHS = "../deps/glfw/include/ ../deps/nya-engine/";
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/";
 			};
 			name = Debug;
 		};
@@ -335,7 +369,7 @@
 				OBJROOT = ../obj/;
 				SDKROOT = macosx;
 				SYMROOT = ../bin/;
-				USER_HEADER_SEARCH_PATHS = "../deps/glfw/include/ ../deps/nya-engine/";
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/";
 			};
 			name = Release;
 		};

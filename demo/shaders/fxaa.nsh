@@ -23,8 +23,7 @@ void main()
 uniform sampler2D buf0;
 uniform vec4 vp;
 
-void main()
-{
+void main( void ) {
     //gl_FragColor.xyz = texture2D(buf0,texCoords).xyz;
     //return;
 
@@ -72,8 +71,9 @@ void main()
         texture2D(buf0, texCoords.xy + dir * (3.0/3.0 - 0.5)).xyz);
     float lumaB = dot(rgbB, luma);
 
-    if((lumaB < lumaMin) || (lumaB > lumaMax))
+    if((lumaB < lumaMin) || (lumaB > lumaMax)){
         gl_FragColor.xyz=rgbA;
-	else
+    }else{
         gl_FragColor.xyz=rgbB;
+    }
 }

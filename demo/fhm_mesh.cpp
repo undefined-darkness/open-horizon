@@ -59,16 +59,14 @@ struct fhm_mesh_load_data
 
 //------------------------------------------------------------
 
-void fhm_mesh::set_ndxr_texture(int lod_idx, const char *semantics, const char *file_name)
+void fhm_mesh::set_ndxr_texture(int lod_idx, const char *semantics, const nya_scene::texture &tex)
 {
     if (lod_idx < 0 || lod_idx >= lods.size())
         return;
 
-    if (!semantics || !file_name)
+    if (!semantics)
         return;
 
-    nya_scene::texture tex;
-    tex.load(file_name);
     for (int i = 0; i < lods[lod_idx].mesh.get_groups_count(); ++i)
         lods[lod_idx].mesh.modify_material(i).set_texture(semantics, tex);
 }
@@ -540,7 +538,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
         uint unknown_zero;
         uint offset_to_name; //from the end of vertices buf
         ushort unknown_zero2;
-        ushort unknown_8;
+        ushort unknown_8; //sometimes 4
         short bone_idx;
         ushort render_groups_count;
         uint offset_to_render_groups;
@@ -623,8 +621,11 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     {
         //print_data(reader, reader.get_offset(), sizeof(group_header));
 
-        //unknown_struct &u =
-        groups[i].header = reader.read<ndxr_group_header>();
+        auto &h=groups[i].header = reader.read<ndxr_group_header>();
+
+        //assert(h.unknown_8==8);
+        assert(h.unknown_zero==0);
+        assert(h.unknown_zero2==0);
 
         //float *f = groups[i].header.origin;
         //test.add_point(nya_math::vec3(f[0], f[1], f[2]), nya_math::vec4(0, 0, 1, 1));
@@ -716,7 +717,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     p.set_shader(plane_shader);
     mat.set_param(mat.get_param_idx("light dir"), light_dir.x, light_dir.y, light_dir.z, 0.0f);
     p.get_state().set_cull_face(true, nya_render::cull_face::ccw);
-    //mat.set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha); //ToDo: transparency
+    p.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha); //ToDo: transparency only on some groups
     mesh.groups.resize(header.groups_count);
     l.groups.resize(header.groups_count);
 
@@ -747,6 +748,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
             if (!rgf.header.vcount || !rgf.header.icount)
                 continue;
+
+            //if(gf.header.)
 
             //if (gf.header.unknown3[2] != 15) //test
             //  continue;

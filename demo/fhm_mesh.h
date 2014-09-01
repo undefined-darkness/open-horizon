@@ -30,7 +30,11 @@ public:
     void set_relative_anim_time(int lod_idx, unsigned int anim_hash_id, float time);
     void set_anim_speed(int lod_idx, unsigned int anim_hash_id, float speed);
 
-    void set_ndxr_texture(int lod_idx, const char *semantics, const char *file_name);
+    void set_ndxr_texture(int lod_idx, const char *semantics, const nya_scene::texture &tex);
+    void set_ndxr_texture(int lod_idx, const char *semantics, const char *file_name)
+    {
+        set_ndxr_texture(lod_idx,semantics,nya_scene::texture(file_name));
+    }
 
 protected:
     bool read_mnt(memory_reader &reader, fhm_mesh_load_data &load_data);

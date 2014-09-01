@@ -1,6 +1,6 @@
 @all
 
-varying vec4 tc;
+varying vec2 tc;
 
 @uniform tr "transform"
 
@@ -10,7 +10,7 @@ uniform vec4 tr;
 
 void main()
 {
-    vec4 pos=gl_Vertex; tc=pos;
+    vec4 pos=gl_Vertex; tc=pos.xy;
     gl_Position=vec4(vec2(-1.0,-1.0)+pos.xy*2.0,0.0,1.0);
 }
 
@@ -28,7 +28,7 @@ uniform sampler2D curve_map2;
 
 void main()
 {
-	vec4 color=texture2D(base_map,tc.xy);//+vec4(0.05);
+	vec4 color=texture2D(base_map,tc);//+vec4(0.05);
 	color.r = texture2D(curve_map0,color.ra).r;
 	color.g = texture2D(curve_map1,color.ga).g;
 	color.b = texture2D(curve_map2,color.ba).b;
