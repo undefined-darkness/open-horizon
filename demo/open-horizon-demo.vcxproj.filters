@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="fhm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="open_horizon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -28,6 +25,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\qdf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aircraft.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fhm_location.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fhm_mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\pugixml-1.4\src\pugixml.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fhm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -45,6 +57,30 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\qdf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aircraft.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="screen_quad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fhm_location.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fhm_mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\deps\pugixml-1.4\src\pugiconfig.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\deps\pugixml-1.4\src\pugixml.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\fhm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

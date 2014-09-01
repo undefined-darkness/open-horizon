@@ -56,7 +56,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw/include/;../deps/pugixml-1.4/src/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -73,7 +73,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw/include/;../deps/pugixml-1.4/src/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -84,18 +84,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\deps\pugixml-1.4\src\pugixml.cpp" />
+    <ClCompile Include="..\fhm.cpp" />
     <ClCompile Include="..\qdf.cpp" />
-    <ClCompile Include="fhm.cpp" />
+    <ClCompile Include="aircraft.cpp" />
+    <ClCompile Include="fhm_location.cpp" />
+    <ClCompile Include="fhm_mesh.cpp" />
     <ClCompile Include="open_horizon.cpp" />
     <ClCompile Include="plane_params.cpp" />
     <ClCompile Include="shared.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\deps\pugixml-1.4\src\pugiconfig.hpp" />
+    <ClInclude Include="..\deps\pugixml-1.4\src\pugixml.hpp" />
+    <ClInclude Include="..\fhm.h" />
     <ClInclude Include="..\qdf.h" />
+    <ClInclude Include="aircraft.h" />
     <ClInclude Include="fhm.h" />
+    <ClInclude Include="fhm_location.h" />
+    <ClInclude Include="fhm_mesh.h" />
     <ClInclude Include="plane_params.h" />
     <ClInclude Include="qdf_provider.h" />
+    <ClInclude Include="screen_quad.h" />
     <ClInclude Include="shared.h" />
+    <ClInclude Include="xml.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

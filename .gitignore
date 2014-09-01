@@ -13,3 +13,4 @@ xcschememanagement.plist
 *.sdf
 *.vcproj.*.user
 *.vcxproj.user
+*.opensdf
