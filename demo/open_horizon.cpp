@@ -4,11 +4,9 @@
 
 #include "GLFW/glfw3.h"
 
-#include "plane_params.h"
-#include "fhm_mesh.h"
-#include "fhm_location.h"
 #include "qdf_provider.h"
 #include "aircraft.h"
+#include "location.h"
 #include "screen_quad.h"
 
 #include "render/vbo.h"
@@ -23,6 +21,7 @@
 #include "stdio.h"
 #include "shared.h"
 #include "resources/file_resources_provider.h"
+#include "zlib.h"
 
 #include <math.h>
 #include <vector>
@@ -48,7 +47,7 @@ private:
     void update();
 
 public:
-    plane_camera(): m_dpos(0.0f, 3.0f, 10.0f) { m_drot.y = 3.14f; }
+    plane_camera(): m_dpos(0.0f, 3.0f, 14.0f) { m_drot.y = 3.14f; }
 
 private:
     nya_math::vec3 m_drot;
@@ -453,7 +452,7 @@ private:
 
 int main(void)
 {
-    const char *plane_name = "su35"; //f22a b02a pkfa su25 su33 su34 su35 kwmr
+    const char *plane_name = "su35"; //f22a su35 b02a pkfa su25 su33 su34  kwmr
     const char *plane_color = "color02"; // = 0;
     const char *location_name = "ms01"; //ms01 ms50 ms10
 
@@ -531,20 +530,23 @@ int main(void)
 
     glfwMakeContextCurrent(window);
 
+    location loc;
+    loc.load(location_name);
+
     aircraft player_plane;
     player_plane.load(plane_name, plane_color);
     player_plane.set_pos(nya_math::vec3(-300, 50, 2000));
-
-    nya_render::set_clear_color(0.4, 0.5, 0.9, 1.0);
-
-    fhm_location location;
-    location.load((std::string("Map/") + location_name + ".fhm").c_str());
-    location.load((std::string("Map/") + location_name + "_mpt.fhm").c_str());
 
     plane_camera camera;
     //camera.add_delta_rot(0.1f,0.0f);
     if (plane_name[0] == 'b')
         camera.add_delta_pos(0.0f, -2.0f, -20.0f);
+
+    effect_clouds clouds;
+    clouds.load(location_name);
+
+    postprocess pp;
+    pp.init(location_name);
 
     //nya_render::debug_draw test;
     test.set_point_size(5);
@@ -559,23 +561,6 @@ int main(void)
     int frame_counter = 0;
     int frame_counter_time = 0;
     int fps = 0;
-
-    screen_quad sq;
-    sq.init();
-
-    nya_scene::shader sky_shader;
-    sky_shader.load("shaders/sky.nsh");
-    nya_scene::texture envmap = shared::get_texture(shared::load_texture((std::string("Map/envmap_") + location_name + ".nut").c_str()));
-    //envmap_mapparts_
-
-    nya_scene::shader land_shader;
-    land_shader.load("shaders/land.nsh");
-
-    effect_clouds clouds;
-    clouds.load(location_name);
-
-    postprocess pp;
-    pp.init(location_name);
 
     int screen_width = 0, screen_height = 0;
     unsigned long app_time = nya_system::get_time();
@@ -623,27 +608,7 @@ int main(void)
 
         //nya_render::set_color(1,1,1,1);
 
-        nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
-
-        nya_render::depth_test::enable(nya_render::depth_test::not_greater);
-        nya_render::cull_face::enable(nya_render::cull_face::ccw);
-
-        land_shader.internal().set();
-        location.draw_landscape();
-        land_shader.internal().unset();
-
-        //test.draw();
-
-        nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
-
-        location.draw_mptx();
-
-        envmap.internal().set();
-        sky_shader.internal().set();
-        sq.draw();
-        sky_shader.internal().unset();
-        envmap.internal().unset();
-
+        loc.draw(dt);
         player_plane.draw();
 
         clouds.draw();
@@ -732,7 +697,7 @@ int main(void)
         else
             last_control_special = false;
 
-        //if (glfwGetKey(window, GLFW_KEY_L)) location.load((std::string("Map/") + location_name + ".fhm").c_str());
+        //if (glfwGetKey(window, GLFW_KEY_L)) loc.load(location_name);
 
         static bool last_btn_p = false;
         if (glfwGetKey(window, GLFW_KEY_P) && !last_btn_p)

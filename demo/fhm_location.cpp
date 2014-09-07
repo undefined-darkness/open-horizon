@@ -163,6 +163,11 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 {
     assert(!load_data.tex_indices_data.empty());
 
+    auto &p=m_land_material.get_pass(m_land_material.add_pass(nya_scene::material::default_pass));
+    p.set_shader(nya_scene::shader("shaders/land.nsh"));
+
+    m_land_material.set_param(m_land_material.get_param_idx("light dir"), light_dir.x, light_dir.y, light_dir.z, 0.0f );
+
     class vbo_data
     {
     public:
@@ -185,6 +190,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             tc.w /= m_tex_height;
 
             vert v;
+            v.pos.y=-0.1f;
 
             v.pos.x = x;
             v.pos.z = y;
@@ -493,8 +499,25 @@ void fhm_location::draw_mptx()
 
 //------------------------------------------------------------
 
-void fhm_location::draw_landscape()
+void fhm_location::draw_landscape(int dt)
 {
+    nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
+    m_land_material.internal().set(nya_scene::material::default_pass);
+
+    const int anim_time_interval[]={51731,73164,62695,84235};
+    static int anim_time[]={124,6363,36262,47392};
+    float t[4];
+    for(int i=0;i<4;++i)
+    {
+        anim_time[i]+=dt;
+        if(anim_time[i]>anim_time_interval[i])
+            anim_time[i]=0;
+
+        t[i]=float(anim_time[i])/anim_time_interval[i];
+    }
+
+    m_land_material.set_param(m_land_material.get_param_idx("anim"), t[0],t[1],-t[2],-t[3]);
+
     m_landscape.vbo.bind();
     for (const auto &p: m_landscape.patches)
     {
@@ -507,6 +530,7 @@ void fhm_location::draw_landscape()
     }
 
     m_landscape.vbo.unbind();
+    m_land_material.internal().unset();
 }
 
 //------------------------------------------------------------

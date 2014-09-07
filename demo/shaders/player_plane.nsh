@@ -43,4 +43,5 @@ void main()
     vec3 s=spec.xyz*sp;
 
 	gl_FragColor=vec4(base.rgb*vec3(amb.rgb*0.7+0.3*max(0.0,dot(normal,light_dir.xyz)))+s,base.a+length(s));
+    //gl_FragColor=vec4(base.rgb*mix(vec3(max(0.0,dot(normal,light_dir.xyz))),vec3(1.0),amb.rgb)+s,base.a+length(s));
 }

@@ -21,6 +21,8 @@
 		F5BF995B190A4462005A8AF5 /* fhm_location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5BF9959190A4462005A8AF5 /* fhm_location.cpp */; };
 		F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D7969F19B3432C006269F0 /* pugixml.cpp */; };
 		F5D796A619B35471006269F0 /* aircraft.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D796A419B35471006269F0 /* aircraft.cpp */; };
+		F5DFAD8B19BB248C00786736 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F5DFAD8A19BB248C00786736 /* libz.dylib */; };
+		F5DFAD9019BCA1EA00786736 /* location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5DFAD8E19BCA1EA00786736 /* location.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -73,6 +75,9 @@
 		F5D796A419B35471006269F0 /* aircraft.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aircraft.cpp; sourceTree = "<group>"; };
 		F5D796A519B35471006269F0 /* aircraft.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aircraft.h; sourceTree = "<group>"; };
 		F5D796A719B3CC04006269F0 /* screen_quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = screen_quad.h; sourceTree = "<group>"; };
+		F5DFAD8A19BB248C00786736 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		F5DFAD8E19BCA1EA00786736 /* location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = location.cpp; sourceTree = "<group>"; };
+		F5DFAD8F19BCA1EA00786736 /* location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = location.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +85,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F5DFAD8B19BB248C00786736 /* libz.dylib in Frameworks */,
 				F503E52919048E7300C3590A /* IOKit.framework in Frameworks */,
 				F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */,
 				F503E52419048E2D00C3590A /* libglfw3.a in Frameworks */,
@@ -102,20 +108,22 @@
 				F5BF995A190A4462005A8AF5 /* fhm_location.h */,
 				F503E50E19048CC100C3590A /* fhm_mesh.cpp */,
 				F503E51119048CC100C3590A /* fhm_mesh.h */,
-				F503E52A1904907200C3590A /* qdf.cpp */,
-				F503E52B1904907200C3590A /* qdf.h */,
-				F503E52E1904913500C3590A /* qdf_provider.h */,
+				F5DFAD8E19BCA1EA00786736 /* location.cpp */,
+				F5DFAD8F19BCA1EA00786736 /* location.h */,
 				F503E50F19048CC100C3590A /* open_horizon.cpp */,
 				F503E51319048CC100C3590A /* plane_params.cpp */,
 				F503E51419048CC100C3590A /* plane_params.h */,
+				F503E52A1904907200C3590A /* qdf.cpp */,
+				F503E52B1904907200C3590A /* qdf.h */,
+				F503E52E1904913500C3590A /* qdf_provider.h */,
 				F5D796A719B3CC04006269F0 /* screen_quad.h */,
 				F503E51019048CC100C3590A /* shared.cpp */,
 				F503E51219048CC100C3590A /* shared.h */,
 				F56CCB0419B3D955000D9163 /* xml.h */,
 				F503E4E019048C6700C3590A /* open-horizon-demo */,
+				F5D796A319B34350006269F0 /* deps */,
 				F503E4D919048C6700C3590A /* Frameworks */,
 				F503E4D819048C6700C3590A /* Products */,
-				F5D796A319B34350006269F0 /* deps */,
 			);
 			sourceTree = "<group>";
 		};
@@ -130,6 +138,7 @@
 		F503E4D919048C6700C3590A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F5DFAD8A19BB248C00786736 /* libz.dylib */,
 				F503E52819048E7300C3590A /* IOKit.framework */,
 				F503E52519048E5000C3590A /* OpenGL.framework */,
 				F503E52319048E2D00C3590A /* libglfw3.a */,
@@ -282,6 +291,7 @@
 				F5BF995B190A4462005A8AF5 /* fhm_location.cpp in Sources */,
 				F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */,
 				F503E52C1904907200C3590A /* qdf.cpp in Sources */,
+				F5DFAD9019BCA1EA00786736 /* location.cpp in Sources */,
 				F503E51519048CC100C3590A /* fhm_mesh.cpp in Sources */,
 				F506E39719085012002CF23C /* fhm.cpp in Sources */,
 				F5D796A619B35471006269F0 /* aircraft.cpp in Sources */,

@@ -15,11 +15,13 @@ struct fhm_location_load_data;
 
 class fhm_location
 {
+    friend class location; //ToDo
+
 public:
     bool load(const char *fileName);
     void draw_col(int col_idx);
     void draw_mptx();
-    void draw_landscape();
+    void draw_landscape(int dt);
 
 protected:
     bool read_mptx(memory_reader &reader);
@@ -82,6 +84,7 @@ protected:
 protected:
     nya_scene::shader m_location_objects_shader;
     int m_location_objects_light_dir_idx;
+    nya_scene::material m_land_material;
 };
 
 //------------------------------------------------------------

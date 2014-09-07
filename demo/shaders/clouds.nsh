@@ -16,12 +16,10 @@ void main()
     gl_Position=gl_ModelViewProjectionMatrix*gl_Vertex;
 }
 
-@sampler buf0 "diffuse"
 @predefined vp "nya viewport"
 
 @fragment
 
-uniform sampler2D buf0;
 uniform vec4 vp;
 
 void main( void ) { gl_FragColor=vec4(1.0); }

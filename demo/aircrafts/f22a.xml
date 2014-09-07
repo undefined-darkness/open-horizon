@@ -1,0 +1,62 @@
+<aircraft>
+    <model file="model_id/mech/plyr/p_f22a/p_f22a_pcom.fhm"/>
+
+    <phys file="Player/Behavior/param_p_f22a.bin"/>
+
+    <ambient file="model_id/tdb/mech/plyr/p_f22a/00/p_f22a_00_amb.img"/>
+
+    <paint name="color01">
+        <base file="model_id/tdb/mech/plyr/p_f22a/01/p_f22a_01_col.img"/>
+        <colx file="model_id/tdb/mech/plyr/p_f22a/coledit01/p_f22a_01_mkx.img"/>
+        <coly file="model_id/tdb/mech/plyr/p_f22a/coledit01/p_f22a_01_mky.img"/>
+
+        <color r="141" g="141" b="141"/>
+        <color r="128" g="128" b="128"/>
+        <color r="184" g="184" b="184"/>
+        <color r="199" g="169" b="49"/>
+
+        <specular file="model_id/tdb/mech/plyr/p_f22a/01/p_f22a_01_spe.img"/>
+    </paint>
+
+    <paint name="color02">
+        <base file="model_id/tdb/mech/plyr/p_f22a/02/p_f22a_02_col.img"/>
+        <colx file="model_id/tdb/mech/plyr/p_f22a/coledit02/p_f22a_02_mkx.img"/>
+        <coly file="model_id/tdb/mech/plyr/p_f22a/coledit02/p_f22a_02_mky.img"/>
+
+        <color r="126" g="126" b="126"/>
+        <color r="108" g="116" b="109"/>
+        <color r="82" g="95" b="88"/>
+        <color r="174" g="174" b="174"/>
+        <color r="199" g="169" b="49"/>
+
+        <specular file="model_id/tdb/mech/plyr/p_f22a/02/p_f22a_02_spe.img"/>
+    </paint>
+
+    <paint name="color12">
+        <base file="model_id/tdb/mech/plyr/p_f22a/12/p_f22a_12_col.img"/>
+        <colx file="model_id/tdb/mech/plyr/p_f22a/coledit12/p_f22a_12_mkx.img"/>
+        <coly file="model_id/tdb/mech/plyr/p_f22a/coledit12/p_f22a_12_mky.img"/>
+
+        <color r="141" g="141" b="141"/>
+        <color r="128" g="128" b="128"/>
+        <color r="184" g="184" b="184"/>
+        <color r="199" g="169" b="49"/>
+
+        <specular file="model_id/tdb/mech/plyr/p_f22a/12/p_f22a_12_spe.img"/>
+    </paint>
+
+    <paint name="color13">
+        <base file="model_id/tdb/mech/plyr/p_f22a/13/p_f22a_13_col.img"/>
+        <colx file="model_id/tdb/mech/plyr/p_f22a/coledit13/p_f22a_13_mkx.img"/>
+        <coly file="model_id/tdb/mech/plyr/p_f22a/coledit13/p_f22a_13_mky.img"/>
+
+        <color r="209" g="89" b="99"/>
+        <color r="209" g="89" b="99"/>
+        <color r="189" g="89" b="89"/>
+        <color r="209" g="209" b="209"/>
+        <color r="209" g="119" b="119"/>
+
+        <specular file="model_id/tdb/mech/plyr/p_f22a/13/p_f22a_13_spe.img"/>
+    </paint>
+
+</aircraft>
