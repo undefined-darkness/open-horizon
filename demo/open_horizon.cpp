@@ -604,6 +604,7 @@ int main(void)
 
         pp.begin_render();
 
+        //nya_render::set_clear_color(0.69,0.74,0.76,1.0); //fog color
         nya_render::clear(true, true);
 
         //nya_render::set_color(1,1,1,1);

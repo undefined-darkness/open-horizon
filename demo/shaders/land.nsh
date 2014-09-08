@@ -60,7 +60,7 @@ void main()
     float ol=1.0+dot(normal,light_dir.xyz);
     vec3 v=normalize(pos-camera_pos.xyz);
     vec3 h=normalize(v+light_dir.xyz);
-    float s=pow(max(0.0,dot(normal,h)),60.0)*0.3;
+    float s=pow(max(0.0,dot(normal,h)),60.0)*0.5;
 
     base.rgb=mix(ocean.rgb*ol+vec3(s),base.rgb*detail.rgb,base.a);
 

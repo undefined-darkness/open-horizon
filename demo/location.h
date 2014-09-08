@@ -5,7 +5,6 @@
 #pragma once
 
 #include "fhm_location.h"
-#include "screen_quad.h"
 
 //------------------------------------------------------------
 
@@ -16,7 +15,7 @@ public:
     void draw();
 
 private:
-    screen_quad m_sq;
+    nya_render::vbo m_mesh;
     nya_scene::shader m_sky_shader;
     nya_scene::texture m_envmap;
 };
