@@ -530,6 +530,8 @@ int main(void)
 
     glfwMakeContextCurrent(window);
 
+    nya_render::texture::set_default_aniso(2);
+
     location loc;
     loc.load(location_name);
 

@@ -190,7 +190,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             tc.w /= m_tex_height;
 
             vert v;
-            v.pos.y=-0.1f;
+            v.pos.y=-0.2f;
 
             v.pos.x = x;
             v.pos.z = y;
