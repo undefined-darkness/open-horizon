@@ -7,7 +7,7 @@
 #include "qdf_provider.h"
 #include "aircraft.h"
 #include "location.h"
-#include "screen_quad.h"
+#include "render/screen_quad.h"
 
 #include "render/vbo.h"
 #include "render/fbo.h"
@@ -263,7 +263,7 @@ private:
 
     target m_main_target;
     target m_add_target;
-    screen_quad m_quad;
+    nya_render::screen_quad m_quad;
     nya_render::texture m_color_curve_tex[3];
     nya_scene::shader m_main_shader;
     nya_scene::shader m_fxaa_shader;

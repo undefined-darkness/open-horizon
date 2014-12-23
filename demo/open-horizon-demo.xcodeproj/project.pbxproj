@@ -74,7 +74,6 @@
 		F5D796A119B3432C006269F0 /* pugixml.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugixml.hpp; path = "../deps/pugixml-1.4/src/pugixml.hpp"; sourceTree = "<group>"; };
 		F5D796A419B35471006269F0 /* aircraft.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aircraft.cpp; sourceTree = "<group>"; };
 		F5D796A519B35471006269F0 /* aircraft.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aircraft.h; sourceTree = "<group>"; };
-		F5D796A719B3CC04006269F0 /* screen_quad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = screen_quad.h; sourceTree = "<group>"; };
 		F5DFAD8A19BB248C00786736 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		F5DFAD8E19BCA1EA00786736 /* location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = location.cpp; sourceTree = "<group>"; };
 		F5DFAD8F19BCA1EA00786736 /* location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = location.h; sourceTree = "<group>"; };
@@ -116,7 +115,6 @@
 				F503E52A1904907200C3590A /* qdf.cpp */,
 				F503E52B1904907200C3590A /* qdf.h */,
 				F503E52E1904913500C3590A /* qdf_provider.h */,
-				F5D796A719B3CC04006269F0 /* screen_quad.h */,
 				F503E51019048CC100C3590A /* shared.cpp */,
 				F503E51219048CC100C3590A /* shared.h */,
 				F56CCB0419B3D955000D9163 /* xml.h */,

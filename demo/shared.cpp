@@ -59,7 +59,7 @@ unsigned int load_texture(const void *tex_data, size_t tex_size)
 
     nya_scene::shared_texture st;
     nya_scene::resource_data data(reader.get_remained());
-    data.copy_to(reader.get_data(), reader.get_remained());
+    data.copy_from(reader.get_data(), reader.get_remained());
     nya_scene::texture::load_dds(st, data, "");
     data.free();
     nya_scene::texture tex;
