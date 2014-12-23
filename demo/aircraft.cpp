@@ -5,7 +5,7 @@
 #include "aircraft.h"
 #include "resources/resources.h"
 #include "memory/tmp_buffer.h"
-#include "screen_quad.h"
+#include "render/screen_quad.h"
 #include "render/fbo.h"
 #include "xml.h"
 
@@ -36,7 +36,7 @@ public:
             return nya_scene::texture();
 
         nya_render::fbo fbo;
-        screen_quad quad;
+        nya_render::screen_quad quad;
         quad.init();
         nya_scene::shared_texture res;
         res.tex.build_texture(0, tp->get_width(), tp->get_height(), nya_render::texture::color_rgba);
