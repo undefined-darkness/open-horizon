@@ -5,6 +5,8 @@
 #include "GLFW/glfw3.h"
 
 #include "qdf_provider.h"
+#include "../dpl.h" //ToDo: dpl_provider.h
+
 #include "aircraft.h"
 #include "location.h"
 #include "render/screen_quad.h"
@@ -506,6 +508,8 @@ int main(void)
     } trp(nya_resources::get_resources_provider());
 
     nya_resources::set_resources_provider(&trp);
+
+    //dpl_file t1,t2; t1.open("DATA.PAC"); t2.open("datapack.bin");
 
     GLFWwindow* window;
     if (!glfwInit())

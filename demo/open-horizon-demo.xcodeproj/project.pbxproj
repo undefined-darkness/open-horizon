@@ -18,6 +18,7 @@
 		F503E52919048E7300C3590A /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52819048E7300C3590A /* IOKit.framework */; };
 		F503E52C1904907200C3590A /* qdf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E52A1904907200C3590A /* qdf.cpp */; };
 		F506E39719085012002CF23C /* fhm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F506E39619085012002CF23C /* fhm.cpp */; };
+		F5A0B05F1A4A30070074854E /* dpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A0B05D1A4A30060074854E /* dpl.cpp */; };
 		F5BF995B190A4462005A8AF5 /* fhm_location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5BF9959190A4462005A8AF5 /* fhm_location.cpp */; };
 		F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D7969F19B3432C006269F0 /* pugixml.cpp */; };
 		F5D796A619B35471006269F0 /* aircraft.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D796A419B35471006269F0 /* aircraft.cpp */; };
@@ -67,6 +68,8 @@
 		F506E39319084E01002CF23C /* fhm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fhm.h; path = ../fhm.h; sourceTree = "<group>"; };
 		F506E39619085012002CF23C /* fhm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fhm.cpp; path = ../fhm.cpp; sourceTree = "<group>"; };
 		F56CCB0419B3D955000D9163 /* xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xml.h; sourceTree = "<group>"; };
+		F5A0B05D1A4A30060074854E /* dpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dpl.cpp; path = ../dpl.cpp; sourceTree = "<group>"; };
+		F5A0B05E1A4A30060074854E /* dpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dpl.h; path = ../dpl.h; sourceTree = "<group>"; };
 		F5BF9959190A4462005A8AF5 /* fhm_location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fhm_location.cpp; sourceTree = "<group>"; };
 		F5BF995A190A4462005A8AF5 /* fhm_location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fhm_location.h; sourceTree = "<group>"; };
 		F5D7969F19B3432C006269F0 /* pugixml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pugixml.cpp; path = "../deps/pugixml-1.4/src/pugixml.cpp"; sourceTree = "<group>"; };
@@ -101,6 +104,8 @@
 			children = (
 				F5D796A419B35471006269F0 /* aircraft.cpp */,
 				F5D796A519B35471006269F0 /* aircraft.h */,
+				F5A0B05D1A4A30060074854E /* dpl.cpp */,
+				F5A0B05E1A4A30060074854E /* dpl.h */,
 				F506E39619085012002CF23C /* fhm.cpp */,
 				F506E39319084E01002CF23C /* fhm.h */,
 				F5BF9959190A4462005A8AF5 /* fhm_location.cpp */,
@@ -291,6 +296,7 @@
 				F503E52C1904907200C3590A /* qdf.cpp in Sources */,
 				F5DFAD9019BCA1EA00786736 /* location.cpp in Sources */,
 				F503E51519048CC100C3590A /* fhm_mesh.cpp in Sources */,
+				F5A0B05F1A4A30070074854E /* dpl.cpp in Sources */,
 				F506E39719085012002CF23C /* fhm.cpp in Sources */,
 				F5D796A619B35471006269F0 /* aircraft.cpp in Sources */,
 				F503E51619048CC100C3590A /* open_horizon.cpp in Sources */,
