@@ -12,18 +12,18 @@
 		F503E51619048CC100C3590A /* open_horizon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E50F19048CC100C3590A /* open_horizon.cpp */; };
 		F503E51719048CC100C3590A /* shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E51019048CC100C3590A /* shared.cpp */; };
 		F503E51819048CC100C3590A /* plane_params.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E51319048CC100C3590A /* plane_params.cpp */; };
-		F503E52219048E1200C3590A /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E51F19048D4A00C3590A /* libnya_engine.a */; };
 		F503E52419048E2D00C3590A /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52319048E2D00C3590A /* libglfw3.a */; };
 		F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52519048E5000C3590A /* OpenGL.framework */; };
 		F503E52919048E7300C3590A /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52819048E7300C3590A /* IOKit.framework */; };
 		F503E52C1904907200C3590A /* qdf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E52A1904907200C3590A /* qdf.cpp */; };
 		F506E39719085012002CF23C /* fhm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F506E39619085012002CF23C /* fhm.cpp */; };
-		F5A0B05F1A4A30070074854E /* dpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A0B05D1A4A30060074854E /* dpl.cpp */; };
+		F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E51F19048D4A00C3590A /* libnya_engine.a */; };
 		F5BF995B190A4462005A8AF5 /* fhm_location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5BF9959190A4462005A8AF5 /* fhm_location.cpp */; };
 		F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D7969F19B3432C006269F0 /* pugixml.cpp */; };
 		F5D796A619B35471006269F0 /* aircraft.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D796A419B35471006269F0 /* aircraft.cpp */; };
 		F5DFAD8B19BB248C00786736 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F5DFAD8A19BB248C00786736 /* libz.dylib */; };
 		F5DFAD9019BCA1EA00786736 /* location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5DFAD8E19BCA1EA00786736 /* location.cpp */; };
+		F5E89E591AACB8D200B72EAA /* dpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5E89E581AACB8D200B72EAA /* dpl.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,7 +68,7 @@
 		F506E39319084E01002CF23C /* fhm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fhm.h; path = ../fhm.h; sourceTree = "<group>"; };
 		F506E39619085012002CF23C /* fhm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fhm.cpp; path = ../fhm.cpp; sourceTree = "<group>"; };
 		F56CCB0419B3D955000D9163 /* xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xml.h; sourceTree = "<group>"; };
-		F5A0B05D1A4A30060074854E /* dpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dpl.cpp; path = ../dpl.cpp; sourceTree = "<group>"; };
+		F595E9D41AB22AAF0006F8C7 /* dpl_keys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dpl_keys.h; path = ../dpl_keys.h; sourceTree = "<group>"; };
 		F5A0B05E1A4A30060074854E /* dpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dpl.h; path = ../dpl.h; sourceTree = "<group>"; };
 		F5BF9959190A4462005A8AF5 /* fhm_location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fhm_location.cpp; sourceTree = "<group>"; };
 		F5BF995A190A4462005A8AF5 /* fhm_location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fhm_location.h; sourceTree = "<group>"; };
@@ -80,6 +80,7 @@
 		F5DFAD8A19BB248C00786736 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		F5DFAD8E19BCA1EA00786736 /* location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = location.cpp; sourceTree = "<group>"; };
 		F5DFAD8F19BCA1EA00786736 /* location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = location.h; sourceTree = "<group>"; };
+		F5E89E581AACB8D200B72EAA /* dpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dpl.cpp; path = ../dpl.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,11 +88,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */,
 				F5DFAD8B19BB248C00786736 /* libz.dylib in Frameworks */,
 				F503E52919048E7300C3590A /* IOKit.framework in Frameworks */,
 				F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */,
 				F503E52419048E2D00C3590A /* libglfw3.a in Frameworks */,
-				F503E52219048E1200C3590A /* libnya_engine.a in Frameworks */,
 				F503E4DB19048C6700C3590A /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -104,8 +105,9 @@
 			children = (
 				F5D796A419B35471006269F0 /* aircraft.cpp */,
 				F5D796A519B35471006269F0 /* aircraft.h */,
-				F5A0B05D1A4A30060074854E /* dpl.cpp */,
+				F5E89E581AACB8D200B72EAA /* dpl.cpp */,
 				F5A0B05E1A4A30060074854E /* dpl.h */,
+				F595E9D41AB22AAF0006F8C7 /* dpl_keys.h */,
 				F506E39619085012002CF23C /* fhm.cpp */,
 				F506E39319084E01002CF23C /* fhm.h */,
 				F5BF9959190A4462005A8AF5 /* fhm_location.cpp */,
@@ -296,7 +298,7 @@
 				F503E52C1904907200C3590A /* qdf.cpp in Sources */,
 				F5DFAD9019BCA1EA00786736 /* location.cpp in Sources */,
 				F503E51519048CC100C3590A /* fhm_mesh.cpp in Sources */,
-				F5A0B05F1A4A30070074854E /* dpl.cpp in Sources */,
+				F5E89E591AACB8D200B72EAA /* dpl.cpp in Sources */,
 				F506E39719085012002CF23C /* fhm.cpp in Sources */,
 				F5D796A619B35471006269F0 /* aircraft.cpp in Sources */,
 				F503E51619048CC100C3590A /* open_horizon.cpp in Sources */,
@@ -311,8 +313,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
-				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -326,7 +328,6 @@
 				CONFIGURATION_BUILD_DIR = ../bin/mac_debug;
 				CONFIGURATION_TEMP_DIR = ../obj/mac_debug;
 				COPY_PHASE_STRIP = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -341,7 +342,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OBJROOT = ../obj/;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -354,8 +355,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
-				CLANG_CXX_LIBRARY = "compiler-default";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
@@ -371,7 +372,6 @@
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_NS_ASSERTIONS = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -379,7 +379,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OBJROOT = ../obj/;
 				SDKROOT = macosx;
 				SYMROOT = ../bin/;

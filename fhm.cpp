@@ -49,7 +49,7 @@ bool fhm_file::read_chunks_info(size_t base_offset)
         {
             unsigned short unknown1;
             unsigned short unknown2;
-            unsigned int unknown_16;
+            unsigned int unknown_pot;
             unsigned int offset; //+header size(48)
             unsigned int size;
         } chunk_info;
@@ -66,7 +66,7 @@ bool fhm_file::read_chunks_info(size_t base_offset)
         m_chunks.push_back(c);
 
         //assert((chunk_info.unknown1 == 1 && chunk_info.unknown2 == 2) || (chunk_info.unknown1 == 0 && chunk_info.unknown2 == 0));
-        assert(chunk_info.unknown_16 == 16 || chunk_info.unknown_16 == 128 || chunk_info.unknown_16 == 4096);
+        assert(chunk_info.unknown_pot == 16 || chunk_info.unknown_pot == 128 || chunk_info.unknown_pot == 4096);
     }
 
     return true;

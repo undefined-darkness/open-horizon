@@ -491,6 +491,9 @@ int main(void)
             if (m_provider.has(("common/" + str).c_str()))
                 return m_provider.access(("common/" + str).c_str());
 
+            if (m_provider.has(str.c_str()))
+                return m_provider.access(str.c_str());
+
             static nya_resources::file_resources_provider fprov;
             static bool dont_care = fprov.set_folder(nya_system::get_app_path());
 
@@ -509,13 +512,10 @@ int main(void)
 
     nya_resources::set_resources_provider(&trp);
 
-    //dpl_file t1,t2; t1.open("DATA.PAC"); t2.open("datapack.bin");
-
-    GLFWwindow* window;
     if (!glfwInit())
         return -1;
 
-    window = glfwCreateWindow(1000, 600, "open horizon", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(1000, 600, "open horizon", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -718,6 +718,7 @@ int main(void)
     }
 
     glfwTerminate();
+
     return 0;
 }
 

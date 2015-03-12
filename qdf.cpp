@@ -190,12 +190,12 @@ bool qdf_archive::read_file_data(int idx, void *data, uint64_t size, uint64_t of
             return false;
 
         fseek(m_rds[fidx2], 0, SEEK_SET);
-        const size_t size2 = size - size1;
+        const size_t size2 = size_t(size - size1);
         return fread((char *)data + size1, 1, size2, m_rds[fidx2]) == size2;
     }
 
     fseek(m_rds[fidx1], offset1, SEEK_SET);
-    return fread(data, 1, size, m_rds[fidx1]) == size;
+    return fread(data, 1, size_t(size), m_rds[fidx1]) == size;
 }
 
 //------------------------------------------------------------
