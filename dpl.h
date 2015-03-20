@@ -26,7 +26,7 @@ public:
     uint32_t get_file_size(int idx) const;
     bool read_file_data(int idx, void *data) const;
 
-    dpl_file(): m_data(0),m_archieved(false) {}
+    dpl_file(): m_data(0), m_archieved(false), m_byte_order(false) {}
 
 private:
     struct info
@@ -40,6 +40,7 @@ private:
     std::vector<info> m_infos;
     nya_resources::resource_data *m_data;
     bool m_archieved;
+    bool m_byte_order;
 };
 
 //------------------------------------------------------------

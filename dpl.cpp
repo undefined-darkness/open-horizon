@@ -12,6 +12,8 @@
 
 //------------------------------------------------------------
 
+inline unsigned int swap_bytes(unsigned int &ui) { return ui = (ui >> 24) | ((ui<<8) & 0x00FF0000) | ((ui>>8) & 0x0000FF00) | (ui << 24); }
+
 bool dpl_file::open(const char *name)
 {
     close();
@@ -26,19 +28,28 @@ bool dpl_file::open(const char *name)
     struct dpl_header
     {
         char sign[4];
-        uint32_t unknown_20101010;
+        uint32_t byte_order_20101010;
         uint32_t flags;
         uint32_t infos_count;
         uint32_t infos_size;
     } header;
 
     m_data->read_chunk(&header, sizeof(header));
-    if (memcmp(header.sign, "DPL\1", sizeof(header.sign)) != 0 || header.unknown_20101010 != 20101010)
+    if (memcmp(header.sign, "DPL\1", sizeof(header.sign)) != 0)
        return false;
 
-    assert(header.unknown_20101010 == 20101010);
+    m_byte_order = header.byte_order_20101010 != 20101010;
+    if (m_byte_order)
+    {
+        swap_bytes(header.byte_order_20101010);
+        swap_bytes(header.flags);
+        swap_bytes(header.infos_count);
+        swap_bytes(header.infos_size);
+    }
 
-    m_archieved = header.flags == 2011101108;
+    assert(header.byte_order_20101010 == 20101010);
+
+    m_archieved = header.flags == 2011101108 || header.flags == 2011080301;
     if (!m_archieved && header.flags != 2011082201)
         return false;
 
@@ -51,7 +62,7 @@ bool dpl_file::open(const char *name)
     struct fhm_entry
     {
         char sign[4];
-        uint32_t unknown_20101010;
+        uint32_t byte_order_20101010;
         uint32_t flags;
         uint32_t unknown_struct_count;
 
@@ -81,21 +92,36 @@ bool dpl_file::open(const char *name)
 
     for (uint32_t i = 0; i < header.infos_count; ++i)
     {
-        const fhm_entry e = r.read<fhm_entry>();
+        fhm_entry e = r.read<fhm_entry>();
 
         assert(memcmp(e.sign, "FHM", 3) == 0);
-        assert(e.sign[3] == (m_archieved ? 0 : 1));
-        assert(e.unknown_20101010 == 20101010);
-        assert(e.flags == header.flags);
-        assert(e.idx == (m_archieved ? i+10000 : i));
-        assert(e.offset+e.size <= (uint64_t)m_data->get_size());
 
-        assert(e.arch_unknown_16 == (m_archieved ? 16 : 0));
+        const bool byte_order = e.byte_order_20101010 != 20101010;
+        assert(byte_order == m_byte_order);
+        if (byte_order)
+        {
+            for (uint32_t j = 1; j < sizeof(e) / 4; ++j)
+                swap_bytes(((uint32_t *)&e)[j]);
+
+            std::swap(((uint32_t *)&e.offset)[0], ((uint32_t *)&e.offset)[1]);
+        }
+
+        assert(e.byte_order_20101010 == 20101010);
+        assert(e.flags == header.flags);
+        //assert(e.idx == (m_archieved ? i+10000 : i));
+        assert(e.offset+e.size <= (uint64_t)m_data->get_size());
+        //assert(e.arch_unknown_16 == (m_archieved ? 16 : 0));
 
         for (uint32_t j = 0; j < e.unknown_struct_count; ++j)
         {
             unknown_struct s = r.read<unknown_struct>();
-            assert(s.idx < e.unknown_struct_count);
+            if (byte_order)
+            {
+                for (uint32_t j = 0; j < sizeof(s) / 4; ++j)
+                    swap_bytes(((uint32_t *)&s)[j]);
+            }
+
+            assert(s.idx <= e.unknown_struct_count);
         }
 
         m_infos[i].offset = e.offset;
@@ -186,6 +212,12 @@ bool dpl_file::read_file_data(int idx, void *data) const
     {
         header = r.read<block_header>();
 
+        if (m_byte_order)
+        {
+            for (uint32_t j = 1; j < sizeof(header) / 4; ++j)
+                swap_bytes(((uint32_t *)&header)[j]);
+        }
+
         uint8_t *buf_from = (uint8_t *)r.get_data();
         if (!r.check_remained(header.packed_size))
             return false;
@@ -194,7 +226,7 @@ bool dpl_file::read_file_data(int idx, void *data) const
         for (size_t i = 0; i < header.packed_size; ++i)
             buf_from[i] ^= keys[i % 8];
 
-        bool success=unzip(buf_from, header.packed_size, buf_out, header.unpacked_size);
+        const bool success=unzip(buf_from, header.packed_size, buf_out, header.unpacked_size);
         if (!success)
         {
             if(header.packed_size != header.unpacked_size)
