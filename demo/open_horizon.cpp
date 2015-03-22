@@ -49,7 +49,7 @@ private:
     void update();
 
 public:
-    plane_camera(): m_dpos(0.0f, 3.0f, 14.0f) { m_drot.y = 3.14f; }
+    plane_camera(): m_dpos(0.0f, 3.0f, 12.0f) { m_drot.y = 3.14f; }
 
 private:
     nya_math::vec3 m_drot;
@@ -297,86 +297,12 @@ class effect_clouds
 public:
     void load(const char *location_name)
     {
-        nya_memory::tmp_buffer_ref res = load_resource((std::string("Effect/") + location_name + "/CloudPosition.BDD").c_str());
-        assert(res.get_size() > 0);
-        {
-            nya_memory::memory_reader reader(res.get_data(), res.get_size());
-            bdd_header header = reader.read<bdd_header>();
-/*
-            for (int i = 0;i < header.type1_count; ++i)
-            {
-                nya_math::vec3 p;
-                p.x = reader.read<float>();
-                p.y = 10.0;
-                p.z = reader.read<float>();
+        bool result = read_bdd((std::string("Effect/") + location_name + "/CloudPosition.BDD").c_str(), m_cloud_positions);
+        assert(result);
 
-                test.add_point(p, nya_math::vec4(1,0,0,1));
-            }
+        result = read_bdd((std::string("Effect/") + location_name + "/cloud_" + location_name + ".BDD").c_str(), m_clouds);
+        assert(result);
 
-            for (int i = 0; i < header.type2_count; ++i)
-            {
-                nya_math::vec3 p;
-                p.x = reader.read<float>();
-                p.y = 10.0;
-                p.z = reader.read<float>();
-
-                test.add_point(p,nya_math::vec4(0,1,0,1));
-            }
-
-            for (int i = 0;i < header.type3_count; ++i)
-            {
-                nya_math::vec3 p;
-                p.x = reader.read<float>();
-                p.y = 10.0;
-                p.z = reader.read<float>();
-
-                test.add_point(p, nya_math::vec4(1,1,0,1));
-            }
-*/
-            //print_data(reader, 0, reader.get_remained(), 0, "CloudPosition.txt");
-            res.free();
-        }
-
-        res = load_resource((std::string("Effect/") + location_name + "/cloud_" + location_name + ".BDD").c_str());
-        assert(res.get_size() > 0);
-        {
-            nya_memory::memory_reader reader(res.get_data(), res.get_size());
-            bdd_header header = reader.read<bdd_header>();
-/*
-            for (int i = 0; i < header.type1_count; ++i)
-            {
-                nya_math::vec3 p;
-                p.x = reader.read<float>();
-                p.y = 10.0;
-                p.z = reader.read<float>();
-
-                test.add_point(p, nya_math::vec4(1,0,1,1));
-            }
-
-            for (int i = 0; i < header.type2_count; ++i)
-            {
-                nya_math::vec3 p;
-                p.x = reader.read<float>();
-                p.y = 10.0;
-                p.z = reader.read<float>();
-
-                test.add_point(p, nya_math::vec4(0,1,1,1));
-            }
-
-            for (int i = 0; i < header.type3_count; ++i)
-            {
-                nya_math::vec3 p;
-                p.x = reader.read<float>();
-                p.y = 10.0;
-                p.z = reader.read<float>();
-
-                test.add_point(p, nya_math::vec4(1,1,1,1));
-            }
-*/
-            //print_data(reader, 0, reader.get_remained(), 0, "cloud.txt");
-            res.free();
-        }
-/*
         for (int i = 1; i <= 4; ++i)
         {
             for (char j = 'A'; j <= 'E'; ++j)
@@ -384,9 +310,11 @@ public:
                 char buf[512];
                 sprintf(buf, "Effect/%s/ObjCloud/Level%d_%c.BOC", location_name, i, j);
 
-                res = load_resource(buf);
+                nya_memory::tmp_buffer_ref res = load_resource(buf);
                 assert(res.get_size() > 0);
                 nya_memory::memory_reader reader(res.get_data(), res.get_size());
+                //print_data(reader, 0, reader.get_remained(), 0);
+
                 level_header header = reader.read<level_header>();
                 for (int k = 0; k < header.count; ++k)
                 {
@@ -395,11 +323,11 @@ public:
                     nya_math::vec3 p2(entry.cood[2], header.unknown, entry.cood[3]);
                     test.add_line(p, p2);
                 }
-                //print_data(reader, 0, reader.get_remained(), 0, "Level1_A.txt");
+                //print_data(reader, 0, reader.get_remained(), 0);
                 res.free();
             }
         }
-*/
+
         m_shader.load("shaders/clouds.nsh");
         m_obj_tex = shared::get_texture(shared::load_texture((std::string("Effect/") + location_name + "/ObjCloud.nut").c_str()));
         m_flat_tex = shared::get_texture(shared::load_texture((std::string("Effect/") + location_name + "/FlatCloud.nut").c_str()));
@@ -420,20 +348,79 @@ private:
     {
         char sign[4];
         uint unknown;
+
         float unknown2[2];
-
         uint type1_count;
-        float type1_params[5];
-
+        float unknown3[2];
         uint type2_count;
-        float type2_params[3];
-
+        float unknown4[2];
         uint type3_count;
-        float type3_params[3];
-
+        float unknown5[3];
+        uint type4_count;
+        float unknown6[2];
+        uint unknown_count;
         float params[20];
+
         uint zero;
     };
+
+    struct bdd
+    {
+        bdd_header header; //ToDo
+
+        std::vector<nya_math::vec2> type1_pos;
+        std::vector<nya_math::vec2> type2_pos;
+        std::vector<nya_math::vec2> type3_pos;
+        std::vector<nya_math::vec2> type4_pos;
+        std::vector<std::pair<int,nya_math::vec2> > unknown_structs;
+    };
+
+private:
+    bool read_bdd(const char *name, bdd &bdd_res)
+    {
+        nya_memory::tmp_buffer_ref res = load_resource(name);
+        if(!res.get_size())
+            return false;
+
+        nya_memory::memory_reader reader(res.get_data(), res.get_size());
+
+        //print_data(reader, reader.get_offset(), reader.get_remained(), 0);
+
+        bdd_header header = reader.read<bdd_header>();
+
+        assert(header.unknown == '0001');
+        assert(header.zero == 0);
+
+        bdd_res.type1_pos.resize(header.type1_count);
+        for(auto &p: bdd_res.type1_pos)
+            p.x = reader.read<float>(), p.y = reader.read<float>();
+
+        bdd_res.type2_pos.resize(header.type2_count);
+        for(auto &p: bdd_res.type2_pos)
+            p.x = reader.read<float>(), p.y = reader.read<float>();
+
+        bdd_res.type3_pos.resize(header.type3_count);
+        for(auto &p: bdd_res.type3_pos)
+            p.x = reader.read<float>(), p.y = reader.read<float>();
+
+        bdd_res.type4_pos.resize(header.type4_count);
+        for(auto &p: bdd_res.type4_pos)
+            p.x = reader.read<float>(), p.y = reader.read<float>();
+
+        bdd_res.unknown_structs.resize(header.unknown_count);
+        for(auto &p: bdd_res.unknown_structs)
+            p.first = reader.read<int>(), p.second.x = reader.read<float>(), p.second.y = reader.read<float>();
+
+        assert(reader.get_remained()==0);
+
+        bdd_res.header=header; //ToDo
+
+        res.free();
+        return true;
+    }
+
+    bdd m_cloud_positions;
+    bdd m_clouds;
 
     struct level_header
     {
@@ -457,6 +444,8 @@ int main(void)
     const char *plane_name = "su35"; //f22a su35 b02a pkfa su25 su33 su34  kwmr
     const char *plane_color = "color02"; // = 0;
     const char *location_name = "ms01"; //ms01 ms50 ms10
+
+    //plane_name = "f22a",plane_color=0;
 
 #ifndef _WIN32
     chdir(nya_system::get_app_path());
