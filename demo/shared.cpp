@@ -88,4 +88,19 @@ const nya_scene::texture &get_texture(unsigned int hash_id)
 
 //------------------------------------------------------------
 
+nya_memory::tmp_buffer_ref load_resource(const char *name)
+{
+    nya_resources::resource_data *res = nya_resources::get_resources_provider().access(name);
+    if (!res)
+        return nya_memory::tmp_buffer_ref();
+
+    nya_memory::tmp_buffer_ref buf(res->get_size());
+    res->read_all(buf.get_data());
+    res->release();
+    
+    return buf;
+}
+
+//------------------------------------------------------------
+
 }

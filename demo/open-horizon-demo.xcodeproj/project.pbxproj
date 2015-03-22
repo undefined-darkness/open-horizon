@@ -17,6 +17,7 @@
 		F503E52919048E7300C3590A /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52819048E7300C3590A /* IOKit.framework */; };
 		F503E52C1904907200C3590A /* qdf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F503E52A1904907200C3590A /* qdf.cpp */; };
 		F506E39719085012002CF23C /* fhm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F506E39619085012002CF23C /* fhm.cpp */; };
+		F57342121ABF3F3600468FD5 /* clouds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F57342101ABF3F3600468FD5 /* clouds.cpp */; };
 		F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E51F19048D4A00C3590A /* libnya_engine.a */; };
 		F5BF995B190A4462005A8AF5 /* fhm_location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5BF9959190A4462005A8AF5 /* fhm_location.cpp */; };
 		F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D7969F19B3432C006269F0 /* pugixml.cpp */; };
@@ -68,6 +69,8 @@
 		F506E39319084E01002CF23C /* fhm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fhm.h; path = ../fhm.h; sourceTree = "<group>"; };
 		F506E39619085012002CF23C /* fhm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fhm.cpp; path = ../fhm.cpp; sourceTree = "<group>"; };
 		F56CCB0419B3D955000D9163 /* xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xml.h; sourceTree = "<group>"; };
+		F57342101ABF3F3600468FD5 /* clouds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = clouds.cpp; sourceTree = "<group>"; };
+		F57342111ABF3F3600468FD5 /* clouds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = clouds.h; sourceTree = "<group>"; };
 		F595E9D41AB22AAF0006F8C7 /* dpl_keys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dpl_keys.h; path = ../dpl_keys.h; sourceTree = "<group>"; };
 		F5A0B05E1A4A30060074854E /* dpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dpl.h; path = ../dpl.h; sourceTree = "<group>"; };
 		F5BF9959190A4462005A8AF5 /* fhm_location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fhm_location.cpp; sourceTree = "<group>"; };
@@ -105,6 +108,8 @@
 			children = (
 				F5D796A419B35471006269F0 /* aircraft.cpp */,
 				F5D796A519B35471006269F0 /* aircraft.h */,
+				F57342101ABF3F3600468FD5 /* clouds.cpp */,
+				F57342111ABF3F3600468FD5 /* clouds.h */,
 				F5E89E581AACB8D200B72EAA /* dpl.cpp */,
 				F5A0B05E1A4A30060074854E /* dpl.h */,
 				F595E9D41AB22AAF0006F8C7 /* dpl_keys.h */,
@@ -293,6 +298,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F503E51819048CC100C3590A /* plane_params.cpp in Sources */,
+				F57342121ABF3F3600468FD5 /* clouds.cpp in Sources */,
 				F5BF995B190A4462005A8AF5 /* fhm_location.cpp in Sources */,
 				F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */,
 				F503E52C1904907200C3590A /* qdf.cpp in Sources */,
