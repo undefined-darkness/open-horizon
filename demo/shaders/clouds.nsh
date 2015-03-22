@@ -1,25 +1,39 @@
 @all
 
-varying vec2 texCoords;
+varying vec2 tc;
 
-@uniform tr "transform"
+@uniform pos "pos"
+@uniform up "up"
+@uniform right "right"
+@predefined camera_pos "nya camera position"
 
 @vertex
 
-uniform vec4 tr;
+uniform vec4 pos;
+uniform vec4 up;
+uniform vec4 right;
+uniform vec4 camera_pos;
 
 void main()
 {
-    vec4 pos=gl_Vertex;
-    texCoords.xy = pos.xy;
-    //gl_Position=vec4(vec2(-1.0,-1.0)+pos.xy*2.0,0.0,1.0);
-    gl_Position=gl_ModelViewProjectionMatrix*gl_Vertex;
+    vec4 p = gl_Vertex;
+    vec4 t = gl_MultiTexCoord0;
+    vec2 d = gl_MultiTexCoord1.xy*t.zw;
+
+    p.xyz += (pos.xyz + right.xyz*d.x + up.xyz*d.y);
+    
+    tc=t.xy;
+
+    gl_Position = gl_ModelViewProjectionMatrix * p;
 }
 
-@predefined vp "nya viewport"
+@sampler base_map "diffuse"
 
 @fragment
 
-uniform vec4 vp;
+uniform sampler2D base_map;
 
-void main( void ) { gl_FragColor=vec4(1.0); }
+void main()
+{
+    gl_FragColor=texture2D(base_map,tc);
+}
