@@ -307,6 +307,8 @@ public:
 
         for (int i = 1; i <= 4; ++i)
         {
+            if(i!=2) continue; //ToDo
+
             for (char j = 'A'; j <= 'E'; ++j)
             {
                 m_obj_levels.resize(m_obj_levels.size() + 1);
@@ -342,8 +344,8 @@ public:
                     for(int t = 0; t < 6; ++t)
                     {
                         v[t].pos = e.pos;
-                        v[t].size.x = e.size * 2.0f;
-                        v[t].size.y = e.size * 2.0f;
+                        v[t].size.x = e.size;// * 2.0f;
+                        v[t].size.y = e.size;// * 2.0f;
 
                         auto tc=v[t].dir * 0.5f;
                         tc.x += 0.5f, tc.y += 0.5f;
@@ -381,6 +383,8 @@ public:
             if (name == "right")
                 m_shader_right = i;
         }
+
+        m_dist_sort.resize(m_clouds.obj_clouds.size());
     }
 
     void draw()
@@ -405,9 +409,19 @@ public:
         right.normalize();
         m_shader.internal().set_uniform_value(m_shader_right, right.x, right.y, right.z, 0.0f);
 
-        int idx=0;
-        for(const auto &p: m_clouds.obj_clouds)
+        for(uint32_t i = 0; i < m_dist_sort.size(); ++i)
         {
+            auto d = m_clouds.obj_clouds[i].second;
+            m_dist_sort[i].first = d * d;
+            m_dist_sort[i].second = i;
+        }
+
+        std::sort(m_dist_sort.rbegin(), m_dist_sort.rend());
+
+        int idx=0;
+        for(const auto &d: m_dist_sort)
+        {
+            const auto &p = m_clouds.obj_clouds[d.second];
             auto &l = m_obj_levels[idx++ % m_obj_levels.size()];
             m_shader.internal().set_uniform_value(m_shader_pos, p.second.x, 1500.0f, p.second.y, 0.0f);
             m_mesh.draw(l.offset,l.count);
@@ -546,6 +560,8 @@ private:
     };
 
     std::vector<obj_level> m_obj_levels;
+
+    std::vector<std::pair<uint32_t,uint32_t> > m_dist_sort;
 };
 
 //------------------------------------------------------------
