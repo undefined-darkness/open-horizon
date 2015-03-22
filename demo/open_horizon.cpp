@@ -411,19 +411,19 @@ public:
 
         for(uint32_t i = 0; i < m_dist_sort.size(); ++i)
         {
-            auto d = m_clouds.obj_clouds[i].second;
+            auto cp = nya_scene::get_camera().get_pos();
+            auto d = m_clouds.obj_clouds[i].second - nya_math::vec2(cp.x,cp.z);
             m_dist_sort[i].first = d * d;
             m_dist_sort[i].second = i;
         }
 
         std::sort(m_dist_sort.rbegin(), m_dist_sort.rend());
 
-        int idx=0;
         for(const auto &d: m_dist_sort)
         {
-            const auto &p = m_clouds.obj_clouds[d.second];
-            auto &l = m_obj_levels[idx++ % m_obj_levels.size()];
-            m_shader.internal().set_uniform_value(m_shader_pos, p.second.x, 1500.0f, p.second.y, 0.0f);
+            const auto &o = m_clouds.obj_clouds[d.second];
+            auto &l = m_obj_levels[d.second % m_obj_levels.size()];
+            m_shader.internal().set_uniform_value(m_shader_pos, o.second.x, 1500.0f, o.second.y, 0.0f);
             m_mesh.draw(l.offset,l.count);
         }
 
