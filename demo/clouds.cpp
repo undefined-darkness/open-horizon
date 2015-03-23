@@ -9,17 +9,16 @@
 #include "shared.h"
 #include <assert.h>
 
-#include "render/debug_draw.h"
-
 //------------------------------------------------------------
 
-void effect_clouds::load(const char *location_name)
+bool effect_clouds::load(const char *location_name)
 {
-    bool result = read_bdd((std::string("Effect/") + location_name + "/CloudPosition.BDD").c_str(), m_cloud_positions);
-    assert(result);
+    if(!location_name)
+        return false;
 
-    result = read_bdd((std::string("Effect/") + location_name + "/cloud_" + location_name + ".BDD").c_str(), m_clouds);
-    assert(result);
+    const bool result = read_bdd((std::string("Effect/") + location_name + "/cloud_" + location_name + ".BDD").c_str(), m_clouds);
+    if(!result)
+        return false;
 
     std::vector<vert> verts;
 
@@ -37,7 +36,6 @@ void effect_clouds::load(const char *location_name)
             nya_memory::tmp_buffer_ref res = shared::load_resource(buf);
             assert(res.get_size() > 0);
             nya_memory::memory_reader reader(res.get_data(), res.get_size());
-            //print_data(reader, 0, reader.get_remained(), 0);
 
             level_header header = reader.read<level_header>();
             auto &l = m_obj_levels.back();
@@ -75,7 +73,6 @@ void effect_clouds::load(const char *location_name)
                 }
             }
 
-            //print_data(reader, 0, reader.get_remained(), 0);
             res.free();
         }
 
@@ -103,9 +100,16 @@ void effect_clouds::load(const char *location_name)
     }
 
     m_dist_sort.resize(m_clouds.obj_clouds.size());
+
+    return true;
 }
 
-void effect_clouds::draw()
+void effect_clouds::draw_flat()
+{
+    //ToDo
+}
+
+void effect_clouds::draw_obj()
 {
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
     nya_render::depth_test::enable(nya_render::depth_test::less);
@@ -160,15 +164,13 @@ bool effect_clouds::read_bdd(const char *name, bdd &bdd_res)
 
     nya_memory::memory_reader reader(res.get_data(), res.get_size());
 
-    //print_data(reader, reader.get_offset(), reader.get_remained(), 0);
-
     bdd_header header = reader.read<bdd_header>();
 
     assert(header.unknown == '0001');
     assert(header.zero == 0);
 
-    bdd_res.type1_pos.resize(header.type1_count);
-    for(auto &p: bdd_res.type1_pos)
+    bdd_res.hiflat_clouds.resize(header.hiflat_clouds_count);
+    for(auto &p: bdd_res.hiflat_clouds)
         p.x = reader.read<float>(), p.y = reader.read<float>();
 
     bdd_res.type2_pos.resize(header.type2_count);

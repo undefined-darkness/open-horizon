@@ -315,7 +315,7 @@ int main(void)
                 return m_provider.access(str.c_str());
 
             static nya_resources::file_resources_provider fprov;
-            static bool dont_care = fprov.set_folder(nya_system::get_app_path());
+            static bool dont_care = fprov.set_folder(nya_system::get_app_path()); dont_care = dont_care;
 
             return fprov.access(resource_name);
         }
@@ -386,7 +386,10 @@ int main(void)
     while (!glfwWindowShouldClose(window))
     {
         unsigned long time = nya_system::get_time();
-        const int dt = int(time - app_time);
+        int dt = int(time - app_time);
+        if (dt > 1000)
+            dt = 1000;
+
         frame_counter_time += dt;
         ++frame_counter;
         if (frame_counter_time > 1000)
@@ -420,19 +423,12 @@ int main(void)
         camera.set_rot(player_plane.get_rot());
 
         nya_render::clear(true, true);
-
         pp.begin_render();
-
-        //nya_render::set_clear_color(0.69,0.74,0.76,1.0); //fog color
         nya_render::clear(true, true);
-
-        //nya_render::set_color(1,1,1,1);
-
         loc.draw(dt);
         player_plane.draw();
-
-        clouds.draw();
-
+        clouds.draw_flat();
+        clouds.draw_obj();
         pp.end_render();
         pp.draw();
 

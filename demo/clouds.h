@@ -11,8 +11,9 @@
 class effect_clouds
 {
 public:
-    void load(const char *location_name);
-    void draw();
+    bool load(const char *location_name);
+    void draw_flat();
+    void draw_obj();
 
 private:
     nya_scene::shader m_shader;
@@ -41,7 +42,7 @@ private:
         uint unknown;
 
         float unknown2[2];
-        uint type1_count;
+        uint hiflat_clouds_count;
         float unknown3[2];
         uint type2_count;
         float unknown4[2];
@@ -59,7 +60,7 @@ private:
     {
         bdd_header header; //ToDo
 
-        std::vector<nya_math::vec2> type1_pos;
+        std::vector<nya_math::vec2> hiflat_clouds;
         std::vector<nya_math::vec2> type2_pos;
         std::vector<nya_math::vec2> type3_pos;
         std::vector<nya_math::vec2> type4_pos;
