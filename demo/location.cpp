@@ -98,13 +98,20 @@ bool location::load(const char *name)
 
 //------------------------------------------------------------
 
-void location::draw(int dt)
+void location::update(int dt)
+{
+    m_location.update(dt);
+}
+
+//------------------------------------------------------------
+
+void location::draw()
 {
     nya_render::depth_test::enable(nya_render::depth_test::not_greater);
     nya_render::cull_face::enable(nya_render::cull_face::ccw);
 
     m_sky.draw();
-    m_location.draw_landscape(dt);
+    m_location.draw_landscape();
     m_location.draw_mptx();
 
 }

@@ -9,6 +9,7 @@
 
 #include "aircraft.h"
 #include "location.h"
+#include "location_params.h"
 #include "clouds.h"
 #include "render/screen_quad.h"
 
@@ -22,6 +23,8 @@
 #include "system/system.h"
 #include "shared.h"
 #include "resources/file_resources_provider.h"
+
+#include "scene/postprocess.h"
 
 #include <math.h>
 #include <vector>
@@ -130,143 +133,28 @@ void plane_camera::update()
 
 //------------------------------------------------------------
 
-class postprocess
+nya_scene::texture load_tonecurve(const char *file_name)
 {
-public:
-    void init(const char *map_name)
+    nya_scene::shared_texture t;
+    auto res = shared::load_resource(file_name);
+    assert(res.get_size() == 256 * 3);
+
+    const unsigned char *data = (const unsigned char *)res.get_data();
+    unsigned char color[256 * 3];
+    for (int i = 0; i < 3; ++i)
     {
-        m_fxaa_shader.load("shaders/fxaa.nsh");
-        m_main_shader.load("shaders/post_process.nsh");
-
-        if (!map_name)
-            return;
-
-        m_quad.init();
-        std::string curve_name = std::string("Map/tonecurve_") + map_name + ".tcb";
-        nya_resources::resource_data *res = nya_resources::get_resources_provider().access(curve_name.c_str());
-        if (res)
-        {
-            assert(res->get_size() == 256 * 3);
-            nya_memory::tmp_buffer_scoped buf(res->get_size());
-            res->read_all(buf.get_data());
-            res->release();
-            const char *data = (const char *)buf.get_data();
-            for (int i = 0; i < 3; ++i)
-            {
-                m_color_curve_tex[i].build_texture(data, 256, 1, nya_render::texture::greyscale);
-                m_color_curve_tex[i].set_wrap(false, false);
-                data += 256;
-            }
-        }
+        for (int j = 0; j < 256; ++j)
+            color[j*3+i]=data[j+i*256];
     }
 
-    void resize(int width, int height)
-    {
-        m_main_target.init(width, height, true);
-        m_add_target.init(width, height, false);
-    }
+    t.tex.build_texture(color, 256, 1, nya_render::texture::color_rgb);
+    t.tex.set_wrap(false, false);
+    res.free();
 
-    void begin_render()
-    {
-        m_main_target.bind();
-    }
-
-    void end_render()
-    {
-        m_main_target.unbind();
-    }
-
-    void draw()
-    {
-        m_add_target.bind();
-        m_fxaa_shader.internal().set();
-        m_main_target.color.bind(0);
-        m_quad.draw();
-        m_add_target.unbind();
-
-        m_add_target.color.bind(0);
-        m_main_shader.internal().set();
-
-        for (int i = 0; i < 3; ++i)
-            m_color_curve_tex[i].bind(i + 1);
-
-        m_quad.draw();
-
-        for (int i = 0; i < 4; ++i)
-            nya_render::texture::unbind(i);
-    }
-
-private:
-    struct target
-    {
-        void init(int w, int h, bool has_depth)
-        {
-            release();
-            if (w <= 0 || h <= 0)
-                return;
-
-            width = w, height = h;
-
-            color.build_texture(0, width, height, nya_render::texture::color_rgb);
-            fbo.set_color_target(color);
-
-            if (has_depth)
-            {
-                depth.build_texture(0, width, height, nya_render::texture::depth32);
-                fbo.set_depth_target(depth);
-            }
-        }
-
-        bool is_valid() { return width > 0 && height > 0; }
-
-        void release()
-        {
-            if (!is_valid())
-                return;
-
-            color.release();
-            depth.release();
-            fbo.release();
-
-            width = height = 0;
-        }
-
-        void bind()
-        {
-            was_set = true;
-            fbo.bind();
-            restore_rect = nya_render::get_viewport();
-            nya_render::set_viewport(0, 0, width, height);
-        }
-
-        void unbind()
-        {
-            if (!was_set)
-                return;
-
-            was_set = false;
-            fbo.unbind();
-            nya_render::set_viewport(restore_rect);
-        }
-
-        nya_render::fbo fbo;
-        nya_render::texture color;
-        nya_render::texture depth;
-        int width;
-        int height;
-        bool was_set;
-        nya_render::rect restore_rect;
-
-        target(): width(0), height(0), was_set(false) {}
-    };
-
-    target m_main_target;
-    target m_add_target;
-    nya_render::screen_quad m_quad;
-    nya_render::texture m_color_curve_tex[3];
-    nya_scene::shader m_main_shader;
-    nya_scene::shader m_fxaa_shader;
-};
+    nya_scene::texture result;
+    result.create(t);
+    return result;
+}
 
 //------------------------------------------------------------
 
@@ -356,23 +244,39 @@ int main(void)
 
     nya_render::texture::set_default_aniso(2);
 
-    location loc;
-    loc.load(location_name);
+    class : public nya_scene::postprocess
+    {
+    public:
+        location loc;
+        aircraft player_plane;
+        effect_clouds clouds;
 
-    aircraft player_plane;
-    player_plane.load(plane_name, plane_color);
-    player_plane.set_pos(nya_math::vec3(-300, 50, 2000));
+    private:
+        void draw_scene(const char *pass, const char *tags) override
+        {
+            if (strcmp(tags, "location") == 0)
+                loc.draw();
+            else if (strcmp(tags, "player") == 0)
+                player_plane.draw();
+            else if (strcmp(tags, "clouds_flat") == 0)
+                clouds.draw_flat();
+            else if (strcmp(tags, "clouds_obj") == 0)
+                clouds.draw_obj();
+        }
+    } scene;
+
+    scene.load("postprocess.txt");
+    auto curve = load_tonecurve((std::string("Map/tonecurve_") + location_name + ".tcb").c_str());
+    scene.set_texture("color_curve", nya_scene::texture_proxy(curve));
+    scene.loc.load(location_name);
+    scene.clouds.load(location_name);
+    scene.player_plane.load(plane_name, plane_color);
+    scene.player_plane.set_pos(nya_math::vec3(-300, 50, 2000));
 
     plane_camera camera;
     //camera.add_delta_rot(0.1f,0.0f);
     if (plane_name[0] == 'b')
         camera.add_delta_pos(0.0f, -2.0f, -20.0f);
-
-    effect_clouds clouds;
-    clouds.load(location_name);
-
-    postprocess pp;
-    pp.init(location_name);
 
     double mx,my;
     glfwGetCursorPos(window, &mx, &my);
@@ -403,10 +307,10 @@ int main(void)
         static bool paused = false;
         static bool speed10x = false;
         if (!paused)
-            player_plane.update(speed10x ? dt * 10 : dt);
+            scene.player_plane.update(speed10x ? dt * 10 : dt);
 
         char title[255];
-        sprintf(title,"speed: %7d alt: %7d \t fps: %3d  %s", int(player_plane.get_speed()), int(player_plane.get_alt()), fps, paused ? "paused" : "");
+        sprintf(title,"speed: %7d alt: %7d \t fps: %3d  %s", int(scene.player_plane.get_speed()), int(scene.player_plane.get_alt()), fps, paused ? "paused" : "");
         glfwSetWindowTitle(window,title);
 
         int new_screen_width, new_screen_height;
@@ -414,23 +318,15 @@ int main(void)
         if (new_screen_width != screen_width || new_screen_height != screen_height)
         {
             screen_width = new_screen_width, screen_height = new_screen_height;
-            pp.resize(screen_width, screen_height);
+            scene.resize(screen_width, screen_height);
             camera.set_aspect(screen_height > 0 ? float(screen_width) / screen_height : 1.0f);
-            nya_render::set_viewport(0, 0, screen_width, screen_height);
         }
 
-        camera.set_pos(player_plane.get_pos());
-        camera.set_rot(player_plane.get_rot());
+        camera.set_pos(scene.player_plane.get_pos());
+        camera.set_rot(scene.player_plane.get_rot());
 
-        nya_render::clear(true, true);
-        pp.begin_render();
-        nya_render::clear(true, true);
-        loc.draw(dt);
-        player_plane.draw();
-        clouds.draw_flat();
-        clouds.draw_obj();
-        pp.end_render();
-        pp.draw();
+        scene.loc.update(dt);
+        scene.draw(dt);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -491,14 +387,14 @@ int main(void)
         if (glfwGetKey(window, GLFW_KEY_LEFT)) c_rot.z = -1.0f;
         if (glfwGetKey(window, GLFW_KEY_RIGHT)) c_rot.z = 1.0f;
 
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) player_plane.fire_mgun();
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) scene.player_plane.fire_mgun();
 
         static bool last_control_rocket = false, last_control_special = false;
 
         if (glfwGetKey(window, GLFW_KEY_SPACE))
         {
             if (!last_control_rocket)
-                player_plane.fire_rocket();
+                scene.player_plane.fire_rocket();
             last_control_rocket = true;
         }
         else
@@ -507,7 +403,7 @@ int main(void)
         if (glfwGetKey(window, GLFW_KEY_Q))
         {
             if (!last_control_special)
-                player_plane.change_weapon();
+                scene.player_plane.change_weapon();
             last_control_special = true;
         }
         else
@@ -523,7 +419,7 @@ int main(void)
 
         speed10x = glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT);
 
-        player_plane.set_controls(c_rot, c_throttle, c_brake);
+        scene.player_plane.set_controls(c_rot, c_throttle, c_brake);
     }
 
     glfwTerminate();

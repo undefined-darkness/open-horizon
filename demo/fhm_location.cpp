@@ -499,11 +499,8 @@ void fhm_location::draw_mptx()
 
 //------------------------------------------------------------
 
-void fhm_location::draw_landscape(int dt)
+void fhm_location::update(int dt)
 {
-    nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
-    m_land_material.internal().set(nya_scene::material::default_pass);
-
     const int anim_time_interval[]={51731,73164,62695,84235};
     static int anim_time[]={124,6363,36262,47392};
     float t[4];
@@ -517,6 +514,14 @@ void fhm_location::draw_landscape(int dt)
     }
 
     m_land_material.set_param(m_land_material.get_param_idx("anim"), t[0],t[1],-t[2],-t[3]);
+}
+
+//------------------------------------------------------------
+
+void fhm_location::draw_landscape()
+{
+    nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
+    m_land_material.internal().set(nya_scene::material::default_pass);
 
     m_landscape.vbo.bind();
     for (const auto &p: m_landscape.patches)

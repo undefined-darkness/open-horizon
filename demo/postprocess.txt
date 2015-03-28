@@ -1,0 +1,32 @@
+@target main
+  color="main_color"
+  depth="main_depth"
+  width="screen_width"
+  height="screen_height"
+
+@target fxaa
+  color="add_color"
+  width="screen_width"
+  height="screen_height"
+
+@clear
+
+@set_target main
+@clear
+@draw_scene default=location
+@draw_scene default=player
+@draw_scene default=clouds_flat
+@draw_scene default=clouds_obj
+
+@set_target fxaa
+@set_texture diffuse=main_color
+@set_shader shaders/fxaa.nsh
+@draw_quad
+
+@set_target
+@set_texture diffuse=add_color
+@set_texture curve0=color_curve
+@set_texture curve1=color_curve
+@set_texture curve2=color_curve
+@set_shader shaders/post_process.nsh
+@draw_quad

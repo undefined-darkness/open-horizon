@@ -19,9 +19,10 @@ class fhm_location
 
 public:
     bool load(const char *fileName);
+    void update(int dt);
     void draw_col(int col_idx);
     void draw_mptx();
-    void draw_landscape(int dt);
+    void draw_landscape();
 
 protected:
     bool read_mptx(memory_reader &reader);

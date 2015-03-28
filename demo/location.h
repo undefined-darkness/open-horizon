@@ -26,7 +26,8 @@ class location
 {
 public:
     bool load(const char *name);
-    void draw(int dt);
+    void update(int dt);
+    void draw();
 
 private:
     fhm_location m_location;
