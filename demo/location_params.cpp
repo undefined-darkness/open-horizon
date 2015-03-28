@@ -52,12 +52,11 @@ bool location_params::load(const char *file_name)
 
         location_params::vec3 read_dir_py()
         {
-            float pitch = read<float>() * nya_math::constants::pi / 180.0f;
-            float yaw = read<float>() * nya_math::constants::pi / 180.0f;
-
-            return nya_math::quat(pitch,yaw,0.0f).rotate(nya_math::vec3(0.0,1.0,0.0));
+            const float pitch = read<float>() * nya_math::constants::pi / 180.0f;
+            const float yaw = read<float>() * nya_math::constants::pi / 180.0f;
+            return nya_math::quat(pitch, -yaw, 0.0f).rotate(nya_math::vec3(0.0, 0.0, 1.0));
         }
-        
+
         memory_reader(const void *data, size_t size): nya_memory::memory_reader(data, size) {}
 
     } reader(fi_data.get_data(), file_data->get_size());
@@ -73,7 +72,11 @@ bool location_params::load(const char *file_name)
     reader.skip(14*4); //ocean
     reader.skip(33*4+13*2); //render shadowmap
     reader.skip(60*4); //sand effect
-    reader.skip(2+4); //tone
+
+    auto tone_control = reader.read<unsigned short>();
+    assert(tone_control == 1);
+    tone_saturation = reader.read<float>();
+
     reader.skip(11*4); //debug
     reader.skip(3*4); //detail
     reader.skip(8*4); //map parts
@@ -86,8 +89,36 @@ bool location_params::load(const char *file_name)
     sky.fog_height_fade_density = reader.read<float>();
     sky.fog_height_fresnel = reader.read<float>();
 
-    reader.skip(36*4); //sky high
-    reader.skip(36*4); //sky low
+    for (int i = 0; i < 2; ++i)
+    {
+        auto &s = i ? sky.low : sky.high;
+
+        s.ambient = reader.read_color3();
+        s.lens_brightness = reader.read<float>();
+
+        s.light2_color = reader.read_color3();
+        s.light2_dir = reader.read_dir_py();
+        s.light2_power = reader.read<float>();
+
+        s.light3_color = reader.read_color3();
+        s.light3_dir = reader.read_dir_py();
+        s.light3_power = reader.read<float>();
+
+        s.player_shadow_brightness = reader.read<float>();
+        s.player_shadow_color = reader.read_color3();
+
+        s.skysphere_intensity = reader.read<float>();
+        s.specular_color = reader.read_color3();
+        s.specular_power = reader.read<float>();
+
+        s.sun_color = reader.read_color3();
+        s.sun_power = reader.read<float>();
+        s.sun_rgb = reader.read_color3();
+
+        s.sun_flare_rgb = reader.read_color3();
+        s.sun_flare_size = reader.read<float>();
+    }
+
     reader.skip(25*4); //sky mapspecular
 
     sky.moon_dir = reader.read_dir_py();

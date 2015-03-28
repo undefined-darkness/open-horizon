@@ -34,8 +34,8 @@ void main()
 	if(base.a<0.5)
 		discard;
 
-    vec4 fog_color=vec4(0.69,0.74,0.76,-0.0002);
-	//vec4 fog_color=vec4(0.4,0.5,0.9,-0.0002);
+    vec4 fog_color=vec4(0.69,0.74,0.76,-0.0004);
+	//vec4 fog_color=vec4(0.4,0.5,0.9,-0.0004);
 
 	vec3 l=vec3(0.3+0.7*max(dot(normal,light_dir.xyz),0.0));
 	float fa=dist*fog_color.a;

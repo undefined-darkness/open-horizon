@@ -1,15 +1,17 @@
+@sampler base_map "diffuse"
+
 @all
-varying vec3 tc;
+varying vec4 color;
 
 @vertex
+uniform samplerCube base_map;
+
 void main()
 {
-    tc=gl_Vertex.xyz;
+    color=textureCube(base_map,gl_Vertex.rgb);
     gl_Position=gl_ModelViewProjectionMatrix*gl_Vertex;
 }
 
-@sampler base_map "diffuse"
-
 @fragment
-uniform samplerCube base_map;
-void main() { gl_FragColor=textureCube(base_map,tc); }
+void main() { gl_FragColor=color*1.2*0.8;
+}

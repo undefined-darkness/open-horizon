@@ -37,6 +37,8 @@ struct location_params
 
     } clipping_plane;
 
+    fvalue tone_saturation;
+
     struct skysphere
     {
         color3 ambient;
