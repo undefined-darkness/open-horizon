@@ -1,22 +1,17 @@
+@predefined vp "nya viewport"
+@sampler buf0 "diffuse"
+
 @all
 
-varying vec2 texCoords;
-
-@uniform tr "transform"
+varying vec2 tc;
 
 @vertex
 
-uniform vec4 tr;
-
 void main()
 {
-    vec4 pos=gl_Vertex;
-    texCoords.xy = pos.xy;
-    gl_Position=vec4(vec2(-1.0,-1.0)+pos.xy*2.0,0.0,1.0);
+    tc = gl_MultiTexCoord0.xy;
+    gl_Position = gl_Vertex;
 }
-
-@sampler buf0 "diffuse"
-@predefined vp "nya viewport"
 
 @fragment
 
@@ -24,7 +19,7 @@ uniform sampler2D buf0;
 uniform vec4 vp;
 
 void main( void ) {
-    //gl_FragColor.xyz = texture2D(buf0,texCoords).xyz;
+    //gl_FragColor.xyz = texture2D(buf0,tc).xyz;
     //return;
 
     vec2 frameBufSize=vp.zw;
@@ -33,11 +28,11 @@ void main( void ) {
     float FXAA_REDUCE_MUL = 1.0/8.0;
     float FXAA_REDUCE_MIN = 1.0/128.0;
 
-    vec3 rgbNW=texture2D(buf0,texCoords+(vec2(-1.0,-1.0)/frameBufSize)).xyz;
-    vec3 rgbNE=texture2D(buf0,texCoords+(vec2(1.0,-1.0)/frameBufSize)).xyz;
-    vec3 rgbSW=texture2D(buf0,texCoords+(vec2(-1.0,1.0)/frameBufSize)).xyz;
-    vec3 rgbSE=texture2D(buf0,texCoords+(vec2(1.0,1.0)/frameBufSize)).xyz;
-    vec3 rgbM=texture2D(buf0,texCoords).xyz;
+    vec3 rgbNW=texture2D(buf0,tc+(vec2(-1.0,-1.0)/frameBufSize)).xyz;
+    vec3 rgbNE=texture2D(buf0,tc+(vec2(1.0,-1.0)/frameBufSize)).xyz;
+    vec3 rgbSW=texture2D(buf0,tc+(vec2(-1.0,1.0)/frameBufSize)).xyz;
+    vec3 rgbSE=texture2D(buf0,tc+(vec2(1.0,1.0)/frameBufSize)).xyz;
+    vec3 rgbM=texture2D(buf0,tc).xyz;
 
     vec3 luma=vec3(0.299, 0.587, 0.114);
     float lumaNW = dot(rgbNW, luma);
@@ -64,11 +59,11 @@ void main( void ) {
           dir * rcpDirMin)) / frameBufSize;
 
     vec3 rgbA = (1.0/2.0) * (
-        texture2D(buf0, texCoords.xy + dir * (1.0/3.0 - 0.5)).xyz +
-        texture2D(buf0, texCoords.xy + dir * (2.0/3.0 - 0.5)).xyz);
+        texture2D(buf0, tc.xy + dir * (1.0/3.0 - 0.5)).xyz +
+        texture2D(buf0, tc.xy + dir * (2.0/3.0 - 0.5)).xyz);
     vec3 rgbB = rgbA * (1.0/2.0) + (1.0/4.0) * (
-        texture2D(buf0, texCoords.xy + dir * (0.0/3.0 - 0.5)).xyz +
-        texture2D(buf0, texCoords.xy + dir * (3.0/3.0 - 0.5)).xyz);
+        texture2D(buf0, tc.xy + dir * (0.0/3.0 - 0.5)).xyz +
+        texture2D(buf0, tc.xy + dir * (3.0/3.0 - 0.5)).xyz);
     float lumaB = dot(rgbB, luma);
 
     if((lumaB < lumaMin) || (lumaB > lumaMax)){

@@ -164,7 +164,8 @@ int main(void)
     const char *plane_color = "color02"; // = 0;
     const char *location_name = "ms01"; //ms01 ms50 ms10
 
-    //plane_name = "f22a",plane_color=0;
+    plane_name = "f22a",plane_color=0;
+    //plane_name = "su33",plane_color=0;
 
 #ifndef _WIN32
     chdir(nya_system::get_app_path());
@@ -223,7 +224,7 @@ int main(void)
     if (!glfwInit())
         return -1;
 
-    GLFWwindow *window = glfwCreateWindow(1000, 600, "open horizon", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(1000, 562, "open horizon", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -268,6 +269,10 @@ int main(void)
     scene.load("postprocess.txt");
     auto curve = load_tonecurve((std::string("Map/tonecurve_") + location_name + ".tcb").c_str());
     scene.set_texture("color_curve", nya_scene::texture_proxy(curve));
+    scene.set_shader_param("bloom_param", nya_math::vec4(1.0, 2.0, 5.0, 1.0)); //ToDo: location params
+    scene.set_shader_param("saturation", nya_math::vec4(-0.15, 0.0, 0.0, 0.0)); //ToDo: location params
+    scene.set_shader_param("screen_radius", nya_math::vec4(1.185185, 0.5 * 4.0 / 3.0, 0.0, 0.0));
+
     scene.loc.load(location_name);
     scene.clouds.load(location_name);
     scene.player_plane.load(plane_name, plane_color);
@@ -284,6 +289,8 @@ int main(void)
     int frame_counter = 0;
     int frame_counter_time = 0;
     int fps = 0;
+
+    int fade_time = 1500;
 
     int screen_width = 0, screen_height = 0;
     unsigned long app_time = nya_system::get_time();
@@ -303,6 +310,15 @@ int main(void)
             frame_counter_time -= 1000;
         }
         app_time = time;
+
+        if (fade_time > 0)
+        {
+            fade_time-=dt;
+            if (fade_time < 0)
+                fade_time = 0;
+
+            scene.set_shader_param("fade_color", nya_math::vec4(0.0, 0.0, 0.0, fade_time / 1500.0f));
+        }
 
         static bool paused = false;
         static bool speed10x = false;

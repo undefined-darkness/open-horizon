@@ -440,7 +440,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                     value.y = sequence_reader.read<float>();
                     value.z = sequence_reader.read<float>();
                     value.w = sequence_reader.read<float>();
-                    const bool is_quat = fabsf(value * value - 1.0f) < 0.001f;
+                    const bool is_quat = fabsf(value * value - 1.0f) < 0.001f; //ToDo
                     if (!is_quat)
                         sequence_reader.rewind(4);
 
@@ -843,6 +843,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             for (int i = 0; i < 4; ++i) hash_id.c[i] = a.first[3 - i];
 
             if (hash_id.u == 'swp1' || hash_id.u == 'swp2') continue; //ToDo
+
+            //if (hash_id.u == 'tefn') continue; //ToDo: bugged on su33
 
             auto &la = l.anims[hash_id.u];
             la.layer = layer;

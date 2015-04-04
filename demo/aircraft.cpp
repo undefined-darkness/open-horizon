@@ -116,23 +116,26 @@ bool aircraft::load(const char *name, const char *color_name)
 
     m_speed = m_params.move.speed.speedCruising;
 
-    //ToDo: move to config
-
     m_mesh.set_relative_anim_time(0, 'cndl', 0.5); //fgo
     m_mesh.set_relative_anim_time(0, 'cndr', 0.5);
+    m_mesh.set_relative_anim_time(0, 'cndn', 0.5);
+    m_mesh.set_relative_anim_time(0, 'ldab', 0.0);
     m_mesh.set_relative_anim_time(0, 'rudl', 0.5); //tail vert
     m_mesh.set_relative_anim_time(0, 'rudr', 0.5);
     m_mesh.set_relative_anim_time(0, 'elvl', 0.5); //tail hor
     m_mesh.set_relative_anim_time(0, 'elvr', 0.5);
-    m_mesh.set_relative_anim_time(0, 'tefn', 0.5); //elerons, used only with flaperons
+    m_mesh.set_relative_anim_time(0, 'tefn', 0.0); //elerons, used only with flaperons
     m_mesh.set_relative_anim_time(0, 'alrl', 0.5); //wing sides, used with tail hor
     m_mesh.set_relative_anim_time(0, 'alrr', 0.5);
     m_mesh.set_relative_anim_time(0, 'lefn', 0.0); //flaperons
     m_mesh.set_relative_anim_time(0, 'rmpn', 0.0); //engine air supl
     //m_mesh.set_relative_anim_time(0, 'vctn', 0.0); //engine
+    m_mesh.set_relative_anim_time(0, 'abkn', 0.0); //air brake
     m_mesh.set_relative_anim_time(0, 'gunc', 0.0); //mgun
     m_mesh.set_relative_anim_time(0, 'misc', 0.0); //primary weapon
     m_mesh.set_relative_anim_time(0, 'spwc', 0.0); //special weapon
+    m_mesh.set_relative_anim_time(0, 'fdwg', 0.0); //carrier
+    m_mesh.set_relative_anim_time(0, 'tail', 0.0); //carrier, tail only
 
     return true;
 }
@@ -287,13 +290,17 @@ void aircraft::update(int dt)
     m_mesh.set_anim_speed(0, 'alrl', (ideal_al * 0.5f+0.5f - m_mesh.get_relative_anim_time(0, 'alrl')) * ae_anim_speed_k);
     m_mesh.set_anim_speed(0, 'alrr', (ideal_ar * 0.5f+0.5f - m_mesh.get_relative_anim_time(0, 'alrr')) * ae_anim_speed_k);
 
-    const float ideal_cl = -m_controls_rot.x * speed_k;
-    const float ideal_cr = -m_controls_rot.x * speed_k;
-    m_mesh.set_anim_speed(0, 'cndl', (ideal_cl * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'cndl')) * ae_anim_speed_k);
-    m_mesh.set_anim_speed(0, 'cndr', (ideal_cr * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'cndr')) * ae_anim_speed_k);
+    const float ideal_cn = -m_controls_rot.x * speed_k;
+    m_mesh.set_anim_speed(0, 'cndl', (ideal_cn * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'cndl')) * ae_anim_speed_k);
+    m_mesh.set_anim_speed(0, 'cndr', (ideal_cn * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'cndr')) * ae_anim_speed_k);
+    m_mesh.set_anim_speed(0, 'cndn', (ideal_cn * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'cndn')) * ae_anim_speed_k);
 
-    float ideal_rl = clamp(-m_controls_rot.y + brake, -1.0f, 1.0f) * speed_k;
-    float ideal_rr = clamp(-m_controls_rot.y - brake, -1.0f, 1.0f) * speed_k;
+    const bool has_air_brake = m_mesh.has_anim(0,'abkn');
+    if(has_air_brake)
+        m_mesh.set_anim_speed(0, 'abkn', brake>0.7f ? 1.0: -1.0);
+
+    float ideal_rl = clamp(-m_controls_rot.y + (!has_air_brake ? brake : 0.0), -1.0f, 1.0f) * speed_k;
+    float ideal_rr = clamp(-m_controls_rot.y - (!has_air_brake ? brake : 0.0), -1.0f, 1.0f) * speed_k;
 
     m_mesh.set_anim_speed(0, 'rudl', (ideal_rl * 0.5 + 0.5 - m_mesh.get_relative_anim_time(0, 'rudl')) * ae_anim_speed_k);
     m_mesh.set_anim_speed(0, 'rudr', (ideal_rr * 0.5 + 0.5 - m_mesh.get_relative_anim_time(0, 'rudr')) * ae_anim_speed_k);
@@ -323,18 +330,6 @@ void aircraft::update(int dt)
     }
 
     m_mesh.set_anim_speed(0, 'spwc', m_special_selected ? 1.0f : -1.0f);
-
-    //alrl
-    /*
-     if (ideal_el > 0.01)
-     {
-     m_mesh.set_anim_speed(0, 'elvl', 1.0);
-     }
-     else if (ideal_el < -0.01)
-     {
-     m_mesh.set_anim_speed(0, 'elvl', -1.0);
-     }
-     */
 
     m_mesh.set_pos(m_pos);
     m_mesh.set_rot(m_rot);

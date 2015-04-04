@@ -1,32 +1,79 @@
 @target main
-  color="main_color"
-  depth="main_depth"
-  width="screen_width"
-  height="screen_height"
+  color = main_color
+  depth = main_depth
+  width = screen_width
+  height = screen_height
 
 @target fxaa
-  color="add_color"
-  width="screen_width"
-  height="screen_height"
+  color = fxaa
+  width = screen_width
+  height = screen_height
+
+@target downsample4
+  color = downsample4
+  width = screen_width/4
+  height = screen_height/4
+
+@target bright_filter
+  color = bright_filter
+  width = screen_width/4
+  height = screen_height/4
+
+@target lens_blur
+  color = lens_blur
+  width = screen_width/2
+  height = screen_height/2
+
+@target motion_blur
+  color = motion_blur
+  width = screen_width/4
+  height = screen_height/4
+
+@target heat_blur
+  color = heat_blur
+  width = screen_width/4
+  height = screen_height/4
 
 @clear
 
 @set_target main
 @clear
-@draw_scene default=location
-@draw_scene default=player
-@draw_scene default=clouds_flat
-@draw_scene default=clouds_obj
+@draw_scene default = location
+@draw_scene default = player
+@draw_scene default = clouds_flat
+@draw_scene default = clouds_obj
 
 @set_target fxaa
-@set_texture diffuse=main_color
+@set_texture diffuse = main_color
 @set_shader shaders/fxaa.nsh
 @draw_quad
 
+@set_target downsample4
+@set_texture diffuse = fxaa
+@set_shader shaders/downsample4.nsh
+@draw_quad
+
+@set_target bright_filter
+@set_texture diffuse = downsample4
+@set_shader shaders/bright_filter.nsh
+@draw_quad
+
+@set_target lens_blur
+@clear
+
+@set_target motion_blur
+@clear
+
+@set_target heat_blur
+@clear
+
 @set_target
-@set_texture diffuse=add_color
-@set_texture curve0=color_curve
-@set_texture curve1=color_curve
-@set_texture curve2=color_curve
+@set_texture diffuse = fxaa
+@set_texture lens_blur = lens_blur
+@set_texture motion_blur = motion_blur
+@set_texture heat_blur = heat_blur
+@set_texture curve0 = color_curve
+@set_texture curve1 = color_curve
+@set_texture curve2 = color_curve
 @set_shader shaders/post_process.nsh
 @draw_quad
