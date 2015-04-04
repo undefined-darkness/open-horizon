@@ -1,6 +1,8 @@
 @uniform screen_radius "screen_radius"
 @uniform saturation "saturation"
 @uniform fade_color "fade_color"
+@uniform damage_frame "damage_frame"
+@uniform damage_frame_color "damage_frame_color"
 
 @sampler base_map "diffuse"
 @sampler heat_blur_map "heat_blur"
