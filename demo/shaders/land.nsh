@@ -64,7 +64,7 @@ void main()
 
     base.rgb=mix(ocean.rgb*ol+vec3(s),base.rgb*detail.rgb,base.a);
 
-    vec4 fog_color=vec4(0.69,0.74,0.76,-0.0004);
+    vec4 fog_color=vec4(0.69,0.74,0.76,-0.0002);
 	//vec4 fog_color=vec4(0.4,0.5,0.9,-0.0002);
 
 	float fa=dist*fog_color.a;

@@ -85,7 +85,7 @@ bool location::load(const char *name)
     m_location.load((std::string("Map/") + name + "_mpt.fhm").c_str());
 
     auto e = shared::get_texture(shared::load_texture((std::string("Map/envmap_mapparts_") + name + ".nut").c_str()));
-    m_location.m_land_material.set_texture("reflection", e);
+    m_location.m_map_parts_material.set_texture("reflection", e);
 
     auto t = shared::get_texture(shared::load_texture((std::string("Map/detail_") + name + ".nut").c_str()));
     m_location.m_land_material.set_texture("detail", t);
