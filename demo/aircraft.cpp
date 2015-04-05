@@ -116,6 +116,8 @@ bool aircraft::load(const char *name, const char *color_name)
 
     m_speed = m_params.move.speed.speedCruising;
 
+    m_hp = 1.0f;
+
     m_mesh.set_relative_anim_time(0, 'cndl', 0.5); //fgo
     m_mesh.set_relative_anim_time(0, 'cndr', 0.5);
     m_mesh.set_relative_anim_time(0, 'cndn', 0.5);
@@ -150,6 +152,13 @@ void aircraft::set_controls(const nya_math::vec3 &rot, float throttle, float bra
 void aircraft::update(int dt)
 {
     float kdt = dt * 0.001f;
+
+    if (m_hp < 1.0)
+    {
+        m_hp += kdt * 0.1f;
+        if (m_hp > 1.0f)
+            m_hp = 1.0f;
+    }
 
     //simulation
 
@@ -251,10 +260,11 @@ void aircraft::update(int dt)
     //apply speed
 
     m_pos += forward * (m_speed / 3.6f) * kdt;
-    if (m_pos.y < 7.0f)
+    if (m_pos.y < 5.0f)
     {
-        m_pos.y = 7.0f;
+        m_pos.y = 5.0f;
         m_rot = nya_math::quat(-0.5, m_rot.get_euler().y, 0.0);
+        m_hp = 0.0f;
     }
 
     //animations

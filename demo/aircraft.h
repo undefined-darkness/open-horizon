@@ -22,6 +22,7 @@ public:
 
     float get_speed() { return m_speed; }
     float get_alt() { return m_pos.y; }
+    float get_hp() { return m_hp; }
 
     void set_controls(const nya_math::vec3 &rot, float throttle, float brake);
 
@@ -31,7 +32,7 @@ public:
 
     void update(int dt);
 
-    aircraft(): m_controls_throttle(0), m_controls_brake(0), m_thrust_time(0),
+    aircraft(): m_hp(0), m_controls_throttle(0), m_controls_brake(0), m_thrust_time(0),
     m_controls_mgun(false), m_controls_rocket(false), m_controls_special(false),
     m_special_selected(false), m_rocket_bay_time(0) {}
 
@@ -45,6 +46,7 @@ private:
         return target;
     }
 
+    float m_hp;
     fhm_mesh m_mesh;
     float m_speed;
     float m_thrust_time;

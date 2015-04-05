@@ -18,6 +18,7 @@
 #include "render/render.h"
 #include "math/vector.h"
 #include "math/quaternion.h"
+#include "math/scalar.h"
 #include "scene/camera.h"
 #include "scene/shader.h"
 #include "system/system.h"
@@ -276,6 +277,7 @@ int main(void)
     scene.set_shader_param("bloom_param", nya_math::vec4(1.0, 2.0, 5.0, 1.0)); //ToDo: location params
     scene.set_shader_param("saturation", nya_math::vec4(-0.15, 0.0, 0.0, 0.0)); //ToDo: location params
     scene.set_shader_param("screen_radius", nya_math::vec4(1.185185, 0.5 * 4.0 / 3.0, 0.0, 0.0));
+    scene.set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
 
     scene.loc.load(location_name);
     scene.clouds.load(location_name);
@@ -328,6 +330,8 @@ int main(void)
         static bool speed10x = false;
         if (!paused)
             scene.player_plane.update(speed10x ? dt * 10 : dt);
+
+        scene.set_shader_param("damage_frame_color", nya_math::vec4(1.0, 0.0, 0.0235, nya_math::max(1.0 - scene.player_plane.get_hp(), 0.0)));
 
         char title[255];
         sprintf(title,"speed: %7d alt: %7d \t fps: %3d  %s", int(scene.player_plane.get_speed()), int(scene.player_plane.get_alt()), fps, paused ? "paused" : "");
