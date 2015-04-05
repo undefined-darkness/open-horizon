@@ -632,15 +632,18 @@ bool fhm_location::read_mptx(memory_reader &reader)
     for (int i = 0; i < vcount; ++i)
         verts[i].color_coord = (float(i) + 0.5f)/ vcount;
 
+    const int bpp = int(reader.get_remained() / (vcount * instances_count));
+    assert(bpp == 4 || bpp == 8);
+
     nya_scene::shared_texture res;
-    res.tex.build_texture(reader.get_data(),vcount,instances_count,nya_render::texture::color_rgba);
-
-    reader.skip(vcount * 4 * instances_count);
-
-    if(reader.get_remained() > 0) //ToDo
+    if (bpp == 4)
     {
-        uint8_t data[]={255,255,255,255};
-        res.tex.build_texture(data,1,1,nya_render::texture::color_rgba);
+        res.tex.build_texture(reader.get_data(), vcount, instances_count, nya_render::texture::color_rgba);
+    }
+    else //ToDo
+    {
+        uint8_t white[]={255,255,255,255};
+        res.tex.build_texture(white, 1, 1, nya_render::texture::color_rgba);
     }
 
     res.tex.set_filter(nya_render::texture::filter_nearest, nya_render::texture::filter_nearest, nya_render::texture::filter_nearest);
