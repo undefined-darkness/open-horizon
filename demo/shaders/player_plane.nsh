@@ -38,9 +38,9 @@ void main()
 
 	vec3 v=normalize(camera_pos.xyz-pos);
     vec3 h=normalize(light_dir.xyz+v);
-    float sp=pow(max(0.0,dot(normal,h)),50.0);
+    float sp=pow(max(0.0,dot(normal,h)),20.0);
 
-    vec3 s=spec.xyz*sp;
+    vec3 s=spec.xyz*sp*5.0;
 
 	gl_FragColor=vec4(base.rgb*vec3(amb.rgb*0.7+0.3*max(0.0,dot(normal,light_dir.xyz)))+s,base.a+length(s));
     //gl_FragColor=vec4(base.rgb*mix(vec3(max(0.0,dot(normal,light_dir.xyz))),vec3(1.0),amb.rgb)+s,base.a+length(s));

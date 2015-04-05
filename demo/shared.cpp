@@ -81,9 +81,25 @@ void clear_textures()
 const nya_scene::texture &get_texture(unsigned int hash_id)
 {
     auto tex = textures.find(hash_id);
-    assert(tex != textures.end());
+    //assert(tex != textures.end());
 
     return tex->second;
+}
+
+const nya_scene::texture &get_black_texture()
+{
+    static nya_scene::texture black;
+    static bool initialised=false;
+    if(!initialised)
+    {
+        const unsigned char data[4]={0,0,0,0};
+        nya_scene::shared_texture res;
+        res.tex.build_texture(data,1,1,nya_render::texture::color_rgba);
+        black.create(res);
+        initialised=true;
+    }
+
+    return black;
 }
 
 //------------------------------------------------------------

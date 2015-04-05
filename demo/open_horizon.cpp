@@ -162,7 +162,11 @@ int main(void)
 {
     const char *plane_name = "su35"; //f22a su35 b02a pkfa su25 su33 su34  kwmr
     const char *plane_color = "color02"; // = 0;
-    const char *location_name = "ms01"; //ms01 ms50 ms10
+    const char *location_name = "ms01";
+    //ms06 - dubai
+    //ms14 - washinghton
+    //ms50 - tokyo
+    //ms30 - paris
 
     plane_name = "f22a",plane_color=0;
     //plane_name = "su33",plane_color=0;
@@ -290,7 +294,7 @@ int main(void)
     int frame_counter_time = 0;
     int fps = 0;
 
-    int fade_time = 1500;
+    int fade_time = 2500;
 
     int screen_width = 0, screen_height = 0;
     unsigned long app_time = nya_system::get_time();
@@ -317,7 +321,7 @@ int main(void)
             if (fade_time < 0)
                 fade_time = 0;
 
-            scene.set_shader_param("fade_color", nya_math::vec4(0.0, 0.0, 0.0, fade_time / 1500.0f));
+            scene.set_shader_param("fade_color", nya_math::vec4(0.0, 0.0, 0.0, fade_time / 2500.0f));
         }
 
         static bool paused = false;
@@ -347,12 +351,12 @@ int main(void)
         glfwSwapBuffers(window);
         glfwPollEvents();
 
+        //controls
+
         double x, y;
         glfwGetCursorPos(window, &x, &y);
         if (glfwGetMouseButton(window, 0))
             camera.add_delta_rot((y - my) * 0.03, (x - mx) * 0.03);
-        //else
-          //  camera.reset_delta_rot();
 
         if (glfwGetMouseButton(window, 1))
             camera.add_delta_pos(0, 0, my - y);
@@ -394,6 +398,15 @@ int main(void)
             last_btn3 = buttons[3] != 0;
         }
 
+        bool key_mgun = false, key_rocket = false, key_spec = false;
+
+        if (buttons_count > 14)
+        {
+            if(buttons[13]) key_rocket = true;
+            if(buttons[14]) key_mgun = true;
+            if(buttons[0]) key_spec = true;
+        }
+
         if (glfwGetKey(window, GLFW_KEY_W)) c_throttle = 1.0f;
         if (glfwGetKey(window, GLFW_KEY_S)) c_brake = 1.0f;
         if (glfwGetKey(window, GLFW_KEY_A)) c_rot.y = -1.0f;
@@ -403,11 +416,15 @@ int main(void)
         if (glfwGetKey(window, GLFW_KEY_LEFT)) c_rot.z = -1.0f;
         if (glfwGetKey(window, GLFW_KEY_RIGHT)) c_rot.z = 1.0f;
 
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) scene.player_plane.fire_mgun();
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) key_mgun = true;
+        if (glfwGetKey(window, GLFW_KEY_SPACE)) key_rocket = true;
+        if (glfwGetKey(window, GLFW_KEY_Q)) key_spec = true;
+
+        if (key_mgun) scene.player_plane.fire_mgun();
 
         static bool last_control_rocket = false, last_control_special = false;
 
-        if (glfwGetKey(window, GLFW_KEY_SPACE))
+        if (key_rocket)
         {
             if (!last_control_rocket)
                 scene.player_plane.fire_rocket();
@@ -416,7 +433,7 @@ int main(void)
         else
             last_control_rocket = false;
 
-        if (glfwGetKey(window, GLFW_KEY_Q))
+        if (key_spec)
         {
             if (!last_control_special)
                 scene.player_plane.change_weapon();

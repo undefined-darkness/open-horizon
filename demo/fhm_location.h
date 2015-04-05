@@ -50,6 +50,8 @@ protected:
         float draw_dist;
         std::vector<uint> textures;
 
+        nya_scene::texture color;
+
         mptx_mesh(): draw_dist(0.0f) {}
     };
 
@@ -83,8 +85,12 @@ protected:
     } m_landscape;
 
 protected:
-    nya_scene::shader m_location_objects_shader;
-    int m_location_objects_light_dir_idx;
+    nya_scene::material m_map_parts_material;
+    nya_scene::texture_proxy m_map_parts_color_texture;
+    nya_scene::texture_proxy m_map_parts_diffuse_texture;
+    nya_scene::texture_proxy m_map_parts_specular_texture;
+    nya_scene::material::param_proxy m_map_parts_color_coord;
+
     nya_scene::material m_land_material;
 };
 

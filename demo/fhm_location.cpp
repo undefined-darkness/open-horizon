@@ -465,14 +465,13 @@ void fhm_location::draw_mptx()
     {
         mesh.vbo.bind();
 
-        for (int i = 0; i < mesh.textures.size(); ++i)
-        {
-            shared::get_texture(mesh.textures[i]).internal().set(i);
-            break; //ToDo
-        }
+        m_map_parts_color_texture.set(mesh.color);
+        m_map_parts_diffuse_texture.set(mesh.textures.size() > 0 ? shared::get_texture(mesh.textures[0]) : shared::get_black_texture());
+        m_map_parts_specular_texture.set(mesh.textures.size() > 1 ? shared::get_texture(mesh.textures[1]) : shared::get_black_texture());
 
-        for ( auto &instance:mesh.instances)
+        for (size_t i = 0; i < mesh.instances.size(); ++i)
         {
+            auto &instance = mesh.instances[i];
             if (!f.test_intersect(instance.bbox))
                 continue;
 
@@ -481,16 +480,16 @@ void fhm_location::draw_mptx()
             if (dist_sq>mesh.draw_dist)
                 continue;
 
+            m_map_parts_color_coord->set((float(i) + 0.5f)/mesh.instances.size(), 0.0, 0.0, 0.0);
+
             nya_scene::transform tr;
             tr.set_pos(instance.pos);
-            tr.set_rot(instance.yaw, 0.0f, 0.0f);
+            tr.set_rot( instance.yaw, 0.0f, 0.0f);
             nya_scene::transform::set(tr);
-            m_location_objects_shader.internal().set();
 
-            m_location_objects_shader.internal().set_uniform_value(m_location_objects_light_dir_idx, light_dir.x, light_dir.y, light_dir.z, 0.0f);
-
+            m_map_parts_material.internal().set(nya_scene::material::default_pass);
             mesh.vbo.draw();
-            m_location_objects_shader.internal().unset();
+            m_map_parts_material.internal().unset();
         }
 
         mesh.vbo.unbind();
@@ -556,20 +555,19 @@ bool fhm_location::read_ntxr(memory_reader &reader, fhm_location_load_data &load
 
 bool fhm_location::read_mptx(memory_reader &reader)
 {
-    //print_data(reader, 0, reader.get_remained());
-    //print_data(reader, 120, 48);
+    auto &p = m_map_parts_material.get_pass(m_map_parts_material.add_pass(nya_scene::material::default_pass));
+    p.set_shader("shaders/map_parts.nsh");
+    p.get_state().set_cull_face(true);
 
-    m_location_objects_shader.load("shaders/location_objects.nsh");
-
-    auto sh = m_location_objects_shader.internal();
-    for (int i = 0; i < sh.get_uniforms_count(); ++i)
-    {
-        if (sh.get_uniform(i).name == "light dir")
-        {
-            m_location_objects_light_dir_idx = i;
-            break;
-        }
-    }
+    m_map_parts_material.set_param(m_map_parts_material.get_param_idx("light dir"), light_dir);
+    m_map_parts_color_texture.create();
+    m_map_parts_material.set_texture("color", m_map_parts_color_texture);
+    m_map_parts_diffuse_texture.create();
+    m_map_parts_material.set_texture("diffuse", m_map_parts_diffuse_texture);
+    m_map_parts_specular_texture.create();
+    m_map_parts_material.set_texture("specular", m_map_parts_specular_texture);
+    m_map_parts_color_coord.create();
+    m_map_parts_material.set_param(m_map_parts_material.get_param_idx("color coord"), m_map_parts_color_coord);
 
     mptx_meshes.resize(mptx_meshes.size() + 1);
     mptx_mesh &mesh = mptx_meshes.back();
@@ -607,7 +605,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
     for (auto &instance:mesh.instances)
     {
         instance.pos = reader.read<nya_math::vec3>();
-        instance.yaw = reader.read<float>() * 180.0f / 3.14f;
+        instance.yaw = reader.read<float>() * 180.0f / nya_math::constants::pi;
         instance.bbox.origin = instance.pos + bbox_origin;
         instance.bbox.delta = nya_math::vec3(bbox_size, bbox_size, bbox_size);
     }
@@ -617,6 +615,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
         nya_math::vec3 pos;
         nya_math::vec3 normal;
         nya_math::vec2 tc;
+        float color_coord;
     };
 
     std::vector<mptx_vert> verts(vcount);
@@ -630,9 +629,30 @@ bool fhm_location::read_mptx(memory_reader &reader)
     for (auto &v: verts)
         v.normal = reader.read<nya_math::vec3>();
 
+    for (int i = 0; i < vcount; ++i)
+        verts[i].color_coord = (float(i) + 0.5f)/ vcount;
+
+    nya_scene::shared_texture res;
+    res.tex.build_texture(reader.get_data(),vcount,instances_count,nya_render::texture::color_rgba);
+
+    reader.skip(vcount * 4 * instances_count);
+
+    if(reader.get_remained() > 0) //ToDo
+    {
+        uint8_t data[]={255,255,255,255};
+        res.tex.build_texture(data,1,1,nya_render::texture::color_rgba);
+    }
+
+    res.tex.set_filter(nya_render::texture::filter_nearest, nya_render::texture::filter_nearest, nya_render::texture::filter_nearest);
+    res.tex.set_wrap(false, false);
+    mesh.color.create(res);
+
+    //if(reader.get_remained() > 0)
+    //    printf("%ld\n", reader.get_remained());
+
     mesh.vbo.set_vertex_data(&verts[0], sizeof(mptx_vert), vcount);
     mesh.vbo.set_normals(12);
-    mesh.vbo.set_tc(0, 24, 2);
+    mesh.vbo.set_tc(0, 24, 3);
 
     return true;
 }
