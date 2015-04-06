@@ -95,10 +95,6 @@ bool effect_clouds::load(const char *location_name)
         auto &name = m_shader.internal().get_uniform(i).name;
         if (name == "pos")
             m_shader_pos = i;
-        if (name == "up")
-            m_shader_up = i;
-        if (name == "right")
-            m_shader_right = i;
     }
 
     m_dist_sort.resize(m_clouds.obj_clouds.size());
@@ -122,16 +118,6 @@ void effect_clouds::draw_obj()
     m_mesh.bind();
     m_shader.internal().set();
     m_obj_tex.internal().set();
-
-    //auto up=nya_scene::get_camera().get_rot().rotate(nya_math::vec3(0.0f,1.0f,0.0f));
-    auto up=nya_math::vec3(0.0,1.0,0.0);
-    m_shader.internal().set_uniform_value(m_shader_up, up.x, up.y, up.z, 0.0f);
-
-    auto right = nya_scene::get_camera().get_dir();
-    std::swap(right.x, right.z);
-    right.y=0.0f;
-    right.normalize();
-    m_shader.internal().set_uniform_value(m_shader_right, right.x, right.y, right.z, 0.0f);
 
     for(uint32_t i = 0; i < m_dist_sort.size(); ++i)
     {

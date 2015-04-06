@@ -18,8 +18,6 @@ public:
 private:
     nya_scene::shader m_shader;
     int m_shader_pos;
-    int m_shader_up;
-    int m_shader_right;
 
     nya_scene::texture m_obj_tex;
     nya_scene::texture m_flat_tex;
