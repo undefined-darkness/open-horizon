@@ -65,11 +65,13 @@ bool effect_clouds::load(const char *location_name)
 
                     auto tc=v[t].dir * 0.5f;
                     tc.x += 0.5f, tc.y += 0.5f;
+                    tc.y = 1.0 - tc.y;
 
-                    v[t].tc.x = tc.x * e.tc[2] + e.tc[0];
+                    v[t].tc.x = tc.x * e.tc[2] + e.tc[0]; //main
                     v[t].tc.y = tc.y * e.tc[2] + e.tc[1];
 
-                    //v[t].tc.y = 1.0f - v[t].tc.y;
+                    v[t].tc.z = tc.x * e.tc[5] + e.tc[3]; //detail
+                    v[t].tc.w = tc.y * e.tc[5] + e.tc[4];
                 }
             }
 
@@ -81,8 +83,8 @@ bool effect_clouds::load(const char *location_name)
 
     m_mesh.set_vertex_data(&verts[0], uint32_t(sizeof(verts[0])), uint32_t(verts.size()));
     m_mesh.set_vertices(0, 3);
-    m_mesh.set_tc(0, 12, 4);
-    m_mesh.set_tc(1, 12+16, 2);
+    m_mesh.set_tc(0, 12, 4); //tc1, tc2
+    m_mesh.set_tc(1, 12+16, 4); //dir, size
 
     m_shader.load("shaders/clouds.nsh");
     m_obj_tex = shared::get_texture(shared::load_texture((std::string("Effect/") + location_name + "/ObjCloud.nut").c_str()));

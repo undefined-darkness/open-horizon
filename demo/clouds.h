@@ -29,9 +29,9 @@ private:
     struct vert
     {
         nya_math::vec3 pos;
-        nya_math::vec2 tc;
-        nya_math::vec2 size;
+        nya_math::vec4 tc;
         nya_math::vec2 dir;
+        nya_math::vec2 size;
     };
 
 private:
