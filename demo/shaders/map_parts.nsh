@@ -7,10 +7,10 @@
 @predefined model_pos "nya model pos"
 @uniform color_coord "color coord"
 
-@uniform light_dir "light dir":local_rot
+@uniform light_dir "light dir":local_rot=0.433,0.5,0.75,0.0
 @uniform fog_color "fog color" = 0.688,0.749,0.764,-0.0002
 @uniform fog_height "fog height" = 1,0,0,0
-@uniform map_param_vs "map param vs" = 1
+@uniform map_param_vs "map param vs" = 60
 @uniform map_param_ps "map param ps" = 1,3,0.3,-0.1
 @uniform map_param2_ps "map param2 ps" = 500,1.5,20,4
 @uniform specular_color "specular color" = 0.6,0.572,0.466,2.5

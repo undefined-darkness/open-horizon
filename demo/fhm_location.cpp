@@ -23,7 +23,7 @@ extern nya_render::debug_draw test;
 
 //------------------------------------------------------------
 
-static nya_math::vec3 light_dir = nya_math::vec3(0.5f, 1.0f, 0.5f).normalize();
+static nya_math::vec3 light_dir = nya_math::vec3(0.433,0.5,0.75);
 
 //------------------------------------------------------------
 
@@ -633,7 +633,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
         verts[i].color_coord = (float(i) + 0.5f)/ vcount;
 
     const int bpp = int(reader.get_remained() / (vcount * instances_count));
-    assert(bpp == 4 || bpp == 8);
+    assert(bpp == 4 || bpp == 8 || bpp == 12);
 
     nya_scene::shared_texture res;
     if (bpp == 4)
