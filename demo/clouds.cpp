@@ -129,11 +129,17 @@ void effect_clouds::draw_obj()
 
     std::sort(m_dist_sort.rbegin(), m_dist_sort.rend());
 
+    const float fade_far = 25000; //ToDo: map params
+    const float height = 1500; //ToDo: map params
+
     for(const auto &d: m_dist_sort)
     {
+        if(d.first > fade_far * fade_far)
+            continue;
+
         const auto &o = m_clouds.obj_clouds[d.second];
         auto &l = m_obj_levels[d.second % m_obj_levels.size()];
-        m_shader.internal().set_uniform_value(m_shader_pos, o.second.x, 1500.0f, o.second.y, 0.0f);
+        m_shader.internal().set_uniform_value(m_shader_pos, o.second.x, height, o.second.y, 0.0f);
         m_mesh.draw(l.offset,l.count);
     }
 
