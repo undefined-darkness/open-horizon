@@ -76,6 +76,7 @@
 		F57342161AC176E900468FD5 /* location_params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = location_params.h; sourceTree = "<group>"; };
 		F595E9D41AB22AAF0006F8C7 /* dpl_keys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dpl_keys.h; path = ../dpl_keys.h; sourceTree = "<group>"; };
 		F5A0B05E1A4A30060074854E /* dpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = dpl.h; path = ../dpl.h; sourceTree = "<group>"; };
+		F5A0CC131AD35456007076B3 /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
 		F5BF9959190A4462005A8AF5 /* fhm_location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fhm_location.cpp; sourceTree = "<group>"; };
 		F5BF995A190A4462005A8AF5 /* fhm_location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fhm_location.h; sourceTree = "<group>"; };
 		F5D7969F19B3432C006269F0 /* pugixml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pugixml.cpp; path = "../deps/pugixml-1.4/src/pugixml.cpp"; sourceTree = "<group>"; };
@@ -113,6 +114,7 @@
 				F5D796A519B35471006269F0 /* aircraft.h */,
 				F57342101ABF3F3600468FD5 /* clouds.cpp */,
 				F57342111ABF3F3600468FD5 /* clouds.h */,
+				F5A0CC131AD35456007076B3 /* debug.h */,
 				F5E89E581AACB8D200B72EAA /* dpl.cpp */,
 				F5A0B05E1A4A30060074854E /* dpl.h */,
 				F595E9D41AB22AAF0006F8C7 /* dpl_keys.h */,

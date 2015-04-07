@@ -18,6 +18,8 @@
 
 #include "shared.h"
 
+#include "debug.h"
+
 #include "render/debug_draw.h"
 extern nya_render::debug_draw test;
 
@@ -269,7 +271,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
 
     struct kfm1_sequence_bone
     {
-        ushort idx;
+        ushort frames_offset;
         ushort frames_count;
         ushort offset;
     };
@@ -288,7 +290,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
     struct kfm1_bone_info
     {
         ushort unknown[3];
-        ushort unknown1;
+        ushort bone_idx;
         ushort unknown2; // 773 or 1031
         ushort unknown3;
         ushort unknown4;
@@ -305,7 +307,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
         uint size; //size and offsets from header.offset_to_kmf1
         ushort unknown3;
         ushort bones_count;
-        ushort unknown4;
+        ushort bones2_count;
         ushort sequences_count;
         uint offset_to_bones;
         uint offset_to_sequences;
@@ -323,6 +325,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
         std::string name;
         kmf1_header header;
         std::vector<kfm1_bone_info> bones;
+        std::vector<kfm1_bone_info> bones2;
         std::vector<kfm1_sequence> sequences;
     };
 
@@ -374,15 +377,37 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
         reader.seek(kfm1_infos[i].offset_to_data);
         memory_reader kfm1_reader(reader.get_data(), kfm1_infos[i].size);
 
+        if(kfm1_structs[i].name == "swp1" || kfm1_structs[i].name == "swp2" ) //ToDo
+            continue;
+
         //print_data(kfm1_reader, 0, kfm1_reader.get_remained());
 
         kfm1_struct &kfm1 = kfm1_structs[i];
 
         kfm1.header = kfm1_reader.read<kmf1_header>();
+
+        assert(!kfm1.header.bones2_count || kfm1.header.bones2_count >= kfm1.header.bones_count);
+
         kfm1_reader.seek(kfm1.header.offset_to_bones);
         kfm1.bones.resize(kfm1.header.bones_count);
-        for (int k = 0; k < kfm1.header.bones_count; ++k)
-            kfm1.bones[k] = kfm1_reader.read<kfm1_bone_info>();
+        for (auto &b : kfm1.bones)
+        {
+            b = kfm1_reader.read<kfm1_bone_info>();
+            assert(b.unknown_4 == 4);
+            assert(b.unknown4 % 4 == 0);
+            if (b.unknown2 != 1031 && b.unknown2 != 773) printf("%d\n", b.unknown2);
+            assert(b.unknown2 == 1031 || b.unknown2 == 773);
+        }
+
+        kfm1.bones2.resize(kfm1.header.bones2_count);
+        for (auto &b : kfm1.bones2)
+        {
+            b = kfm1_reader.read<kfm1_bone_info>();
+            assert(b.unknown_4 == 4);
+            assert(b.unknown4 % 4 == 0);
+            if (b.unknown2 != 1031 && b.unknown2 != 773) printf("%d\n", b.unknown2);
+            assert(b.unknown2 == 1031 || b.unknown2 == 773);
+        }
 
         kfm1.sequences.resize(kfm1.header.sequences_count);
         kfm1_reader.seek(kfm1.header.offset_to_sequences);
@@ -412,19 +437,23 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
             //print_data(sequence_reader, 0, f.sequence_size);
 
             f.header = sequence_reader.read<kfm1_sequence_header>();
-            f.bones.resize(kfm1.bones.size());
+            f.bones.resize(kfm1.header.bones_count);
+            int frames_count = 0;
             for (auto &b:f.bones)
             {
                 b.frames_count = sequence_reader.read<int>();
-                b.idx = sequence_reader.read<ushort>();
+                b.frames_offset = sequence_reader.read<ushort>();
                 b.offset = sequence_reader.read<ushort>();
-            }
 
+                frames_count += b.frames_count;
+            }
             for (int j = 0; j < f.bones.size(); ++j)
             {
                 sequence_reader.seek(f.bones[j].offset);
 
-                const int idx = kfm1.bones[j].unknown1;
+                const auto &b = kfm1.bones[j];
+
+                const int idx = b.bone_idx;
                 //assert(idx < skeleton.get_bones_count());
                 const int aidx = anim.anim.add_bone(skeleton.get_bone_name(idx));
                 assert(aidx >= 0);
@@ -433,19 +462,21 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                 if (first_anim)
                     base[idx].parent = skeleton.get_bone_parent_idx(idx);
 
-                for (int k = 0; k < f.bones[j].frames_count; ++k)
+                bool is_all_quat = false;
+
+                bool is_quat = b.unknown2 == 1031;
+
+                for (int l = 0; l < f.bones[j].frames_count; ++l)
                 {
                     nya_math::vec4 value;
                     value.x = sequence_reader.read<float>();
                     value.y = sequence_reader.read<float>();
                     value.z = sequence_reader.read<float>();
                     value.w = sequence_reader.read<float>();
-                    const bool is_quat = fabsf(value * value - 1.0f) < 0.001f; //ToDo
+
+                    if( k > 0 ) is_quat = fabsf(value * value - 1.0f) < 0.001f; //ToDo
                     if (!is_quat)
                         sequence_reader.rewind(4);
-
-                    //assert(kfm1.bones[j].unknown2 == 1031 || kfm1.bones[j].unknown2 == 773);
-                    //if (kfm1.bones[j].unknown2 != 1031 && kfm1.bones[j].unknown2 != 773) printf("%d %d\n", kfm1.bones[j].unknown2, is_quat);
 
                     if (first_anim)
                     {
@@ -468,9 +499,9 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                     else
                     {
                         if (is_quat) //if (kfm1.bones[j].unknown2 == 1031)
-                            anim.anim.add_bone_rot_frame(aidx, k * frame_time, base[idx].irot*nya_math::quat(value.x, value.y, value.z, value.w)); //base[idx].irot*
+                            anim.anim.add_bone_rot_frame(aidx, l * frame_time, base[idx].irot*nya_math::quat(value.x, value.y, value.z, value.w)); //base[idx].irot*
                         else //if (kfm1.bones[j].unknown2 == 773)
-                            anim.anim.add_bone_pos_frame(aidx, k * frame_time, value.xyz() - base[idx].pos);
+                            anim.anim.add_bone_pos_frame(aidx, l * frame_time, value.xyz() - base[idx].pos);
                     }
 
                 }
@@ -763,6 +794,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
             switch(rgf.header.vertex_format)
             {
+
                 case 4358:
                     for (int i = 0; i < rgf.header.vcount; ++i)
                     {
@@ -780,15 +812,25 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                         memcpy(verts[i + first_index].normal, &ndxr_verts[i * 11 + 3], sizeof(verts[0].normal));
                     }
                     break;
-
+/*
+                case 4096:
+                    for (int i = 0; i < rgf.header.vcount; ++i)
+                    {
+                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 5], sizeof(verts[0].pos));
+                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 5 + 3], sizeof(verts[0].tc));
+                    }
+                    break;
+*/
                     // case 4865: stride = 11 * 4; break;
                     //case 4371:
                     //  stride = 8*sizeof(float), rg.vbo.set_tc(0, 4 * sizeof(float), 3); break;
                     //case 4096:
                     //  stride = 3*sizeof(float), rg.vbo.set_tc(0, 4 * sizeof(float), 3); break;
+                    //4112 stride = 8 * 4, half
 
                 default:
                     //printf("ERROR: invalid stride. Vertex format: %d\n", rgf.header.vertex_format);
+                    //print_data(reader,reader.get_offset(),512);
                     continue;
             }
 
@@ -842,7 +884,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             union { uint u; char c[4]; } hash_id;
             for (int i = 0; i < 4; ++i) hash_id.c[i] = a.first[3 - i];
 
-            if (hash_id.u == 'swp1' || hash_id.u == 'swp2') continue; //ToDo
+            //if (hash_id.u == 'swp1' || hash_id.u == 'swp2') continue; //ToDo
 
             //if (hash_id.u == 'tefn') continue; //ToDo: bugged on su33
 
