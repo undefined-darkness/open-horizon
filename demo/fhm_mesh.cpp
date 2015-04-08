@@ -451,7 +451,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
             {
                 sequence_reader.seek(f.bones[j].offset);
 
-                const auto &b = kfm1.bones[j];
+                const auto &b = (i > 0 && k > 0) ? kfm1.bones2[j] : kfm1.bones[j];
 
                 const int idx = b.bone_idx;
                 //assert(idx < skeleton.get_bones_count());
@@ -461,8 +461,6 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
 
                 if (first_anim)
                     base[idx].parent = skeleton.get_bone_parent_idx(idx);
-
-                bool is_all_quat = false;
 
                 bool is_quat = b.unknown2 == 1031;
 
@@ -474,7 +472,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                     value.z = sequence_reader.read<float>();
                     value.w = sequence_reader.read<float>();
 
-                    if( k > 0 ) is_quat = fabsf(value * value - 1.0f) < 0.001f; //ToDo
+                    //if( k > 0 ) is_quat = fabsf(value * value - 1.0f) < 0.001f; //ToDo
                     if (!is_quat)
                         sequence_reader.rewind(4);
 

@@ -12,6 +12,7 @@
 #include "scene/camera.h"
 #include "scene/transform.h"
 #include "scene/shader.h"
+#include "math/scalar.h"
 
 #include <math.h>
 #include <assert.h>
@@ -378,39 +379,70 @@ void fhm_location::draw_mptx()
     const nya_math::frustum &f = nya_scene::get_camera().get_frustum();
     const nya_math::vec3 &cp = nya_scene::get_camera().get_pos();
 
+    nya_scene::transform::set(nya_scene::transform());
+
+
     for (auto &mesh:mptx_meshes)
     {
-        mesh.vbo.bind();
+        bool was_set = false;
 
         m_map_parts_color_texture.set(mesh.color);
         m_map_parts_diffuse_texture.set(mesh.textures.size() > 0 ? shared::get_texture(mesh.textures[0]) : shared::get_black_texture());
         m_map_parts_specular_texture.set(mesh.textures.size() > 1 ? shared::get_texture(mesh.textures[1]) : shared::get_black_texture());
 
+        m_map_parts_tr->set_count(0);
         for (size_t i = 0; i < mesh.instances.size(); ++i)
         {
-            auto &instance = mesh.instances[i];
-            if (!f.test_intersect(instance.bbox))
-                continue;
+            const auto &instance = mesh.instances[i];
 
             const nya_math::vec3 delta = instance.pos - cp;
             const float dist_sq = delta * delta;
             if (dist_sq>mesh.draw_dist)
                 continue;
 
-            m_map_parts_color_coord->set((float(i) + 0.5f)/mesh.instances.size(), 0.0, 0.0, 0.0);
+            if (!f.test_intersect(instance.bbox))
+                continue;
 
-            nya_scene::transform tr;
-            tr.set_pos(instance.pos);
-            tr.set_rot( instance.yaw, 0.0f, 0.0f);
-            nya_scene::transform::set(tr);
+            int idx = m_map_parts_tr->get_count();
+            if (idx >= 500)
+            {
+                if(!was_set)
+                {
+                    m_map_parts_material.internal().set(nya_scene::material::default_pass);
+                    mesh.vbo.bind();
+                    was_set = true;
+                }
+                mesh.vbo.draw(0, mesh.vbo.get_verts_count(), mesh.vbo.get_element_type(), idx);
+                idx = 0;
+            }
 
-            m_map_parts_material.internal().set(nya_scene::material::default_pass);
-            mesh.vbo.draw();
-            m_map_parts_material.internal().unset();
+            m_map_parts_tr->set_count(idx + 1);
+
+            const float color_coord = (float(i) + 0.5f)/mesh.instances.size();
+
+            const float pckd = floorf(instance.yaw*512.0f) + color_coord;
+            m_map_parts_tr->set(idx, instance.pos.x, instance.pos.y, instance.pos.z, pckd);
         }
 
-        mesh.vbo.unbind();
+        int instances = m_map_parts_tr->get_count();
+        if (instances > 0)
+        {
+            if (!was_set)
+            {
+                m_map_parts_material.internal().set(nya_scene::material::default_pass);
+                mesh.vbo.bind();
+                was_set = true;
+            }
+            mesh.vbo.draw(0, mesh.vbo.get_verts_count(), mesh.vbo.get_element_type(), instances);
+        }
+
+        if( was_set )
+        {
+            mesh.vbo.unbind();
+            m_map_parts_material.internal().unset();
+        }
     }
+
 }
 
 //------------------------------------------------------------
@@ -483,8 +515,8 @@ bool fhm_location::read_mptx(memory_reader &reader)
     m_map_parts_material.set_texture("diffuse", m_map_parts_diffuse_texture);
     m_map_parts_specular_texture.create();
     m_map_parts_material.set_texture("specular", m_map_parts_specular_texture);
-    m_map_parts_color_coord.create();
-    m_map_parts_material.set_param(m_map_parts_material.get_param_idx("color coord"), m_map_parts_color_coord);
+    m_map_parts_tr.create();
+    m_map_parts_material.set_param_array(m_map_parts_material.get_param_idx("transform"), m_map_parts_tr);
 
     mptx_meshes.resize(mptx_meshes.size() + 1);
     mptx_mesh &mesh = mptx_meshes.back();
@@ -522,7 +554,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
     for (auto &instance:mesh.instances)
     {
         instance.pos = reader.read<nya_math::vec3>();
-        instance.yaw = reader.read<float>() * 180.0f / nya_math::constants::pi;
+        instance.yaw = reader.read<float>();
         instance.bbox.origin = instance.pos + bbox_origin;
         instance.bbox.delta = nya_math::vec3(bbox_size, bbox_size, bbox_size);
     }
@@ -550,7 +582,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
         verts[i].color_coord = (float(i) + 0.5f)/ vcount;
 
     const int bpp = int(reader.get_remained() / (vcount * instances_count));
-    assert(bpp == 4 || bpp == 8 || bpp == 12);
+    assert(bpp == 4 || bpp == 8 || bpp == 12 || bpp == 0);
 
     nya_scene::shared_texture res;
     if (bpp == 4)

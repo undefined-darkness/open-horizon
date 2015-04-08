@@ -89,7 +89,7 @@ protected:
     nya_scene::texture_proxy m_map_parts_color_texture;
     nya_scene::texture_proxy m_map_parts_diffuse_texture;
     nya_scene::texture_proxy m_map_parts_specular_texture;
-    nya_scene::material::param_proxy m_map_parts_color_coord;
+    nya_scene::material::param_array_proxy m_map_parts_tr;
 
     nya_scene::material m_land_material;
 };

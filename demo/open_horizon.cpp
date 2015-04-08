@@ -165,6 +165,7 @@ int main(void)
     const char *plane_color = "color02"; // = 0;
     const char *location_name = "ms01";
     //ms06 - dubai
+    //ms11b - moscow
     //ms14 - washinghton
     //ms50 - tokyo
     //ms30 - paris
