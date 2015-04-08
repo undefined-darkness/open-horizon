@@ -3,10 +3,10 @@
 @sampler specular_map "specular"
 @sampler env_map "reflection"
 
-@predefined camera_pos "nya camera position":local
+@predefined camera_pos "nya camera position"
 @uniform tr "transform"
 
-@uniform light_dir "light dir":local_rot=0.433,0.5,0.75,0.0
+@uniform light_dir "light dir"=0.433,0.5,0.75,0.0
 @uniform fog_color "fog color" = 0.688,0.749,0.764,-0.0002
 @uniform fog_height "fog height" = 1,0,0,0
 @uniform map_param_vs "map param vs" = 60
@@ -38,7 +38,6 @@ uniform vec4 map_param_vs;
 void main()
 {
     tc = gl_MultiTexCoord0.xy;
-	normal = gl_Normal.xyz;
 
     float pckd = tr[gl_InstanceID].w;
     float unpckd = floor(pckd);
@@ -47,16 +46,22 @@ void main()
     vec2 rot = vec2(sin(a),cos(a));
 
     vcolor = texture2D(color_map, vec2(gl_MultiTexCoord0.z, color_coord_y));
-    eye = normalize(camera_pos.xyz - gl_Vertex.xyz);
-    
-    float ndoth = max(dot(normal, normalize(light_dir.xyz + eye)), 0.0);
-    vspec = pow(2.0, map_param_vs.x * log(ndoth) / log(2.0));
 
-    vfogh = fog_height.y - (gl_Vertex.y);// + model_pos.y); //ToDo
     vec4 pos = gl_Vertex;
 
     pos.xz = pos.xx * vec2(rot.y,-rot.x) + pos.zz * rot.xy;
     pos.xyz += tr[gl_InstanceID].xyz;
+
+    vfogh = fog_height.y - pos.y;
+
+	normal = gl_Normal.xyz;
+    normal.xz = normal.xx * vec2(rot.y,-rot.x) + normal.zz * rot.xy;
+
+    eye = normalize(camera_pos.xyz - pos.xyz);
+   
+    float ndoth = max(dot(normal, normalize(light_dir.xyz + eye)), 0.0);
+    vspec = pow(2.0, map_param_vs.x * log(ndoth) / log(2.0));
+
     pos = gl_ModelViewProjectionMatrix * pos;
     vfogf = pos.z;
     gl_Position = pos;
