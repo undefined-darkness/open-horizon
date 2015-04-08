@@ -406,9 +406,9 @@ void fhm_location::draw_mptx()
             int idx = m_map_parts_tr->get_count();
             if (idx >= 500)
             {
+                m_map_parts_material.internal().set(nya_scene::material::default_pass);
                 if(!was_set)
                 {
-                    m_map_parts_material.internal().set(nya_scene::material::default_pass);
                     mesh.vbo.bind();
                     was_set = true;
                 }
@@ -427,9 +427,9 @@ void fhm_location::draw_mptx()
         int instances = m_map_parts_tr->get_count();
         if (instances > 0)
         {
+            m_map_parts_material.internal().set(nya_scene::material::default_pass);
             if (!was_set)
             {
-                m_map_parts_material.internal().set(nya_scene::material::default_pass);
                 mesh.vbo.bind();
                 was_set = true;
             }
