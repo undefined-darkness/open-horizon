@@ -70,8 +70,10 @@ bool effect_clouds::load(const char *location_name)
                     v[t].tc.x = tc.x * e.tc[2] + e.tc[0]; //main
                     v[t].tc.y = tc.y * e.tc[2] + e.tc[1];
 
-                    v[t].tc.z = tc.x * e.tc[5] + e.tc[3]; //detail
-                    v[t].tc.w = tc.y * e.tc[5] + e.tc[4];
+                    const float weird_detail_tc_multiply = 0.01f;
+
+                    v[t].tc.z = (tc.x * e.tc[5] + 0.5f) * weird_detail_tc_multiply + e.tc[3]; //detail
+                    v[t].tc.w = (tc.y * e.tc[5] + 0.5f) * weird_detail_tc_multiply + e.tc[4];
                 }
             }
 
