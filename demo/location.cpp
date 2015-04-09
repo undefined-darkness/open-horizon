@@ -64,8 +64,7 @@ void sky_mesh::draw()
 {
     nya_render::cull_face::disable();
     nya_scene::camera sky_cam=nya_scene::get_camera();
-    //sky_cam.set_pos(0, sky_cam.get_pos().y, 0);
-    sky_cam.set_pos(sky_cam.get_pos().x, 0.0, sky_cam.get_pos().z);
+    sky_cam.set_pos(0, sky_cam.get_pos().y, 0);
     nya_render::set_modelview_matrix(sky_cam.get_view_matrix());
     nya_render::zwrite::disable();
 
