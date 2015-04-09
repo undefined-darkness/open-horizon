@@ -53,28 +53,10 @@ struct fhm_location_load_data
     std::vector<unsigned char> tex_indices_data;
 
     unsigned char patches[location_size * location_size];
+    std::vector<float> heights;
 
     std::vector<unsigned int> textures;
 };
-
-//------------------------------------------------------------
-
-bool fhm_location::read_location_tex_indices(memory_reader &reader, fhm_location_load_data &load_data)
-{
-    load_data.tex_indices_data.resize(reader.get_remained());
-    memcpy(&load_data.tex_indices_data[0], reader.get_data(), reader.get_remained());
-
-    return true;
-}
-
-//------------------------------------------------------------
-
-bool fhm_location::read_location_patches(memory_reader &reader, fhm_location_load_data &load_data)
-{
-    assert(reader.get_remained() == location_size*location_size);
-    memcpy(&load_data.patches[0], reader.get_data(), reader.get_remained());
-    return true;
-}
 
 //------------------------------------------------------------
 
@@ -309,13 +291,28 @@ bool fhm_location::load(const char *fileName, const location_params &params)
             }
           */
         }
+        else if( is_location )
+        {
+            if (j == 5)
+            {
+                assert(reader.get_remained());
+                location_load_data.heights.resize(reader.get_remained() / 4);
+                memcpy(&location_load_data.heights[0], reader.get_data(), reader.get_remained());
+            }
+            else if (j == 8)
+            {
+                assert(reader.get_remained() == location_size*location_size);
+                memcpy(&location_load_data.patches[0], reader.get_data(), reader.get_remained());
+            }
+            else if (j == 9)
+            {
+                assert(reader.get_remained());
+                location_load_data.tex_indices_data.resize(reader.get_remained());
+                memcpy(&location_load_data.tex_indices_data[0], reader.get_data(), reader.get_remained());
+            }
+        }
         else
         {
-            if (is_location && j == 8)
-                read_location_patches(reader, location_load_data);
-            else if (is_location && j == 9)
-                read_location_tex_indices(reader, location_load_data);
-
             //read_unknown(reader);
 
             //char fname[255]; sprintf(fname, "chunk%d.txt", j); print_data(reader, 0, 2000000, 0, fname);
