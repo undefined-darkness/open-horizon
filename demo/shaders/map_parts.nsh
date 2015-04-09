@@ -3,16 +3,17 @@
 @sampler specular_map "specular"
 @sampler env_map "reflection"
 
-@predefined camera_pos "nya camera position"
+@predefined camera_pos "nya camera position":local
+
 @uniform tr "transform"
 
-@uniform light_dir "light dir"=0.433,0.5,0.75,0.0
-@uniform fog_color "fog color" = 0.688,0.749,0.764,-0.0002
-@uniform fog_height "fog height" = 1,0,0,0
-@uniform map_param_vs "map param vs" = 60
-@uniform map_param_ps "map param ps" = 1,3,0.3,-0.1
-@uniform map_param2_ps "map param2 ps" = 500,1.5,20,4
-@uniform specular_color "specular color" = 0.6,0.572,0.466,2.5
+@uniform light_dir "light dir"
+@uniform fog_color "fog color"
+@uniform fog_height "fog height"
+@uniform map_param_vs "map param vs"
+@uniform map_param_ps "map param ps"
+@uniform map_param2_ps "map param2 ps"
+@uniform specular_color "specular color"
 
 @all
 
@@ -26,11 +27,10 @@ varying float vspec;
 
 @vertex
 
-uniform vec4 camera_pos;
-uniform vec4 tr[500];
-
 uniform sampler2D color_map;
 
+uniform vec4 camera_pos;
+uniform vec4 tr[500];
 uniform vec4 light_dir;
 uniform vec4 fog_height;
 uniform vec4 map_param_vs;

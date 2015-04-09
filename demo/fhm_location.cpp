@@ -251,7 +251,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
 //------------------------------------------------------------
 
-bool fhm_location::load(const char *fileName)
+bool fhm_location::load(const char *fileName, const location_params &params)
 {
     fhm_file fhm;
     if (!fhm.open(fileName))
@@ -260,6 +260,8 @@ bool fhm_location::load(const char *fileName)
     const bool is_location = strncmp(fileName, "Map/ms", 6) == 0 && strstr(fileName, "_") == 0;
 
     fhm_location_load_data location_load_data;
+
+    bool has_mptx = false;
 
     for (int j = 0; j < fhm.get_chunks_count(); ++j)
     {
@@ -289,6 +291,7 @@ bool fhm_location::load(const char *fileName)
         else if (sign == 'xtpm') //mptx
         {
             read_mptx(reader);
+            has_mptx = true;
         }
         else if (sign == 'clde')//edlc
         {
@@ -355,6 +358,29 @@ bool fhm_location::load(const char *fileName)
 
     if(is_location)
         finish_load_location(location_load_data);
+
+    auto &s = params.sky.mapspecular;
+    auto &d = params.detail;
+
+    nya_scene::material::param light_dir(-params.sky.sun_dir);
+    nya_scene::material::param fog_color(0.688, 0.749, 0.764, -0.01*params.sky.fog_density); //ToDo: fog color
+    nya_scene::material::param fog_height(params.sky.fog_height_fresnel, 0.0, 0.0, 0.0); //ToDo: height fade density
+    nya_scene::material::param map_param_vs(s.parts_power, 0, 0, 0);
+    nya_scene::material::param map_param_ps(s.parts_scale, s.parts_fog_power, s.parts_fresnel_max, s.parts_fresnel);
+    nya_scene::material::param map_param2_ps(d.mesh_range, d.mesh_power, d.mesh_repeat, s.parts_reflection_power);
+
+    if(has_mptx)
+    {
+        auto &m = m_map_parts_material;
+
+        m.set_param(m.get_param_idx("light dir"), light_dir);
+        m.set_param(m.get_param_idx("fog color"), fog_color);
+        m.set_param(m.get_param_idx("fog height"), fog_height);
+        m.set_param(m.get_param_idx("map param vs"), map_param_vs);
+        m.set_param(m.get_param_idx("map param ps"), map_param_ps);
+        m.set_param(m.get_param_idx("map param2 ps"), map_param2_ps);
+        m.set_param(m.get_param_idx("specular color"), s.parts_color.x, s.parts_color.y, s.parts_color.z, s.parts_contrast);
+    }
 
     return true;
 }

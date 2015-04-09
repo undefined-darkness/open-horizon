@@ -5,6 +5,7 @@
 #pragma once
 
 #include "fhm_location.h"
+#include "location_params.h"
 
 //------------------------------------------------------------
 
@@ -29,8 +30,12 @@ public:
     void update(int dt);
     void draw();
 
+public:
+    const location_params &get_params() const { return m_params; }
+
 private:
     fhm_location m_location;
+    location_params m_params;
     sky_mesh m_sky;
 };
 

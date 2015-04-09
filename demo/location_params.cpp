@@ -78,7 +78,11 @@ bool location_params::load(const char *file_name)
     tone_saturation = reader.read<float>();
 
     reader.skip(11*4); //debug
-    reader.skip(3*4); //detail
+
+    detail.mesh_power = reader.read<float>();
+    detail.mesh_range = reader.read<float>();
+    detail.mesh_repeat = reader.read<float>();
+
     reader.skip(8*4); //map parts
 
     reader.skip(18*4); //sky weather
@@ -119,7 +123,17 @@ bool location_params::load(const char *file_name)
         s.sun_flare_size = reader.read<float>();
     }
 
-    reader.skip(25*4); //sky mapspecular
+    reader.skip(9*4); //sky mapspecular mesh
+    reader.skip(6*4); //sky mapspecular obj
+
+    sky.mapspecular.parts_color = reader.read_color3();
+    sky.mapspecular.parts_contrast = reader.read<float>();
+    sky.mapspecular.parts_fog_power = reader.read<float>();
+    sky.mapspecular.parts_fresnel = reader.read<float>();
+    sky.mapspecular.parts_fresnel_max = reader.read<float>();
+    sky.mapspecular.parts_power = reader.read<float>();
+    sky.mapspecular.parts_reflection_power = reader.read<float>();
+    sky.mapspecular.parts_scale = reader.read<float>();
 
     sky.moon_dir = reader.read_dir_py();
     sky.moon_color = reader.read_color3();

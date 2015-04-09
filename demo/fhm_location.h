@@ -5,6 +5,7 @@
 #pragma once
 
 #include "scene/mesh.h"
+#include "location_params.h"
 
 //------------------------------------------------------------
 
@@ -18,7 +19,7 @@ class fhm_location
     friend class location; //ToDo
 
 public:
-    bool load(const char *fileName);
+    bool load(const char *fileName, const location_params &params);
     void update(int dt);
     void draw_col(int col_idx);
     void draw_mptx();

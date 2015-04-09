@@ -9,22 +9,14 @@
 
 #include "aircraft.h"
 #include "location.h"
-#include "location_params.h"
 #include "clouds.h"
-#include "render/screen_quad.h"
-
-#include "render/vbo.h"
-#include "render/fbo.h"
-#include "render/render.h"
-#include "math/vector.h"
-#include "math/quaternion.h"
-#include "math/scalar.h"
-#include "scene/camera.h"
-#include "scene/shader.h"
-#include "system/system.h"
 #include "shared.h"
-#include "resources/file_resources_provider.h"
 
+#include "render/render.h"
+#include "math/scalar.h"
+#include "system/system.h"
+#include "resources/file_resources_provider.h"
+#include "scene/camera.h"
 #include "scene/postprocess.h"
 
 #include <math.h>

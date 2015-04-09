@@ -82,8 +82,10 @@ void sky_mesh::draw()
 
 bool location::load(const char *name)
 {
-    m_location.load((std::string("Map/") + name + ".fhm").c_str());
-    m_location.load((std::string("Map/") + name + "_mpt.fhm").c_str());
+    m_params.load((std::string("Map/mapset_") + name + ".bin").c_str());
+
+    m_location.load((std::string("Map/") + name + ".fhm").c_str(), m_params);
+    m_location.load((std::string("Map/") + name + "_mpt.fhm").c_str(), m_params);
 
     auto e = shared::get_texture(shared::load_texture((std::string("Map/envmap_mapparts_") + name + ".nut").c_str()));
     m_location.m_map_parts_material.set_texture("reflection", e);

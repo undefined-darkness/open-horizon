@@ -127,6 +127,14 @@ struct location_params
 
     } sky;
 
+    struct
+    {
+        fvalue mesh_power;
+        fvalue mesh_range;
+        fvalue mesh_repeat;
+
+    } detail;
+
     //ToDo
 
 public:
