@@ -66,6 +66,10 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
         
         prnt( "%6d %6d   ", s[0], s[1] );
         for (int j = 0; j < 4; ++j)
+            prnt("%3d ", c[j]);
+        prnt( "   ");
+
+        for (int j = 0; j < 4; ++j)
         {
             char h = c[j];
             if (h > 32 && h < 127)
@@ -73,7 +77,7 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
             else
                 prnt("¥");
         }
-        
+
         prnt("    %08x    \n", t);
         
         if (substruct_size)

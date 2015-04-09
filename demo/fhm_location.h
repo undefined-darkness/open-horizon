@@ -75,14 +75,9 @@ protected:
             std::vector<group> groups;
         };
 
-        patch *const operator [] (int i) { return &patches[width * i]; }
-
-        landscape(): width(0), height(0) {}
-
         std::vector<patch> patches;
-        uint width;
-        uint height;
         nya_render::vbo vbo;
+
     } m_landscape;
 
 protected:

@@ -18,6 +18,7 @@
 #include <assert.h>
 
 #include "shared.h"
+#include "debug.h"
 
 #include "render/debug_draw.h"
 extern nya_render::debug_draw test;
@@ -25,6 +26,8 @@ extern nya_render::debug_draw test;
 //------------------------------------------------------------
 
 static nya_math::vec3 light_dir = nya_math::vec3(0.433,0.5,0.75);
+
+static const int location_size = 16;
 
 //------------------------------------------------------------
 
@@ -48,12 +51,9 @@ public:
 struct fhm_location_load_data
 {
     std::vector<unsigned char> tex_indices_data;
-/*
-    struct patch
-    {
-        ushort unknown[4];
-    };
-*/
+
+    unsigned char patches[location_size * location_size];
+
     std::vector<unsigned int> textures;
 };
 
@@ -71,7 +71,8 @@ bool fhm_location::read_location_tex_indices(memory_reader &reader, fhm_location
 
 bool fhm_location::read_location_patches(memory_reader &reader, fhm_location_load_data &load_data)
 {
-    //ToDo
+    assert(reader.get_remained() == location_size*location_size);
+    memcpy(&load_data.patches[0], reader.get_data(), reader.get_remained());
     return true;
 }
 
@@ -159,25 +160,9 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         std::vector<vert> m_verts;
     };
 
-    m_landscape.width = 4;
-    m_landscape.height = 6;
     float patch_size = 1024.0;
     m_landscape.patches.clear();
-    m_landscape.patches.resize(m_landscape.width * m_landscape.height);
-
-    //static int test = 0;
-
-    //ToDo: offsets for all maps, or find out how to load it (possible harder)
-    const int tci_offsets[] = 
-    { 0,  0,  0,  1, 
-      3,  4,  5,  6, 
-      7,  8,  9, 10, 
-     11, 12, 13, 14, 
-     3,  15, 16, 17, 
-     15, 18, -1, -1 };
-
-    //printf("test %d\n", test);
-    //++test;
+    m_landscape.patches.resize(location_size * location_size);
 
     assert(!load_data.textures.empty());
 
@@ -187,37 +172,25 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     int tc_idx = 64 * 4;
 
     //int py = 0;
-    for (int px = 0; px < m_landscape.width; ++px)
-    for (int py = 0; py < m_landscape.height; ++py)
+    for (int py = 0; py < location_size; ++py)
+    for (int px = 0; px < location_size; ++px)
     {
-        landscape::patch &p = m_landscape[px][py];
+        int idx = py * location_size + px;
 
-        //if (px != 0 || py != 0)
-        //    continue;
+        landscape::patch &p = m_landscape.patches[idx] ;
 
-        //if (px == 1 && py == 0) tc_idx = 0;
-
-        //tc_idx = 64;
-
-        tc_idx = tci_offsets[py * m_landscape.width + px] * quads_per_patch * quads_per_patch;
+        tc_idx = load_data.patches[idx] * quads_per_patch * quads_per_patch;
         if (tc_idx < 0)
             continue;
 
-        //ToDo
+        float base_x = patch_size * quads_per_patch * (px - location_size/2);
+        float base_y = patch_size * quads_per_patch * (py - location_size/2);
 
-        float base_x = patch_size * quads_per_patch * (px - 3);
-        float base_y = patch_size * quads_per_patch * (py - 3);
-
-        int last_tex_idx = -1; //int test = 0;
+        int last_tex_idx = -1;
         for (int y = 0; y < quads_per_patch; ++y)
         for (int x = 0; x < quads_per_patch; ++x)
         {
-            //if (test++ >= 10)
-            //    break;
-
             int tex_idx = load_data.tex_indices_data[tc_idx * 2 + 1];
-
-            //tex_idx = 2;//test
 
             if (tex_idx != last_tex_idx)
             {
@@ -239,8 +212,6 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         }
 
         p.groups.back().count = vdata.get_count() - p.groups.back().offset;
-
-        //px = py = 9000;
     }
 
     m_landscape.vbo.set_vertex_data(vdata.get_data(), 5 * 4, vdata.get_count());
@@ -494,6 +465,8 @@ void fhm_location::update(int dt)
 
 void fhm_location::draw_landscape()
 {
+    //ToDo: draw visible only
+
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
     m_land_material.internal().set(nya_scene::material::default_pass);
 
