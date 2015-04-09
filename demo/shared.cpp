@@ -56,7 +56,14 @@ unsigned int load_texture(const void *tex_data, size_t tex_size)
 
     if (reader.get_remained() < 128) //normal for ntxr
         return hash_id;
-
+/*
+    if(hash_id > 1000000000) //ToDo
+    {
+        unsigned int *mip_count = (unsigned int *)reader.get_data()+7;
+        assert(*mip_count > 10);
+        *mip_count = 5;
+    }
+*/
     nya_scene::shared_texture st;
     nya_scene::resource_data data(reader.get_remained());
     data.copy_from(reader.get_data(), reader.get_remained());

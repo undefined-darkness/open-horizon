@@ -77,7 +77,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             int ty = tc_idx / 7;
             int tx = tc_idx - ty * 7;
 
-            nya_math::vec4 tc(7, 7, 514, 514);
+            nya_math::vec4 tc(8, 8, 512, 512);
 
             tc.x += (tc.z + tc.x * 2) * tx;
             tc.y += (tc.w + tc.y * 2) * ty;
@@ -237,7 +237,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
             //int i = 5;
             //print_data(reader, 0, 200);
         }
-        else if (sign == 'RXTN') //NTXR texture?
+        else if (sign == 'RXTN') //NTXR texture
         {
             read_ntxr(reader, location_load_data);
         }
@@ -487,7 +487,7 @@ void fhm_location::draw_landscape()
 bool fhm_location::read_ntxr(memory_reader &reader, fhm_location_load_data &load_data)
 {
     uint r = shared::load_texture(reader.get_data(), reader.get_remained());
-    if (r > 1000000000) //probably there is another way
+    if (r > 1000000000) //ToDo //probably there is another way
     {
         for (auto &t: load_data.textures) if (t == r) return true;
         load_data.textures.push_back(r);
