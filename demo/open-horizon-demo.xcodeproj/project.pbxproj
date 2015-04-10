@@ -23,6 +23,9 @@
 		F5BF995B190A4462005A8AF5 /* fhm_location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5BF9959190A4462005A8AF5 /* fhm_location.cpp */; };
 		F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D7969F19B3432C006269F0 /* pugixml.cpp */; };
 		F5D796A619B35471006269F0 /* aircraft.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D796A419B35471006269F0 /* aircraft.cpp */; };
+		F5DAA8D21AD7CEAD00C2C633 /* postprocess.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5DAA8CC1AD7CE6900C2C633 /* postprocess.txt */; };
+		F5DAA8D31AD7CEAD00C2C633 /* shaders in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5DAA8CE1AD7CE7600C2C633 /* shaders */; };
+		F5DAA8D61AD7CF7600C2C633 /* aircrafts in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5DAA8D41AD7CED900C2C633 /* aircrafts */; };
 		F5DFAD8B19BB248C00786736 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F5DFAD8A19BB248C00786736 /* libz.dylib */; };
 		F5DFAD9019BCA1EA00786736 /* location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5DFAD8E19BCA1EA00786736 /* location.cpp */; };
 		F5E89E591AACB8D200B72EAA /* dpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5E89E581AACB8D200B72EAA /* dpl.cpp */; };
@@ -44,6 +47,21 @@
 			remoteInfo = nya_engine_ios;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F5DAA8C81AD7CE3300C2C633 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				F5DAA8D61AD7CF7600C2C633 /* aircrafts in CopyFiles */,
+				F5DAA8D21AD7CEAD00C2C633 /* postprocess.txt in CopyFiles */,
+				F5DAA8D31AD7CEAD00C2C633 /* shaders in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		F503E4D719048C6700C3590A /* open-horizon-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "open-horizon-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -84,6 +102,9 @@
 		F5D796A119B3432C006269F0 /* pugixml.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugixml.hpp; path = "../deps/pugixml-1.4/src/pugixml.hpp"; sourceTree = "<group>"; };
 		F5D796A419B35471006269F0 /* aircraft.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aircraft.cpp; sourceTree = "<group>"; };
 		F5D796A519B35471006269F0 /* aircraft.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aircraft.h; sourceTree = "<group>"; };
+		F5DAA8CC1AD7CE6900C2C633 /* postprocess.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = postprocess.txt; sourceTree = "<group>"; };
+		F5DAA8CE1AD7CE7600C2C633 /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; path = shaders; sourceTree = "<group>"; };
+		F5DAA8D41AD7CED900C2C633 /* aircrafts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = aircrafts; sourceTree = "<group>"; };
 		F5DFAD8A19BB248C00786736 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		F5DFAD8E19BCA1EA00786736 /* location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = location.cpp; sourceTree = "<group>"; };
 		F5DFAD8F19BCA1EA00786736 /* location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = location.h; sourceTree = "<group>"; };
@@ -137,6 +158,7 @@
 				F503E51019048CC100C3590A /* shared.cpp */,
 				F503E51219048CC100C3590A /* shared.h */,
 				F56CCB0419B3D955000D9163 /* xml.h */,
+				F5DAA8CB1AD7CE5000C2C633 /* resources */,
 				F503E4E019048C6700C3590A /* open-horizon-demo */,
 				F5D796A319B34350006269F0 /* deps */,
 				F503E4D919048C6700C3590A /* Frameworks */,
@@ -220,6 +242,16 @@
 			name = deps;
 			sourceTree = "<group>";
 		};
+		F5DAA8CB1AD7CE5000C2C633 /* resources */ = {
+			isa = PBXGroup;
+			children = (
+				F5DAA8D41AD7CED900C2C633 /* aircrafts */,
+				F5DAA8CC1AD7CE6900C2C633 /* postprocess.txt */,
+				F5DAA8CE1AD7CE7600C2C633 /* shaders */,
+			);
+			name = resources;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -230,6 +262,7 @@
 				F503E4D319048C6700C3590A /* Sources */,
 				F503E4D419048C6700C3590A /* Frameworks */,
 				F503E4D519048C6700C3590A /* Resources */,
+				F5DAA8C81AD7CE3300C2C633 /* CopyFiles */,
 			);
 			buildRules = (
 			);
