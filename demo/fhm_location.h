@@ -78,6 +78,16 @@ protected:
         std::vector<patch> patches;
         nya_render::vbo vbo;
 
+    public:
+        float get_height(float x,float y) const;
+
+        std::vector<float> heights;
+        unsigned int heights_width;
+        unsigned int heights_height;
+
+    public:
+        landscape(): heights_width(0),heights_height(0) {}
+
     } m_landscape;
 
 protected:

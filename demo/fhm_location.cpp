@@ -28,6 +28,8 @@ extern nya_render::debug_draw test;
 static nya_math::vec3 light_dir = nya_math::vec3(0.433,0.5,0.75);
 
 static const int location_size = 16;
+static const float patch_size = 1024.0;
+static const unsigned int quads_per_patch = 8;
 
 //------------------------------------------------------------
 
@@ -53,7 +55,6 @@ struct fhm_location_load_data
     std::vector<unsigned char> tex_indices_data;
 
     unsigned char patches[location_size * location_size];
-    std::vector<float> heights;
 
     std::vector<unsigned int> textures;
 };
@@ -121,6 +122,12 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             m_verts.push_back(v);
         }
 
+        void update_heights(landscape &l)
+        {
+            for(auto &v: m_verts)
+                v.pos.y = l.get_height(v.pos.x, v.pos.z);
+        }
+
         void *get_data() { return m_verts.empty() ? 0 : &m_verts[0]; }
         unsigned int get_count() { return (unsigned int)m_verts.size(); }
 
@@ -142,7 +149,6 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         std::vector<vert> m_verts;
     };
 
-    float patch_size = 1024.0;
     m_landscape.patches.clear();
     m_landscape.patches.resize(location_size * location_size);
 
@@ -150,7 +156,6 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
     vbo_data vdata(patch_size); //ToDo
 
-    unsigned int quads_per_patch = 8;
     int tc_idx = 64 * 4;
 
     //int py = 0;
@@ -195,6 +200,8 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
         p.groups.back().count = vdata.get_count() - p.groups.back().offset;
     }
+
+    vdata.update_heights(m_landscape);
 
     m_landscape.vbo.set_vertex_data(vdata.get_data(), 5 * 4, vdata.get_count());
     m_landscape.vbo.set_tc(0, 3 * 4, 2);
@@ -295,9 +302,21 @@ bool fhm_location::load(const char *fileName, const location_params &params)
         {
             if (j == 5)
             {
+                /*
+                int count = int(reader.get_remained()/4);
+                int h = (int)sqrtf(count);
+                assert(h);
+                int w = count / h;
+
+                //std::swap(w,h);
+
                 assert(reader.get_remained());
-                location_load_data.heights.resize(reader.get_remained() / 4);
-                memcpy(&location_load_data.heights[0], reader.get_data(), reader.get_remained());
+                m_landscape.heights.resize(w*h);
+                m_landscape.heights_width=w;
+                m_landscape.heights_height=h;
+
+                memcpy(&m_landscape.heights[0], reader.get_data(), reader.get_remained());
+                */
             }
             else if (j == 8)
             {
@@ -581,7 +600,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
     assert(bpp == 4 || bpp == 8 || bpp == 12 || bpp == 0);
 
     nya_scene::shared_texture res;
-    if (bpp == 4)
+    if (bpp == 4 || bpp == 12)
     {
         res.tex.build_texture(reader.get_data(), vcount, instances_count, nya_render::texture::color_rgba);
     }
@@ -696,6 +715,44 @@ bool fhm_location::read_colh(memory_reader &reader)
     }
 
     return true;
+}
+
+//------------------------------------------------------------
+
+float fhm_location::landscape::get_height(float x,float y) const
+{
+    if (heights.empty())
+        return 0.0f;
+
+    float scale = location_size * patch_size * quads_per_patch;
+
+    float tc_x = x / scale + 0.5;
+    float tc_y = y / scale + 0.5;
+
+    float fx_idx = tc_x * heights_width;
+    float fy_idx = tc_y * heights_height;
+
+    int x_idx = int(fx_idx);
+    int y_idx = int(fy_idx);
+
+    if (x_idx < 0 || y_idx < 0)
+        return 0.0f;
+
+    if (x_idx + 1 >= heights_width || y_idx + 1>= heights_height)
+        return 0.0f;
+
+    float h00 = heights[y_idx * heights_width + x_idx];
+    float h10 = heights[y_idx * heights_width + x_idx + 1];
+    float h01 = heights[(y_idx + 1) * heights_width + x_idx];
+    float h11 = heights[(y_idx + 1) * heights_width + x_idx + 1];
+
+    float kx = fx_idx - x_idx;
+    float ky = fy_idx - y_idx;
+
+    float h00_10 = nya_math::lerp(h00, h10, kx);
+    float h01_11 = nya_math::lerp(h01, h11, kx);
+
+    return nya_math::lerp(h00_10, h01_11, ky);
 }
 
 //------------------------------------------------------------

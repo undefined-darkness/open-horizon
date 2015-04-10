@@ -96,3 +96,10 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
 }
 
 //------------------------------------------------------------
+
+inline void print_data(const nya_memory::memory_reader &reader)
+{
+    print_data(reader, reader.get_offset(), reader.get_remained());
+}
+
+//------------------------------------------------------------
