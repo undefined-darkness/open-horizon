@@ -115,10 +115,9 @@ void location::draw()
     nya_render::depth_test::enable(nya_render::depth_test::not_greater);
     nya_render::cull_face::enable(nya_render::cull_face::ccw);
 
-    m_sky.draw();
-    m_location.draw_landscape();
     m_location.draw_mptx();
-
+    m_location.draw_landscape();
+    m_sky.draw();
 }
 
 //------------------------------------------------------------

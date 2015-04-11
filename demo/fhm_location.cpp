@@ -125,7 +125,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         void update_heights(landscape &l)
         {
             for(auto &v: m_verts)
-                v.pos.y = l.get_height(v.pos.x, v.pos.z);
+                v.pos.y = l.get_height(v.pos.x, v.pos.z) - 0.05f;
         }
 
         void *get_data() { return m_verts.empty() ? 0 : &m_verts[0]; }
