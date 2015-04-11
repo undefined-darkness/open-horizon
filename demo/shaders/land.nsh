@@ -17,7 +17,7 @@ varying vec2 normal_tc;
 varying vec2 normal_tc2;
 varying vec3 pos;
 
-varying vec3 eye;
+varying vec3 vpos;
 varying float vfogh;
 varying float vfogf;
 
@@ -33,11 +33,9 @@ void main()
     normal_tc=gl_Vertex.xz*0.005+anim.xy;
     normal_tc2=gl_Vertex.xz*0.005+anim.zw;
 
-    vec4 pos=gl_Vertex;
-    vfogh = get_fogh(pos.xyz);
-    eye = get_eye(pos.xyz);
-
-    pos = gl_ModelViewProjectionMatrix * pos;
+    vpos = gl_Vertex.xyz;
+    vec4 pos = gl_ModelViewProjectionMatrix * gl_Vertex;
+    vfogh = get_fogh(vpos.xyz);
     vfogf = get_fogv(pos);
     gl_Position = pos;
 }
@@ -60,7 +58,7 @@ void main()
                           +texture2D(normal_map,normal_tc2).rgb
                           -vec3(1.0));
 
-	vec3 e = normalize(eye);
+	vec3 e = get_eye(vpos.xyz);
 
     float ol=1.0+dot(normal,light_dir.xyz);
     vec3 h=normalize(light_dir.xyz-e);

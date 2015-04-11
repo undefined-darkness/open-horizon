@@ -3,9 +3,16 @@
 @uniform fog_color "fog color"
 @uniform fog_height "fog height"
 
-@vertex
+@all
 
 uniform vec4 camera_pos;
+
+vec3 get_eye(vec3 pos)
+{
+    return normalize(camera_pos.xyz - pos.xyz);
+}
+
+@vertex
 
 uniform vec4 fog_height;
 
@@ -17,11 +24,6 @@ float get_fogh(vec3 pos)
 float get_fogv(vec4 transformed_pos)
 {
     return transformed_pos.z;
-}
-
-vec3 get_eye(vec3 pos)
-{
-    return normalize(camera_pos.xyz - pos.xyz);
 }
 
 @fragment
