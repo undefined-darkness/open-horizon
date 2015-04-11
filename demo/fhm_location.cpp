@@ -25,8 +25,6 @@ extern nya_render::debug_draw test;
 
 //------------------------------------------------------------
 
-static nya_math::vec3 light_dir = nya_math::vec3(0.433,0.5,0.75);
-
 static const int location_size = 16;
 static const float patch_size = 1024.0;
 static const unsigned int quads_per_patch = 8;
@@ -67,8 +65,6 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
     auto &p=m_land_material.get_pass(m_land_material.add_pass(nya_scene::material::default_pass));
     p.set_shader(nya_scene::shader("shaders/land.nsh"));
-
-    m_land_material.set_param(m_land_material.get_param_idx("light dir"), light_dir.x, light_dir.y, light_dir.z, 0.0f );
 
     class vbo_data
     {
@@ -369,6 +365,11 @@ bool fhm_location::load(const char *fileName, const location_params &params)
         m.set_param(m.get_param_idx("specular color"), s.parts_color.x, s.parts_color.y, s.parts_color.z, s.parts_contrast);
     }
 
+    auto &m = m_land_material;
+    m.set_param(m.get_param_idx("light dir"), light_dir);
+    m.set_param(m.get_param_idx("fog color"), fog_color);
+    m.set_param(m.get_param_idx("fog height"), fog_height);
+
     return true;
 }
 
@@ -523,7 +524,6 @@ bool fhm_location::read_mptx(memory_reader &reader)
     p.set_shader("shaders/map_parts.nsh");
     p.get_state().set_cull_face(true);
 
-    m_map_parts_material.set_param(m_map_parts_material.get_param_idx("light dir"), light_dir);
     m_map_parts_color_texture.create();
     m_map_parts_material.set_texture("color", m_map_parts_color_texture);
     m_map_parts_diffuse_texture.create();

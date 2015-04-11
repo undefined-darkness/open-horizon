@@ -1,3 +1,13 @@
+@include "common.nsh"
+
+@sampler base_map "diffuse"
+@sampler detail_map "detail"
+@sampler ocean_map "ocean"
+@sampler normal_map "normal"
+
+@uniform anim "anim"
+@uniform light_dir "light dir"
+
 @all
 
 varying vec2 tc;
@@ -5,12 +15,11 @@ varying vec2 ocean_tc;
 varying vec2 detail_tc;
 varying vec2 normal_tc;
 varying vec2 normal_tc2;
-varying float dist;
 varying vec3 pos;
 
-uniform vec4 camera_pos;
-
-@uniform anim "anim"
+varying vec3 eye;
+varying float vfogh;
+varying float vfogf;
 
 @vertex
 
@@ -23,19 +32,15 @@ void main()
     detail_tc=gl_Vertex.xz*0.01;
     normal_tc=gl_Vertex.xz*0.005+anim.xy;
     normal_tc2=gl_Vertex.xz*0.005+anim.zw;
-	dist=length(camera_pos.xyz-gl_Vertex.xyz);
-    pos=gl_Vertex.xyz;
-    gl_Position=gl_ModelViewProjectionMatrix*gl_Vertex;
+
+    vec4 pos=gl_Vertex;
+    vfogh = get_fogh(pos.xyz);
+    eye = get_eye(pos.xyz);
+
+    pos = gl_ModelViewProjectionMatrix * pos;
+    vfogf = get_fogv(pos);
+    gl_Position = pos;
 }
-
-@predefined camera_pos "nya camera position"
-@uniform fog_color "fog color" = 0.69,0.74,0.76,-0.0002
-@uniform light_dir "light dir"
-
-@sampler base_map "diffuse"
-@sampler detail_map "detail"
-@sampler ocean_map "ocean"
-@sampler normal_map "normal"
 
 @fragment
 
@@ -46,8 +51,6 @@ uniform sampler2D normal_map;
 
 uniform vec4 light_dir;
 
-//uniform vec4 fog_color;
-
 void main()
 {
     vec4 base=texture2D(base_map,tc);
@@ -56,20 +59,16 @@ void main()
     vec3 normal=normalize(texture2D(normal_map,normal_tc).rgb
                           +texture2D(normal_map,normal_tc2).rgb
                           -vec3(1.0));
-    
+
+	vec3 e = normalize(eye);
+
     float ol=1.0+dot(normal,light_dir.xyz);
-    vec3 v=normalize(pos-camera_pos.xyz);
-    vec3 h=normalize(v+light_dir.xyz);
+    vec3 h=normalize(light_dir.xyz-e);
     float s=pow(max(0.0,dot(normal,h)),60.0)*0.5;
 
     base.rgb=mix(ocean.rgb*ol+vec3(s),base.rgb*detail.rgb,base.a);
 
-    vec4 fog_color=vec4(0.69,0.74,0.76,-0.0002);
-	//vec4 fog_color=vec4(0.4,0.5,0.9,-0.0002);
+	float fog = get_fog(vfogf, vfogh, e);
 
-	float fa=dist*fog_color.a;
-	//float f=exp(-fa*fa);
-	float f=exp(fa);
-
-	gl_FragColor=vec4(mix(fog_color.xyz,base.xyz,f),1.0);
+	gl_FragColor=vec4(mix(fog_color.xyz,base.xyz,fog),1.0);
 }
