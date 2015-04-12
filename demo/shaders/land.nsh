@@ -68,5 +68,5 @@ void main()
 
 	float fog = get_fog(vfogf, vfogh, e);
 
-	gl_FragColor=vec4(mix(fog_color.xyz,base.xyz,fog),1.0);
+	gl_FragColor=vec4(mix(fog_color.xyz,base.xyz,fog) * 0.8,1.0);
 }

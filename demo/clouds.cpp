@@ -39,7 +39,7 @@ bool effect_clouds::load(const char *location_name)
 
             level_header header = reader.read<level_header>();
             auto &l = m_obj_levels.back();
-            l.unknown = header.unknown;
+            l.height = header.height;
             l.offset = (uint32_t)verts.size();
             l.count = header.count * 6;
             verts.resize(l.offset + l.count);
@@ -79,8 +79,42 @@ bool effect_clouds::load(const char *location_name)
 
             res.free();
         }
+    }
 
-        break;
+    m_hi_flat_offset = (uint32_t)verts.size();
+    m_hi_flat_count = int(m_clouds.hiflat_clouds.size()) * 6;
+    verts.resize(m_hi_flat_offset+ m_hi_flat_count);
+    for (int k = 0; k < int(m_clouds.hiflat_clouds.size()); ++k)
+    {
+        auto &p = m_clouds.hiflat_clouds[k];
+
+        vert *v = &verts[m_hi_flat_offset + k * 6];
+
+        v[0].dir = nya_math::vec2( -1.0f, -1.0f );
+        v[1].dir = nya_math::vec2( -1.0f,  1.0f );
+        v[2].dir = nya_math::vec2(  1.0f,  1.0f );
+        v[3].dir = nya_math::vec2( -1.0f, -1.0f );
+        v[4].dir = nya_math::vec2(  1.0f,  1.0f );
+        v[5].dir = nya_math::vec2(  1.0f, -1.0f );
+
+        for(int t = 0; t < 6; ++t)
+        {
+            v[t].pos.x = p.x;
+            v[t].pos.z = p.y;
+
+            auto tc=v[t].dir * 0.5f;
+            tc.x += 0.5f, tc.y += 0.5f;
+            //tc.y = 1.0 - tc.y;
+
+            //ToDo
+
+            nya_math::vec4 uv_param(0.0,0.75,0.25,0.25);
+
+            v[t].tc.x = tc.x * uv_param.z + uv_param.x;
+            v[t].tc.y = tc.y * uv_param.w + uv_param.y;
+
+            v[t].tc.x += uv_param.z * (k % 4); //ToDo
+        }
     }
 
     m_mesh.set_vertex_data(&verts[0], uint32_t(sizeof(verts[0])), uint32_t(verts.size()));
@@ -88,13 +122,14 @@ bool effect_clouds::load(const char *location_name)
     m_mesh.set_tc(0, 12, 4); //tc1, tc2
     m_mesh.set_tc(1, 12+16, 4); //dir, size
 
-    m_shader.load("shaders/clouds.nsh");
+    m_shader_obj.load("shaders/clouds.nsh");
+    m_shader_hi_flat.load("shaders/clouds_hi_flat.nsh");
     m_obj_tex = shared::get_texture(shared::load_texture((std::string("Effect/") + location_name + "/ObjCloud.nut").c_str()));
     m_flat_tex = shared::get_texture(shared::load_texture((std::string("Effect/") + location_name + "/FlatCloud.nut").c_str()));
 
-    for (int i = 0; i < m_shader.internal().get_uniforms_count(); ++i)
+    for (int i = 0; i < m_shader_obj.internal().get_uniforms_count(); ++i)
     {
-        auto &name = m_shader.internal().get_uniform(i).name;
+        auto &name = m_shader_obj.internal().get_uniform(i).name;
         if (name == "pos")
             m_shader_pos = i;
     }
@@ -106,7 +141,23 @@ bool effect_clouds::load(const char *location_name)
 
 void effect_clouds::draw_flat()
 {
-    //ToDo
+    nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
+    nya_render::depth_test::enable(nya_render::depth_test::less);
+    nya_render::zwrite::disable();
+    nya_render::cull_face::disable();
+    nya_render::blend::enable(nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
+
+    m_mesh.bind();
+    m_shader_hi_flat.internal().set();
+    m_flat_tex.internal().set();
+
+    m_mesh.draw(m_hi_flat_offset, m_hi_flat_count);
+
+    nya_render::blend::disable();
+
+    m_flat_tex.internal().unset();
+    m_shader_hi_flat.internal().unset();
+    m_mesh.unbind();
 }
 
 void effect_clouds::draw_obj()
@@ -118,7 +169,7 @@ void effect_clouds::draw_obj()
     nya_render::blend::enable(nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
 
     m_mesh.bind();
-    m_shader.internal().set();
+    m_shader_obj.internal().set();
     m_obj_tex.internal().set();
 
     for(uint32_t i = 0; i < m_dist_sort.size(); ++i)
@@ -141,14 +192,14 @@ void effect_clouds::draw_obj()
 
         const auto &o = m_clouds.obj_clouds[d.second];
         auto &l = m_obj_levels[d.second % m_obj_levels.size()];
-        m_shader.internal().set_uniform_value(m_shader_pos, o.second.x, height, o.second.y, 0.0f);
+        m_shader_obj.internal().set_uniform_value(m_shader_pos, o.second.x, l.height, o.second.y, 0.0f);
         m_mesh.draw(l.offset,l.count);
     }
 
     nya_render::blend::disable();
 
     m_obj_tex.internal().unset();
-    m_shader.internal().unset();
+    m_shader_obj.internal().unset();
     m_mesh.unbind();
 }
 

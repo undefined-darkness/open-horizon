@@ -13,5 +13,5 @@ void main()
 }
 
 @fragment
-void main() { gl_FragColor=color; //*1.2 * 0.8
+void main() { gl_FragColor=color * 0.8; //*1.2 * 0.8
 }

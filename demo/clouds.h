@@ -16,23 +16,6 @@ public:
     void draw_obj();
 
 private:
-    nya_scene::shader m_shader;
-    int m_shader_pos;
-
-    nya_scene::texture m_obj_tex;
-    nya_scene::texture m_flat_tex;
-
-    nya_render::vbo m_mesh;
-
-    struct vert
-    {
-        nya_math::vec3 pos;
-        nya_math::vec4 tc;
-        nya_math::vec2 dir;
-        nya_math::vec2 size;
-    };
-
-private:
     typedef unsigned int uint;
     struct bdd_header
     {
@@ -68,16 +51,32 @@ private:
 private:
     bool read_bdd(const char *name, bdd &bdd_res);
 
-    bdd m_cloud_positions;
     bdd m_clouds;
     
     struct level_header
     {
         uint count;
-        float unknown;
+        float height;
         uint zero;
     };
-    
+
+private:
+    nya_render::vbo m_mesh;
+
+    struct vert
+    {
+        nya_math::vec3 pos;
+        nya_math::vec4 tc;
+        nya_math::vec2 dir;
+        nya_math::vec2 size;
+    };
+
+private:
+    nya_scene::shader m_shader_obj;
+    int m_shader_pos;
+    nya_scene::texture m_obj_tex;
+
+private:
     struct level_entry
     {
         nya_math::vec3 pos;
@@ -88,7 +87,7 @@ private:
     
     struct obj_level
     {
-        float unknown;
+        float height;
         std::vector<level_entry> entries;
         
         uint32_t offset;
@@ -96,8 +95,13 @@ private:
     };
     
     std::vector<obj_level> m_obj_levels;
-    
     std::vector<std::pair<uint32_t,uint32_t> > m_dist_sort;
+
+private:
+    nya_scene::shader m_shader_hi_flat;
+    nya_scene::texture m_flat_tex;
+    unsigned int m_hi_flat_offset;
+    unsigned int m_hi_flat_count;
 };
 
 //------------------------------------------------------------
