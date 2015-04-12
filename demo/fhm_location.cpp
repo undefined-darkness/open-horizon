@@ -345,8 +345,11 @@ bool fhm_location::load(const char *fileName, const location_params &params)
     auto &s = params.sky.mapspecular;
     auto &d = params.detail;
 
+    nya_math::vec3 about_fog_color = params.sky.low.ambient * params.sky.low.skysphere_intensity; //ToDo
+    //ms01 0.688, 0.749, 0.764
+
     nya_scene::material::param light_dir(-params.sky.sun_dir);
-    nya_scene::material::param fog_color(0.688, 0.749, 0.764, -0.01*params.sky.fog_density); //ToDo: fog color
+    nya_scene::material::param fog_color(about_fog_color.x, about_fog_color.y, about_fog_color.z, -0.01*params.sky.fog_density);
     nya_scene::material::param fog_height(params.sky.fog_height_fresnel, 0.0, 0.0, 0.0); //ToDo: height fade density
     nya_scene::material::param map_param_vs(s.parts_power, 0, 0, 0);
     nya_scene::material::param map_param_ps(s.parts_scale, s.parts_fog_power, s.parts_fresnel_max, s.parts_fresnel);

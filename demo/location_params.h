@@ -39,6 +39,24 @@ struct location_params
 
     fvalue tone_saturation;
 
+    struct
+    {
+        fvalue bloom_offset;
+        fvalue bloom_saturation;
+        fvalue bloom_scale;
+        fvalue bloom_threshold;
+
+        fvalue bloom_kernel_brightness;
+        fvalue bloom_kernel_sigma;
+
+        fvalue luminance_measure_area;
+        fvalue luminance_speed;
+
+        fvalue middle_gray_range_max;
+        fvalue middle_gray_range_min;
+
+    } hdr;
+
     struct skysphere
     {
         color3 ambient;

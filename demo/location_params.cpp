@@ -67,7 +67,21 @@ bool location_params::load(const char *file_name)
     clipping_plane.znear = reader.read<float>();
 
     reader.skip(54*4); //clouds
-    reader.skip(10*4+3*2); //hdr
+
+    hdr.bloom_offset = reader.read<float>();
+    hdr.bloom_saturation = reader.read<float>();
+    hdr.bloom_scale = reader.read<float>();
+    hdr.bloom_threshold = reader.read<float>();
+    hdr.bloom_kernel_brightness = reader.read<float>();
+    hdr.bloom_kernel_sigma = reader.read<float>();
+    reader.skip(2); //enabled
+    reader.skip(2); //send
+    hdr.luminance_measure_area = reader.read<float>();
+    hdr.luminance_speed = reader.read<float>();
+    hdr.middle_gray_range_max = reader.read<float>();
+    hdr.middle_gray_range_min = reader.read<float>();
+    reader.skip(2); //show debug
+
     reader.skip(2*4+5*2); //mlaa
     reader.skip(14*4); //ocean
     reader.skip(33*4+13*2); //render shadowmap

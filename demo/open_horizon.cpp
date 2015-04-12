@@ -264,18 +264,20 @@ int main(void)
         }
     } scene;
 
-    scene.load("postprocess.txt");
-    auto curve = load_tonecurve((std::string("Map/tonecurve_") + location_name + ".tcb").c_str());
-    scene.set_texture("color_curve", nya_scene::texture_proxy(curve));
-    scene.set_shader_param("bloom_param", nya_math::vec4(1.0, 2.0, 5.0, 1.0)); //ToDo: location params
-    scene.set_shader_param("saturation", nya_math::vec4(-0.15, 0.0, 0.0, 0.0)); //ToDo: location params
-    scene.set_shader_param("screen_radius", nya_math::vec4(1.185185, 0.5 * 4.0 / 3.0, 0.0, 0.0));
-    scene.set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
-
     scene.loc.load(location_name);
     scene.clouds.load(location_name);
     scene.player_plane.load(plane_name, plane_color);
     scene.player_plane.set_pos(nya_math::vec3(-300, 50, 2000));
+
+    auto &p = scene.loc.get_params();
+
+    scene.load("postprocess.txt");
+    auto curve = load_tonecurve((std::string("Map/tonecurve_") + location_name + ".tcb").c_str());
+    scene.set_texture("color_curve", nya_scene::texture_proxy(curve));
+    scene.set_shader_param("bloom_param", nya_math::vec4(p.hdr.bloom_threshold, p.hdr.bloom_offset, p.hdr.bloom_scale, 1.0));
+    scene.set_shader_param("saturation", nya_math::vec4(p.tone_saturation * 0.01, 0.0, 0.0, 0.0));
+    scene.set_shader_param("screen_radius", nya_math::vec4(1.185185, 0.5 * 4.0 / 3.0, 0.0, 0.0));
+    scene.set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
 
     plane_camera camera;
     //camera.add_delta_rot(0.1f,0.0f);

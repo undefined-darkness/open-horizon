@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "scene/texture.h"
+#include "shared.h"
 
 //------------------------------------------------------------
 
@@ -100,6 +100,56 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
 inline void print_data(const nya_memory::memory_reader &reader)
 {
     print_data(reader, reader.get_offset(), reader.get_remained());
+}
+
+//------------------------------------------------------------
+
+inline void print_params(const char *name)
+{
+    auto r = shared::load_resource(name);
+    if (!r.get_size())
+        return;
+
+    std::vector<std::string> values;
+    std::string tmp;
+    for (size_t i = 0; i < r.get_size(); ++i)
+    {
+        char c=((char *)r.get_data())[i];
+        if (c=='\n' || c=='\r')
+        {
+            if (tmp.empty())
+                continue;
+
+            if (tmp[0]=='#')
+            {
+                tmp.clear();
+                continue;
+            }
+
+            for (size_t j = 0; j < tmp.size(); ++j)
+            {
+                std::string type = tmp.substr(0, j);
+                if (tmp[j] == '\t')
+                {
+                    tmp = tmp.substr(j + 1);
+                    tmp += " ";
+                    tmp += type;
+                    break;
+                }
+            }
+
+            values.push_back(tmp);
+            tmp.clear();
+            continue;
+        }
+
+        tmp.push_back(c);
+    }
+
+    std::sort(values.begin(), values.end());
+
+    for (size_t i = 0; i < values.size(); ++i)
+        printf("%03zu %s\n", i, values[i].c_str());
 }
 
 //------------------------------------------------------------

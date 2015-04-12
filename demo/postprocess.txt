@@ -19,6 +19,26 @@
   width = screen_width/4
   height = screen_height/4
 
+@target gauss
+  color = gauss
+  width = screen_width/4
+  height = screen_height/4
+
+@target gauss2
+  color = gauss2
+  width = screen_width/8
+  height = screen_height/8
+
+@target gauss3
+  color = gauss3
+  width = screen_width/16
+  height = screen_height/16
+
+@target main2
+  color = main_color
+  width = screen_width
+  height = screen_height
+
 @target lens_blur
   color = lens_blur
   width = screen_width/2
@@ -58,6 +78,27 @@
 @set_shader shaders/bright_filter.nsh
 @draw_quad
 
+@set_target gauss
+@set_texture diffuse = bright_filter
+@set_shader shaders/gauss3x3.nsh
+@draw_quad
+
+@set_target gauss2
+@set_texture diffuse = gauss
+@set_shader shaders/gauss3x3.nsh
+@draw_quad
+
+@set_target gauss3
+@set_texture diffuse = gauss2
+@set_shader shaders/gauss3x3.nsh
+@draw_quad
+
+@set_target main2
+@set_texture diffuse = fxaa
+@set_texture bloom = gauss3
+@set_shader shaders/bloom.nsh
+@draw_quad
+
 @set_target lens_blur
 @clear
 
@@ -68,7 +109,7 @@
 @clear
 
 @set_target
-@set_texture diffuse = fxaa
+@set_texture diffuse = main_color
 @set_texture lens_blur = lens_blur
 @set_texture motion_blur = motion_blur
 @set_texture heat_blur = heat_blur
