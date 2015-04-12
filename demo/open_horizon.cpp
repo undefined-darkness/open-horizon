@@ -96,7 +96,7 @@ void plane_camera::add_delta_pos(float dx, float dy, float dz)
 
 void plane_camera::set_aspect(float aspect)
 {
-    nya_scene::get_camera().set_proj(55.0, aspect, 1.0, 64000.0);
+    nya_scene::get_camera().set_proj(55.0, aspect, 1.0, 21000.0);
                       //1300.0);
     update();
 }

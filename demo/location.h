@@ -12,7 +12,7 @@
 class sky_mesh
 {
 public:
-    bool load(const char *name);
+    bool load(const char *name, const location_params &params);
     void draw();
 
 private:

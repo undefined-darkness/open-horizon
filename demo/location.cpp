@@ -46,7 +46,7 @@ struct solid_sphere
 
 //------------------------------------------------------------
 
-bool sky_mesh::load(const char *name)
+bool sky_mesh::load(const char *name, const location_params &params)
 {
     solid_sphere s(20000.0,9,12);
 
@@ -55,6 +55,14 @@ bool sky_mesh::load(const char *name)
 
     m_sky_shader.load("shaders/sky.nsh");
     m_envmap = shared::get_texture(shared::load_texture((std::string("Map/envmap_") + name + ".nut").c_str()));
+
+    nya_math::vec3 about_fog_color = params.sky.low.ambient * params.sky.low.skysphere_intensity; //ToDo
+    for (int i = 0; i < m_sky_shader.internal().get_uniforms_count(); ++i)
+    {
+        if (m_sky_shader.internal().get_uniform(i).name == "fog color")
+            m_sky_shader.internal().set_uniform_value(i, about_fog_color.x, about_fog_color.y, about_fog_color.z, 1.0);
+    }
+
     return true;
 }
 
@@ -96,7 +104,8 @@ bool location::load(const char *name)
     auto t3 = shared::get_texture(shared::load_texture((std::string("Map/ocean_nrm_") + name + ".nut").c_str()));
     m_location.m_land_material.set_texture("normal", t3);
 
-    m_sky.load(name);
+    m_sky.load(name, m_params);
+
 
    return true;
 }
