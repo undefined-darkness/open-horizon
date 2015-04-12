@@ -192,7 +192,7 @@ void effect_clouds::draw_obj()
 
         const auto &o = m_clouds.obj_clouds[d.second];
         auto &l = m_obj_levels[d.second % m_obj_levels.size()];
-        m_shader_obj.internal().set_uniform_value(m_shader_pos, o.second.x, l.height, o.second.y, 0.0f);
+        m_shader_obj.internal().set_uniform_value(m_shader_pos, o.second.x, height, o.second.y, 0.0f);
         m_mesh.draw(l.offset,l.count);
     }
 
