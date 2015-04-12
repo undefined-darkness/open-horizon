@@ -69,6 +69,10 @@ unsigned int load_texture(const void *tex_data, size_t tex_size)
     data.copy_from(reader.get_data(), reader.get_remained());
     nya_scene::texture::load_dds(st, data, "");
     data.free();
+
+    if(hash_id > 1000000000) //ToDo
+        st.tex.set_aniso(16);
+
     nya_scene::texture tex;
     tex.create(st);
     shared::add_texture(hash_id, tex);
