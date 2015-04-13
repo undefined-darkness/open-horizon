@@ -66,7 +66,7 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
         
         prnt( "%6d %6d   ", s[0], s[1] );
         for (int j = 0; j < 4; ++j)
-            prnt("%3d ", c[j]);
+            prnt("%3d ", ((unsigned char *)c)[j]);
         prnt( "   ");
 
         for (int j = 0; j < 4; ++j)
@@ -100,6 +100,16 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
 inline void print_data(const nya_memory::memory_reader &reader)
 {
     print_data(reader, reader.get_offset(), reader.get_remained());
+}
+
+//------------------------------------------------------------
+
+inline void print_data(const char *name)
+{
+    auto r = shared::load_resource(name);
+    nya_memory::memory_reader reader(r.get_data(),r.get_size());
+    print_data(reader, reader.get_offset(), reader.get_remained());
+    r.free();
 }
 
 //------------------------------------------------------------
@@ -150,6 +160,87 @@ inline void print_params(const char *name)
 
     for (size_t i = 0; i < values.size(); ++i)
         printf("%03zu %s\n", i, values[i].c_str());
+
+    r.free();
+}
+
+//------------------------------------------------------------
+
+inline void find_data(nya_resources::resources_provider &rp, const void *data, size_t size, size_t align=4)
+{
+    for (int i = 0; i < rp.get_resources_count(); ++i)
+    {
+        auto n=rp.get_resource_name(i);
+        if (!n)
+            continue;
+
+        auto r = rp.access(n);
+        if (!r)
+            continue;
+
+        size_t found_count = 0;
+
+        nya_memory::tmp_buffer_scoped buf(r->get_size());
+        r->read_all(buf.get_data());
+        auto d = (char *)buf.get_data();
+        for (size_t j = 0; j + size < r->get_size(); j+=align)
+        {
+            if (memcmp(data, d + j, size) == 0)
+                ++found_count;
+        }
+
+        if (found_count > 0)
+            printf("found %lu times in %s\n", found_count, n);
+    }
+
+    printf("\n");
+}
+
+//------------------------------------------------------------
+
+inline void find_data(nya_resources::resources_provider &rp, float *f, size_t count, float eps = 0.01f, size_t align=4)
+{
+    for (int i = 0; i < rp.get_resources_count(); ++i)
+    {
+        auto n=rp.get_resource_name(i);
+        if (!n)
+            continue;
+
+        auto r = rp.access(n);
+        if (!r)
+            continue;
+
+        size_t found_count = 0;
+
+        nya_memory::tmp_buffer_scoped buf(r->get_size());
+        r->read_all(buf.get_data());
+        for (size_t j = 0; j + count * sizeof(float) < r->get_size(); j+=align)
+        {
+            bool found = true;
+            float *t = (float *)((char *)buf.get_data() + j);
+            for (size_t k = 0; k < count; ++k)
+            {
+                if (isnan(t[k]))
+                {
+                    found = false;
+                    continue;
+                }
+
+                if (fabsf(t[k] - f[k]) < eps)
+                    continue;
+
+                found = false;
+
+            }
+            if(found)
+                ++found_count;
+        }
+
+        if (found_count > 0)
+            printf("found %lu times in %s\n", found_count, n);
+    }
+    
+    printf("\n");
 }
 
 //------------------------------------------------------------

@@ -28,7 +28,7 @@ uniform vec4 anim;
 void main()
 {
     tc=gl_MultiTexCoord0.xy;
-    ocean_tc=gl_Vertex.xz*0.0000076-vec2(0.5,0.5);
+    ocean_tc=0.5*gl_Vertex.xz/65535.0-vec2(0.5);
     detail_tc=gl_Vertex.xz*0.01;
     normal_tc=gl_Vertex.xz*0.005+anim.xy;
     normal_tc2=gl_Vertex.xz*0.005+anim.zw;

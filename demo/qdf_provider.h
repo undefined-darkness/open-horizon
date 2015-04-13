@@ -27,6 +27,10 @@ public:
     }
 
 public:
+    int get_resources_count() { return m_archive.get_files_count(); }
+    const char *get_resource_name(int idx) { return m_archive.get_file_name(idx); }
+
+public:
     bool open_archive(const char *name)
     {
         return m_archive.open(name);
