@@ -168,8 +168,6 @@ int main(void)
     //plane_name = "su33", plane_color=0; //5
     //plane_name = "su34", plane_color=1;
 
-    //f16c, av8b, su24, su25, f14d, m29a, m21b - no tail anim
-    //b01b, su24, f14d - wings anim
     //b02a - anim offsets
     //su37 - weird colors
     //yf23 - weird textures

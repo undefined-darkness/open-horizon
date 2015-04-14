@@ -314,6 +314,7 @@ bool aircraft::load(const char *name, unsigned int color_idx)
     m_mesh.set_relative_anim_time(0, 'ldab', 0.0);
     m_mesh.set_relative_anim_time(0, 'rudl', 0.5); //tail vert
     m_mesh.set_relative_anim_time(0, 'rudr', 0.5);
+    m_mesh.set_relative_anim_time(0, 'rudn', 0.5);
     m_mesh.set_relative_anim_time(0, 'elvl', 0.5); //tail hor
     m_mesh.set_relative_anim_time(0, 'elvr', 0.5);
     m_mesh.set_relative_anim_time(0, 'tefn', 0.0); //elerons, used only with flaperons
@@ -328,6 +329,8 @@ bool aircraft::load(const char *name, unsigned int color_idx)
     m_mesh.set_relative_anim_time(0, 'spwc', 0.0); //special weapon
     m_mesh.set_relative_anim_time(0, 'fdwg', 0.0); //carrier
     m_mesh.set_relative_anim_time(0, 'tail', 0.0); //carrier, tail only
+
+    //ToDo: su24 spll splr
 
     //m_mesh.set_anim_speed(0, 'vctn', 0.5);
 
@@ -440,6 +443,8 @@ void aircraft::update(int dt)
         m_mesh.set_anim_speed(0, 'rmpn', -0.5f);
     }
 
+    m_mesh.set_anim_speed(0, 'vwgn', m_speed >  m_params.move.speed.speedCruising + 250 ? 0.8: -0.8);
+
     //apply acceleration
 
     m_speed += m_params.move.accel.acceleR * throttle * kdt * 50.0f;
@@ -506,6 +511,7 @@ void aircraft::update(int dt)
 
     m_mesh.set_anim_speed(0, 'rudl', (ideal_rl * 0.5 + 0.5 - m_mesh.get_relative_anim_time(0, 'rudl')) * ae_anim_speed_k);
     m_mesh.set_anim_speed(0, 'rudr', (ideal_rr * 0.5 + 0.5 - m_mesh.get_relative_anim_time(0, 'rudr')) * ae_anim_speed_k);
+    m_mesh.set_anim_speed(0, 'rudn', (ideal_rl * 0.5 + 0.5 - m_mesh.get_relative_anim_time(0, 'rudn')) * ae_anim_speed_k);
 
     //weapon animations
 
