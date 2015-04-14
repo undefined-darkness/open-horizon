@@ -11,6 +11,7 @@
 #include "location.h"
 #include "clouds.h"
 #include "shared.h"
+#include "debug.h"
 
 #include "render/render.h"
 #include "math/scalar.h"
@@ -42,7 +43,7 @@ private:
     void update();
 
 public:
-    plane_camera(): m_dpos(0.0f, 3.0f, 12.0f) { m_drot.y = 3.14f; }
+    plane_camera(): m_dpos(0.0f, 2.0f, -10.0f) { m_drot.y = 3.14f; }
 
 private:
     nya_math::vec3 m_drot;
@@ -153,8 +154,8 @@ nya_scene::texture load_tonecurve(const char *file_name)
 
 int main(void)
 {
-    const char *plane_name = "su35"; //f22a su35 b02a pkfa su25 su33 su34  kwmr
-    const char *plane_color = "color02"; // = 0;
+    const char *plane_name = 0;
+    int plane_color = 0;
     const char *location_name = "ms01";
     //ms06 - dubai
     //ms11b - moscow
@@ -162,8 +163,20 @@ int main(void)
     //ms50 - tokyo
     //ms30 - paris
 
-    plane_name = "f22a",plane_color=0;
-    //plane_name = "su33",plane_color=0;
+    plane_name = "su35", plane_color=1;
+    //plane_name = "f22a", plane_color=0;
+    //plane_name = "su33", plane_color=0;
+    //plane_name = "su34", plane_color=1;
+
+    //f16c, av8b, su24, su25, f14d, m29a, m21b - no tail anim
+    //b01b, su24, f14d - wings anim
+    //b02a - anim offsets
+    //su37 - weird colors
+    //yf23 - weird textures
+    //pkfa - missile bays anim
+    //a10a, fa44, ac130, f17a, f15e, f15m - anim assert
+    //m21b - no cockpit
+    //helicopters - not yet supported
 
 #ifndef _WIN32
     chdir(nya_system::get_app_path());
@@ -218,6 +231,27 @@ int main(void)
     } trp(nya_resources::get_resources_provider());
 
     nya_resources::set_resources_provider(&trp);
+
+    //125 160 125   105 140 105
+    //unsigned char c0[] = {125,160,125}; //from gpa
+    //unsigned char c1[] = {105,140,105};
+    //unsigned char c2[] = {113,159,123}; //from screenshot
+    //unsigned char c3[] = {133,177,143};
+    //unsigned char c4[] = {0x7d,0xa0,0x7d};
+    //unsigned char c4[] = {200,200,200};
+    //find_data(qdfp,c0,3);
+    //find_data(qdfp,c1,3);
+    //find_data(qdfp,c2,3);
+    //find_data(qdfp,c4,3,1);
+
+    //unsigned int color = 2107669760;
+    //unsigned int color = 2594680320;
+    //find_data(qdfp,&color,4);
+
+    //float f0[] = {1.0f/125, 1.0f/160, 1.0f/125};
+    //float f0[] = {0.4901961, 0.627451, 0.4901961};
+    //float f2[] = {1.0/113, 1.0/159, 1.0/123};
+    //find_data(qdfp,f2,3,0.001f,4);
 
     if (!glfwInit())
         return -1;
@@ -280,9 +314,8 @@ int main(void)
     scene.set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
 
     plane_camera camera;
-    //camera.add_delta_rot(0.1f,0.0f);
-    if (plane_name[0] == 'b')
-        camera.add_delta_pos(0.0f, -2.0f, -20.0f);
+    auto off = -scene.player_plane.get_camera_offset();
+    camera.add_delta_pos(off.x, off.y, off.z);
 
     double mx,my;
     glfwGetCursorPos(window, &mx, &my);

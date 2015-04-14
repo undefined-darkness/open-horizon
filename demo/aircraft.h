@@ -12,7 +12,7 @@
 class aircraft
 {
 public:
-    bool load(const char *name, const char *color_name = 0);
+    bool load(const char *name, unsigned int color_idx = 0);
 
     void draw() { m_mesh.draw(0); }
 
@@ -23,6 +23,7 @@ public:
     float get_speed() { return m_speed; }
     float get_alt() { return m_pos.y; }
     float get_hp() { return m_hp; }
+    const nya_math::vec3 &get_camera_offset() const { return m_camera_offset; }
 
     void set_controls(const nya_math::vec3 &rot, float throttle, float brake);
 
@@ -65,6 +66,8 @@ private:
     bool m_special_selected;
 
     float m_rocket_bay_time;
+
+    nya_math::vec3 m_camera_offset;
 };
 
 //------------------------------------------------------------

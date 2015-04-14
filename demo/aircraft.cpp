@@ -8,6 +8,9 @@
 #include "render/screen_quad.h"
 #include "render/fbo.h"
 #include "xml.h"
+#include "fhm.h"
+#include "debug.h"
+#include <assert.h>
 
 //------------------------------------------------------------
 
@@ -66,53 +69,201 @@ private:
     nya_scene::material::param_array m_colors;
 };
 
-bool aircraft::load(const char *name, const char *color_name)
+class aircraft_information
+{
+public:
+    struct color_info
+    {
+        int coledit_idx;
+        nya_math::vec3 colors[6];
+    };
+
+    struct info
+    {
+        std::string name;
+        nya_math::vec3 camera_offset;
+        std::vector<color_info> color_info;
+    };
+
+    info *get_info(const char *name)
+    {
+        if (!name)
+            return 0;
+
+        std::string name_str(name);
+        std::transform(name_str.begin(), name_str.end(), name_str.begin(), ::tolower);
+        for (auto &i: m_infos)
+        {
+            if (i.name == name_str)
+                return &i;
+        }
+
+        return 0;
+    }
+
+    aircraft_information(const char *name)
+    {
+        //ToDo: don't determine aircraft order by camera offsets file
+
+        auto r = shared::load_resource("Camera/AdjustedCameraOffset.txt");
+
+        std::vector<std::string> values;
+        std::string tmp;
+        for (size_t i = 0; i < r.get_size(); ++i)
+        {
+            char c=((char *)r.get_data())[i];
+            if (c=='\n' || c=='\r')
+            {
+                if (tmp.empty())
+                    continue;
+
+                auto t = tmp.substr(0,7);
+
+                if (t !="float\t.")
+                {
+                    tmp.clear();
+                    continue;
+                }
+
+                tmp = tmp.substr(t.length());
+
+                for (size_t j = 0; j < tmp.size(); ++j)
+                {
+                    std::string type = tmp.substr(0, j);
+                    if (tmp[j] == '\t')
+                    {
+                        tmp = tmp.substr(j + 1);
+                        break;
+                    }
+                }
+
+                std::string plane_name = tmp.substr(0,4);
+                std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
+
+                auto info = get_info(plane_name.c_str());
+                if(!info)
+                {
+                    m_infos.resize(m_infos.size() + 1);
+                    m_infos.back().name = plane_name;
+                    info = &m_infos.back();
+                    //printf("%s\n",plane_name.c_str());
+                }
+
+                auto d = tmp.find(':');
+                auto vname = tmp.substr(d + 1);
+                tmp = tmp.substr(5, d - 1 - 5);
+                float v = atof(vname.c_str());
+
+                if (tmp == "AroundLook.Offset.X") info->camera_offset.x = v;
+                if (tmp == "AroundLook.Offset.Y") info->camera_offset.y = v;
+                if (tmp == "AroundLook.Offset.Z") info->camera_offset.z = v;
+
+                //printf("%s=%f\n",tmp.c_str(),v);
+
+                tmp.clear();
+                continue;
+            }
+
+            tmp.push_back(c);
+        }
+
+        r.free();
+
+        r = shared::load_resource(name);
+        nya_memory::memory_reader reader(r.get_data(),r.get_size());
+
+        struct ain_header
+        {
+            char sign[4];
+            uint32_t unknown;
+            uint32_t count;
+            uint32_t zero;
+        };
+
+        auto header = reader.read<ain_header>();
+        if (memcmp(header.sign, "AIN", 3) == 0)
+        {
+            struct ain_entry
+            {
+                uint16_t color_num;
+                uint16_t plane_num;
+                uint32_t unknown[39];
+                uint8_t colors[6][4];
+                uint32_t unknown2[6];
+            };
+
+            std::vector<ain_entry> entries(header.count);
+            for (auto &e: entries)
+            {
+                e = reader.read<ain_entry>();
+                auto plane_idx = int(e.plane_num)-1;
+                assert(plane_idx >= 0);
+
+                if (plane_idx >= m_infos.size())
+                    continue;
+
+                auto &info = m_infos[plane_idx];
+                auto color_idx = int(e.color_num)-1;
+                if (color_idx >= (int)info.color_info.size())
+                     info.color_info.resize(color_idx + 1);
+
+                auto &c = info.color_info[color_idx];
+                c.coledit_idx = color_idx + 1; //ToDo
+
+                for (int i = 0; i < 6; ++i)
+                {
+                    auto ec = e.colors[i];
+                    c.colors[i] = nya_math::vec3(ec[3], ec[2], ec[1]) / 255.0;
+                }
+            }
+        }
+        r.free();
+    }
+
+private:
+    std::vector<info> m_infos;
+};
+
+bool aircraft::load(const char *name, unsigned int color_idx)
 {
     if (!name)
         return false;
 
-    pugi::xml_document doc;
-    if (!load_xml((std::string("aircrafts/")+name+".xml").c_str(), doc))
+    std::string name_str(name);
+
+    static aircraft_information information("target/Information/AircraftInformationC05.AIN");
+    auto info = information.get_info(name);
+    if (!info)
         return false;
 
-    auto root=doc.child("aircraft");
-    if (!root)
+    if (color_idx >= info->color_info.size())
         return false;
 
-    m_mesh.load(root.child("model").attribute("file").as_string());
-    m_mesh.set_ndxr_texture(0, "ambient", root.child("ambient").attribute("file").as_string());
+    auto &color = info->color_info[color_idx];
 
-    auto paint = root.child("paint");
-    if (color_name)
-    {
-        for(auto p=paint;p;p=p.next_sibling())
-        {
-            if(strcmp(color_name,p.attribute("name").as_string(""))==0)
-            {
-                paint=p;
-                break;
-            }
-        }
-    }
+    m_camera_offset = info->camera_offset;
 
-    if(paint)
-    {
-        color_baker baker;
-        baker.set_base(paint.child("base").attribute("file").as_string());
-        baker.set_colx(paint.child("colx").attribute("file").as_string());
-        baker.set_coly(paint.child("coly").attribute("file").as_string());
+    m_mesh.load(("model_id/mech/plyr/p_" + name_str + "/p_" + name_str + "_pcom.fhm").c_str());
+    m_mesh.set_ndxr_texture(0, "ambient", ("model_id/tdb/mech/plyr/p_" + name_str + "/00/p_" + name_str + "_00_amb.img").c_str());
 
-        int idx=0;
-        for(auto c=paint.child("color");c;c=c.next_sibling(),++idx)
-            baker.set_color(idx, nya_math::vec3(c.attribute("r").as_int()/255.0f,
-                                                c.attribute("g").as_int()/255.0f,
-                                                c.attribute("b").as_int()/255.0f));
+    char buf[1024];
 
-        m_mesh.set_ndxr_texture(0, "diffuse", baker.bake() );
-        m_mesh.set_ndxr_texture(0, "specular", paint.child("specular").attribute("file").as_string());
-    }
+    color_baker baker;
+    sprintf(buf, "model_id/tdb/mech/plyr/p_%s/%02d/p_%s_%02d_col.img", name, color.coledit_idx, name, color.coledit_idx);
+    baker.set_base(buf);
+    sprintf(buf, "model_id/tdb/mech/plyr/p_%s/coledit%02d/p_%s_%02d_mkx.img", name, color.coledit_idx, name, color.coledit_idx);
+    baker.set_colx(buf);
+    sprintf(buf, "model_id/tdb/mech/plyr/p_%s/coledit%02d/p_%s_%02d_mky.img", name, color.coledit_idx, name, color.coledit_idx);
+    baker.set_coly(buf);
 
-    m_params.load(root.child("phys").attribute("file").as_string());
+    for (int i = 0; i < 6; ++i)
+        baker.set_color(i, color.colors[i]);
+
+    m_mesh.set_ndxr_texture(0, "diffuse", baker.bake() );
+    sprintf(buf, "model_id/tdb/mech/plyr/p_%s/%02d/p_%s_%02d_spe.img", name, color.coledit_idx, name, color.coledit_idx);
+    m_mesh.set_ndxr_texture(0, "specular", buf);
+
+    m_params.load(("Player/Behavior/param_p_" + name_str + ".bin").c_str());
 
     m_speed = m_params.move.speed.speedCruising;
 
@@ -138,6 +289,8 @@ bool aircraft::load(const char *name, const char *color_name)
     m_mesh.set_relative_anim_time(0, 'spwc', 0.0); //special weapon
     m_mesh.set_relative_anim_time(0, 'fdwg', 0.0); //carrier
     m_mesh.set_relative_anim_time(0, 'tail', 0.0); //carrier, tail only
+
+    //m_mesh.set_anim_speed(0, 'vctn', 0.5);
 
     return true;
 }

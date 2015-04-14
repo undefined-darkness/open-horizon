@@ -25,7 +25,6 @@
 		F5D796A619B35471006269F0 /* aircraft.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D796A419B35471006269F0 /* aircraft.cpp */; };
 		F5DAA8D21AD7CEAD00C2C633 /* postprocess.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5DAA8CC1AD7CE6900C2C633 /* postprocess.txt */; };
 		F5DAA8D31AD7CEAD00C2C633 /* shaders in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5DAA8CE1AD7CE7600C2C633 /* shaders */; };
-		F5DAA8D61AD7CF7600C2C633 /* aircrafts in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5DAA8D41AD7CED900C2C633 /* aircrafts */; };
 		F5DFAD8B19BB248C00786736 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F5DFAD8A19BB248C00786736 /* libz.dylib */; };
 		F5DFAD9019BCA1EA00786736 /* location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5DFAD8E19BCA1EA00786736 /* location.cpp */; };
 		F5E89E591AACB8D200B72EAA /* dpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5E89E581AACB8D200B72EAA /* dpl.cpp */; };
@@ -55,7 +54,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
-				F5DAA8D61AD7CF7600C2C633 /* aircrafts in CopyFiles */,
 				F5DAA8D21AD7CEAD00C2C633 /* postprocess.txt in CopyFiles */,
 				F5DAA8D31AD7CEAD00C2C633 /* shaders in CopyFiles */,
 			);
@@ -104,7 +102,6 @@
 		F5D796A519B35471006269F0 /* aircraft.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aircraft.h; sourceTree = "<group>"; };
 		F5DAA8CC1AD7CE6900C2C633 /* postprocess.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = postprocess.txt; sourceTree = "<group>"; };
 		F5DAA8CE1AD7CE7600C2C633 /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; path = shaders; sourceTree = "<group>"; };
-		F5DAA8D41AD7CED900C2C633 /* aircrafts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = aircrafts; sourceTree = "<group>"; };
 		F5DFAD8A19BB248C00786736 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		F5DFAD8E19BCA1EA00786736 /* location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = location.cpp; sourceTree = "<group>"; };
 		F5DFAD8F19BCA1EA00786736 /* location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = location.h; sourceTree = "<group>"; };
@@ -245,7 +242,6 @@
 		F5DAA8CB1AD7CE5000C2C633 /* resources */ = {
 			isa = PBXGroup;
 			children = (
-				F5DAA8D41AD7CED900C2C633 /* aircrafts */,
 				F5DAA8CC1AD7CE6900C2C633 /* postprocess.txt */,
 				F5DAA8CE1AD7CE7600C2C633 /* shaders */,
 			);
