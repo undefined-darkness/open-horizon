@@ -7,10 +7,10 @@
 #include "memory/tmp_buffer.h"
 #include "render/screen_quad.h"
 #include "render/fbo.h"
-#include "xml.h"
 #include "fhm.h"
 #include "debug.h"
 #include <assert.h>
+#include "dpl.h"
 
 //------------------------------------------------------------
 
@@ -208,8 +208,7 @@ public:
                      info.color_info.resize(color_idx + 1);
 
                 auto &c = info.color_info[color_idx];
-                c.coledit_idx = color_idx + 1; //ToDo
-
+                c.coledit_idx = -1;
                 for (int i = 0; i < 6; ++i)
                 {
                     auto ec = e.colors[i];
@@ -218,6 +217,46 @@ public:
             }
         }
         r.free();
+
+        //ToDo
+
+        std::map<std::string,std::vector<int> > ints;
+
+        dpl_file dp;
+        dp.open("datapack.bin");
+
+        std::string buf;
+        for (int i = 0; i < dp.get_files_count(); ++i)
+        {
+            buf.resize(dp.get_file_size(i));
+            dp.read_file_data(i, &buf[0]);
+            assert(buf.size()>16);
+            if (strncmp(buf.c_str(), ";DPL_P_", 7) != 0)
+                continue;
+
+            if (buf[7+4] != '_' || buf[7+4+1] != 'T')
+                continue;
+
+            int idx = atoi(&buf[7+4+2]);
+
+            std::string plane_name = buf.substr(7,4);
+            std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
+
+            ints[plane_name].push_back(idx);
+        }
+
+        dp.close();
+
+        for(auto &info: m_infos)
+        {
+            auto &in = ints[info.name];
+
+            for (size_t i = 0; i < info.color_info.size(); ++i)
+            {
+                assert(i < in.size());
+                info.color_info[i].coledit_idx = in[i];
+            }
+        }
     }
 
 private:

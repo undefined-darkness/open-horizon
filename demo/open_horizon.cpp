@@ -163,9 +163,9 @@ int main(void)
     //ms50 - tokyo
     //ms30 - paris
 
-    plane_name = "su35", plane_color=1;
-    //plane_name = "f22a", plane_color=0;
-    //plane_name = "su33", plane_color=0;
+    //plane_name = "su35", plane_color=1;
+    plane_name = "f22a", plane_color=0;
+    //plane_name = "su33", plane_color=0; //5
     //plane_name = "su34", plane_color=1;
 
     //f16c, av8b, su24, su25, f14d, m29a, m21b - no tail anim
@@ -231,27 +231,6 @@ int main(void)
     } trp(nya_resources::get_resources_provider());
 
     nya_resources::set_resources_provider(&trp);
-
-    //125 160 125   105 140 105
-    //unsigned char c0[] = {125,160,125}; //from gpa
-    //unsigned char c1[] = {105,140,105};
-    //unsigned char c2[] = {113,159,123}; //from screenshot
-    //unsigned char c3[] = {133,177,143};
-    //unsigned char c4[] = {0x7d,0xa0,0x7d};
-    //unsigned char c4[] = {200,200,200};
-    //find_data(qdfp,c0,3);
-    //find_data(qdfp,c1,3);
-    //find_data(qdfp,c2,3);
-    //find_data(qdfp,c4,3,1);
-
-    //unsigned int color = 2107669760;
-    //unsigned int color = 2594680320;
-    //find_data(qdfp,&color,4);
-
-    //float f0[] = {1.0f/125, 1.0f/160, 1.0f/125};
-    //float f0[] = {0.4901961, 0.627451, 0.4901961};
-    //float f2[] = {1.0/113, 1.0/159, 1.0/123};
-    //find_data(qdfp,f2,3,0.001f,4);
 
     if (!glfwInit())
         return -1;
