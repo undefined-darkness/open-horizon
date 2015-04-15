@@ -563,8 +563,6 @@ void aircraft::update(int dt)
     m_mesh.set_anim_speed(0, 'swcc', m_special_selected ? 1.0f : -1.0f);
     m_mesh.set_anim_speed(0, 'swc3', m_special_selected ? 1.0f : -1.0f);
 
-    m_mesh.set_anim_speed(0, 'ldab', m_special_selected ? 1.0f : -1.0f);
-
     m_mesh.set_pos(m_pos);
     m_mesh.set_rot(m_rot);
     m_mesh.update(dt);
