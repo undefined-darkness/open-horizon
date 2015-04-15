@@ -44,3 +44,23 @@ private:
 };
 
 //------------------------------------------------------------
+
+class dpl_entry
+{
+public:
+    int get_files_count() const { return (int)m_entries.size(); }
+    uint32_t get_file_size(int idx) const { return m_entries[idx].second; }
+    const void *get_file_data(int idx) const { return (char *)m_data + m_entries[idx].first; }
+
+    dpl_entry(const void *data, uint32_t size): m_data(data), m_size(size) { read_entries(0); }
+
+private:
+    void read_entries(uint32_t offset);
+
+private:
+    const void *m_data;
+    uint32_t m_size;
+    std::vector<std::pair<uint32_t,uint32_t> > m_entries;
+};
+
+//------------------------------------------------------------

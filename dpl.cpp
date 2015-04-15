@@ -243,3 +243,41 @@ bool dpl_file::read_file_data(int idx, void *data) const
 }
 
 //------------------------------------------------------------
+
+void dpl_entry::read_entries(uint32_t offset)
+{
+    assert(m_data);
+    assert(offset < m_size);
+    nya_memory::memory_reader reader((char *)m_data + offset, m_size - offset);
+
+    uint32_t count = reader.read<uint32_t>();
+    for(uint32_t i = 0; i < count; ++i)
+    {
+        reader.seek(4 + 8 * i);
+
+        uint32_t has_childs = reader.read<uint32_t>();
+        uint32_t entry_offset = reader.read<uint32_t>();
+
+        assert(has_childs == 0 || has_childs == 1);
+
+        if (has_childs > 0)
+        {
+            read_entries(offset + entry_offset);
+            continue;
+        }
+
+        reader.seek(entry_offset);
+
+        auto unknown = reader.read<uint16_t>();
+        assert(unknown<32);
+        auto unknown2 = reader.read<uint16_t>();
+        assert(unknown2<16);
+        auto unknown_pot = reader.read<uint32_t>();
+        assert(unknown_pot == 16 || unknown_pot == 128 || unknown_pot == 4096);
+        auto off = reader.read<uint32_t>();
+        auto size = reader.read<uint32_t>();
+        m_entries.push_back(std::make_pair(off, size));
+    }
+}
+
+//------------------------------------------------------------
