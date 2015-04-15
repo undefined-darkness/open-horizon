@@ -17,6 +17,7 @@ public:
     void draw() { m_mesh.draw(0); }
 
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; }
+    void set_rot(const nya_math::quat &rot) { m_rot = rot; }
     const nya_math::vec3 &get_pos() { return m_pos; }
     nya_math::quat get_rot() { return m_rot; }
 

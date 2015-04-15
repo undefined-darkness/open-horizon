@@ -248,6 +248,8 @@ int main(void)
             loc = location();
             clouds = effect_clouds();
 
+            shared::clear_textures();
+
             unload();
             load("postprocess.txt");
 
@@ -263,6 +265,7 @@ int main(void)
             set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
 
             player_plane.set_pos(nya_math::vec3(-300, 50, 2000));
+            player_plane.set_rot(nya_math::quat());
             m_fade_time = 2500;
 
             //shared::clear_textures(); //ToDo
