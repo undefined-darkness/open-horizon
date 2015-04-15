@@ -332,6 +332,8 @@ bool aircraft::load(const char *name, unsigned int color_idx)
     m_mesh.set_relative_anim_time(0, 'gunc', 0.0); //mgun
     m_mesh.set_relative_anim_time(0, 'misc', 0.0); //primary weapon
     m_mesh.set_relative_anim_time(0, 'spwc', 0.0); //special weapon
+    m_mesh.set_relative_anim_time(0, 'swcc', 0.0); //special weapon
+    m_mesh.set_relative_anim_time(0, 'swc3', 0.0); //special weapon
     m_mesh.set_relative_anim_time(0, 'fdwg', 0.0); //carrier
     m_mesh.set_relative_anim_time(0, 'tail', 0.0); //carrier, tail only
 
@@ -516,16 +518,22 @@ void aircraft::update(int dt)
     m_mesh.set_anim_speed(0, 'cndr', (ideal_cn * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'cndr')) * ae_anim_speed_k);
     m_mesh.set_anim_speed(0, 'cndn', (ideal_cn * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'cndn')) * ae_anim_speed_k);
 
-    const bool has_air_brake = m_mesh.has_anim(0,'abkn');
+    bool has_air_brake = m_mesh.has_anim(0,'abkn');
     if(has_air_brake)
         m_mesh.set_anim_speed(0, 'abkn', brake>0.7f ? 1.0: -1.0);
+    else
+        has_air_brake = m_mesh.has_anim(0,'spll') || m_mesh.has_anim(0,'splr');
+
+    m_mesh.set_anim_speed(0, 'spll', brake>0.7f ? 1.0: -1.0);
+    m_mesh.set_anim_speed(0, 'splr', brake>0.7f ? 1.0: -1.0);
 
     float ideal_rl = clamp(-m_controls_rot.y + (!has_air_brake ? brake : 0.0), -1.0f, 1.0f) * speed_k;
     float ideal_rr = clamp(-m_controls_rot.y - (!has_air_brake ? brake : 0.0), -1.0f, 1.0f) * speed_k;
+    float ideal_rn = clamp(-m_controls_rot.y, -1.0f, 1.0f) * speed_k;
 
     m_mesh.set_anim_speed(0, 'rudl', (ideal_rl * 0.5 + 0.5 - m_mesh.get_relative_anim_time(0, 'rudl')) * ae_anim_speed_k);
     m_mesh.set_anim_speed(0, 'rudr', (ideal_rr * 0.5 + 0.5 - m_mesh.get_relative_anim_time(0, 'rudr')) * ae_anim_speed_k);
-    m_mesh.set_anim_speed(0, 'rudn', (ideal_rl * 0.5 + 0.5 - m_mesh.get_relative_anim_time(0, 'rudn')) * ae_anim_speed_k);
+    m_mesh.set_anim_speed(0, 'rudn', (ideal_rn * 0.5 + 0.5 - m_mesh.get_relative_anim_time(0, 'rudn')) * ae_anim_speed_k);
 
     //weapon animations
 
@@ -552,6 +560,10 @@ void aircraft::update(int dt)
     }
 
     m_mesh.set_anim_speed(0, 'spwc', m_special_selected ? 1.0f : -1.0f);
+    m_mesh.set_anim_speed(0, 'swcc', m_special_selected ? 1.0f : -1.0f);
+    m_mesh.set_anim_speed(0, 'swc3', m_special_selected ? 1.0f : -1.0f);
+
+    m_mesh.set_anim_speed(0, 'ldab', m_special_selected ? 1.0f : -1.0f);
 
     m_mesh.set_pos(m_pos);
     m_mesh.set_rot(m_rot);

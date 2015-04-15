@@ -453,8 +453,7 @@ int main(void)
             scene.resize(screen_width, screen_height);
         }
 
-        if (!paused)
-            scene.update(speed10x ? dt * 10 : dt);
+        scene.update(paused ? 0 : (speed10x ? dt * 10 : dt));
         scene.draw();
 
         glfwSwapBuffers(window);
