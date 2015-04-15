@@ -302,7 +302,8 @@ int main(void)
             if (strcmp(name, "b01b") == 0)
                 camera.add_delta_pos(0.0, -4.0, -2.0);
 
-            if (strcmp(name, "su25") == 0 || strcmp(name, "su34") == 0 || strcmp(name, "f16c") == 0 || strcmp(name, "f02a") == 0)
+            if (strcmp(name, "su25") == 0 || strcmp(name, "su34") == 0 || strcmp(name, "f16c") == 0
+                || strcmp(name, "f02a") == 0 || strcmp(name, "su37") == 0)
                 camera.add_delta_pos(0.0, -1.0, 0.0);
 
             //shared::clear_textures(); //ToDo
@@ -371,30 +372,30 @@ int main(void)
     const char *planes[] = {
         "f22a",
         "su24",
-        "f18f",
+        "f18f", //dlc color 4
         "m29a",
         "f02a",
         "su25",
         "b01b",
         "f16c",
         "su33",
-        "kwmr",
+        "kwmr", //dummy dlc colors
         "su34",
         "pkfa", //bay anim offset
         "av8b",
-        "f35b",
+        "f35b", //dlc color
         "j39c",
         "mr2k",
-        "rflm",
+        "rflm", //dlc color
         "su47",
-        "tnd4",
+        //"tnd4", // 0 colors if load from dlc
         "typn",
         "f04e",
-        "su35",
+        "su35", //dlc 12
         "b02a", //bay anim offset
         "f14d",
         "m21b", //no cockpit
-        "f16f",
+        "f16f", //dlc color 4
         "su37",
 
         //"yf23", //weird anims

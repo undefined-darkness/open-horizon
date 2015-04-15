@@ -257,13 +257,17 @@ public:
         {
             auto &in = ints[info.name];
 
+            int last_idx = 0;
             for (size_t i = 0; i < info.color_info.size(); ++i)
             {
                 //assert(i < in.size());
-                if (i >= in.size())
-                    continue;
-
-                info.color_info[i].coledit_idx = in[i];
+                if (i < in.size())
+                {
+                    info.color_info[i].coledit_idx = in[i];
+                    last_idx = in[i];
+                }
+                else
+                    info.color_info[i].coledit_idx = ++last_idx;
             }
         }
     }
