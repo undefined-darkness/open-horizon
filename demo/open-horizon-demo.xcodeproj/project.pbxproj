@@ -28,6 +28,7 @@
 		F5DFAD8B19BB248C00786736 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F5DFAD8A19BB248C00786736 /* libz.dylib */; };
 		F5DFAD9019BCA1EA00786736 /* location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5DFAD8E19BCA1EA00786736 /* location.cpp */; };
 		F5E89E591AACB8D200B72EAA /* dpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5E89E581AACB8D200B72EAA /* dpl.cpp */; };
+		F5ED51521ADF11B20077874C /* DATA.PAC.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5ED514E1ADF0ADA0077874C /* DATA.PAC.xml */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				F5ED51521ADF11B20077874C /* DATA.PAC.xml in CopyFiles */,
 				F5DAA8D21AD7CEAD00C2C633 /* postprocess.txt in CopyFiles */,
 				F5DAA8D31AD7CEAD00C2C633 /* shaders in CopyFiles */,
 			);
@@ -106,6 +108,8 @@
 		F5DFAD8E19BCA1EA00786736 /* location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = location.cpp; sourceTree = "<group>"; };
 		F5DFAD8F19BCA1EA00786736 /* location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = location.h; sourceTree = "<group>"; };
 		F5E89E581AACB8D200B72EAA /* dpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dpl.cpp; path = ../dpl.cpp; sourceTree = "<group>"; };
+		F5ED514D1ADF0AD30077874C /* dpl_provider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dpl_provider.h; sourceTree = "<group>"; };
+		F5ED514E1ADF0ADA0077874C /* DATA.PAC.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = DATA.PAC.xml; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,6 +140,7 @@
 				F5E89E581AACB8D200B72EAA /* dpl.cpp */,
 				F5A0B05E1A4A30060074854E /* dpl.h */,
 				F595E9D41AB22AAF0006F8C7 /* dpl_keys.h */,
+				F5ED514D1ADF0AD30077874C /* dpl_provider.h */,
 				F506E39619085012002CF23C /* fhm.cpp */,
 				F506E39319084E01002CF23C /* fhm.h */,
 				F5BF9959190A4462005A8AF5 /* fhm_location.cpp */,
@@ -242,6 +247,7 @@
 		F5DAA8CB1AD7CE5000C2C633 /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				F5ED514E1ADF0ADA0077874C /* DATA.PAC.xml */,
 				F5DAA8CC1AD7CE6900C2C633 /* postprocess.txt */,
 				F5DAA8CE1AD7CE7600C2C633 /* shaders */,
 			);
@@ -257,7 +263,6 @@
 			buildPhases = (
 				F503E4D319048C6700C3590A /* Sources */,
 				F503E4D419048C6700C3590A /* Frameworks */,
-				F503E4D519048C6700C3590A /* Resources */,
 				F5DAA8C81AD7CE3300C2C633 /* CopyFiles */,
 			);
 			buildRules = (
@@ -317,16 +322,6 @@
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
-
-/* Begin PBXResourcesBuildPhase section */
-		F503E4D519048C6700C3590A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F503E4D319048C6700C3590A /* Sources */ = {

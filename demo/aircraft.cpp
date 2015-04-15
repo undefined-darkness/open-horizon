@@ -103,7 +103,7 @@ public:
 
     static aircraft_information &get()
     {
-        static aircraft_information info("target/Information/AircraftInformationC05.AIN");
+        static aircraft_information info("target/Information/AircraftInformation.AIN");
         return info;
     }
 
@@ -259,7 +259,10 @@ public:
 
             for (size_t i = 0; i < info.color_info.size(); ++i)
             {
-                assert(i < in.size());
+                //assert(i < in.size());
+                if (i >= in.size())
+                    continue;
+
                 info.color_info[i].coledit_idx = in[i];
             }
         }

@@ -5,7 +5,7 @@
 #include "GLFW/glfw3.h"
 
 #include "qdf_provider.h"
-#include "../dpl.h" //ToDo: dpl_provider.h
+#include "dpl_provider.h"
 
 #include "aircraft.h"
 #include "location.h"
@@ -17,6 +17,7 @@
 #include "math/scalar.h"
 #include "system/system.h"
 #include "resources/file_resources_provider.h"
+#include "resources/composite_resources_provider.h"
 #include "scene/camera.h"
 #include "scene/postprocess.h"
 
@@ -166,20 +167,33 @@ int main(void)
         return 0;
     }
 
-    nya_resources::set_resources_provider(&qdfp);
-
     class target_resource_provider: public nya_resources::resources_provider
     {
         nya_resources::resources_provider &m_provider;
+        dpl_resources_provider m_dlc_provider;
+        nya_resources::file_resources_provider m_fprov;
 
     public:
-        target_resource_provider(nya_resources::resources_provider &provider): m_provider(provider) {}
+        target_resource_provider(nya_resources::resources_provider &provider): m_provider(provider)
+        {
+            m_fprov.set_folder(nya_system::get_app_path());
+
+            nya_resources::composite_resources_provider cprov;
+            cprov.add_provider(&m_fprov);
+            cprov.add_provider(&provider);
+            nya_resources::set_resources_provider(&cprov);
+
+            m_dlc_provider.open_archive("target/DATA.PAC", "DATA.PAC.xml");
+        }
 
     private:
         nya_resources::resource_data *access(const char *resource_name)
         {
             if (!resource_name)
                 return 0;
+
+            if (m_dlc_provider.has(resource_name))
+                return m_dlc_provider.access(resource_name);
 
             const std::string str(resource_name);
             if (m_provider.has(("target/" + str).c_str()))
@@ -188,13 +202,10 @@ int main(void)
             if (m_provider.has(("common/" + str).c_str()))
                 return m_provider.access(("common/" + str).c_str());
 
-            if (m_provider.has(str.c_str()))
-                return m_provider.access(str.c_str());
+            if (m_provider.has(resource_name))
+                return m_provider.access(resource_name);
 
-            static nya_resources::file_resources_provider fprov;
-            static bool dont_care = fprov.set_folder(nya_system::get_app_path()); dont_care = dont_care;
-
-            return fprov.access(resource_name);
+            return m_fprov.access(resource_name);
         }
 
         bool has(const char *resource_name)
@@ -205,7 +216,7 @@ int main(void)
             const std::string str(resource_name);
             return m_provider.has(("target/" + str).c_str()) || m_provider.has(("common/" + str).c_str()) || m_provider.has(resource_name);
         }
-    } trp(nya_resources::get_resources_provider());
+    } trp(qdfp);
 
     nya_resources::set_resources_provider(&trp);
 
@@ -369,12 +380,7 @@ int main(void)
         "su33",
         "kwmr",
         "su34",
-        "pkfa", //missile bays anim
-
-        //"su37", //weird colors
-
-        //"yf23", //weird textures
-
+        "pkfa", //bay anim offset
         "av8b",
         "f35b",
         "j39c",
@@ -385,10 +391,13 @@ int main(void)
         "typn",
         "f04e",
         "su35",
-        "b02a", //anim offsets
+        "b02a", //bay anim offset
         "f14d",
         "m21b", //no cockpit
         "f16f",
+        "su37",
+
+        //"yf23", //weird anims
 
                   //anim assert
         //"a10a",

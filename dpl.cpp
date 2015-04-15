@@ -246,7 +246,9 @@ bool dpl_file::read_file_data(int idx, void *data) const
 
 void dpl_entry::read_entries(uint32_t offset)
 {
-    assert(m_data);
+    if (!m_data)
+        return;
+
     assert(offset < m_size);
     nya_memory::memory_reader reader((char *)m_data + offset, m_size - offset);
 
