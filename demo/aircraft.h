@@ -26,6 +26,8 @@ public:
     float get_hp() { return m_hp; }
     const nya_math::vec3 &get_camera_offset() const { return m_camera_offset; }
 
+    static unsigned int get_colors_count(const char *plane_name);
+
     void set_controls(const nya_math::vec3 &rot, float throttle, float brake);
 
     void fire_mgun() { m_controls_mgun = true; }

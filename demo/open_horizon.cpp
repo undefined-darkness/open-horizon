@@ -589,13 +589,29 @@ int main(void)
 
         if (fkeys[2] && fkeys[2] != fkeys_last[2])
         {
+            current_color = 0;
             current_plane = (current_plane + 1) % planes_count;
             scene.load_player_plane(planes[current_plane], current_color);
         }
 
         if (fkeys[3] && fkeys[3] != fkeys_last[3])
         {
+            current_color = 0;
             current_plane = (current_plane + planes_count - 1) % planes_count;
+            scene.load_player_plane(planes[current_plane], current_color);
+        }
+
+        if (fkeys[5] && fkeys[5] != fkeys_last[5])
+        {
+            auto colors_count = aircraft::get_colors_count(planes[current_plane]);
+            current_color = (current_color + 1) % colors_count;
+            scene.load_player_plane(planes[current_plane], current_color);
+        }
+
+        if (fkeys[4] && fkeys[4] != fkeys_last[4])
+        {
+            auto colors_count = aircraft::get_colors_count(planes[current_plane]);
+            current_color = (current_color + colors_count - 1) % colors_count;
             scene.load_player_plane(planes[current_plane], current_color);
         }
 

@@ -101,6 +101,12 @@ public:
         return 0;
     }
 
+    static aircraft_information &get()
+    {
+        static aircraft_information info("target/Information/AircraftInformationC05.AIN");
+        return info;
+    }
+
     aircraft_information(const char *name)
     {
         //ToDo: don't determine aircraft order by camera offsets file
@@ -270,8 +276,7 @@ bool aircraft::load(const char *name, unsigned int color_idx)
 
     std::string name_str(name);
 
-    static aircraft_information information("target/Information/AircraftInformationC05.AIN");
-    auto info = information.get_info(name);
+    auto info = aircraft_information::get().get_info(name);
     if (!info)
         return false;
 
@@ -335,6 +340,15 @@ bool aircraft::load(const char *name, unsigned int color_idx)
     //m_mesh.set_anim_speed(0, 'vctn', 0.5);
 
     return true;
+}
+
+unsigned int aircraft::get_colors_count(const char *plane_name)
+{
+    auto info = aircraft_information::get().get_info(plane_name);
+    if (!info)
+        return 0;
+
+    return (unsigned int)info->color_info.size();
 }
 
 void aircraft::set_controls(const nya_math::vec3 &rot, float throttle, float brake)
