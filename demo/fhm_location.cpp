@@ -373,20 +373,20 @@ bool fhm_location::load(const char *fileName, const location_params &params)
     m.set_param(m.get_param_idx("fog color"), fog_color);
     m.set_param(m.get_param_idx("fog height"), fog_height);
 
+    if(m_cols.size() == m_mptx_meshes.size())
+    {
+        m_debug_draw.clear();
+        for (size_t i = 0; i < m_mptx_meshes.size(); ++i)
+        {
+            for (auto inst: m_mptx_meshes[i].instances)
+            {
+                auto b = nya_math::aabb(m_cols[i].box, inst.pos, nya_math::quat(0.0, inst.yaw, 0.0), nya_math::vec3(1.0, 1.0, 1.0));
+                m_debug_draw.add_aabb(b, nya_math::vec4(0.0, 1.0, 0.0, 1.0));
+            }
+        }
+    }
+
     return true;
-}
-
-//------------------------------------------------------------
-
-void fhm_location::draw_col(int col_idx)
-{
-    if (col_idx < 0 || col_idx >= cols.size())
-        return;
-
-    col &c = cols[col_idx];
-    c.vbo.bind();
-    c.vbo.draw();
-    c.vbo.unbind();
 }
 
 //------------------------------------------------------------
@@ -399,7 +399,7 @@ void fhm_location::draw_mptx()
     nya_scene::transform::set(nya_scene::transform());
 
 
-    for (auto &mesh:mptx_meshes)
+    for (auto &mesh: m_mptx_meshes)
     {
         bool was_set = false;
 
@@ -536,8 +536,8 @@ bool fhm_location::read_mptx(memory_reader &reader)
     m_map_parts_tr.create();
     m_map_parts_material.set_param_array(m_map_parts_material.get_param_idx("transform"), m_map_parts_tr);
 
-    mptx_meshes.resize(mptx_meshes.size() + 1);
-    mptx_mesh &mesh = mptx_meshes.back();
+    m_mptx_meshes.resize(m_mptx_meshes.size() + 1);
+    mptx_mesh &mesh = m_mptx_meshes.back();
 
     reader.seek(18);
     uint tex_count = reader.read<ushort>();
@@ -631,6 +631,9 @@ bool fhm_location::read_mptx(memory_reader &reader)
 
 bool fhm_location::read_colh(memory_reader &reader)
 {
+    //printf("\n\nCOLH\n\n");
+    //print_data(reader);
+
     struct colh_header
     {
         char sign[4];
@@ -684,12 +687,21 @@ bool fhm_location::read_colh(memory_reader &reader)
         chunks[i].size = reader.read<uint>();
     }
 
+    assert(header.count == 1);
+
+    col_mesh col;
+
     for (int i = 0; i < header.count; ++i)
     {
         colh_chunk &c = chunks[i];
         reader.seek(c.offset);
 
+        //print_data(reader,reader.get_offset(),sizeof(colh_info));
+
         c.header = reader.read<colh_info>();
+
+        //print_data(reader,reader.get_offset(),c.size-sizeof(colh_info));
+
         assert(c.header.unknown_32 == 32);
         assert(c.header.unknown_zero == 0);
         //for (int j = 0; j < 1; ++j)
@@ -699,23 +711,28 @@ bool fhm_location::read_colh(memory_reader &reader)
             p.y = reader.read<float>();
             p.z = reader.read<float>();
             float f = reader.read<float>();
+            assert(f == 1.0f);
             nya_math::vec3 p2;
             p2.x = reader.read<float>();
             p2.y = reader.read<float>();
             p2.z = reader.read<float>();
             //float f = reader.read<float>();
             float f2 = reader.read<float>();
+            assert(f2 == 0);
             //test.add_point(p, nya_math::vec4(0.0, 1.0, 0.0, 1.0));
             //test.add_line(p, p2, nya_math::vec4(0.0, 1.0, 0.0, 1.0));
             nya_math::aabb b;
             b.origin = p;
             //b.delta = nya_math::vec3(f, f, f);
             b.delta = p2;
-            //test.add_aabb(b, nya_math::vec4(0.0, 1.0, 0.0, 1.0));
-        }
 
-        break;
+            col.box = b;
+        }
     }
+
+    //print_data(reader);
+
+    m_cols.push_back(col);
 
     return true;
 }

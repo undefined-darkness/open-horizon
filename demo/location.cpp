@@ -127,6 +127,9 @@ void location::draw()
     m_location.draw_mptx();
     m_location.draw_landscape();
     m_sky.draw();
+
+    //nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
+    //m_location.draw_cols();
 }
 
 //------------------------------------------------------------

@@ -6,6 +6,7 @@
 
 #include "scene/mesh.h"
 #include "location_params.h"
+#include "render/debug_draw.h"
 
 //------------------------------------------------------------
 
@@ -21,9 +22,9 @@ class fhm_location
 public:
     bool load(const char *fileName, const location_params &params);
     void update(int dt);
-    void draw_col(int col_idx);
     void draw_mptx();
     void draw_landscape();
+    void draw_cols() { m_debug_draw.draw(); }
 
 protected:
     bool read_mptx(memory_reader &reader);
@@ -56,10 +57,10 @@ protected:
         mptx_mesh(): draw_dist(0.0f) {}
     };
 
-    std::vector<mptx_mesh> mptx_meshes;
+    std::vector<mptx_mesh> m_mptx_meshes;
 
-    struct col { nya_render::vbo vbo; };
-    std::vector<col> cols;
+    struct col_mesh { nya_math::aabb box; };
+    std::vector<col_mesh> m_cols;
 
     struct landscape
     {
@@ -98,6 +99,8 @@ protected:
     nya_scene::material::param_array_proxy m_map_parts_tr;
 
     nya_scene::material m_land_material;
+
+    nya_render::debug_draw m_debug_draw;
 };
 
 //------------------------------------------------------------
