@@ -837,7 +837,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
             if (j > 0)
             {
-                indices.push_back(indices.back());
+                if(!indices.empty())
+                    indices.push_back(indices.back());
                 indices.push_back(first_index + ndxr_indices[0]);
                 if ( (indices.size() - g.offset) % 2 )
                     indices.push_back(indices.back());

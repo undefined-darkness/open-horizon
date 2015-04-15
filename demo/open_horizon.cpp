@@ -34,6 +34,7 @@ public:
     void add_delta_rot(float dx, float dy);
     void reset_delta_rot() { m_drot.x = 0.0f; m_drot.y = 3.14f; }
     void add_delta_pos(float dx, float dy, float dz);
+    void reset_delta_pos() { m_dpos = nya_math::vec3(); }//0.0f, 2.0f, -10.0f); }
 
     void set_aspect(float aspect);
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; update(); }
@@ -43,7 +44,7 @@ private:
     void update();
 
 public:
-    plane_camera(): m_dpos(0.0f, 2.0f, -10.0f) { m_drot.y = 3.14f; }
+    plane_camera() { m_drot.y = 3.14f; reset_delta_pos(); }
 
 private:
     nya_math::vec3 m_drot;
@@ -154,28 +155,6 @@ nya_scene::texture load_tonecurve(const char *file_name)
 
 int main(void)
 {
-    const char *plane_name = 0;
-    int plane_color = 0;
-    const char *location_name = "ms01";
-    //ms06 - dubai
-    //ms11b - moscow
-    //ms14 - washinghton
-    //ms50 - tokyo
-    //ms30 - paris
-
-    //plane_name = "su35", plane_color=1;
-    plane_name = "f22a", plane_color=0;
-    //plane_name = "su33", plane_color=0; //5
-    //plane_name = "su34", plane_color=1;
-
-    //b02a - anim offsets
-    //su37 - weird colors
-    //yf23 - weird textures
-    //pkfa - missile bays anim
-    //a10a, fa44, ac130, f17a, f15e, f15m - anim assert
-    //m21b - no cockpit
-    //helicopters - not yet supported
-
 #ifndef _WIN32
     chdir(nya_system::get_app_path());
 #endif
@@ -251,15 +230,101 @@ int main(void)
     }
 
     glfwMakeContextCurrent(window);
-
     nya_render::texture::set_default_aniso(2);
 
-    class : public nya_scene::postprocess
+    class : private nya_scene::postprocess
     {
     public:
-        location loc;
         aircraft player_plane;
+        plane_camera camera;
+
+    private:
+        location loc;
         effect_clouds clouds;
+
+    public:
+        void load_location(const char *location_name)
+        {
+            loc = location();
+            clouds = effect_clouds();
+
+            unload();
+            load("postprocess.txt");
+
+            loc.load(location_name);
+            clouds.load(location_name);
+
+            auto &p = loc.get_params();
+            auto curve = load_tonecurve((std::string("Map/tonecurve_") + location_name + ".tcb").c_str());
+            set_texture("color_curve", nya_scene::texture_proxy(curve));
+            set_shader_param("bloom_param", nya_math::vec4(p.hdr.bloom_threshold, p.hdr.bloom_offset, p.hdr.bloom_scale, 1.0));
+            set_shader_param("saturation", nya_math::vec4(p.tone_saturation * 0.01, 0.0, 0.0, 0.0));
+            set_shader_param("screen_radius", nya_math::vec4(1.185185, 0.5 * 4.0 / 3.0, 0.0, 0.0));
+            set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
+
+            player_plane.set_pos(nya_math::vec3(-300, 50, 2000));
+            m_fade_time = 2500;
+
+            //shared::clear_textures(); //ToDo
+        }
+
+        void load_player_plane(const char *name,int color)
+        {
+            auto pos = player_plane.get_pos();
+
+            player_plane = aircraft();
+
+            player_plane.load(name, color);
+
+            player_plane.set_pos(pos);
+
+            //ToDo: research camera
+            auto off = -player_plane.get_camera_offset();
+            camera.reset_delta_pos();
+            camera.add_delta_pos(off.x, -0.5 + off.y*1.5, off.z*0.55);
+            if (strcmp(name, "f22a") == 0 || strcmp(name, "kwmr") == 0 || strcmp(name, "su47") == 0)
+                camera.add_delta_pos(0.0, -1.0, 3.0);
+
+            if (strcmp(name, "b01b") == 0)
+                camera.add_delta_pos(0.0, -4.0, -2.0);
+
+            if (strcmp(name, "su25") == 0 || strcmp(name, "su34") == 0 || strcmp(name, "f16c") == 0 || strcmp(name, "f02a") == 0)
+                camera.add_delta_pos(0.0, -1.0, 0.0);
+
+            //shared::clear_textures(); //ToDo
+        }
+
+        void resize(unsigned int width,unsigned int height)
+        {
+            nya_scene::postprocess::resize(width, height);
+            if (height)
+                camera.set_aspect(height > 0 ? float(width) / height : 1.0f);
+        }
+
+        void update(int dt)
+        {
+            if (dt > 50)
+                dt = 50;
+
+            loc.update(dt);
+            player_plane.update(dt);
+
+            camera.set_pos(player_plane.get_pos());
+            camera.set_rot(player_plane.get_rot());
+
+            set_shader_param("damage_frame_color", nya_math::vec4(1.0, 0.0, 0.0235, nya_math::max(1.0 - player_plane.get_hp(), 0.0)));
+
+            if (m_fade_time > 0)
+            {
+                m_fade_time-=dt;
+                if (m_fade_time < 0)
+                    m_fade_time = 0;
+
+                set_shader_param("fade_color", nya_math::vec4(0.0, 0.0, 0.0, m_fade_time / 2500.0f));
+            }
+        }
+
+        void draw() { nya_scene::postprocess::draw(0); }
 
     private:
         void draw_scene(const char *pass, const char *tags) override
@@ -273,26 +338,76 @@ int main(void)
             else if (strcmp(tags, "clouds_obj") == 0)
                 clouds.draw_obj();
         }
+    private:
+        int m_fade_time;
+
     } scene;
 
-    scene.loc.load(location_name);
-    scene.clouds.load(location_name);
-    scene.player_plane.load(plane_name, plane_color);
-    scene.player_plane.set_pos(nya_math::vec3(-300, 50, 2000));
+    const char *locations[] = {
+        "ms01", //miami
+        "ms06", //dubai
+        "ms50", //tokyo
+        "ms11b", //moscow
+        "ms30", //paris
+        //"ms14" //washington
+    };
 
-    auto &p = scene.loc.get_params();
+    unsigned int current_location=0;
 
-    scene.load("postprocess.txt");
-    auto curve = load_tonecurve((std::string("Map/tonecurve_") + location_name + ".tcb").c_str());
-    scene.set_texture("color_curve", nya_scene::texture_proxy(curve));
-    scene.set_shader_param("bloom_param", nya_math::vec4(p.hdr.bloom_threshold, p.hdr.bloom_offset, p.hdr.bloom_scale, 1.0));
-    scene.set_shader_param("saturation", nya_math::vec4(p.tone_saturation * 0.01, 0.0, 0.0, 0.0));
-    scene.set_shader_param("screen_radius", nya_math::vec4(1.185185, 0.5 * 4.0 / 3.0, 0.0, 0.0));
-    scene.set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
+    const char *planes[] = {
+        "f22a",
+        "su24",
+        "f18f",
+        "m29a",
+        "f02a",
+        "su25",
+        "b01b",
+        "f16c",
+        "su33",
+        "kwmr",
+        "su34",
+        "pkfa", //missile bays anim
 
-    plane_camera camera;
-    auto off = -scene.player_plane.get_camera_offset();
-    camera.add_delta_pos(off.x, off.y, off.z);
+        //"su37", //weird colors
+
+        //"yf23", //weird textures
+
+        "av8b",
+        "f35b",
+        "j39c",
+        "mr2k",
+        "rflm",
+        "su47",
+        "tnd4",
+        "typn",
+        "f04e",
+        "su35",
+        "b02a", //anim offsets
+        "f14d",
+        "m21b", //no cockpit
+        "f16f",
+
+                  //anim assert
+        //"a10a",
+        //"a130",
+        //"fa44",
+        //"f17a",
+        //"f15c",
+        //"f15e",
+        //"f15m",
+
+                  //helicopters are not yet supported
+        //"ah64",
+        //"mi24",
+        //"ka50",
+        //"mh60",
+    };
+
+    unsigned int current_plane=0;
+    unsigned int current_color=0;
+
+    scene.load_location(locations[current_location]);
+    scene.load_player_plane(planes[current_plane], current_color);
 
     double mx,my;
     glfwGetCursorPos(window, &mx, &my);
@@ -300,8 +415,6 @@ int main(void)
     int frame_counter = 0;
     int frame_counter_time = 0;
     int fps = 0;
-
-    int fade_time = 2500;
 
     int screen_width = 0, screen_height = 0;
     unsigned long app_time = nya_system::get_time();
@@ -322,21 +435,8 @@ int main(void)
         }
         app_time = time;
 
-        if (fade_time > 0)
-        {
-            fade_time-=dt;
-            if (fade_time < 0)
-                fade_time = 0;
-
-            scene.set_shader_param("fade_color", nya_math::vec4(0.0, 0.0, 0.0, fade_time / 2500.0f));
-        }
-
         static bool paused = false;
         static bool speed10x = false;
-        if (!paused)
-            scene.player_plane.update(speed10x ? dt * 10 : dt);
-
-        scene.set_shader_param("damage_frame_color", nya_math::vec4(1.0, 0.0, 0.0235, nya_math::max(1.0 - scene.player_plane.get_hp(), 0.0)));
 
         char title[255];
         sprintf(title,"speed: %7d alt: %7d \t fps: %3d  %s", int(scene.player_plane.get_speed()), int(scene.player_plane.get_alt()), fps, paused ? "paused" : "");
@@ -348,14 +448,11 @@ int main(void)
         {
             screen_width = new_screen_width, screen_height = new_screen_height;
             scene.resize(screen_width, screen_height);
-            camera.set_aspect(screen_height > 0 ? float(screen_width) / screen_height : 1.0f);
         }
 
-        camera.set_pos(scene.player_plane.get_pos());
-        camera.set_rot(scene.player_plane.get_rot());
-
-        scene.loc.update(dt);
-        scene.draw(dt);
+        if (!paused)
+            scene.update(speed10x ? dt * 10 : dt);
+        scene.draw();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -365,10 +462,10 @@ int main(void)
         double x, y;
         glfwGetCursorPos(window, &x, &y);
         if (glfwGetMouseButton(window, 0))
-            camera.add_delta_rot((y - my) * 0.03, (x - mx) * 0.03);
+            scene.camera.add_delta_rot((y - my) * 0.03, (x - mx) * 0.03);
 
         if (glfwGetMouseButton(window, 1))
-            camera.add_delta_pos(0, 0, my - y);
+            scene.camera.add_delta_pos(0, 0, my - y);
 
         mx = x; my = y;
 
@@ -387,8 +484,8 @@ int main(void)
 
         if (axis_count > 3)
         {
-            if (fabsf(axis[2]) > joy_dead_zone) camera.add_delta_rot(0.0f, -axis[2] * 0.05f);
-            if (fabsf(axis[3]) > joy_dead_zone) camera.add_delta_rot(axis[3] * 0.05f, 0.0f);
+            if (fabsf(axis[2]) > joy_dead_zone) scene.camera.add_delta_rot(0.0f, -axis[2] * 0.05f);
+            if (fabsf(axis[3]) > joy_dead_zone) scene.camera.add_delta_rot(axis[3] * 0.05f, 0.0f);
         }
 
         if (buttons_count > 11)
@@ -398,7 +495,7 @@ int main(void)
             if (buttons[10]) c_brake = 1.0f;
             if (buttons[11]) c_throttle = 1.0f;
 
-            if (buttons[2]) camera.reset_delta_rot();
+            if (buttons[2]) scene.camera.reset_delta_rot();
 
             static bool last_btn3 = false;
             if (buttons[3] !=0 && !last_btn3)
@@ -462,6 +559,45 @@ int main(void)
         speed10x = glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT);
 
         scene.player_plane.set_controls(c_rot, c_throttle, c_brake);
+
+        //demo purpose
+
+        std::vector<bool> fkeys(6, false);
+        static std::vector<bool> fkeys_last(6, false);
+
+        for (int i = 0; i < fkeys.size(); ++i)
+            fkeys[i] = glfwGetKey(window, GLFW_KEY_1 + i);
+
+        const unsigned int locations_count = sizeof(locations) / sizeof(locations[0]);
+
+        if (fkeys[0] && fkeys[0] != fkeys_last[0])
+        {
+            current_location = (current_location + 1) % locations_count;
+            scene.load_location(locations[current_location]);
+        }
+
+        if (fkeys[1] && fkeys[1] != fkeys_last[1])
+        {
+            current_location = (current_location + locations_count - 1) % locations_count;
+            scene.load_location(locations[current_location]);
+        }
+
+        const unsigned int planes_count = sizeof(planes) / sizeof(planes[0]);
+
+        if (fkeys[2] && fkeys[2] != fkeys_last[2])
+        {
+            current_plane = (current_plane + 1) % planes_count;
+            scene.load_player_plane(planes[current_plane], current_color);
+        }
+
+        if (fkeys[3] && fkeys[3] != fkeys_last[3])
+        {
+            current_plane = (current_plane + planes_count - 1) % planes_count;
+            scene.load_player_plane(planes[current_plane], current_color);
+        }
+
+        fkeys_last = fkeys;
+
     }
 
     glfwTerminate();
