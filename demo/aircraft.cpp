@@ -104,6 +104,15 @@ public:
     static aircraft_information &get()
     {
         static aircraft_information info("target/Information/AircraftInformation.AIN");
+        static bool once = true;
+        if (once)
+        {
+            aircraft_information info5("target/Information/AircraftInformationC05.AIN"); //ToDo
+            *info.get_info("tnd4") = *info5.get_info("tnd4");
+
+            once = false;
+        }
+
         return info;
     }
 

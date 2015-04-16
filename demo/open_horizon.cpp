@@ -372,30 +372,30 @@ int main(void)
     const char *planes[] = {
         "f22a",
         "su24",
-        "f18f", //dlc color 4
+        "f18f",
         "m29a",
         "f02a",
         "su25",
         "b01b",
         "f16c",
         "su33",
-        "kwmr", //dummy dlc colors
+        "kwmr",
         "su34",
         "pkfa", //bay anim offset
         "av8b",
-        "f35b", //dlc color
+        "f35b",
         "j39c",
         "mr2k",
-        "rflm", //dlc color
+        "rflm",
         "su47",
-        //"tnd4", // 0 colors if load from dlc
+        "tnd4",
         "typn",
         "f04e",
-        "su35", //dlc 12
+        "su35",
         "b02a", //bay anim offset
         "f14d",
         "m21b", //no cockpit
-        "f16f", //dlc color 4
+        "f16f",
         "su37",
 
         //"yf23", //weird anims

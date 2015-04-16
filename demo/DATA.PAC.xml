@@ -32,6 +32,25 @@
 <entry idx="83" sub="3" name="coledit03/p_su37_03_mkx.img"/>
 <entry idx="83" sub="4" name="coledit03/p_su37_03_mky.img"/>
 
+<path name="model_id/tdb/mech/plyr/p_kwmr/"/>
+<entry idx="107" sub="10" name="00/p_kwmr_00_amb.img"/>
+<!--
+<entry idx="108" sub="3" name="01/p_kwmr_01_col.img"/>
+<entry idx="108" sub="4" name="01/p_kwmr_01_spe.img"/>
+ -->
+<entry idx="109" sub="3" name="02/p_kwmr_02_col.img"/>
+<entry idx="109" sub="4" name="02/p_kwmr_02_spe.img"/>
+<entry idx="110" sub="3" name="03/p_kwmr_03_col.img"/>
+<entry idx="110" sub="4" name="03/p_kwmr_03_spe.img"/>
+<!--
+<entry idx="111" sub="3" name="coledit01/p_kwmr_01_mkx.img"/>
+<entry idx="111" sub="4" name="coledit01/p_kwmr_01_mky.img"/>
+ -->
+<entry idx="112" sub="3" name="coledit02/p_kwmr_02_mkx.img"/>
+<entry idx="112" sub="4" name="coledit02/p_kwmr_02_mky.img"/>
+<entry idx="113" sub="3" name="coledit03/p_kwmr_03_mkx.img"/>
+<entry idx="113" sub="4" name="coledit03/p_kwmr_03_mky.img"/>
+
 <path name="model_id/tdb/mech/plyr/p_typn/"/>
 <entry idx="122" sub="3" name="04/p_typn_04_col.img"/>
 <entry idx="122" sub="4" name="04/p_typn_04_spe.img"/>
@@ -70,6 +89,18 @@
 <entry idx="171" sub="3" name="coledit04/p_f02a_04_mkx.img"/>
 <entry idx="171" sub="4" name="coledit04/p_f02a_04_mky.img"/>
 
+<path name="model_id/tdb/mech/plyr/p_f35b/"/>
+<entry idx="186" sub="3" name="11/p_f35b_11_col.img"/>
+<entry idx="186" sub="4" name="11/p_f35b_11_spe.img"/>
+<entry idx="187" sub="3" name="coledit11/p_f35b_11_mkx.img"/>
+<entry idx="187" sub="4" name="coledit11/p_f35b_11_mky.img"/>
+
+<path name="model_id/tdb/mech/plyr/p_rflm/"/>
+<entry idx="190" sub="3" name="11/p_rflm_11_col.img"/>
+<entry idx="190" sub="4" name="11/p_rflm_11_spe.img"/>
+<entry idx="191" sub="3" name="coledit11/p_rflm_11_mkx.img"/>
+<entry idx="191" sub="4" name="coledit11/p_rflm_11_mky.img"/>
+
 <path name="model_id/tdb/mech/plyr/p_f22a/"/>
 <entry idx="150" sub="3" name="11/p_f22a_11_col.img"/>
 <entry idx="150" sub="4" name="11/p_f22a_11_spe.img"/>
@@ -94,4 +125,25 @@
 <entry idx="215" sub="3" name="coledit12/p_su33_12_mkx.img"/>
 <entry idx="215" sub="4" name="coledit12/p_su33_12_mky.img"/>
 
+<path name="model_id/tdb/mech/plyr/p_f16c/"/>
+<entry idx="234" sub="3" name="04/p_f16c_04_col.img"/>
+<entry idx="234" sub="4" name="04/p_f16c_04_spe.img"/>
+<entry idx="235" sub="3" name="coledit04/p_f16c_04_mkx.img"/>
+<entry idx="235" sub="4" name="coledit04/p_f16c_04_mky.img"/>
+
+<path name="model_id/tdb/mech/plyr/p_su35/"/>
+<entry idx="238" sub="3" name="11/p_su35_11_col.img"/>
+<entry idx="238" sub="4" name="11/p_su35_11_spe.img"/>
+<entry idx="239" sub="3" name="coledit11/p_su35_11_mkx.img"/>
+<entry idx="239" sub="4" name="coledit11/p_su35_11_mky.img"/>
+<entry idx="242" sub="3" name="12/p_su35_12_col.img"/>
+<entry idx="242" sub="4" name="12/p_su35_12_spe.img"/>
+<entry idx="243" sub="3" name="coledit12/p_su35_12_mkx.img"/>
+<entry idx="243" sub="4" name="coledit12/p_su35_12_mky.img"/>
+
+<path name="model_id/tdb/mech/plyr/p_f18f/"/>
+<entry idx="250" sub="3" name="04/p_f18f_04_col.img"/>
+<entry idx="250" sub="4" name="04/p_f18f_04_spe.img"/>
+<entry idx="251" sub="3" name="coledit04/p_f18f_04_mkx.img"/>
+<entry idx="251" sub="4" name="coledit04/p_f18f_04_mky.img"/>
 </dpl>
