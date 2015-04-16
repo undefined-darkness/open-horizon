@@ -252,6 +252,7 @@ int main(void)
     private:
         location loc;
         effect_clouds clouds;
+        nya_scene::texture_proxy m_curve;
 
     public:
         void load_location(const char *location_name)
@@ -261,19 +262,22 @@ int main(void)
 
             shared::clear_textures();
 
-            unload();
-            load("postprocess.txt");
+            if(!m_curve.is_valid())
+            {
+                m_curve.create();
+                load("postprocess.txt");
+                set_texture("color_curve", m_curve);
+                set_shader_param("screen_radius", nya_math::vec4(1.185185, 0.5 * 4.0 / 3.0, 0.0, 0.0));
+                set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
+            }
 
             loc.load(location_name);
             clouds.load(location_name);
 
             auto &p = loc.get_params();
-            auto curve = load_tonecurve((std::string("Map/tonecurve_") + location_name + ".tcb").c_str());
-            set_texture("color_curve", nya_scene::texture_proxy(curve));
+            m_curve.set(load_tonecurve((std::string("Map/tonecurve_") + location_name + ".tcb").c_str()));
             set_shader_param("bloom_param", nya_math::vec4(p.hdr.bloom_threshold, p.hdr.bloom_offset, p.hdr.bloom_scale, 1.0));
             set_shader_param("saturation", nya_math::vec4(p.tone_saturation * 0.01, 0.0, 0.0, 0.0));
-            set_shader_param("screen_radius", nya_math::vec4(1.185185, 0.5 * 4.0 / 3.0, 0.0, 0.0));
-            set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
 
             player_plane.set_pos(nya_math::vec3(-300, 50, 2000));
             player_plane.set_rot(nya_math::quat());
@@ -285,11 +289,8 @@ int main(void)
         void load_player_plane(const char *name,int color)
         {
             auto pos = player_plane.get_pos();
-
             player_plane = aircraft();
-
             player_plane.load(name, color);
-
             player_plane.set_pos(pos);
 
             //ToDo: research camera
@@ -299,11 +300,17 @@ int main(void)
             if (strcmp(name, "f22a") == 0 || strcmp(name, "kwmr") == 0 || strcmp(name, "su47") == 0)
                 camera.add_delta_pos(0.0, -1.0, 3.0);
 
+            if (strcmp(name, "mr2k") == 0)
+                camera.add_delta_pos(0.0, 0.0, 2.0);
+
             if (strcmp(name, "b01b") == 0)
                 camera.add_delta_pos(0.0, -4.0, -2.0);
 
-            if (strcmp(name, "su25") == 0 || strcmp(name, "su34") == 0 || strcmp(name, "f16c") == 0
-                || strcmp(name, "f02a") == 0 || strcmp(name, "su37") == 0)
+            if (strcmp(name, "su25") == 0)
+                camera.add_delta_pos(0.0, -2.0, 0.0);
+
+            if (strcmp(name, "su34") == 0 || strcmp(name, "f16c") == 0 || strcmp(name, "f15m") == 0
+                || strcmp(name, "f02a") == 0 || strcmp(name, "su37") == 0 || strcmp(name, "f35b") == 0)
                 camera.add_delta_pos(0.0, -1.0, 0.0);
 
             //shared::clear_textures(); //ToDo
@@ -390,30 +397,30 @@ int main(void)
         "su47",
         "tnd4",
         "typn",
-        "f04e",
+        "f04e", //some anims fail
         "su35",
         "b02a", //bay anim offset
         "f14d",
         "m21b", //no cockpit
         "f16f",
+        "a10a", //dlc colors placeholders
+        "f17a", //dlc colors 4 12
+        "f15m", //textures
+        "f15c", //dlc colors13
+        "f15e", //dlc colors 5 13
         "su37",
 
-        //"yf23", //weird anims
 
-                  //anim assert
-        //"a10a",
-        //"a130",
+                 //no anims
+        //"yf23",
         //"fa44",
-        //"f17a",
-        //"f15c",
-        //"f15e",
-        //"f15m",
-
                   //helicopters are not yet supported
         //"ah64",
         //"mi24",
         //"ka50",
         //"mh60",
+                  //not yet supported
+        //"a130", //b.unknown2 = 1312
     };
 
     unsigned int current_plane=0;

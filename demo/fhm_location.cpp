@@ -372,7 +372,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
     m.set_param(m.get_param_idx("light dir"), light_dir);
     m.set_param(m.get_param_idx("fog color"), fog_color);
     m.set_param(m.get_param_idx("fog height"), fog_height);
-
+/*
     if(m_cols.size() == m_mptx_meshes.size())
     {
         m_debug_draw.clear();
@@ -385,7 +385,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
             }
         }
     }
-
+*/
     return true;
 }
 

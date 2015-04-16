@@ -523,6 +523,7 @@ void aircraft::update(int dt)
 
     m_mesh.set_anim_speed(0, 'elvl', (ideal_el * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'elvl')) * ae_anim_speed_k);
     m_mesh.set_anim_speed(0, 'elvr', (ideal_er * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'elvr')) * ae_anim_speed_k);
+    m_mesh.set_anim_speed(0, 'elvn', (ideal_el * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'elvn')) * ae_anim_speed_k);
 
     const float ideal_al = -m_controls_rot.z * speed_k;
     const float ideal_ar = m_controls_rot.z * speed_k;

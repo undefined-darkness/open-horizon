@@ -386,14 +386,14 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
 
         kfm1.header = kfm1_reader.read<kmf1_header>();
 
-        assert(!kfm1.header.bones2_count || kfm1.header.bones2_count >= kfm1.header.bones_count);
+        //assert(!kfm1.header.bones2_count || kfm1.header.bones2_count >= kfm1.header.bones_count);
 
         kfm1_reader.seek(kfm1.header.offset_to_bones);
         kfm1.bones.resize(kfm1.header.bones_count);
         for (auto &b : kfm1.bones)
         {
             b = kfm1_reader.read<kfm1_bone_info>();
-            assert(b.unknown_4 == 4);
+            //assert(b.unknown_4 == 4);
             assert(b.unknown4 % 4 == 0);
             if (b.unknown2 != 1031 && b.unknown2 != 773) printf("%d\n", b.unknown2);
             assert(b.unknown2 == 1031 || b.unknown2 == 773);
@@ -456,7 +456,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                 const int idx = b.bone_idx;
                 //assert(idx < skeleton.get_bones_count());
                 const int aidx = anim.anim.add_bone(skeleton.get_bone_name(idx));
-                assert(aidx >= 0);
+                //assert(aidx >= 0);
                 const int frame_time = 16;
 
                 if (first_anim)
@@ -877,7 +877,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
         int layer = 0;
         for (auto &a: anims)
         {
-            assert(a.first == "basepose" || a.first.length() == 4);
+            //assert(a.first == "basepose" || a.first.length() == 4);
             assert(a.first != "base");
 
             union { uint u; char c[4]; } hash_id;
@@ -895,7 +895,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             a.second.set_loop(false);
             l.mesh.set_anim(a.second, layer++);
             
-            //if (lods.size() == 1) printf("anim %s\n", a.first.c_str());
+            if (lods.size() == 1) printf("anim %s\n", a.first.c_str());
         }
         
         l.mesh.update(0);
