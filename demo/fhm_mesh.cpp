@@ -895,7 +895,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             a.second.set_loop(false);
             l.mesh.set_anim(a.second, layer++);
             
-            if (lods.size() == 1) printf("anim %s\n", a.first.c_str());
+            //if (lods.size() == 1) printf("anim %s\n", a.first.c_str());
         }
         
         l.mesh.update(0);
