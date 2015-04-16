@@ -403,14 +403,12 @@ int main(void)
         "f14d",
         "m21b", //no cockpit
         "f16f",
+        "f15m",
+        "f15c",
+        "f15e",
+        "a10a",
         "f17a",
         "su37",
-
-                  //anim assert
-        //"f15m",
-        //"f15c",
-        //"f15e",
-        //"a10a",
                   //no anims
         //"yf23",
         //"fa44",

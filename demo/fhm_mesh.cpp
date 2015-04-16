@@ -429,29 +429,42 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
 
         for (int k = 0; k < kfm1.header.sequences_count; ++k)
         {
-            //int k = 0; //ToDO
+            bool is_bones2 = (!kfm1.bones2.empty() && k > 0);
+
             kfm1_sequence &f = kfm1.sequences[k];
             kfm1_reader.seek(kfm1.sequences[k].sequence_offset);
             memory_reader sequence_reader(kfm1_reader.get_data(), f.sequence_size);
 
+            assert((f.unknown > 0 && k > 0) || (!f.unknown && !k) );
+
             //print_data(sequence_reader, 0, f.sequence_size);
 
             f.header = sequence_reader.read<kfm1_sequence_header>();
-            f.bones.resize(kfm1.header.bones_count);
-            int frames_count = 0;
+            f.bones.resize(is_bones2 ? kfm1.header.bones2_count : kfm1.header.bones_count);
+
+            size_t first_offset = -1;
+
             for (auto &b:f.bones)
             {
                 b.frames_count = sequence_reader.read<int>();
                 b.frames_offset = sequence_reader.read<ushort>();
                 b.offset = sequence_reader.read<ushort>();
 
-                frames_count += b.frames_count;
+                if(b.offset < first_offset)
+                    first_offset = b.offset;
             }
+
+            if(!f.bones.empty())
+            {
+                auto header_remained = f.bones.front().offset - first_offset;
+                assert(header_remained == 0);
+            }
+
             for (int j = 0; j < f.bones.size(); ++j)
             {
                 sequence_reader.seek(f.bones[j].offset);
 
-                const auto &b = (i > 0 && k > 0) ? kfm1.bones2[j] : kfm1.bones[j];
+                const auto &b = is_bones2 ? kfm1.bones2[j] : kfm1.bones[j];
 
                 const int idx = b.bone_idx;
                 assert(idx < skeleton.get_bones_count());
@@ -470,11 +483,12 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                     value.x = sequence_reader.read<float>();
                     value.y = sequence_reader.read<float>();
                     value.z = sequence_reader.read<float>();
-                    value.w = sequence_reader.read<float>();
+                    if (is_quat)
+                        value.w = sequence_reader.read<float>();
 
                     //if( k > 0 ) is_quat = fabsf(value * value - 1.0f) < 0.001f; //ToDo
-                    if (!is_quat)
-                        sequence_reader.rewind(4);
+                    //if (!is_quat)
+                    //    sequence_reader.rewind(4);
 
                     if (first_anim)
                     {
@@ -884,8 +898,6 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             for (int i = 0; i < 4; ++i) hash_id.c[i] = a.first[3 - i];
 
             //if (hash_id.u == 'swp1' || hash_id.u == 'swp2') continue; //ToDo
-
-            //if (hash_id.u == 'tefn') continue; //ToDo: bugged on su33
 
             auto &la = l.anims[hash_id.u];
             la.layer = layer;
