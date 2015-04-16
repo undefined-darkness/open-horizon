@@ -403,15 +403,15 @@ int main(void)
         "f14d",
         "m21b", //no cockpit
         "f16f",
-        "a10a", //dlc colors placeholders
-        "f17a", //dlc colors 4 12
-        "f15m", //textures
-        "f15c", //dlc colors13
-        "f15e", //dlc colors 5 13
+        "f17a",
         "su37",
 
-
-                 //no anims
+                  //anim assert
+        //"f15m",
+        //"f15c",
+        //"f15e",
+        //"a10a",
+                  //no anims
         //"yf23",
         //"fa44",
                   //helicopters are not yet supported

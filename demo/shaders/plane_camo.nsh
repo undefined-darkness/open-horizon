@@ -22,16 +22,16 @@ uniform vec4 colors[6];
 
 void main()
 {
-    vec4 base=texture2D(base_map,tc);
-    vec4 colx=texture2D(colx_map,tc);
-    vec4 coly=texture2D(coly_map,tc);
+    vec4 base = texture2D(base_map, tc);
+    vec4 colx = texture2D(colx_map, tc);
+    vec4 coly = texture2D(coly_map, tc);
 
-    vec4 col=mix(colors[2],colors[1],coly.a);
-    col=mix(colors[3],col,colx.g);
-    col=mix(colors[4],col,colx.b);
-    col=mix(colors[5],col,colx.r);
-    col=mix(col,colors[0],coly.g);
-    col=mix(col,base,colx.a);
+    vec4 col = mix(colors[1], colors[0], coly.y);
+    col = mix(colors[2], col, coly.w);
+    col = mix(colors[3], col, colx.y);
+    col = mix(colors[4], col, colx.z);
+    col = mix(colors[5], col, colx.x);
+    col = mix(col, base, colx.w);
 
     gl_FragColor=vec4(col.rgb,base.a);
 }

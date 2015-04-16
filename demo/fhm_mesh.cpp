@@ -454,9 +454,9 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                 const auto &b = (i > 0 && k > 0) ? kfm1.bones2[j] : kfm1.bones[j];
 
                 const int idx = b.bone_idx;
-                //assert(idx < skeleton.get_bones_count());
+                assert(idx < skeleton.get_bones_count());
                 const int aidx = anim.anim.add_bone(skeleton.get_bone_name(idx));
-                //assert(aidx >= 0);
+                assert(aidx >= 0);
                 const int frame_time = 16;
 
                 if (first_anim)
