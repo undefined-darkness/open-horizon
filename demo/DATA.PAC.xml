@@ -166,18 +166,22 @@
 <entry idx="195" sub="4" name="coledit12/p_a10a_12_mky.img"/>
 
 <path name="model_id/tdb/mech/plyr/p_f22a/"/>
-<entry idx="150" sub="3" name="11/p_f22a_11_col.img"/>
-<entry idx="150" sub="4" name="11/p_f22a_11_spe.img"/>
-<entry idx="151" sub="3" name="coledit11/p_f22a_11_mkx.img"/>
-<entry idx="151" sub="4" name="coledit11/p_f22a_11_mky.img"/>
-<entry idx="202" sub="3" name="13/p_f22a_13_col.img"/>
-<entry idx="202" sub="4" name="13/p_f22a_13_spe.img"/>
-<entry idx="203" sub="3" name="coledit13/p_f22a_13_mkx.img"/>
-<entry idx="203" sub="4" name="coledit13/p_f22a_13_mky.img"/>
-<entry idx="206" sub="3" name="14/p_f22a_14_col.img"/>
-<entry idx="206" sub="4" name="14/p_f22a_14_spe.img"/>
-<entry idx="207" sub="3" name="coledit14/p_f22a_14_mkx.img"/>
-<entry idx="207" sub="4" name="coledit14/p_f22a_14_mky.img"/>
+<entry idx="146" sub="3" name="13/p_f22a_13_col.img"/>
+<entry idx="146" sub="4" name="13/p_f22a_13_spe.img"/>
+<entry idx="147" sub="3" name="coledit13/p_f22a_13_mkx.img"/>
+<entry idx="147" sub="4" name="coledit13/p_f22a_13_mky.img"/>
+<entry idx="150" sub="3" name="14/p_f22a_14_col.img"/>
+<entry idx="150" sub="4" name="14/p_f22a_14_spe.img"/>
+<entry idx="151" sub="3" name="coledit14/p_f22a_14_mkx.img"/>
+<entry idx="151" sub="4" name="coledit14/p_f22a_14_mky.img"/>
+<entry idx="202" sub="3" name="12/p_f22a_12_col.img"/>
+<entry idx="202" sub="4" name="12/p_f22a_12_spe.img"/>
+<entry idx="203" sub="3" name="coledit12/p_f22a_12_mkx.img"/>
+<entry idx="203" sub="4" name="coledit12/p_f22a_12_mky.img"/>
+<entry idx="206" sub="3" name="11/p_f22a_11_col.img"/>
+<entry idx="206" sub="4" name="11/p_f22a_11_spe.img"/>
+<entry idx="207" sub="3" name="coledit11/p_f22a_11_mkx.img"/>
+<entry idx="207" sub="4" name="coledit11/p_f22a_11_mky.img"/>
 
 <path name="model_id/tdb/mech/plyr/p_su33/"/>
 <entry idx="210" sub="3" name="11/p_su33_11_col.img"/>
