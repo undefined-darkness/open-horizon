@@ -460,6 +460,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                 assert(header_remained == 0);
             }
 
+            size_t last_offset = sequence_reader.get_offset();
             for (int j = 0; j < f.bones.size(); ++j)
             {
                 sequence_reader.seek(f.bones[j].offset);
@@ -517,8 +518,17 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                     }
 
                 }
+
+                if (sequence_reader.get_offset() > last_offset)
+                    last_offset = sequence_reader.get_offset();
             }
 
+            sequence_reader.seek(last_offset);
+/*
+            if(sequence_reader.get_remained())
+                print_data(sequence_reader);
+            //printf("sequence remained %ld\n", sequence_reader.get_remained());
+*/
             if (first_anim)
             {
                 nya_render::skeleton s;
@@ -772,6 +782,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
         float pos[3];
         float tc[2];
         ushort normal[4]; //half float
+        ushort tangent[4];
+        ushort bitangent[4];
     };
 
     std::vector<vert> verts;
@@ -813,6 +825,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                         memcpy(verts[i + first_index].pos, &ndxr_verts[i * 7], sizeof(verts[0].pos));
                         memcpy(verts[i + first_index].tc, &ndxr_verts[i * 7 + 5], sizeof(verts[0].tc));
                         memcpy(verts[i + first_index].normal, &ndxr_verts[i * 7 + 3], sizeof(verts[0].normal));
+                        memset(verts[i + first_index].tangent, 0, sizeof(verts[0].tangent));
+                        memset(verts[i + first_index].bitangent, 0, sizeof(verts[0].bitangent));
                     }
                     break;
 
@@ -822,6 +836,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                         memcpy(verts[i + first_index].pos, &ndxr_verts[i * 11], sizeof(verts[0].pos));
                         memcpy(verts[i + first_index].tc, &ndxr_verts[i * 11 + 9], sizeof(verts[0].tc));
                         memcpy(verts[i + first_index].normal, &ndxr_verts[i * 11 + 3], sizeof(verts[0].normal));
+                        memcpy(verts[i + first_index].tangent, &ndxr_verts[i * 11 + 7], sizeof(verts[0].tangent));
+                        memcpy(verts[i + first_index].bitangent, &ndxr_verts[i * 11 + 5], sizeof(verts[0].bitangent));
                     }
                     break;
 /*
@@ -877,6 +893,9 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
     mesh.vbo.set_tc(0, sizeof(verts[0].pos), 2);
     mesh.vbo.set_normals(sizeof(verts[0].pos) + sizeof(verts[0].tc), nya_render::vbo::float16);
+    mesh.vbo.set_tc(1, sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].normal), 3, nya_render::vbo::float16);
+    mesh.vbo.set_tc(2, sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].normal) * 2, 3, nya_render::vbo::float16);
+
     mesh.vbo.set_vertex_data(&verts[0], sizeof(verts[0]), uint(verts.size()));
 
     mesh.vbo.set_index_data(&indices[0], nya_render::vbo::index2b, uint(indices.size()));

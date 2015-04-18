@@ -305,6 +305,7 @@ bool aircraft::load(const char *name, unsigned int color_idx)
 
     m_mesh.load(("model_id/mech/plyr/p_" + name_str + "/p_" + name_str + "_pcom.fhm").c_str());
     m_mesh.set_ndxr_texture(0, "ambient", ("model_id/tdb/mech/plyr/p_" + name_str + "/00/p_" + name_str + "_00_amb.img").c_str());
+    m_mesh.set_ndxr_texture(0, "normal", ("model_id/tdb/mech/plyr/p_" + name_str + "/00/p_" + name_str + "_00_nor.img").c_str());
 
     char buf[1024];
 

@@ -1,6 +1,7 @@
 @target main
   color = main_color
   depth = main_depth
+  depth_format=depth24
   width = screen_width
   height = screen_height
 

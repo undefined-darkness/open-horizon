@@ -380,8 +380,28 @@ bool fhm_location::load(const char *fileName, const location_params &params)
         {
             for (auto inst: m_mptx_meshes[i].instances)
             {
-                auto b = nya_math::aabb(m_cols[i].box, inst.pos, nya_math::quat(0.0, inst.yaw, 0.0), nya_math::vec3(1.0, 1.0, 1.0));
-                m_debug_draw.add_aabb(b, nya_math::vec4(0.0, 1.0, 0.0, 1.0));
+                auto b = m_cols[i].box;
+                auto q = nya_math::quat(0.0, inst.yaw, 0.0);
+
+                nya_math::vec3 verts[4];
+                verts[0] = b.origin + b.delta;
+                b.delta.x = -b.delta.x;
+                verts[1] = b.origin + b.delta;
+                b.delta.z = -b.delta.z;
+                verts[2] = b.origin + b.delta;
+                b.delta.x = -b.delta.x;
+                verts[3] = b.origin + b.delta;
+
+                for (auto &v : verts)
+                    v = inst.pos + q.rotate(v);
+
+                for (int j = 0; j < 4; ++j)
+                {
+                    b.delta.x = b.delta.z = 0.0f;
+
+                    m_debug_draw.add_line(verts[j], verts[(j+1) % 4], nya_math::vec4(0.0, 1.0, 0.0, 1.0));
+                    m_debug_draw.add_line(verts[j], verts[j] - b.delta * 2.0, nya_math::vec4(0.0, 1.0, 0.0, 1.0));
+                }
             }
         }
     }

@@ -4,6 +4,7 @@
 
 <path name="model_id/tdb/mech/plyr/p_yf23/"/>
 <entry idx="17" sub="10" name="00/p_yf23_00_amb.img"/>
+<entry idx="17" sub="11" name="00/p_yf23_00_nor.img"/>
 <entry idx="18" sub="3" name="01/p_yf23_01_col.img"/>
 <entry idx="18" sub="4" name="01/p_yf23_01_spe.img"/>
 <entry idx="19" sub="3" name="02/p_yf23_02_col.img"/>
@@ -19,6 +20,7 @@
 
 <path name="model_id/tdb/mech/plyr/p_fa44/"/>
 <entry idx="62" sub="12" name="00/p_fa44_00_amb.img"/>
+<entry idx="62" sub="13" name="00/p_fa44_00_nor.img"/>
 <entry idx="63" sub="3" name="01/p_fa44_01_col.img"/>
 <entry idx="63" sub="4" name="01/p_fa44_01_spe.img"/>
 <entry idx="64" sub="3" name="02/p_fa44_02_col.img"/>
@@ -34,6 +36,7 @@
 
 <path name="model_id/tdb/mech/plyr/p_su37/"/>
 <entry idx="77" sub="12" name="00/p_su37_00_amb.img"/>
+<entry idx="77" sub="13" name="00/p_su37_00_nor.img"/>
 <entry idx="78" sub="3" name="01/p_su37_01_col.img"/>
 <entry idx="78" sub="4" name="01/p_su37_01_spe.img"/>
 <entry idx="79" sub="3" name="02/p_su37_02_col.img"/>
@@ -49,6 +52,7 @@
 
 <path name="model_id/tdb/mech/plyr/p_f15m/"/>
 <entry idx="92" sub="12" name="00/p_f15m_00_amb.img"/>
+<entry idx="92" sub="13" name="00/p_f15m_00_nor.img"/>
 <entry idx="93" sub="3" name="01/p_f15m_01_col.img"/>
 <entry idx="93" sub="4" name="01/p_f15m_01_spe.img"/>
 <entry idx="94" sub="3" name="02/p_f15m_02_col.img"/>
@@ -64,6 +68,7 @@
 
 <path name="model_id/tdb/mech/plyr/p_kwmr/"/>
 <entry idx="107" sub="10" name="00/p_kwmr_00_amb.img"/>
+<entry idx="107" sub="11" name="00/p_kwmr_00_nor.img"/>
 <!--
 <entry idx="108" sub="3" name="01/p_kwmr_01_col.img"/>
 <entry idx="108" sub="4" name="01/p_kwmr_01_spe.img"/>
