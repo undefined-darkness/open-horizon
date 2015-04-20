@@ -23,6 +23,21 @@ private:
 
 //------------------------------------------------------------
 
+class sun_mesh
+{
+public:
+    bool init();
+    void apply_location(const location_params &params);
+    void draw() const;
+
+private:
+    nya_scene::material m_material;
+    nya_render::vbo m_mesh;
+    nya_math::vec4 m_dir;
+};
+
+//------------------------------------------------------------
+
 class location
 {
 public:
@@ -37,6 +52,7 @@ private:
     fhm_location m_location;
     location_params m_params;
     sky_mesh m_sky;
+    sun_mesh m_sun;
 };
 
 //------------------------------------------------------------

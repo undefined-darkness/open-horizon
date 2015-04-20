@@ -157,7 +157,7 @@ nya_scene::texture load_tonecurve(const char *file_name)
 class lens_flare
 {
 public:
-    bool load(const location_params &params)
+    bool init()
     {
         auto res = shared::load_resource("PostProcess/LensParam.bin");
         if (!res.get_size())
@@ -188,23 +188,113 @@ public:
 
         res.free();
 
-        m_texture = shared::get_texture(shared::load_texture("PostProcess/lens.nut"));
-        auto tex_data = m_texture.internal().get_shared_data();
+        auto texture = shared::get_texture(shared::load_texture("PostProcess/lens.nut"));
+        auto tex_data = texture.internal().get_shared_data();
         if(!tex_data.is_valid())
             return false;
 
         nya_render::texture tex = tex_data->tex;
         tex.set_wrap(nya_render::texture::wrap_repeat_mirror, nya_render::texture::wrap_repeat_mirror);
+        auto &pass = m_material.get_pass(m_material.add_pass(nya_scene::material::default_pass));
+        pass.set_shader(nya_scene::shader("shaders/lens_flare.nsh"));
+        pass.get_state().set_cull_face(false);
+        pass.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
+        //pass.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::one);
+        pass.get_state().zwrite=false;
+        pass.get_state().depth_test=false;
+        m_material.set_texture("diffuse", texture);
+
+        struct vert
+        {
+            nya_math::vec2 pos;
+            float dist;
+            float radius;
+            nya_math::vec3 color;
+        };
+
+        vert verts[16*6];
+
+        for (int i = 0; i < 16; ++i)
+        {
+            auto &l = lens[i];
+
+            vert *v = &verts[i * 6];
+
+            v[0].pos = nya_math::vec2( -1.0f, -1.0f );
+            v[1].pos = nya_math::vec2( -1.0f,  1.0f );
+            v[2].pos = nya_math::vec2(  1.0f,  1.0f );
+            v[3].pos = nya_math::vec2( -1.0f, -1.0f );
+            v[4].pos = nya_math::vec2(  1.0f,  1.0f );
+            v[5].pos = nya_math::vec2(  1.0f, -1.0f );
+
+            for(int t = 0; t < 6; ++t)
+            {
+                v[t].dist = l.position;
+                v[t].radius = l.radius;
+                v[t].color = l.color;
+            }
+        }
+
+        m_mesh.set_vertex_data(verts, uint32_t(sizeof(vert)), uint32_t(sizeof(verts) / sizeof(verts[0])));
+        m_mesh.set_vertices(0, 4);
+        m_mesh.set_tc(0, 16, 3);
+
+        if (!m_dir_alpha.is_valid())
+            m_dir_alpha.create();
+        m_material.set_param(m_material.get_param_idx("light dir"), m_dir_alpha);
+
         return true;
+    }
+
+    void apply_location(const location_params &params)
+    {
+        if (!m_dir_alpha.is_valid())
+            m_dir_alpha.create();
+
+        m_dir_alpha.set(-params.sky.sun_dir);
+        m_brightness = params.sky.low.lens_brightness;
     }
 
     void draw() const
     {
-        //ToDo
+        if (!m_dir_alpha.is_valid())
+            return;
+
+        auto da = m_dir_alpha->get();
+
+        auto dir = nya_scene::get_camera().get_dir();
+        dir.z = -dir.z;
+        float c = dir * da.xyz();
+/*
+        float a = acosf(c) * 180.0 / 3.1415;
+        if(a>f_max)
+            return;
+
+        a - f_min;
+        da.w = (1.0 - a /(f_max - f_min)) * m_brightness;
+*/
+
+        c -= 0.9;
+        if(c < 0.0)
+            return;
+
+        da.w = c * m_brightness * 2.0;
+
+        m_dir_alpha.set(da);
+
+        nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
+        m_material.internal().set(nya_scene::material::default_pass);
+        m_mesh.bind();
+        m_mesh.draw();
+        m_mesh.unbind();
+        m_material.internal().unset();
     }
 
 private:
-    nya_scene::texture m_texture;
+    nya_scene::material m_material;
+    nya_render::vbo m_mesh;
+    mutable nya_scene::material::param_proxy m_dir_alpha;
+    params::fvalue m_brightness;
 
 private:
     params::fvalue f_max;
@@ -347,11 +437,12 @@ int main(void)
                 set_texture("color_curve", m_curve);
                 set_shader_param("screen_radius", nya_math::vec4(1.185185, 0.5 * 4.0 / 3.0, 0.0, 0.0));
                 set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
+                m_flare.init();
             }
 
             m_loc.load(location_name);
             m_clouds.load(location_name, m_loc.get_params());
-            m_flare.load(m_loc.get_params());
+            m_flare.apply_location(m_loc.get_params());
 
             auto &p = m_loc.get_params();
             m_curve.set(load_tonecurve((std::string("Map/tonecurve_") + location_name + ".tcb").c_str()));

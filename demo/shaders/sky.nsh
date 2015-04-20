@@ -10,7 +10,9 @@ uniform vec4 fog_color;
 
 void main()
 {
-    color = textureCube(base_map, gl_Vertex.xyz);
+    vec3 tc = gl_Vertex.xyz;
+    tc.z = -tc.z;
+    color = textureCube(base_map, tc);
     color = mix(fog_color, color, min(gl_Vertex.y, 1.0));
     gl_Position=gl_ModelViewProjectionMatrix * gl_Vertex;
 }

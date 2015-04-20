@@ -87,6 +87,73 @@ void sky_mesh::draw()
 
 //------------------------------------------------------------
 
+bool sun_mesh::init()
+{
+    auto texture = shared::get_texture(shared::load_texture("Map/sun.nut"));
+    auto tex_data = texture.internal().get_shared_data();
+    if(!tex_data.is_valid())
+        return false;
+
+    nya_render::texture tex = tex_data->tex;
+    tex.set_wrap(nya_render::texture::wrap_clamp, nya_render::texture::wrap_clamp);
+    auto &pass = m_material.get_pass(m_material.add_pass(nya_scene::material::default_pass));
+    pass.set_shader(nya_scene::shader("shaders/sun.nsh"));
+    pass.get_state().set_cull_face(false);
+    pass.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
+    pass.get_state().zwrite=false;
+    pass.get_state().depth_test=false;
+    m_material.set_texture("diffuse", texture);
+
+    struct vert
+    {
+        nya_math::vec2 pos;
+    };
+
+    vert verts[6];
+    vert *v = &verts[0];
+
+    v[0].pos = nya_math::vec2( -1.0f, -1.0f );
+    v[1].pos = nya_math::vec2( -1.0f,  1.0f );
+    v[2].pos = nya_math::vec2(  1.0f,  1.0f );
+    v[3].pos = nya_math::vec2( -1.0f, -1.0f );
+    v[4].pos = nya_math::vec2(  1.0f,  1.0f );
+    v[5].pos = nya_math::vec2(  1.0f, -1.0f );
+
+    m_mesh.set_vertex_data(verts, uint32_t(sizeof(vert)), uint32_t(sizeof(verts) / sizeof(verts[0])));
+    m_mesh.set_vertices(0, 2);
+
+    return true;
+}
+
+//------------------------------------------------------------
+
+void sun_mesh::apply_location(const location_params &params)
+{
+    m_dir.xyz() = -params.sky.sun_dir;
+    m_dir.w = params.sky.low.sun_flare_size; //params.sky.sun_size;
+    m_material.set_param(m_material.get_param_idx("light dir"), m_dir);
+    m_material.set_param(m_material.get_param_idx("color"), nya_math::vec3(1.0,1.0,1.0)); //params.sky.low.sun_flare_rgb
+}
+
+//------------------------------------------------------------
+
+void sun_mesh::draw() const
+{
+    auto dir = nya_scene::get_camera().get_dir();
+    dir.z = -dir.z;
+    if(dir * m_dir.xyz() < 0.0)
+        return;
+
+    nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
+    m_material.internal().set(nya_scene::material::default_pass);
+    m_mesh.bind();
+    m_mesh.draw();
+    m_mesh.unbind();
+    m_material.internal().unset();
+}
+
+//------------------------------------------------------------
+
 bool location::load(const char *name)
 {
     m_params.load((std::string("Map/mapset_") + name + ".bin").c_str());
@@ -105,7 +172,8 @@ bool location::load(const char *name)
     m_location.m_land_material.set_texture("normal", t3);
 
     m_sky.load(name, m_params);
-
+    m_sun.init();
+    m_sun.apply_location(m_params);
 
    return true;
 }
@@ -127,6 +195,7 @@ void location::draw()
     m_location.draw_mptx();
     m_location.draw_landscape();
     m_sky.draw();
+    m_sun.draw();
 
     //nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
     //m_location.draw_cols();
