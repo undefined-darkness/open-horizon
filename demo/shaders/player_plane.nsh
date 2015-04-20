@@ -105,7 +105,7 @@ void main()
 //-----------------------------------------------------------------------------------------
 
     float spe_pow=pow(max(0.0,dot(n,h)),20.0);
-    vec3 spec=spec_mask.xyz*spe_pow*5.0;
+    vec3 spec=spec_mask.xyz*spe_pow*10.0;
     vec3 light = vec3(0.7 + 0.3*max(0.0,dot(n,light_dir.xyz)));
     vec3 amb_light = amb.rgb;
 

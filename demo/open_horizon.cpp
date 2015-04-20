@@ -144,13 +144,88 @@ nya_scene::texture load_tonecurve(const char *file_name)
     }
 
     t.tex.build_texture(color, 256, 1, nya_render::texture::color_rgb);
-    t.tex.set_wrap(false, false);
+    t.tex.set_wrap(nya_render::texture::wrap_clamp, nya_render::texture::wrap_clamp);
     res.free();
 
     nya_scene::texture result;
     result.create(t);
     return result;
 }
+
+//------------------------------------------------------------
+
+class lens_flare
+{
+public:
+    bool load(const location_params &params)
+    {
+        auto res = shared::load_resource("PostProcess/LensParam.bin");
+        if (!res.get_size())
+            return false;
+
+        params::memory_reader reader(res.get_data(), res.get_size());
+
+        for (int i = 0; i < 16; ++i)
+        {
+            lens[i].position = reader.read<float>();
+            lens[i].radius = reader.read<float>();
+            lens[i].color = reader.read_color3_uint();
+        }
+
+        star_radius = reader.read<float>();
+        star_color = reader.read_color3_uint();
+
+        glow_radius = reader.read<float>();
+        glow_color = reader.read_color3_uint();
+
+        ring_specular = reader.read<float>();
+        ring_shiness = reader.read<float>();
+        ring_radius = reader.read<float>();
+
+        f_min = reader.read<float>();
+        f_max = reader.read<float>();
+        aberration = reader.read<float>();
+
+        res.free();
+
+        m_texture = shared::get_texture(shared::load_texture("PostProcess/lens.nut"));
+        auto tex_data = m_texture.internal().get_shared_data();
+        if(!tex_data.is_valid())
+            return false;
+
+        nya_render::texture tex = tex_data->tex;
+        tex.set_wrap(nya_render::texture::wrap_repeat_mirror, nya_render::texture::wrap_repeat_mirror);
+        return true;
+    }
+
+    void draw() const
+    {
+        //ToDo
+    }
+
+private:
+    nya_scene::texture m_texture;
+
+private:
+    params::fvalue f_max;
+    params::fvalue f_min;
+    params::fvalue ring_radius;
+    params::fvalue ring_shiness;
+    params::fvalue ring_specular;
+    params::color3 glow_color;
+    params::fvalue glow_radius;
+    params::color3 star_color;
+    params::fvalue star_radius;
+    params::fvalue aberration;
+
+    struct lens_param
+    {
+        params::fvalue position;
+        params::fvalue radius;
+        params::color3 color;
+
+    } lens[16];
+};
 
 //------------------------------------------------------------
 
@@ -253,6 +328,7 @@ int main(void)
         std::string m_location_name;
         location m_loc;
         effect_clouds m_clouds;
+        lens_flare m_flare;
         nya_scene::texture_proxy m_curve;
 
     public:
@@ -274,7 +350,8 @@ int main(void)
             }
 
             m_loc.load(location_name);
-            m_clouds.load(location_name);
+            m_clouds.load(location_name, m_loc.get_params());
+            m_flare.load(m_loc.get_params());
 
             auto &p = m_loc.get_params();
             m_curve.set(load_tonecurve((std::string("Map/tonecurve_") + location_name + ".tcb").c_str()));
@@ -363,6 +440,8 @@ int main(void)
                 m_clouds.draw_flat();
             else if (strcmp(tags, "clouds_obj") == 0)
                 m_clouds.draw_obj();
+            else if (strcmp(tags, "flare") == 0)
+                m_flare.draw();
         }
     private:
         int m_fade_time;

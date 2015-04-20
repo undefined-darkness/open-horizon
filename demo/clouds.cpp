@@ -11,7 +11,7 @@
 
 //------------------------------------------------------------
 
-bool effect_clouds::load(const char *location_name)
+bool effect_clouds::load(const char *location_name, const location_params &params)
 {
     if(!location_name)
         return false;

@@ -5,141 +5,124 @@
 #pragma once
 
 #include "math/vector.h"
+#include "params.h"
 
 //------------------------------------------------------------
 
 struct location_params
 {
-    //value with auto-initialisation
-    template<typename t> class value
-    {
-    public:
-        inline value(): m_value(0.0f) {}
-        inline value(const t& v): m_value(v) {}
-        inline operator t&() { return m_value; }
-        inline operator const t&() const { return m_value; }
-
-    private: t m_value;
-    };
-
-    typedef value<float> fvalue;
-    typedef value<unsigned int> uvalue;
-    typedef nya_math::vec3 color3;
-    typedef nya_math::vec4 color4;
-    typedef nya_math::vec3 vec3;
-
     struct
     {
-        fvalue znear;
-        fvalue zfar;
-        fvalue ground_znear;
-        fvalue ground_zfar;
+        params::fvalue znear;
+        params::fvalue zfar;
+        params::fvalue ground_znear;
+        params::fvalue ground_zfar;
 
     } clipping_plane;
 
-    fvalue tone_saturation;
+    params::fvalue tone_saturation;
 
     struct
     {
-        fvalue bloom_offset;
-        fvalue bloom_saturation;
-        fvalue bloom_scale;
-        fvalue bloom_threshold;
+        params::fvalue bloom_offset;
+        params::fvalue bloom_saturation;
+        params::fvalue bloom_scale;
+        params::fvalue bloom_threshold;
 
-        fvalue bloom_kernel_brightness;
-        fvalue bloom_kernel_sigma;
+        params::fvalue bloom_kernel_brightness;
+        params::fvalue bloom_kernel_sigma;
 
-        fvalue luminance_measure_area;
-        fvalue luminance_speed;
+        params::fvalue luminance_measure_area;
+        params::fvalue luminance_speed;
 
-        fvalue middle_gray_range_max;
-        fvalue middle_gray_range_min;
+        params::fvalue middle_gray_range_max;
+        params::fvalue middle_gray_range_min;
 
     } hdr;
 
     struct skysphere
     {
-        color3 ambient;
-        fvalue lens_brightness;
+        params::color3 ambient;
+        params::fvalue lens_brightness;
 
-        color3 light2_color;
-        vec3 light2_dir;
-        fvalue light2_power;
+        params::color3 light2_color;
+        params::vec3 light2_dir;
+        params::fvalue light2_power;
 
-        color3 light3_color;
-        vec3 light3_dir;
-        fvalue light3_power;
+        params::color3 light3_color;
+        params::vec3 light3_dir;
+        params::fvalue light3_power;
 
-        fvalue player_shadow_brightness;
-        color3 player_shadow_color;
+        params::fvalue player_shadow_brightness;
+        params::color3 player_shadow_color;
 
-        fvalue skysphere_intensity;
-        color3 specular_color;
-        fvalue specular_power;
+        params::fvalue skysphere_intensity;
+        params::color3 specular_color;
+        params::fvalue specular_power;
 
-        color3 sun_color;
-        fvalue sun_power;
-        color3 sun_rgb;
+        params::color3 sun_color;
+        params::fvalue sun_power;
+        params::color3 sun_rgb;
 
-        color3 sun_flare_rgb;
-        fvalue sun_flare_size;
+        params::color3 sun_flare_rgb;
+        params::fvalue sun_flare_size;
     };
 
     struct
     {
         struct
         {
-            fvalue gravity_speed;
-            vec3 gravity_dir;
+            params::fvalue gravity_speed;
+            params::vec3 gravity_dir;
 
-            color4 air_color;
-            fvalue air_ratio;
+            params::color4 air_color;
+            params::fvalue air_ratio;
 
-            color4 rain_color;
-            fvalue rain_ratio;
+            params::color4 rain_color;
+            params::fvalue rain_ratio;
 
-            color4 snow_color;
-            fvalue snow_ratio;
+            params::color4 snow_color;
+            params::fvalue snow_ratio;
 
         } weather;
 
-        fvalue fog_density;
-        fvalue fog_height;
-        fvalue fog_height_density;
-        fvalue fog_height_fade_density;
-        fvalue fog_height_fresnel;
+        params::fvalue fog_density;
+        params::fvalue fog_height;
+        params::fvalue fog_height_density;
+        params::fvalue fog_height_fade_density;
+        params::fvalue fog_height_fresnel;
 
         skysphere low;
         skysphere high;
 
-        vec3 moon_dir;
-        color3 moon_color;
-        fvalue moon_size;
+        params::vec3 moon_dir;
+        params::color3 moon_color;
+        params::fvalue moon_size;
 
-        vec3 sun_dir;
-        fvalue sun_size;
+        params::vec3 sun_dir;
+        params::fvalue sun_size;
 
         struct
         {
-            color3 mesh_color;
-            fvalue mesh_contrast;
-            fvalue mesh_fog_power;
-            fvalue mesh_fog_fresnel;
-            fvalue mesh_fog_fresnel_max;
-            fvalue mesh_power;
-            fvalue mesh_scale;
+            params::color3 mesh_color;
+            params::fvalue mesh_contrast;
+            params::fvalue mesh_fog_power;
+            params::fvalue mesh_fog_fresnel;
+            params::fvalue mesh_fog_fresnel_max;
+            params::fvalue mesh_power;
+            params::fvalue mesh_scale;
 
-            color3 obj_ambient;
-            color3 obj_sun_color;
+            params::color3 obj_ambient;
+            params::color3 obj_sun_color;
 
-            color3 parts_color;
-            fvalue parts_contrast;
-            fvalue parts_fog_power;
-            fvalue parts_fresnel;
-            fvalue parts_fresnel_max;
-            fvalue parts_power;
-            fvalue parts_reflection_power;
-            fvalue parts_scale;
+            params::color3 parts_color;
+            params::fvalue parts_contrast;
+            params::fvalue parts_fog_power;
+            params::fvalue parts_fresnel;
+            params::fvalue parts_fresnel_max;
+            params::fvalue parts_power;
+            params::fvalue parts_reflection_power;
+            params::fvalue parts_scale;
 
         } mapspecular;
 
@@ -147,9 +130,9 @@ struct location_params
 
     struct
     {
-        fvalue mesh_power;
-        fvalue mesh_range;
-        fvalue mesh_repeat;
+        params::fvalue mesh_power;
+        params::fvalue mesh_range;
+        params::fvalue mesh_repeat;
 
     } detail;
 

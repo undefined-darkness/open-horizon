@@ -634,7 +634,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
     }
 
     res.tex.set_filter(nya_render::texture::filter_nearest, nya_render::texture::filter_nearest, nya_render::texture::filter_nearest);
-    res.tex.set_wrap(false, false);
+    res.tex.set_wrap(nya_render::texture::wrap_clamp, nya_render::texture::wrap_clamp);
     mesh.color.create(res);
 
     //if(reader.get_remained() > 0)

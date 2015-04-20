@@ -5,13 +5,14 @@
 #pragma once
 
 #include "scene/mesh.h"
+#include "location_params.h"
 
 //------------------------------------------------------------
 
 class effect_clouds
 {
 public:
-    bool load(const char *location_name);
+    bool load(const char *location_name, const location_params &params);
     void draw_flat();
     void draw_obj();
 

@@ -87,6 +87,7 @@
 		F503E52E1904913500C3590A /* qdf_provider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = qdf_provider.h; sourceTree = "<group>"; };
 		F506E39319084E01002CF23C /* fhm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fhm.h; path = ../fhm.h; sourceTree = "<group>"; };
 		F506E39619085012002CF23C /* fhm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fhm.cpp; path = ../fhm.cpp; sourceTree = "<group>"; };
+		F55C0D741AE500BA00F3BE31 /* params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = params.h; sourceTree = "<group>"; };
 		F56CCB0419B3D955000D9163 /* xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xml.h; sourceTree = "<group>"; };
 		F57342101ABF3F3600468FD5 /* clouds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = clouds.cpp; sourceTree = "<group>"; };
 		F57342111ABF3F3600468FD5 /* clouds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = clouds.h; sourceTree = "<group>"; };
@@ -152,6 +153,7 @@
 				F57342151AC176E900468FD5 /* location_params.cpp */,
 				F57342161AC176E900468FD5 /* location_params.h */,
 				F503E50F19048CC100C3590A /* open_horizon.cpp */,
+				F55C0D741AE500BA00F3BE31 /* params.h */,
 				F503E51319048CC100C3590A /* plane_params.cpp */,
 				F503E51419048CC100C3590A /* plane_params.h */,
 				F503E52A1904907200C3590A /* qdf.cpp */,
