@@ -69,6 +69,8 @@ private:
     nya_scene::material::param_array m_colors;
 };
 
+//------------------------------------------------------------
+
 class aircraft_information
 {
 public:
@@ -285,6 +287,8 @@ private:
     std::vector<info> m_infos;
 };
 
+//------------------------------------------------------------
+
 bool aircraft::load(const char *name, unsigned int color_idx)
 {
     if (!name)
@@ -361,6 +365,18 @@ bool aircraft::load(const char *name, unsigned int color_idx)
     return true;
 }
 
+//------------------------------------------------------------
+
+void aircraft::apply_location(const char *location_name, const location_params &params)
+{
+    auto e = shared::get_texture(shared::load_texture((std::string("Map/envmap_") + location_name + ".nut").c_str()));
+
+    m_mesh.set_ndxr_texture(0, "reflection", e);
+    m_mesh.set_ndxr_texture(0, "ibl", e);
+}
+
+//------------------------------------------------------------
+
 unsigned int aircraft::get_colors_count(const char *plane_name)
 {
     auto info = aircraft_information::get().get_info(plane_name);
@@ -370,12 +386,16 @@ unsigned int aircraft::get_colors_count(const char *plane_name)
     return (unsigned int)info->color_info.size();
 }
 
+//------------------------------------------------------------
+
 void aircraft::set_controls(const nya_math::vec3 &rot, float throttle, float brake)
 {
     m_controls_rot = rot;
     m_controls_throttle = throttle;
     m_controls_brake = brake;
 }
+
+//------------------------------------------------------------
 
 void aircraft::update(int dt)
 {

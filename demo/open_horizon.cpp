@@ -250,15 +250,17 @@ int main(void)
         plane_camera camera;
 
     private:
-        location loc;
-        effect_clouds clouds;
+        std::string m_location_name;
+        location m_loc;
+        effect_clouds m_clouds;
         nya_scene::texture_proxy m_curve;
 
     public:
         void load_location(const char *location_name)
         {
-            loc = location();
-            clouds = effect_clouds();
+            m_location_name.assign(location_name);
+            m_loc = location();
+            m_clouds = effect_clouds();
 
             shared::clear_textures();
 
@@ -271,14 +273,15 @@ int main(void)
                 set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
             }
 
-            loc.load(location_name);
-            clouds.load(location_name);
+            m_loc.load(location_name);
+            m_clouds.load(location_name);
 
-            auto &p = loc.get_params();
+            auto &p = m_loc.get_params();
             m_curve.set(load_tonecurve((std::string("Map/tonecurve_") + location_name + ".tcb").c_str()));
             set_shader_param("bloom_param", nya_math::vec4(p.hdr.bloom_threshold, p.hdr.bloom_offset, p.hdr.bloom_scale, 1.0));
             set_shader_param("saturation", nya_math::vec4(p.tone_saturation * 0.01, 0.0, 0.0, 0.0));
 
+            player_plane.apply_location(m_location_name.c_str(), m_loc.get_params());
             player_plane.set_pos(nya_math::vec3(-300, 50, 2000));
             player_plane.set_rot(nya_math::quat());
             m_fade_time = 2500;
@@ -291,6 +294,7 @@ int main(void)
             auto pos = player_plane.get_pos();
             player_plane = aircraft();
             player_plane.load(name, color);
+            player_plane.apply_location(m_location_name.c_str(), m_loc.get_params());
             player_plane.set_pos(pos);
 
             //ToDo: research camera
@@ -328,7 +332,7 @@ int main(void)
             if (dt > 50)
                 dt = 50;
 
-            loc.update(dt);
+            m_loc.update(dt);
             player_plane.update(dt);
 
             camera.set_pos(player_plane.get_pos());
@@ -352,13 +356,13 @@ int main(void)
         void draw_scene(const char *pass, const char *tags) override
         {
             if (strcmp(tags, "location") == 0)
-                loc.draw();
+                m_loc.draw();
             else if (strcmp(tags, "player") == 0)
                 player_plane.draw();
             else if (strcmp(tags, "clouds_flat") == 0)
-                clouds.draw_flat();
+                m_clouds.draw_flat();
             else if (strcmp(tags, "clouds_obj") == 0)
-                clouds.draw_obj();
+                m_clouds.draw_obj();
         }
     private:
         int m_fade_time;
@@ -589,12 +593,14 @@ int main(void)
 
         if (fkeys[0] && fkeys[0] != fkeys_last[0])
         {
+            paused = false;
             current_location = (current_location + 1) % locations_count;
             scene.load_location(locations[current_location]);
         }
 
         if (fkeys[1] && fkeys[1] != fkeys_last[1])
         {
+            paused = false;
             current_location = (current_location + locations_count - 1) % locations_count;
             scene.load_location(locations[current_location]);
         }

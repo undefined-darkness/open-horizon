@@ -6,6 +6,7 @@
 
 #include "plane_params.h"
 #include "fhm_mesh.h"
+#include "location_params.h"
 
 //------------------------------------------------------------
 
@@ -13,6 +14,8 @@ class aircraft
 {
 public:
     bool load(const char *name, unsigned int color_idx = 0);
+
+    void apply_location(const char *location_name, const location_params &params);
 
     void draw() { m_mesh.draw(0); }
 

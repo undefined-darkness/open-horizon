@@ -86,7 +86,7 @@ void main()
 	//env
 
 	vec3 n = normalize(normal);
-	vec3 env_dir = normalize(-n * dot(-e, n) * 2.0 - e);
+	vec3 env_dir = -reflect(e, n);
 	env_dir.z = -env_dir.z;
 	vec4 env = textureCube(env_map, env_dir);
 	env *= map_param2_ps.w;
