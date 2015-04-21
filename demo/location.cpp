@@ -101,7 +101,8 @@ bool sun_mesh::init()
     pass.get_state().set_cull_face(false);
     pass.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
     pass.get_state().zwrite=false;
-    pass.get_state().depth_test=false;
+    pass.get_state().depth_test=true;
+    pass.get_state().depth_comparsion=nya_render::depth_test::not_greater;
     m_material.set_texture("diffuse", texture);
 
     struct vert

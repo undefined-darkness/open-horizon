@@ -2,6 +2,7 @@
 @uniform bloom_param "bloom_param"
 @sampler base "diffuse"
 @sampler bloom "bloom"
+@sampler lum "lum"
 
 @all
 
@@ -23,6 +24,7 @@ void main()
 
 uniform sampler2D base;
 uniform sampler2D bloom;
+uniform sampler2D lum;
 
 uniform vec4 bloom_param;
 
@@ -36,6 +38,7 @@ void main( void )
 	vec4 color = texture2D(base, tc);
 
     color *= 0.8; //ToDo: color *= frame_intencity;
+    //color *= 1.0 / texture2D(lum, vec2(0.5));
 
     vec4 b = texture2D(bloom, t1.xy);
 	b += texture2D(bloom, t1.zw);

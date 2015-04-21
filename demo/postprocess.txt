@@ -15,6 +15,30 @@
   width = screen_width/4
   height = screen_height/4
 
+@target luminance64
+  color = luminance64
+  color_format = rgb32f
+  width = 64
+  height = 64
+
+@target luminance16
+  color = luminance16
+  color_format = rgb32f
+  width = 16
+  height = 16
+
+@target luminance4
+  color = luminance4
+  color_format = rgb32f
+  width = 4
+  height = 4
+
+@target luminance1
+  color = luminance1
+  color_format = rgb32f
+  width = 1
+  height = 1
+
 @target bright_filter
   color = bright_filter
   width = screen_width/4
@@ -75,6 +99,26 @@
 @set_shader shaders/downsample4.nsh
 @draw_quad
 
+@set_target luminance64
+@set_texture diffuse = downsample4
+@set_shader shaders/luminance.nsh
+@draw_quad
+
+@set_target luminance16
+@set_texture diffuse = luminance64
+@set_shader shaders/downsample4.nsh
+@draw_quad
+
+@set_target luminance4
+@set_texture diffuse = luminance16
+@set_shader shaders/downsample4.nsh
+@draw_quad
+
+@set_target luminance1
+@set_texture diffuse = luminance4
+@set_shader shaders/downsample4.nsh
+@draw_quad
+
 @set_target bright_filter
 @set_texture diffuse = downsample4
 @set_shader shaders/bright_filter.nsh
@@ -98,6 +142,7 @@
 @set_target main2
 @set_texture diffuse = fxaa
 @set_texture bloom = gauss3
+@set_texture lum = luminance1
 @set_shader shaders/bloom.nsh
 @draw_quad
 
