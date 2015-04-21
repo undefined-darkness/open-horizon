@@ -37,8 +37,7 @@ void main( void )
 
 	vec4 color = texture2D(base, tc);
 
-    color *= 0.8; //ToDo: color *= frame_intencity;
-    //color *= 1.0 / texture2D(lum, vec2(0.5));
+    color *= 1.0 / texture2D(lum, vec2(0.5)); //ToDo
 
     vec4 b = texture2D(bloom, t1.xy);
 	b += texture2D(bloom, t1.zw);

@@ -278,7 +278,7 @@ public:
         if(c < 0.0)
             return;
 
-        da.w = c * m_brightness * 2.0;
+        da.w = c * m_brightness;
 
         m_dir_alpha.set(da);
 
@@ -420,6 +420,7 @@ int main(void)
         effect_clouds m_clouds;
         lens_flare m_flare;
         nya_scene::texture_proxy m_curve;
+        params::fvalue m_luminance_speed;
 
     public:
         void load_location(const char *location_name)
@@ -448,6 +449,7 @@ int main(void)
             m_curve.set(load_tonecurve((std::string("Map/tonecurve_") + location_name + ".tcb").c_str()));
             set_shader_param("bloom_param", nya_math::vec4(p.hdr.bloom_threshold, p.hdr.bloom_offset, p.hdr.bloom_scale, 1.0));
             set_shader_param("saturation", nya_math::vec4(p.tone_saturation * 0.01, 0.0, 0.0, 0.0));
+            m_luminance_speed = p.hdr.luminance_speed;
 
             player_plane.apply_location(m_location_name.c_str(), m_loc.get_params());
             player_plane.set_pos(nya_math::vec3(-300, 50, 2000));
@@ -507,6 +509,7 @@ int main(void)
             camera.set_rot(player_plane.get_rot());
 
             set_shader_param("damage_frame_color", nya_math::vec4(1.0, 0.0, 0.0235, nya_math::max(1.0 - player_plane.get_hp(), 0.0)));
+            set_shader_param("lum_adapt_speed", m_luminance_speed * dt / 1000.0f * nya_math::vec4(1.0, 1.0, 1.0, 1.0));
 
             if (m_fade_time > 0)
             {

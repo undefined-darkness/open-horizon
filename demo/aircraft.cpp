@@ -369,10 +369,8 @@ bool aircraft::load(const char *name, unsigned int color_idx)
 
 void aircraft::apply_location(const char *location_name, const location_params &params)
 {
-    auto e = shared::get_texture(shared::load_texture((std::string("Map/envmap_") + location_name + ".nut").c_str()));
-
-    m_mesh.set_ndxr_texture(0, "reflection", e);
-    m_mesh.set_ndxr_texture(0, "ibl", e);
+    m_mesh.set_ndxr_texture(0, "reflection", shared::get_texture(shared::load_texture((std::string("Map/envmap_") + location_name + ".nut").c_str())));
+    m_mesh.set_ndxr_texture(0, "ibl", shared::get_texture(shared::load_texture((std::string("Map/ibl_") + location_name + ".nut").c_str())));
 }
 
 //------------------------------------------------------------

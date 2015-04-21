@@ -39,6 +39,13 @@
   width = 1
   height = 1
 
+@target luminance1_prev
+  color = luminance1_prev
+  color_format = rgb32f
+  init_color=1.0,1.0,1.0
+  width = 1
+  height = 1
+
 @target bright_filter
   color = bright_filter
   width = screen_width/4
@@ -64,8 +71,8 @@
   width = screen_width
   height = screen_height
 
-@target lens_blur
-  color = lens_blur
+@target lens
+  color = lens
   width = screen_width/2
   height = screen_height/2
 
@@ -87,7 +94,6 @@
 @draw_scene default = player
 @draw_scene default = clouds_flat
 @draw_scene default = clouds_obj
-@draw_scene default = flare
 
 @set_target fxaa
 @set_texture diffuse = main_color
@@ -116,6 +122,12 @@
 
 @set_target luminance1
 @set_texture diffuse = luminance4
+@set_texture prev = luminance1_prev
+@set_shader shaders/lum_adapt.nsh
+@draw_quad
+
+@set_target luminance1_prev
+@set_texture diffuse = luminance1
 @set_shader shaders/downsample4.nsh
 @draw_quad
 
@@ -146,8 +158,9 @@
 @set_shader shaders/bloom.nsh
 @draw_quad
 
-@set_target lens_blur
+@set_target lens
 @clear
+@draw_scene default = flare
 
 @set_target motion_blur
 @clear
@@ -157,7 +170,7 @@
 
 @set_target
 @set_texture diffuse = main_color
-@set_texture lens_blur = lens_blur
+@set_texture lens = lens
 @set_texture motion_blur = motion_blur
 @set_texture heat_blur = heat_blur
 @set_texture curve0 = color_curve

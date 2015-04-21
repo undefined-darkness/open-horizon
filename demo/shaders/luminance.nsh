@@ -26,7 +26,6 @@ float luminance(vec2 tc)
 	vec3 color = texture2D(base_map, tc).xyz;
     float lum = dot(color, vec3(0.2125, 0.7154, 0.0721));
 	return 0.69314 * exp(lum * 1.25 + 0.0001);
-    return lum;
 }
 
 void main()
