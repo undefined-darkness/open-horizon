@@ -26,7 +26,7 @@ void main()
     vec4 sun_pos = gl_ModelViewProjectionMatrix * vec4(camera_pos.xyz + light_dir.xyz * 100.0, 1.0);
     sun_pos.xy /= sun_pos.w;
 
-    gl_Position = vec4(p.xy*0.5 + sun_pos.xy,0.0,1.0); //*light_dir.w
+    gl_Position = vec4(p.xy*0.3 + sun_pos.xy,0.0,1.0); //*light_dir.w
 }
 
 @sampler base_map "diffuse"

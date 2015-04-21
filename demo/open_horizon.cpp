@@ -157,8 +157,10 @@ nya_scene::texture load_tonecurve(const char *file_name)
 class lens_flare
 {
 public:
-    bool init()
+    bool init(const nya_scene::texture_proxy &color, const nya_scene::texture_proxy &depth)
     {
+        assert(depth.is_valid());
+
         auto res = shared::load_resource("PostProcess/LensParam.bin");
         if (!res.get_size())
             return false;
@@ -203,6 +205,8 @@ public:
         pass.get_state().zwrite=false;
         pass.get_state().depth_test=false;
         m_material.set_texture("diffuse", texture);
+        m_material.set_texture("color", color);
+        m_material.set_texture("depth", depth);
 
         struct vert
         {
@@ -210,14 +214,13 @@ public:
             float dist;
             float radius;
             nya_math::vec3 color;
+            float special;
         };
 
-        vert verts[16*6];
+        vert verts[(16+1)*6];
 
         for (int i = 0; i < 16; ++i)
         {
-            auto &l = lens[i];
-
             vert *v = &verts[i * 6];
 
             v[0].pos = nya_math::vec2( -1.0f, -1.0f );
@@ -229,15 +232,27 @@ public:
 
             for(int t = 0; t < 6; ++t)
             {
-                v[t].dist = l.position;
-                v[t].radius = l.radius;
-                v[t].color = l.color;
+                if(i>0)
+                {
+                    auto &l = lens[i-1];
+                    v[t].dist = l.position;
+                    v[t].radius = l.radius;
+                    v[t].color = l.color;
+                    v[t].special = 0.0;
+                }
+                else
+                {
+                    v[t].dist = 1.0;
+                    v[t].radius = 0.2;
+                    v[t].color = nya_math::vec3(1.0, 1.0, 1.0);
+                    v[t].special = 1.0;
+                }
             }
         }
 
         m_mesh.set_vertex_data(verts, uint32_t(sizeof(vert)), uint32_t(sizeof(verts) / sizeof(verts[0])));
         m_mesh.set_vertices(0, 4);
-        m_mesh.set_tc(0, 16, 3);
+        m_mesh.set_tc(0, 16, 4);
 
         if (!m_dir_alpha.is_valid())
             m_dir_alpha.create();
@@ -273,10 +288,12 @@ public:
         a - f_min;
         da.w = (1.0 - a /(f_max - f_min)) * m_brightness;
 */
+        if (c < 0.0)
+            return;
 
         c -= 0.9;
-        if(c < 0.0)
-            return;
+        //if(c < 0.0)
+        //    return;
 
         da.w = c * m_brightness;
 
@@ -438,7 +455,7 @@ int main(void)
                 set_texture("color_curve", m_curve);
                 set_shader_param("screen_radius", nya_math::vec4(1.185185, 0.5 * 4.0 / 3.0, 0.0, 0.0));
                 set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
-                m_flare.init();
+                m_flare.init(get_texture("main_color"), get_texture("main_depth"));
             }
 
             m_loc.load(location_name);
@@ -543,11 +560,11 @@ int main(void)
     } scene;
 
     const char *locations[] = {
-        "ms01", //miami
         "ms06", //dubai
         "ms50", //tokyo
         "ms11b", //moscow
         "ms30", //paris
+        "ms01", //miami
         //"ms14" //washington
     };
 
@@ -598,11 +615,7 @@ int main(void)
         //"a130", //b.unknown2 = 1312
     };
 
-    unsigned int current_plane=0;
-    unsigned int current_color=0;
-
-    scene.load_location(locations[current_location]);
-    scene.load_player_plane(planes[current_plane], current_color);
+    bool need_init = true;
 
     double mx,my;
     glfwGetCursorPos(window, &mx, &my);
@@ -643,6 +656,16 @@ int main(void)
         {
             screen_width = new_screen_width, screen_height = new_screen_height;
             scene.resize(screen_width, screen_height);
+        }
+
+        unsigned int current_plane=0;
+        unsigned int current_color=0;
+
+        if(need_init)
+        {
+            scene.load_location(locations[current_location]);
+            scene.load_player_plane(planes[current_plane], current_color);
+            need_init = false;
         }
 
         scene.update(paused ? 0 : (speed10x ? dt * 10 : dt));
