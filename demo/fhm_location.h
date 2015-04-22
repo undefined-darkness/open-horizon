@@ -20,7 +20,7 @@ class fhm_location
     friend class location; //ToDo
 
 public:
-    bool load(const char *fileName, const location_params &params);
+    bool load(const char *file_name, const location_params &params);
     void update(int dt);
     void draw_mptx();
     void draw_landscape();

@@ -328,6 +328,9 @@ bool aircraft::load(const char *name, unsigned int color_idx)
     sprintf(buf, "model_id/tdb/mech/plyr/p_%s/%02d/p_%s_%02d_spe.img", name, color.coledit_idx, name, color.coledit_idx);
     m_mesh.set_ndxr_texture(0, "specular", buf);
 
+    sprintf(buf, "model_id/mech/plyr/p_%s/p_%s_pcol%02d.fhm", name, name, color.coledit_idx);
+    m_mesh.load_material(buf);
+
     m_params.load(("Player/Behavior/param_p_" + name_str + ".bin").c_str());
 
     m_speed = m_params.move.speed.speedCruising;

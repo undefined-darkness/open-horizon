@@ -143,6 +143,110 @@ bool fhm_mesh::load(const char *fileName)
 
 //------------------------------------------------------------
 
+bool fhm_mesh::load_material(const char *file_name)
+{
+    fhm_file m;
+    m.open(file_name);
+    for (int i = 0; i < m.get_chunks_count(); ++i)
+    {
+        auto t = m.get_chunk_type(i);
+        if (t == 'RXTM')
+            continue;
+
+        typedef std::vector< std::pair<std::string, nya_math::vec4> > material_params;
+        std::vector<material_params> material;
+
+        nya_memory::tmp_buffer_scoped b(m.get_chunk_size(i));
+        m.read_chunk_data(i, b.get_data());
+        nya_memory::memory_reader r(b.get_data(),b.get_size());
+
+        struct mate_header
+        {
+            char sign[4];
+            uint16_t groups_count;
+            uint16_t unknown_count;
+            uint32_t unknown2_count;
+            uint32_t offset_to_group_offsets;
+            uint32_t offset_to_unknown; //elements 32b
+            uint32_t offset_to_unknown2; //elements 8b
+        };
+
+        auto header = r.read<mate_header>();
+        if (memcmp(header.sign, "MATE", 4) != 0)
+            return false;
+
+        material.resize(header.groups_count);
+        r.seek(header.offset_to_group_offsets);
+
+        struct group_offset
+        {
+            uint32_t offset;
+            uint32_t zero[2];
+            uint32_t unknown;
+        };
+
+        std::vector<group_offset> group_offsets(header.groups_count);
+        for (size_t j = 0; j < group_offsets.size(); ++j)
+        {
+            group_offsets[j] = r.read<group_offset>();
+            assert(group_offsets[j].zero[0] == 0 && group_offsets[j].zero[1] == 0);
+        }
+
+        for (size_t j = 0; j < group_offsets.size(); ++j)
+        {
+            r.seek(group_offsets[j].offset);
+
+            struct group_header
+            {
+                uint32_t unknown;
+                uint32_t zero;
+                uint16_t unknown2;
+                uint16_t unknown_count;
+                uint32_t unknown3;
+                uint16_t zero2;
+                uint16_t unknown4;
+                uint32_t zero3[3];
+            };
+
+            auto header = r.read<group_header>();
+            assert(header.zero == 0 && header.zero2 == 0 && header.zero3[0] == 0 && header.zero3[1] == 0 && header.zero3[2] == 0);
+            r.skip(header.unknown_count * 24);
+
+            struct value
+            {
+                uint32_t unknown_32_or_zero;
+                uint32_t offset_to_name;
+                uint32_t unknown;
+                uint32_t zero;
+                float value[4];
+            };
+
+            auto &params = material[j];
+
+            while (r.get_remained())
+            {
+                auto v = r.read<value>();
+                assert(v.zero == 0);
+
+                const char *name = (char *)r.get_data() + v.offset_to_name - r.get_offset();
+                assert(name && name[0]);
+                params.push_back(std::make_pair(name, nya_math::vec4(v.value)));
+
+                if (v.unknown_32_or_zero == 0)
+                    break;
+
+                assert(v.unknown_32_or_zero == 32);
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+//------------------------------------------------------------
+
 bool fhm_mesh::read_mnt(memory_reader &reader, fhm_mesh_load_data &load_data)
 {
     struct mnt_header

@@ -560,15 +560,13 @@ int main(void)
     } scene;
 
     const char *locations[] = {
-        "ms06", //dubai
-        "ms50", //tokyo
-        "ms11b", //moscow
-        "ms30", //paris
         "ms01", //miami
+        "ms06", //dubai
+        "ms30", //paris
+        "ms50", //tokyo
+        //"ms11b", //moscow
         //"ms14" //washington
     };
-
-    unsigned int current_location=0;
 
     const char *planes[] = {
         "f22a",
@@ -617,6 +615,10 @@ int main(void)
 
     bool need_init = true;
 
+    unsigned int current_location=0;
+    unsigned int current_plane=0;
+    unsigned int current_color=0;
+
     double mx,my;
     glfwGetCursorPos(window, &mx, &my);
 
@@ -657,9 +659,6 @@ int main(void)
             screen_width = new_screen_width, screen_height = new_screen_height;
             scene.resize(screen_width, screen_height);
         }
-
-        unsigned int current_plane=0;
-        unsigned int current_color=0;
 
         if(need_init)
         {
