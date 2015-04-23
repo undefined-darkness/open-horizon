@@ -232,6 +232,8 @@ bool fhm_mesh::load_material(const char *file_name)
                 assert(name && name[0]);
                 params.push_back(std::make_pair(name, nya_math::vec4(v.value)));
 
+                //printf("%s\n", name);
+
                 if (v.unknown_32_or_zero == 0)
                     break;
 
@@ -276,11 +278,31 @@ bool fhm_mesh::load_material(const char *file_name)
             {
                 auto r = render_groups[b.render_groups_offset + k];
 
-                //ToDo
+                assert(!lods.empty());
+                assert(lods[0].mesh.get_groups_count() == header.render_groups_count);
+
+                assert(r < material.size());
+
+                auto &m = lods[0].mesh.modify_material(k);
+                for (auto &p: material[r])
+                {
+                    if (p.first.find("HASH") != std::string::npos)
+                        continue;
+
+                    if (p.first.find("FLAG") != std::string::npos) //ToDo
+                        continue;
+
+                    if (p.first == "NU_ACE_vSpecularParam")
+                        m.set_param(m.get_param_idx("specular param"), p.second);
+                    else if(p.first == "NU_ACE_vIBLParam")
+                        m.set_param(m.get_param_idx("ibl param"), p.second);
+                    else if(p.first == "NU_ACE_vRimLightMtr")
+                        m.set_param(m.get_param_idx("rim light mtr"), p.second);
+                }
             }
         }
 
-        return true;
+        return true;  //ToDo: lods
     }
 
     return false;
@@ -915,8 +937,6 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     mat.set_param(mat.get_param_idx("light dir"), light_dir.x, light_dir.y, light_dir.z, 0.0f);
     p.get_state().set_cull_face(true, nya_render::cull_face::ccw);
     p.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha); //ToDo: transparency only on some groups
-    mesh.groups.resize(header.groups_count);
-    l.groups.resize(header.groups_count);
 
     if (load_data.skeletons.size() == load_data.ndxr_count)
         mesh.skeleton = load_data.skeletons[lods.size() - 1].skeleton;
@@ -933,19 +953,24 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     std::vector<vert> verts;
     std::vector<ushort> indices;
 
-    for (int i = 0; i < groups.size(); ++i)
+    for (int i = 0; i < header.groups_count; ++i)
     {
         group &gf = groups[i];
-        auto &g = mesh.groups[i];
-        g.material_idx = 0;
-        l.groups[i].bone_idx = gf.header.bone_idx;
-        g.offset = uint(indices.size());
+
         for (int j = 0; j < gf.render_groups.size(); ++j)
         {
             render_group &rgf = gf.render_groups[j];
 
             if (!rgf.header.vcount || !rgf.header.icount)
                 continue;
+
+            mesh.groups.resize(mesh.groups.size() + 1);
+            l.groups.resize(mesh.groups.size());
+
+            auto &g = mesh.groups.back();
+            g.material_idx = 0;
+            l.groups.back().bone_idx = gf.header.bone_idx;
+            g.offset = uint(indices.size());
 
             //if(gf.header.)
 
@@ -1022,11 +1047,11 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             indices.resize(ind_offset + ind_size);
             for (int i = 0; i < ind_size; ++i)
                 indices[i + ind_offset] = first_index + ndxr_indices[i];
-        }
 
-        g.count = uint(indices.size()) - g.offset;
-        g.elem_type = nya_render::vbo::triangle_strip;
-        g.name = gf.name;
+            g.count = uint(indices.size()) - g.offset;
+            g.elem_type = nya_render::vbo::triangle_strip;
+            g.name = gf.name;
+        }
     }
 
     assert(verts.size() < 65535);
