@@ -163,68 +163,68 @@ bool fhm_mesh::load_material(const char *file_name)
         struct mate_header
         {
             char sign[4];
-            uint16_t groups_count;
-            uint16_t unknown_count;
-            uint32_t unknown2_count;
-            uint32_t offset_to_group_offsets;
-            uint32_t offset_to_unknown; //elements 32b
-            uint32_t offset_to_unknown2; //elements 8b
+            uint16_t mat_count;
+            uint16_t render_groups_count;
+            uint32_t groups_count;
+            uint32_t offset_to_mat_offsets;
+            uint32_t offset_to_render_groups; //elements 32b
+            uint32_t offset_to_groups; //elements 8b
         };
 
         auto header = r.read<mate_header>();
         if (memcmp(header.sign, "MATE", 4) != 0)
             return false;
 
-        material.resize(header.groups_count);
-        r.seek(header.offset_to_group_offsets);
+        material.resize(header.mat_count);
+        r.seek(header.offset_to_mat_offsets);
 
-        struct group_offset
+        struct mat_offset
         {
             uint32_t offset;
             uint32_t zero[2];
             uint32_t unknown;
         };
 
-        std::vector<group_offset> group_offsets(header.groups_count);
-        for (size_t j = 0; j < group_offsets.size(); ++j)
+        std::vector<mat_offset> mat_offsets(header.mat_count);
+        for (size_t j = 0; j < mat_offsets.size(); ++j)
         {
-            group_offsets[j] = r.read<group_offset>();
-            assert(group_offsets[j].zero[0] == 0 && group_offsets[j].zero[1] == 0);
+            mat_offsets[j] = r.read<mat_offset>();
+            assert(mat_offsets[j].zero[0] == 0 && mat_offsets[j].zero[1] == 0);
         }
 
-        for (size_t j = 0; j < group_offsets.size(); ++j)
+        for (size_t j = 0; j < mat_offsets.size(); ++j)
         {
-            r.seek(group_offsets[j].offset);
+            r.seek(mat_offsets[j].offset);
 
-            struct group_header
+            struct mat_header
             {
                 uint32_t unknown;
                 uint32_t zero;
                 uint16_t unknown2;
                 uint16_t unknown_count;
                 uint32_t unknown3;
-                uint16_t zero2;
                 uint16_t unknown4;
+                uint16_t unknown5;
                 uint32_t zero3[3];
             };
 
-            auto header = r.read<group_header>();
-            assert(header.zero == 0 && header.zero2 == 0 && header.zero3[0] == 0 && header.zero3[1] == 0 && header.zero3[2] == 0);
+            auto header = r.read<mat_header>();
+            assert(header.zero == 0 && header.zero3[0] == 0 && header.zero3[1] == 0 && header.zero3[2] == 0);
             r.skip(header.unknown_count * 24);
-
-            struct value
-            {
-                uint32_t unknown_32_or_zero;
-                uint32_t offset_to_name;
-                uint32_t unknown;
-                uint32_t zero;
-                float value[4];
-            };
 
             auto &params = material[j];
 
             while (r.get_remained())
             {
+                struct value
+                {
+                    uint32_t unknown_32_or_zero;
+                    uint32_t offset_to_name;
+                    uint32_t unknown;
+                    uint32_t zero;
+                    float value[4];
+                };
+
                 auto v = r.read<value>();
                 assert(v.zero == 0);
 
@@ -236,6 +236,47 @@ bool fhm_mesh::load_material(const char *file_name)
                     break;
 
                 assert(v.unknown_32_or_zero == 32);
+            }
+        }
+
+        std::vector<uint16_t> render_groups(header.render_groups_count);
+
+        r.seek(header.offset_to_render_groups);
+        for (uint16_t j = 0; j < header.render_groups_count; ++j)
+        {
+            struct bind
+            {
+                uint16_t idx;
+                uint16_t mat_idx;
+                uint32_t zero[3];
+            };
+
+            auto b = r.read<bind>();
+            assert(b.idx == j);
+            assert(b.zero[0] == 0 && b.zero[1] == 0 && b.zero[2] == 0);
+
+            render_groups[b.idx] = b.mat_idx;
+        }
+
+        r.seek(header.offset_to_groups);
+        for (uint16_t j = 0; j < header.groups_count; ++j)
+        {
+            struct bind
+            {
+                uint16_t render_groups_count;
+                uint16_t render_groups_offset;
+                uint32_t zero;
+            };
+
+            auto b = r.read<bind>();
+            assert(b.render_groups_count + b.render_groups_offset <= render_groups.size());
+            assert(b.zero == 0);
+
+            for (int k = 0; k < b.render_groups_count; ++k)
+            {
+                auto r = render_groups[b.render_groups_offset + k];
+
+                //ToDo
             }
         }
 
@@ -806,7 +847,6 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     }
 
     //print_data(reader, reader.get_offset(), header.offset_to_indices + 48 - reader.get_offset());
-
     for (int i = 0; i < header.groups_count; ++i)
     {
         group &g = groups[i];
@@ -900,7 +940,6 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
         g.material_idx = 0;
         l.groups[i].bone_idx = gf.header.bone_idx;
         g.offset = uint(indices.size());
-        uint last_icount = 0;
         for (int j = 0; j < gf.render_groups.size(); ++j)
         {
             render_group &rgf = gf.render_groups[j];
