@@ -48,7 +48,7 @@ struct solid_sphere
 
 bool sky_mesh::load(const char *name, const location_params &params)
 {
-    solid_sphere s(20000.0,9,12);
+    solid_sphere s(20000.0,32,24);
 
     m_mesh.set_vertex_data(&s.vertices[0], sizeof(float)*3, (unsigned int)s.vertices.size());
     m_mesh.set_index_data(&s.indices[0], nya_render::vbo::index2b, (unsigned int)s.indices.size());
