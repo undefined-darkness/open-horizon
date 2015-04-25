@@ -406,7 +406,7 @@ int main(void)
     if (!glfwInit())
         return -1;
 
-    GLFWwindow *window = glfwCreateWindow(1000, 562, "open horizon", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(1000, 562, "Loading", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
