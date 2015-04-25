@@ -177,18 +177,17 @@ int ui::draw_text(const wchar_t *text, const char *font, int x, int y, const nya
             continue;
 
         nya_math::vec4 pos;
-        pos.x = -1.0 + 2.0 * float(x + width) / m_width;
-        pos.y = -1.0 + 2.0 * float(y) / m_height;
-        pos.z = 2.0 * float(fc->second.w) / m_width;
-        pos.w = 2.0 * float(fc->second.h) / m_height;
+        pos.z = float(fc->second.w) / m_width;
+        pos.w = float(fc->second.h) / m_height;
+        pos.x = pos.z - 1.0 + 2.0 * float(x + width) / m_width;
+        pos.y = pos.w + 1.0 - 2.0 * float(y) / m_height;
         m_tr->set(idx, pos);
 
         nya_math::vec4 tc;
-        tc.x = float(fc->second.x) / m_tex->get_width();
-        tc.y = float(fc->second.y) / m_tex->get_height();
         tc.z = float(fc->second.w) / m_tex->get_width();
         tc.w = -float(fc->second.h) / m_tex->get_height();
-        tc.y -= tc.w;
+        tc.x = float(fc->second.x) / m_tex->get_width();
+        tc.y = float(fc->second.y) / m_tex->get_height() - tc.w;
         m_tc_tr->set(idx, tc);
 
         width += fc->second.w;

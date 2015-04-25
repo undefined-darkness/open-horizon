@@ -12,6 +12,7 @@
 #include "clouds.h"
 #include "shared.h"
 #include "debug.h"
+#include "ui.h"
 
 #include "render/render.h"
 #include "math/scalar.h"
@@ -438,6 +439,7 @@ int main(void)
         lens_flare m_flare;
         nya_scene::texture_proxy m_curve;
         params::fvalue m_luminance_speed;
+        ui m_ui;
 
     public:
         void load_location(const char *location_name)
@@ -456,6 +458,7 @@ int main(void)
                 set_shader_param("screen_radius", nya_math::vec4(1.185185, 0.5 * 4.0 / 3.0, 0.0, 0.0));
                 set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
                 m_flare.init(get_texture("main_color"), get_texture("main_depth"));
+                m_ui.load_fonts("UI/text/menuCommon.acf");
             }
 
             m_loc.load(location_name);
@@ -512,6 +515,7 @@ int main(void)
             nya_scene::postprocess::resize(width, height);
             if (height)
                 camera.set_aspect(height > 0 ? float(width) / height : 1.0f);
+            m_ui.resize(width, height);
         }
 
         void update(int dt)
@@ -538,7 +542,12 @@ int main(void)
             }
         }
 
-        void draw() { nya_scene::postprocess::draw(0); }
+        void draw()
+        {
+            nya_scene::postprocess::draw(0);
+            //m_ui.draw_text(L"This is a test. The quick brown fox jumps over the lazy dog's back 1234567890", "NowGE24", 50, 50, nya_math::vec4(103,223,144,255)/255.0);
+            //m_ui.draw_text(L"テストです。いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす。", "ShinGo18outline", 50, 100, nya_math::vec4(103,223,144,255)/255.0);
+        }
 
     private:
         void draw_scene(const char *pass, const char *tags) override
