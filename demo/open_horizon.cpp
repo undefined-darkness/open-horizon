@@ -631,7 +631,7 @@ int main(void)
     };
 
     const char *planes[] = {
-        "su37",
+        "su33",
         "f22a",
         "su24",
         "f18f",
@@ -640,12 +640,15 @@ int main(void)
         "su25",
         "b01b",
         "f16c",
-        "su33",
+        "su37",
         "kwmr",
         "su34",
         "pkfa", //bay anim offset
         "av8b",
         "f35b",
+        "f15m",
+        "f15c",
+        "f15e",
         "j39c",
         "mr2k",
         "rflm",
@@ -658,9 +661,6 @@ int main(void)
         "f14d",
         "m21b", //no cockpit
         "f16f",
-        "f15m",
-        "f15c",
-        "f15e",
         "a10a",
         "f17a",
                   //no anims
