@@ -64,31 +64,13 @@ bool ui::load_fonts(const char *name)
                 f.name.assign((char *)r.get_data());
                 r.seek(32);
 
-                struct acf_font_header
-                {
-                    uint8_t unknown[4];
-                    uint8_t unknown2[4];
-                    uint16_t char_count;
-                    uint16_t unknown3;
-                    uint8_t unknown4[4];
-                    uint8_t unknown5[4];
-                };
-
                 auto header = r.read<acf_font_header>();
                 r.skip(1024);
 
+                f.t = header;
+
                 for (uint32_t j = 0; j < header.char_count; ++j)
                 {
-                    struct acf_char
-                    {
-                        uint16_t unknown, x;
-                        uint16_t y, unknown2;
-                        uint8_t unknown3[4];
-                        uint8_t width, height;
-                        uint16_t char_code;
-                        uint8_t unknown4[4];
-                        uint32_t unknown5;
-                    };
 
                     auto c = r.read<acf_char>();
 
@@ -96,6 +78,8 @@ bool ui::load_fonts(const char *name)
                     auto &fc = f.chars[char_code];
                     fc.x = c.x, fc.y = c.y;
                     fc.w = c.width, fc.h = c.height;
+
+                    fc.t = c;
                 }
             }
 
@@ -179,8 +163,11 @@ int ui::draw_text(const wchar_t *text, const char *font, int x, int y, const nya
         nya_math::vec4 pos;
         pos.z = float(fc->second.w) / m_width;
         pos.w = float(fc->second.h) / m_height;
-        pos.x = pos.z - 1.0 + 2.0 * float(x + width) / m_width;
-        pos.y = pos.w + 1.0 - 2.0 * float(y) / m_height;
+        pos.x = pos.z - 1.0 + 2.0 * (x + width) / m_width;
+        //pos.y = pos.w + 1.0 - 2.0 * (float(y) + fc->second.h*0.5 - 2.0 * fc->second.t.unknown3[1]) / m_height;
+        pos.y = 1.0 - 2.0 * (y - 2.0 * fc->second.t.unknown3[1]) / m_height;
+        //pos.y = 1.0 - 2.0 * (y + fc->second.t.unknown5 * 0.5 - 2.0 * fc->second.t.unknown3[1]) / m_height;
+        //pos.y = -pos.w + 1.0 - 2.0 * (y + fc->second.t.unknown5 * 0.5 - 2.0 * fc->second.t.unknown3[1]) / m_height;
         m_tr->set(idx, pos);
 
         nya_math::vec4 tc;
@@ -190,7 +177,9 @@ int ui::draw_text(const wchar_t *text, const char *font, int x, int y, const nya
         tc.y = float(fc->second.y) / m_tex->get_height() - tc.w;
         m_tc_tr->set(idx, tc);
 
-        width += fc->second.w;
+        width += fc->second.w + fc->second.t.unknown3[3];
+        //width += fc->second.w + fc->second.t.unknown3[3];
+        //width += fc->second.t.unknown5;
         ++idx;
     }
 

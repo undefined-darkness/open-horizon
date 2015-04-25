@@ -426,7 +426,7 @@ int main(void)
     glfwMakeContextCurrent(window);
     nya_render::texture::set_default_aniso(2);
 
-    class : private nya_scene::postprocess
+    class scene: private nya_scene::postprocess
     {
     public:
         aircraft player_plane;
@@ -440,6 +440,16 @@ int main(void)
         nya_scene::texture_proxy m_curve;
         params::fvalue m_luminance_speed;
         ui m_ui;
+        int m_fade_time;
+        int m_help_time;
+        bool m_paused;
+        bool m_loading;
+
+    private:
+        int m_frame_counter, m_frame_counter_time, m_fps;
+
+    public:
+        scene(): m_fade_time(0), m_help_time(3000), m_frame_counter(0), m_frame_counter_time(0), m_fps(0), m_paused(false), m_loading(false) {}
 
     public:
         void load_location(const char *location_name)
@@ -474,7 +484,8 @@ int main(void)
             player_plane.apply_location(m_location_name.c_str(), m_loc.get_params());
             player_plane.set_pos(nya_math::vec3(-300, 50, 2000));
             player_plane.set_rot(nya_math::quat());
-            m_fade_time = 2500;
+            m_fade_time = 2000;
+            m_paused = false;
 
             //shared::clear_textures(); //ToDo
         }
@@ -524,7 +535,8 @@ int main(void)
                 dt = 50;
 
             m_loc.update(dt);
-            player_plane.update(dt);
+            if(!m_paused)
+                player_plane.update(dt);
 
             camera.set_pos(player_plane.get_pos());
             camera.set_rot(player_plane.get_rot());
@@ -534,20 +546,63 @@ int main(void)
 
             if (m_fade_time > 0)
             {
-                m_fade_time-=dt;
+                m_fade_time -= dt;
                 if (m_fade_time < 0)
                     m_fade_time = 0;
 
                 set_shader_param("fade_color", nya_math::vec4(0.0, 0.0, 0.0, m_fade_time / 2500.0f));
+            }
+
+            if (m_help_time > 0)
+                m_help_time -= dt;
+
+            m_frame_counter_time += dt;
+            ++m_frame_counter;
+            if (m_frame_counter_time > 1000)
+            {
+                m_fps = m_frame_counter;
+                m_frame_counter = 0;
+                m_frame_counter_time -= 1000;
             }
         }
 
         void draw()
         {
             nya_scene::postprocess::draw(0);
-            //m_ui.draw_text(L"This is a test. The quick brown fox jumps over the lazy dog's back 1234567890", "NowGE24", 50, 50, nya_math::vec4(103,223,144,255)/255.0);
-            //m_ui.draw_text(L"テストです。いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす。", "ShinGo18outline", 50, 100, nya_math::vec4(103,223,144,255)/255.0);
+
+            const auto green = nya_math::vec4(103,223,144,255)/255.0;
+            const auto white = nya_math::vec4(1.0, 1.0, 1.0, 1.0);
+
+            //if (m_help_time > 0)
+            //    m_ui.draw_text(L"Press 1-2 to change location, 3-4 to change plane, 5-6 to change paint", "NowGE24", 50, 100, white);
+
+            wchar_t buf[255];
+            swprintf(buf, sizeof(buf), L"%d", int(player_plane.get_speed()));
+            m_ui.draw_text(L"SPEED", "NowGE20", m_ui.get_width() * 0.35, m_ui.get_height() * 0.5 - 20, green);
+            m_ui.draw_text(buf, "NowGE20", m_ui.get_width() * 0.35, m_ui.get_height() * 0.5, green);
+            swprintf(buf, sizeof(buf), L"%d", int(player_plane.get_alt()));
+            m_ui.draw_text(L"ALT", "NowGE20", m_ui.get_width() * 0.6, m_ui.get_height() * 0.5 - 20, green);
+            m_ui.draw_text(buf, "NowGE20", m_ui.get_width() * 0.6, m_ui.get_height() * 0.5, green);
+
+            swprintf(buf, sizeof(buf), L"FPS: %d", m_fps);
+            m_ui.draw_text(buf, "NowGE20", m_ui.get_width() - 90, 20, white);
+
+            if(m_loading)
+            {
+                m_loading = false;
+                m_ui.draw_text(L"LOADING", "NowGE24", m_ui.get_width() * 0.5 - 50, m_ui.get_height() * 0.5, white);
+            }
+            else if(m_paused)
+                m_ui.draw_text(L"PAUSED", "NowGE24", m_ui.get_width() * 0.5 - 45, m_ui.get_height() * 0.5, white);
+
+            //m_ui.draw_text(L"This is a test. The quick brown fox jumps over the lazy dog's back 1234567890", "NowGE24", 50, 100, green);
+            //m_ui.draw_text(L"テストです。いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす。", "ShinGo18outline", 50, 150, green);
+            //m_ui.draw_text(L"ASDFGHJKLasdfghjklQWERTYUIOPqwertyuiopZXCVBNMzxcvbnm\"\'*_", "NowGE24", 50, 200, green);
+
         }
+
+        void pause() { m_paused = !m_paused; }
+        void loading() { m_loading = true; }
 
     private:
         void draw_scene(const char *pass, const char *tags) override
@@ -563,14 +618,12 @@ int main(void)
             else if (strcmp(tags, "flare") == 0)
                 m_flare.draw();
         }
-    private:
-        int m_fade_time;
 
     } scene;
 
     const char *locations[] = {
-        "ms01", //miami
         "ms06", //dubai
+        "ms01", //miami
         "ms30", //paris
         "ms50", //tokyo
         //"ms11b", //moscow
@@ -578,6 +631,7 @@ int main(void)
     };
 
     const char *planes[] = {
+        "su37",
         "f22a",
         "su24",
         "f18f",
@@ -609,7 +663,6 @@ int main(void)
         "f15e",
         "a10a",
         "f17a",
-        "su37",
                   //no anims
         //"yf23",
         //"fa44",
@@ -631,9 +684,7 @@ int main(void)
     double mx,my;
     glfwGetCursorPos(window, &mx, &my);
 
-    int frame_counter = 0;
-    int frame_counter_time = 0;
-    int fps = 0;
+    glfwSetWindowTitle(window, "Open Horizon 2nd demo");
 
     int screen_width = 0, screen_height = 0;
     unsigned long app_time = nya_system::get_time();
@@ -644,22 +695,9 @@ int main(void)
         if (dt > 1000)
             dt = 1000;
 
-        frame_counter_time += dt;
-        ++frame_counter;
-        if (frame_counter_time > 1000)
-        {
-            fps = frame_counter;
-            frame_counter = 0;
-            frame_counter_time -= 1000;
-        }
         app_time = time;
 
-        static bool paused = false;
         static bool speed10x = false;
-
-        char title[255];
-        sprintf(title,"speed: %7d alt: %7d \t fps: %3d  %s", int(scene.player_plane.get_speed()), int(scene.player_plane.get_alt()), fps, paused ? "paused" : "");
-        glfwSetWindowTitle(window,title);
 
         int new_screen_width, new_screen_height;
         glfwGetFramebufferSize(window, &new_screen_width, &new_screen_height);
@@ -671,12 +709,16 @@ int main(void)
 
         if(need_init)
         {
+            scene.loading();
+            scene.draw();
+            glfwSwapBuffers(window);
+
             scene.load_location(locations[current_location]);
             scene.load_player_plane(planes[current_plane], current_color);
             need_init = false;
         }
 
-        scene.update(paused ? 0 : (speed10x ? dt * 10 : dt));
+        scene.update(speed10x ? dt * 10 : dt);
         scene.draw();
 
         glfwSwapBuffers(window);
@@ -724,7 +766,7 @@ int main(void)
 
             static bool last_btn3 = false;
             if (buttons[3] !=0 && !last_btn3)
-                paused = !paused;
+                scene.pause();
 
             last_btn3 = buttons[3] != 0;
         }
@@ -775,12 +817,12 @@ int main(void)
 
         //if (glfwGetKey(window, GLFW_KEY_L)) loc.load(location_name);
 
-        static bool last_btn_p = false;
-        if (glfwGetKey(window, GLFW_KEY_P) && !last_btn_p)
-            paused = !paused;
+        static bool last_btn_p = false, last_btn_esc = false;
+        if ((glfwGetKey(window, GLFW_KEY_P) && !last_btn_p) || (glfwGetKey(window, GLFW_KEY_ESCAPE) && !last_btn_esc))
+            scene.pause();
 
         last_btn_p = glfwGetKey(window, GLFW_KEY_P);
-
+        last_btn_esc = glfwGetKey(window, GLFW_KEY_ESCAPE);
         speed10x = glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT);
 
         scene.player_plane.set_controls(c_rot, c_throttle, c_brake);
@@ -797,14 +839,20 @@ int main(void)
 
         if (fkeys[0] && fkeys[0] != fkeys_last[0])
         {
-            paused = false;
+            scene.loading();
+            scene.draw();
+            glfwSwapBuffers(window);
+
             current_location = (current_location + 1) % locations_count;
             scene.load_location(locations[current_location]);
         }
 
         if (fkeys[1] && fkeys[1] != fkeys_last[1])
         {
-            paused = false;
+            scene.loading();
+            scene.draw();
+            glfwSwapBuffers(window);
+
             current_location = (current_location + locations_count - 1) % locations_count;
             scene.load_location(locations[current_location]);
         }
@@ -813,6 +861,10 @@ int main(void)
 
         if (fkeys[2] && fkeys[2] != fkeys_last[2])
         {
+            scene.loading();
+            scene.draw();
+            glfwSwapBuffers(window);
+
             current_color = 0;
             current_plane = (current_plane + 1) % planes_count;
             scene.load_player_plane(planes[current_plane], current_color);
@@ -820,6 +872,10 @@ int main(void)
 
         if (fkeys[3] && fkeys[3] != fkeys_last[3])
         {
+            scene.loading();
+            scene.draw();
+            glfwSwapBuffers(window);
+
             current_color = 0;
             current_plane = (current_plane + planes_count - 1) % planes_count;
             scene.load_player_plane(planes[current_plane], current_color);
