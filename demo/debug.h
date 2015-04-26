@@ -220,7 +220,7 @@ inline void find_data(nya_resources::resources_provider &rp, float *f, size_t co
             float *t = (float *)((char *)buf.get_data() + j);
             for (size_t k = 0; k < count; ++k)
             {
-                if (isnan(t[k]))
+                if (t[k] != t[k]) //nan
                 {
                     found = false;
                     continue;

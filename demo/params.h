@@ -8,6 +8,7 @@
 #include "memory/memory_reader.h"
 #include "math/constants.h"
 #include "math/quaternion.h"
+#include <stdint.h>
 
 //------------------------------------------------------------
 

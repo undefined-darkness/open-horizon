@@ -42,6 +42,21 @@
     <ClCompile Include="..\fhm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\dpl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="clouds.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="location.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="location_params.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ui.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fhm.h">
@@ -82,6 +97,33 @@
     </ClInclude>
     <ClInclude Include="..\fhm.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dpl.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\dpl_keys.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="clouds.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="debug.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dpl_provider.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="location.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="location_params.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="params.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

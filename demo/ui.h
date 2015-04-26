@@ -6,6 +6,7 @@
 
 #include "scene/material.h"
 #include "render/screen_quad.h"
+#include <stdint.h>
 
 //------------------------------------------------------------
 

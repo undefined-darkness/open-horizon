@@ -5,6 +5,7 @@
 #include "location.h"
 #include "scene/camera.h"
 #include "shared.h"
+#include "math/constants.h"
 
 //------------------------------------------------------------
 
@@ -22,10 +23,10 @@ struct solid_sphere
         auto v = vertices.begin();
         for(int r = 0; r < rings; r++) for(int s = 0; s < sectors; s++)
         {
-            float sr = radius * sin( M_PI * r * ir );
-            v->x = cos(2*M_PI * s * is) * sr;
-            v->y = radius * sin( -M_PI_2 + M_PI * r * ir );
-            v->z = sin(2*M_PI * s * is) * sr;
+            float sr = radius * sin( nya_math::constants::pi * r * ir );
+            v->x = cos(2*nya_math::constants::pi * s * is) * sr;
+            v->y = radius * sin( -nya_math::constants::pi_2 + nya_math::constants::pi * r * ir );
+            v->z = sin(2*nya_math::constants::pi * s * is) * sr;
             ++v;
         }
 

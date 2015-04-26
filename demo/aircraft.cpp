@@ -7,10 +7,12 @@
 #include "memory/tmp_buffer.h"
 #include "render/screen_quad.h"
 #include "render/fbo.h"
+#include "math/scalar.h"
 #include "fhm.h"
 #include "debug.h"
 #include <assert.h>
 #include "dpl.h"
+#include <stdint.h>
 
 //------------------------------------------------------------
 
@@ -471,9 +473,9 @@ void aircraft::update(int dt)
     if (brake < 0.01f && throttle < 0.01f)
     {
         if (m_speed < m_params.move.speed.speedCruising)
-            throttle = std::min((m_params.move.speed.speedCruising - m_speed) * 0.1f, 0.1f);
+            throttle = nya_math::min((m_params.move.speed.speedCruising - m_speed) * 0.1f, 0.1f);
         else if (m_speed > m_params.move.speed.speedCruising)
-            brake = std::min((m_speed - m_params.move.speed.speedCruising) * 0.1f, 0.1f);
+            brake = nya_math::min((m_speed - m_params.move.speed.speedCruising) * 0.1f, 0.1f);
     }
 
     //afterburner

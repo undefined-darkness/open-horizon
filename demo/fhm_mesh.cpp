@@ -15,6 +15,7 @@
 
 #include <math.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include "shared.h"
 
@@ -222,7 +223,7 @@ bool fhm_mesh::load_material(const char *file_name)
                     uint32_t offset_to_name;
                     uint32_t unknown;
                     uint32_t zero;
-                    float value[4];
+                    float val[4];
                 };
 
                 auto v = r.read<value>();
@@ -230,7 +231,7 @@ bool fhm_mesh::load_material(const char *file_name)
 
                 const char *name = (char *)r.get_data() + v.offset_to_name - r.get_offset();
                 assert(name && name[0]);
-                params.push_back(std::make_pair(name, nya_math::vec4(v.value)));
+                params.push_back(std::make_pair(name, nya_math::vec4(v.val)));
 
                 //printf("%s\n", name);
 
@@ -1128,6 +1129,13 @@ void fhm_mesh::draw(int lod_idx)
         l.mesh.set_rot(m_rot);
         l.mesh.draw_group(i);
     }
+/*
+    nya_render::depth_test::disable();
+    static nya_render::debug_draw d;
+    d.clear();
+    d.add_skeleton(l.mesh.get_skeleton());
+    d.draw();
+*/
 }
 
 //------------------------------------------------------------

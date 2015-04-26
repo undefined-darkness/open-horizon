@@ -16,6 +16,7 @@
 
 #include <math.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include "shared.h"
 #include "debug.h"
