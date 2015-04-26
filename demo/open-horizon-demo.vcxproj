@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -64,7 +64,7 @@
       <AdditionalDependencies>../deps/nya-engine/bin/win_vs2012_debug/nya_engine.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)postprocess.txt" "$(TargetDir)postprocess.txt"
+      <Command>xcopy /Y "$(SolutionDir)postprocess.txt" "$(TargetDir)"
 xcopy /Y "$(SolutionDir)DATA.PAC.xml" "$(TargetDir)"
 xcopy /Y "$(SolutionDir)shaders" "$(TargetDir)shaders\*"
 </Command>
@@ -89,7 +89,7 @@ xcopy /Y "$(SolutionDir)shaders" "$(TargetDir)shaders\*"
       <AdditionalDependencies>../deps/nya-engine/bin/win_vs2012_release/nya_engine.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)postprocess.txt" "$(TargetDir)postprocess.txt"
+      <Command>xcopy /Y "$(SolutionDir)postprocess.txt" "$(TargetDir)"
 xcopy /Y "$(SolutionDir)DATA.PAC.xml" "$(TargetDir)"
 xcopy /Y "$(SolutionDir)shaders" "$(TargetDir)shaders\*"
 </Command>
