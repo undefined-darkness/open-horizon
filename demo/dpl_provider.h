@@ -7,6 +7,7 @@
 #include "dpl.h"
 #include "xml.h"
 #include "resources/resources.h"
+#include <string.h>
 
 //------------------------------------------------------------
 

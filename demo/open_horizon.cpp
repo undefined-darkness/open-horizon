@@ -607,7 +607,7 @@ int main(void)
         void loading() { m_loading = true; }
 
     private:
-        void draw_scene(const char *pass, const char *tags) override
+        void draw_scene(const char *pass, const char *tags)
         {
             if (strcmp(tags, "location") == 0)
                 m_loc.draw();

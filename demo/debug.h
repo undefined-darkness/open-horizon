@@ -16,7 +16,7 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
 
 #define prnt(...) do{ if (file) fprintf(file, __VA_ARGS__); else printf(__VA_ARGS__); }while(0)
 
-    prnt("\ndata at offset: %ld size: %ld\n", offset, size);
+    prnt("\ndata at offset: %ld size: %ld\n", (long int)offset, (long int)size);
 
     nya_memory::memory_reader reader = const_reader;
     reader.seek(offset);
@@ -61,9 +61,9 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
             prnt( "           " );
         else
             prnt( "%10f ", f);
-        
+
         prnt( "%10u ", t);
-        
+
         prnt( "%6d %6d   ", s[0], s[1] );
         for (int j = 0; j < 4; ++j)
             prnt("%3d ", ((unsigned char *)c)[j]);
@@ -79,18 +79,18 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
         }
 
         prnt("    %08x    \n", t);
-        
+
         if (substruct_size)
         {
             static int k = 0, count = 0;
             if (++k >= substruct_size) { k = 0; prnt("%d\n", count++); }
         }
     }
-    
+
     prnt("\n");
 
 #undef prnt
-    
+
     if (file)
         fclose(file);
 }
@@ -178,7 +178,7 @@ inline void find_data(nya_resources::resources_provider &rp, const void *data, s
         if (!r)
             continue;
 
-        size_t found_count = 0;
+        unsigned int found_count = 0;
 
         nya_memory::tmp_buffer_scoped buf(r->get_size());
         r->read_all(buf.get_data());
@@ -190,7 +190,7 @@ inline void find_data(nya_resources::resources_provider &rp, const void *data, s
         }
 
         if (found_count > 0)
-            printf("found %lu times in %s\n", found_count, n);
+            printf("found %u times in %s\n", found_count, n);
     }
 
     printf("\n");
@@ -210,7 +210,7 @@ inline void find_data(nya_resources::resources_provider &rp, float *f, size_t co
         if (!r)
             continue;
 
-        size_t found_count = 0;
+        unsigned int found_count = 0;
 
         nya_memory::tmp_buffer_scoped buf(r->get_size());
         r->read_all(buf.get_data());
@@ -237,9 +237,9 @@ inline void find_data(nya_resources::resources_provider &rp, float *f, size_t co
         }
 
         if (found_count > 0)
-            printf("found %lu times in %s\n", found_count, n);
+            printf("found %u times in %s\n", found_count, n);
     }
-    
+
     printf("\n");
 }
 

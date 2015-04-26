@@ -86,7 +86,7 @@ public:
     {
         std::string name;
         nya_math::vec3 camera_offset;
-        std::vector<color_info> color_info;
+        std::vector<color_info> colors;
     };
 
     info *get_info(const char *name)
@@ -223,10 +223,10 @@ public:
 
                 auto &info = m_infos[plane_idx];
                 auto color_idx = int(e.color_num)-1;
-                if (color_idx >= (int)info.color_info.size())
-                     info.color_info.resize(color_idx + 1);
+                if (color_idx >= (int)info.colors.size())
+                     info.colors.resize(color_idx + 1);
 
-                auto &c = info.color_info[color_idx];
+                auto &c = info.colors[color_idx];
                 c.coledit_idx = -1;
                 for (int i = 0; i < 6; ++i)
                 {
@@ -271,16 +271,16 @@ public:
             auto &in = ints[info.name];
 
             int last_idx = 0;
-            for (size_t i = 0; i < info.color_info.size(); ++i)
+            for (size_t i = 0; i < info.colors.size(); ++i)
             {
                 //assert(i < in.size());
                 if (i < in.size())
                 {
-                    info.color_info[i].coledit_idx = in[i];
+                    info.colors[i].coledit_idx = in[i];
                     last_idx = in[i];
                 }
                 else
-                    info.color_info[i].coledit_idx = ++last_idx;
+                    info.colors[i].coledit_idx = ++last_idx;
             }
         }
     }
@@ -302,10 +302,10 @@ bool aircraft::load(const char *name, unsigned int color_idx)
     if (!info)
         return false;
 
-    if (color_idx >= info->color_info.size())
+    if (color_idx >= info->colors.size())
         return false;
 
-    auto &color = info->color_info[color_idx];
+    auto &color = info->colors[color_idx];
 
     m_camera_offset = info->camera_offset;
 
@@ -386,7 +386,7 @@ unsigned int aircraft::get_colors_count(const char *plane_name)
     if (!info)
         return 0;
 
-    return (unsigned int)info->color_info.size();
+    return (unsigned int)info->colors.size();
 }
 
 //------------------------------------------------------------

@@ -4,6 +4,7 @@
 
 #include "qdf.h"
 #include <assert.h>
+#include <string.h>
 
 //------------------------------------------------------------
 

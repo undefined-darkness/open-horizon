@@ -11,7 +11,7 @@ define_source_files(.)
 define_source_files(demo)
 define_source_files(deps/pugixml-1.4/src)
 
-SET(CMAKE_CXX_FLAGS "-std=c++0x")
+set(CMAKE_CXX_FLAGS "-std=c++0x -Wno-multichar")
 
 add_executable(open_horizon ${src_files})
 
@@ -57,6 +57,7 @@ else ()
     add_subdirectory(deps/glfw)
     include_directories(deps/glfw/include)
     target_link_libraries(open_horizon glfw)
+    target_link_libraries(open_horizon Xrandr Xi Xinerama Xcursor)
 endif ()
 
 add_custom_command(TARGET open_horizon POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory
