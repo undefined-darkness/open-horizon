@@ -57,7 +57,7 @@ else ()
     add_subdirectory(deps/glfw)
     include_directories(deps/glfw/include)
     target_link_libraries(open_horizon glfw)
-    target_link_libraries(open_horizon Xrandr Xi Xinerama Xcursor)
+    target_link_libraries(open_horizon X11 Xxf86vm Xrandr Xi Xinerama Xcursor)
 endif ()
 
 add_custom_command(TARGET open_horizon POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory
