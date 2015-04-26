@@ -63,6 +63,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>../deps/nya-engine/bin/win_vs2012_debug/nya_engine.lib;../deps/glfw/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y "$(SolutionDir)postprocess.txt" "$(TargetDir)postprocess.txt"
+xcopy /Y "$(SolutionDir)DATA.PAC.xml" "$(TargetDir)"
+xcopy /Y "$(SolutionDir)shaders" "$(TargetDir)shaders\*"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
