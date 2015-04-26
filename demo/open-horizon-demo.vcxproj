@@ -88,6 +88,12 @@ xcopy /Y "$(SolutionDir)shaders" "$(TargetDir)shaders\*"
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>../deps/nya-engine/bin/win_vs2012_release/nya_engine.lib;../deps/glfw/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y "$(SolutionDir)postprocess.txt" "$(TargetDir)postprocess.txt"
+xcopy /Y "$(SolutionDir)DATA.PAC.xml" "$(TargetDir)"
+xcopy /Y "$(SolutionDir)shaders" "$(TargetDir)shaders\*"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\deps\pugixml-1.4\src\pugixml.cpp" />
