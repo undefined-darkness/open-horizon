@@ -9,6 +9,7 @@
 #include "resources/resources.h"
 #include <assert.h>
 #include <zlib.h>
+#include <stdint.h>
 
 //------------------------------------------------------------
 
