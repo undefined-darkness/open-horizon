@@ -8,3 +8,5 @@ open-horizon
 [Blog](http://zxstudio.org/blog/author/razgriz/)
 
 [Downloads](http://zxstudio.org/blog/open-horizon-downloads/)
+
+[Build instructions](https://github.com/undefined-darkness/open-horizon/wiki/Build-instructions)
