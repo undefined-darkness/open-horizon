@@ -80,7 +80,7 @@
 		F503E51319048CC100C3590A /* plane_params.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = plane_params.cpp; sourceTree = "<group>"; };
 		F503E51419048CC100C3590A /* plane_params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = plane_params.h; sourceTree = "<group>"; };
 		F503E51919048D4A00C3590A /* nya_engine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = nya_engine.xcodeproj; path = "../deps/nya-engine/build/xcode/nya_engine.xcodeproj"; sourceTree = "<group>"; };
-		F503E52319048E2D00C3590A /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../deps/glfw/lib/libglfw3.a; sourceTree = "<group>"; };
+		F503E52319048E2D00C3590A /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../deps/glfw-bin/lib/libglfw3.a; sourceTree = "<group>"; };
 		F503E52519048E5000C3590A /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		F503E52819048E7300C3590A /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		F503E52A1904907200C3590A /* qdf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qdf.cpp; path = ../qdf.cpp; sourceTree = "<group>"; };
@@ -392,7 +392,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SYMROOT = ../bin/;
-				USER_HEADER_SEARCH_PATHS = "../deps/glfw/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/";
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/";
 			};
 			name = Debug;
 		};
@@ -428,7 +428,7 @@
 				OBJROOT = ../obj/;
 				SDKROOT = macosx;
 				SYMROOT = ../bin/;
-				USER_HEADER_SEARCH_PATHS = "../deps/glfw/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/";
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/";
 			};
 			name = Release;
 		};
@@ -440,7 +440,7 @@
 				INFOPLIST_FILE = "open-horizon-demo-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../deps/glfw/lib,
+					../deps/glfw-bin/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -455,7 +455,7 @@
 				INFOPLIST_FILE = "open-horizon-demo-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../deps/glfw/lib,
+					../deps/glfw-bin/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
