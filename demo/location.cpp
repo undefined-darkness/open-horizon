@@ -81,6 +81,7 @@ void sky_mesh::draw()
     m_mesh.bind();
     m_mesh.draw();
     m_mesh.unbind();
+    m_material.internal().unset();
 }
 
 //------------------------------------------------------------
