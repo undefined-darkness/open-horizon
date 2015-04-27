@@ -446,12 +446,14 @@ int main(void)
         int m_help_time;
         bool m_paused;
         bool m_loading;
+        bool m_fonts_loaded;
 
     private:
         int m_frame_counter, m_frame_counter_time, m_fps;
 
     public:
-        scene(): m_fade_time(0), m_help_time(3000), m_frame_counter(0), m_frame_counter_time(0), m_fps(0), m_paused(false), m_loading(false) {}
+        scene(): m_fade_time(0), m_help_time(3000), m_frame_counter(0), m_frame_counter_time(0), m_fps(0), m_paused(false), m_loading(false),
+                 m_fonts_loaded(false) {}
 
     public:
         void load_location(const char *location_name)
@@ -470,7 +472,6 @@ int main(void)
                 set_shader_param("screen_radius", nya_math::vec4(1.185185, 0.5 * 4.0 / 3.0, 0.0, 0.0));
                 set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
                 m_flare.init(get_texture("main_color"), get_texture("main_depth"));
-                m_ui.load_fonts("UI/text/menuCommon.acf");
             }
 
             m_loc.load(location_name);
@@ -525,6 +526,12 @@ int main(void)
 
         void resize(unsigned int width,unsigned int height)
         {
+            if (!m_fonts_loaded)
+            {
+                m_ui.load_fonts("UI/text/menuCommon.acf");
+                m_fonts_loaded = true;
+            }
+
             nya_scene::postprocess::resize(width, height);
             if (height)
                 camera.set_aspect(height > 0 ? float(width) / height : 1.0f);
@@ -579,13 +586,6 @@ int main(void)
             //    m_ui.draw_text(L"Press 1-2 to change location, 3-4 to change plane, 5-6 to change paint", "NowGE24", 50, 100, white);
 
             wchar_t buf[255];
-            swprintf(buf, sizeof(buf), L"%d", int(player_plane.get_speed()));
-            m_ui.draw_text(L"SPEED", "NowGE20", m_ui.get_width() * 0.35, m_ui.get_height() * 0.5 - 20, green);
-            m_ui.draw_text(buf, "NowGE20", m_ui.get_width() * 0.35, m_ui.get_height() * 0.5, green);
-            swprintf(buf, sizeof(buf), L"%d", int(player_plane.get_alt()));
-            m_ui.draw_text(L"ALT", "NowGE20", m_ui.get_width() * 0.6, m_ui.get_height() * 0.5 - 20, green);
-            m_ui.draw_text(buf, "NowGE20", m_ui.get_width() * 0.6, m_ui.get_height() * 0.5, green);
-
             swprintf(buf, sizeof(buf), L"FPS: %d", m_fps);
             m_ui.draw_text(buf, "NowGE20", m_ui.get_width() - 90, 20, white);
 
@@ -594,8 +594,18 @@ int main(void)
                 m_loading = false;
                 m_ui.draw_text(L"LOADING", "NowGE24", m_ui.get_width() * 0.5 - 50, m_ui.get_height() * 0.5, white);
             }
-            else if(m_paused)
-                m_ui.draw_text(L"PAUSED", "NowGE24", m_ui.get_width() * 0.5 - 45, m_ui.get_height() * 0.5, white);
+            else
+            {
+                swprintf(buf, sizeof(buf), L"%d", int(player_plane.get_speed()));
+                m_ui.draw_text(L"SPEED", "NowGE20", m_ui.get_width() * 0.35, m_ui.get_height() * 0.5 - 20, green);
+                m_ui.draw_text(buf, "NowGE20", m_ui.get_width() * 0.35, m_ui.get_height() * 0.5, green);
+                swprintf(buf, sizeof(buf), L"%d", int(player_plane.get_alt()));
+                m_ui.draw_text(L"ALT", "NowGE20", m_ui.get_width() * 0.6, m_ui.get_height() * 0.5 - 20, green);
+                m_ui.draw_text(buf, "NowGE20", m_ui.get_width() * 0.6, m_ui.get_height() * 0.5, green);
+
+                if(m_paused)
+                    m_ui.draw_text(L"PAUSED", "NowGE24", m_ui.get_width() * 0.5 - 45, m_ui.get_height() * 0.5, white);
+            }
 
             //m_ui.draw_text(L"This is a test. The quick brown fox jumps over the lazy dog's back 1234567890", "NowGE24", 50, 100, green);
             //m_ui.draw_text(L"テストです。いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす。", "ShinGo18outline", 50, 150, green);
@@ -689,6 +699,14 @@ int main(void)
     glfwSetWindowTitle(window, "Open Horizon 2nd demo");
 
     int screen_width = 0, screen_height = 0;
+    glfwGetFramebufferSize(window, &screen_width, &screen_height);
+    scene.resize(screen_width, screen_height);
+    scene.loading();
+    nya_render::clear(true, true);
+    scene.draw();
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+
     unsigned long app_time = nya_system::get_time();
     while (!glfwWindowShouldClose(window))
     {
