@@ -5,6 +5,7 @@
 #include "shared.h"
 #include "memory/memory_reader.h"
 #include "memory/tmp_buffer.h"
+#include "memory/invalid_object.h"
 #include <assert.h>
 
 namespace shared
@@ -93,6 +94,8 @@ const nya_scene::texture &get_texture(unsigned int hash_id)
 {
     auto tex = textures.find(hash_id);
     //assert(tex != textures.end());
+    if (tex == textures.end())
+        return nya_memory::get_invalid_object<nya_scene::texture>();
 
     return tex->second;
 }
