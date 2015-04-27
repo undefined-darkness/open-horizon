@@ -54,15 +54,16 @@ bool sky_mesh::load(const char *name, const location_params &params)
     m_mesh.set_vertex_data(&s.vertices[0], sizeof(float)*3, (unsigned int)s.vertices.size());
     m_mesh.set_index_data(&s.indices[0], nya_render::vbo::index2b, (unsigned int)s.indices.size());
 
-    m_sky_shader.load("shaders/sky.nsh");
-    m_envmap = shared::get_texture(shared::load_texture((std::string("Map/envmap_") + name + ".nut").c_str()));
+    auto env = shared::get_texture(shared::load_texture((std::string("Map/envmap_") + name + ".nut").c_str()));
+    auto dithering = shared::get_texture(shared::load_texture("PostProcess/dithering.nut"));
+
+    m_material.get_default_pass().set_shader(nya_scene::shader("shaders/sky.nsh"));
+    m_material.get_default_pass().get_state().zwrite = false;
+    m_material.set_texture("diffuse", env);
+    m_material.set_texture("dithering", dithering);
 
     nya_math::vec3 about_fog_color = params.sky.low.ambient * params.sky.low.skysphere_intensity; //ToDo
-    for (int i = 0; i < m_sky_shader.internal().get_uniforms_count(); ++i)
-    {
-        if (m_sky_shader.internal().get_uniform(i).name == "fog color")
-            m_sky_shader.internal().set_uniform_value(i, about_fog_color.x, about_fog_color.y, about_fog_color.z, 1.0);
-    }
+    m_material.set_param(m_material.get_param_idx("fog color"), about_fog_color);
 
     return true;
 }
@@ -75,15 +76,11 @@ void sky_mesh::draw()
     nya_scene::camera sky_cam=nya_scene::get_camera();
     sky_cam.set_pos(0, sky_cam.get_pos().y, 0);
     nya_render::set_modelview_matrix(sky_cam.get_view_matrix());
-    nya_render::zwrite::disable();
 
-    m_envmap.internal().set();
-    m_sky_shader.internal().set();
+    m_material.internal().set();
     m_mesh.bind();
     m_mesh.draw();
     m_mesh.unbind();
-    m_sky_shader.internal().unset();
-    m_envmap.internal().unset();
 }
 
 //------------------------------------------------------------
@@ -97,7 +94,7 @@ bool sun_mesh::init()
 
     nya_render::texture tex = tex_data->tex;
     tex.set_wrap(nya_render::texture::wrap_clamp, nya_render::texture::wrap_clamp);
-    auto &pass = m_material.get_pass(m_material.add_pass(nya_scene::material::default_pass));
+    auto &pass = m_material.get_default_pass();
     pass.set_shader(nya_scene::shader("shaders/sun.nsh"));
     pass.get_state().set_cull_face(false);
     pass.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
@@ -147,7 +144,7 @@ void sun_mesh::draw() const
         return;
 
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
-    m_material.internal().set(nya_scene::material::default_pass);
+    m_material.internal().set();
     m_mesh.bind();
     m_mesh.draw();
     m_mesh.unbind();

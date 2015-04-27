@@ -17,8 +17,7 @@ public:
 
 private:
     nya_render::vbo m_mesh;
-    nya_scene::shader m_sky_shader;
-    nya_scene::texture m_envmap;
+    nya_scene::material m_material;
 };
 
 //------------------------------------------------------------
