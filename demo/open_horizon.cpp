@@ -339,6 +339,66 @@ private:
 
 //------------------------------------------------------------
 
+class platform
+{
+public:
+    bool init(int width, int height, const char *title)
+    {
+        if (!glfwInit())
+            return false;
+
+        m_window = glfwCreateWindow(width, height, title, NULL, NULL);
+        if (!m_window)
+        {
+            glfwTerminate();
+            return false;
+        }
+
+        glfwMakeContextCurrent(m_window);
+        glfwGetFramebufferSize(m_window, &m_screen_w, &m_screen_h);
+
+        return true;
+    }
+
+    void terminate()
+    {
+        glfwTerminate();
+    }
+
+    bool should_terminate()
+    {
+        return glfwWindowShouldClose(m_window);
+    }
+
+    void end_frame()
+    {
+        glfwSwapBuffers(m_window);
+        glfwPollEvents();
+
+        double mx,my;
+        glfwGetCursorPos(m_window, &mx, &my);
+        m_mouse_x = int(mx), m_mouse_y = int(my);
+        glfwGetFramebufferSize(m_window, &m_screen_w, &m_screen_h);
+    }
+
+    bool get_key(int key) { return glfwGetKey(m_window, key); }
+    bool get_mouse_lbtn() { return glfwGetMouseButton(m_window, 0); }
+    bool get_mouse_rbtn() { return glfwGetMouseButton(m_window, 1); }
+    int get_mouse_x() { return m_mouse_x; }
+    int get_mouse_y() { return m_mouse_y; }
+    int get_width() { return m_screen_w; }
+    int get_height() { return m_screen_h; }
+
+    platform(): m_window(0) {}
+
+private:
+    GLFWwindow *m_window;
+    int m_mouse_x, m_mouse_y;
+    int m_screen_w, m_screen_h;
+};
+
+//------------------------------------------------------------
+
 int main(void)
 {
 #ifndef _WIN32
@@ -404,29 +464,6 @@ int main(void)
     } trp(qdfp);
 
     nya_resources::set_resources_provider(&trp);
-
-    if (!glfwInit())
-        return -1;
-
-    GLFWwindow *window = glfwCreateWindow(1000, 562, "Loading", NULL, NULL);
-    if (!window)
-    {
-        glfwTerminate();
-        return -1;
-    }
-
-    for (int i = 0; glfwJoystickPresent(i); ++i)
-    {
-        const char *name = glfwGetJoystickName(i);
-
-        int axis_count = 0, buttons_count = 0;
-        glfwGetJoystickAxes(i, &axis_count);
-        glfwGetJoystickButtons(i, &buttons_count);
-        printf("joy%d: %s %d axis %d buttons\n", i, name, axis_count, buttons_count);
-    }
-
-    glfwMakeContextCurrent(window);
-    nya_render::texture::set_default_aniso(2);
 
     class scene: private nya_scene::postprocess
     {
@@ -689,26 +726,36 @@ int main(void)
 
     bool need_init = true;
 
-    unsigned int current_location=0;
-    unsigned int current_plane=0;
-    unsigned int current_color=0;
+    unsigned int current_location = 0;
+    unsigned int current_plane = 0;
+    unsigned int current_color = 0;
 
-    double mx,my;
-    glfwGetCursorPos(window, &mx, &my);
+    platform platform;
+    if (!platform.init(1000, 562, "Open Horizon 2nd demo"))
+        return -1;
 
-    glfwSetWindowTitle(window, "Open Horizon 2nd demo");
+    for (int i = 0; glfwJoystickPresent(i); ++i)
+    {
+        const char *name = glfwGetJoystickName(i);
 
-    int screen_width = 0, screen_height = 0;
-    glfwGetFramebufferSize(window, &screen_width, &screen_height);
+        int axis_count = 0, buttons_count = 0;
+        glfwGetJoystickAxes(i, &axis_count);
+        glfwGetJoystickButtons(i, &buttons_count);
+        printf("joy%d: %s %d axis %d buttons\n", i, name, axis_count, buttons_count);
+    }
+
+    nya_render::texture::set_default_aniso(2);
+
+    int mx = platform.get_mouse_x(), my = platform.get_mouse_x();
+    int screen_width = platform.get_width(), screen_height = platform.get_height();
     scene.resize(screen_width, screen_height);
     scene.loading();
     nya_render::clear(true, true);
     scene.draw();
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+    platform.end_frame();
 
     unsigned long app_time = nya_system::get_time();
-    while (!glfwWindowShouldClose(window))
+    while (!platform.should_terminate())
     {
         unsigned long time = nya_system::get_time();
         int dt = int(time - app_time);
@@ -719,11 +766,9 @@ int main(void)
 
         static bool speed10x = false;
 
-        int new_screen_width, new_screen_height;
-        glfwGetFramebufferSize(window, &new_screen_width, &new_screen_height);
-        if (new_screen_width != screen_width || new_screen_height != screen_height)
+        if (platform.get_width() != screen_width || platform.get_height() != screen_height)
         {
-            screen_width = new_screen_width, screen_height = new_screen_height;
+            screen_width = platform.get_width(), screen_height = platform.get_height();
             scene.resize(screen_width, screen_height);
         }
 
@@ -731,7 +776,7 @@ int main(void)
         {
             scene.loading();
             scene.draw();
-            glfwSwapBuffers(window);
+            platform.end_frame();
 
             scene.load_location(locations[current_location]);
             scene.load_player_plane(planes[current_plane], current_color);
@@ -740,21 +785,17 @@ int main(void)
 
         scene.update(speed10x ? dt * 10 : dt);
         scene.draw();
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        platform.end_frame();
 
         //controls
 
-        double x, y;
-        glfwGetCursorPos(window, &x, &y);
-        if (glfwGetMouseButton(window, 0))
-            scene.camera.add_delta_rot((y - my) * 0.03, (x - mx) * 0.03);
+        if (platform.get_mouse_lbtn())
+            scene.camera.add_delta_rot((platform.get_mouse_y() - my) * 0.03, (platform.get_mouse_x() - mx) * 0.03);
 
-        if (glfwGetMouseButton(window, 1))
-            scene.camera.add_delta_pos(0, 0, my - y);
+        if (platform.get_mouse_rbtn())
+            scene.camera.add_delta_pos(0, 0, my - platform.get_mouse_y());
 
-        mx = x; my = y;
+        mx = platform.get_mouse_x(), my = platform.get_mouse_y();
 
         nya_math::vec3 c_rot;
         float c_throttle = 0.0f, c_brake = 0.0f;
@@ -800,18 +841,18 @@ int main(void)
             if(buttons[0]) key_spec = true;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_W)) c_throttle = 1.0f;
-        if (glfwGetKey(window, GLFW_KEY_S)) c_brake = 1.0f;
-        if (glfwGetKey(window, GLFW_KEY_A)) c_rot.y = -1.0f;
-        if (glfwGetKey(window, GLFW_KEY_D)) c_rot.y = 1.0f;
-        if (glfwGetKey(window, GLFW_KEY_UP)) c_rot.x = 1.0f;
-        if (glfwGetKey(window, GLFW_KEY_DOWN)) c_rot.x = -1.0f;
-        if (glfwGetKey(window, GLFW_KEY_LEFT)) c_rot.z = -1.0f;
-        if (glfwGetKey(window, GLFW_KEY_RIGHT)) c_rot.z = 1.0f;
+        if (platform.get_key(GLFW_KEY_W)) c_throttle = 1.0f;
+        if (platform.get_key(GLFW_KEY_S)) c_brake = 1.0f;
+        if (platform.get_key(GLFW_KEY_A)) c_rot.y = -1.0f;
+        if (platform.get_key(GLFW_KEY_D)) c_rot.y = 1.0f;
+        if (platform.get_key(GLFW_KEY_UP)) c_rot.x = 1.0f;
+        if (platform.get_key(GLFW_KEY_DOWN)) c_rot.x = -1.0f;
+        if (platform.get_key(GLFW_KEY_LEFT)) c_rot.z = -1.0f;
+        if (platform.get_key(GLFW_KEY_RIGHT)) c_rot.z = 1.0f;
 
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL)) key_mgun = true;
-        if (glfwGetKey(window, GLFW_KEY_SPACE)) key_rocket = true;
-        if (glfwGetKey(window, GLFW_KEY_Q)) key_spec = true;
+        if (platform.get_key(GLFW_KEY_LEFT_CONTROL)) key_mgun = true;
+        if (platform.get_key(GLFW_KEY_SPACE)) key_rocket = true;
+        if (platform.get_key(GLFW_KEY_Q)) key_spec = true;
 
         if (key_mgun) scene.player_plane.fire_mgun();
 
@@ -835,15 +876,13 @@ int main(void)
         else
             last_control_special = false;
 
-        //if (glfwGetKey(window, GLFW_KEY_L)) loc.load(location_name);
-
         static bool last_btn_p = false, last_btn_esc = false;
-        if ((glfwGetKey(window, GLFW_KEY_P) && !last_btn_p) || (glfwGetKey(window, GLFW_KEY_ESCAPE) && !last_btn_esc))
+        if ((platform.get_key(GLFW_KEY_P) && !last_btn_p) || (platform.get_key(GLFW_KEY_ESCAPE) && !last_btn_esc))
             scene.pause();
 
-        last_btn_p = glfwGetKey(window, GLFW_KEY_P);
-        last_btn_esc = glfwGetKey(window, GLFW_KEY_ESCAPE);
-        speed10x = glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT);
+        last_btn_p = platform.get_key(GLFW_KEY_P);
+        last_btn_esc = platform.get_key(GLFW_KEY_ESCAPE);
+        speed10x = platform.get_key(GLFW_KEY_RIGHT_SHIFT);
 
         scene.player_plane.set_controls(c_rot, c_throttle, c_brake);
 
@@ -853,7 +892,7 @@ int main(void)
         static std::vector<bool> fkeys_last(6, false);
 
         for (int i = 0; i < fkeys.size(); ++i)
-            fkeys[i] = glfwGetKey(window, GLFW_KEY_1 + i);
+            fkeys[i] = platform.get_key(GLFW_KEY_1 + i);
 
         const unsigned int locations_count = sizeof(locations) / sizeof(locations[0]);
 
@@ -861,7 +900,7 @@ int main(void)
         {
             scene.loading();
             scene.draw();
-            glfwSwapBuffers(window);
+            platform.end_frame();
 
             current_location = (current_location + 1) % locations_count;
             scene.load_location(locations[current_location]);
@@ -871,7 +910,7 @@ int main(void)
         {
             scene.loading();
             scene.draw();
-            glfwSwapBuffers(window);
+            platform.end_frame();
 
             current_location = (current_location + locations_count - 1) % locations_count;
             scene.load_location(locations[current_location]);
@@ -883,7 +922,7 @@ int main(void)
         {
             scene.loading();
             scene.draw();
-            glfwSwapBuffers(window);
+            platform.end_frame();
 
             current_color = 0;
             current_plane = (current_plane + 1) % planes_count;
@@ -894,7 +933,7 @@ int main(void)
         {
             scene.loading();
             scene.draw();
-            glfwSwapBuffers(window);
+            platform.end_frame();
 
             current_color = 0;
             current_plane = (current_plane + planes_count - 1) % planes_count;
@@ -919,7 +958,7 @@ int main(void)
 
     }
 
-    glfwTerminate();
+    platform.terminate();
 
     return 0;
 }
