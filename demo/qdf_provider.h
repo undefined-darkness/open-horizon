@@ -6,6 +6,7 @@
 
 #include "qdf.h"
 #include "resources/resources.h"
+#include <map>
 
 //------------------------------------------------------------
 
@@ -14,16 +15,19 @@ class qdf_resources_provider: public nya_resources::resources_provider
 public:
     nya_resources::resource_data *access(const char *resource_name)
     {
-        const int idx = m_archive.get_file_idx(resource_name);
-        if (idx < 0)
+        if(!resource_name)
             return 0;
 
-        return new res_data(m_archive, idx);
+        auto e = m_files.find(resource_name);
+        if (e == m_files.end())
+            return 0;
+
+        return new res_data(m_archive, e->second);
     }
 
     bool has(const char *resource_name)
     {
-        return m_archive.get_file_idx(resource_name) >= 0;
+        return resource_name && m_files.find(resource_name) != m_files.end();
     }
 
 public:
@@ -33,11 +37,18 @@ public:
 public:
     bool open_archive(const char *name)
     {
-        return m_archive.open(name);
+        if (!m_archive.open(name))
+            return false;
+
+        for (int i = 0; i < m_archive.get_files_count(); ++i)
+            m_files[m_archive.get_file_name(i)] = i;
+
+        return true;
     }
 
 private:
     qdf_archive m_archive;
+    std::map<std::string,int> m_files;
 
     struct res_data: nya_resources::resource_data
     {
