@@ -442,7 +442,7 @@ void fhm_location::draw_mptx()
                 continue;
 
             int idx = m_map_parts_tr->get_count();
-            if (idx >= 500)
+            if (idx >= 127) //limited to 500 in shader uniforms, limited to 127 because of ati max instances per draw limitations
             {
                 m_map_parts_material.internal().set(nya_scene::material::default_pass);
                 if(!was_set)

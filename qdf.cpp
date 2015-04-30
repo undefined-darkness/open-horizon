@@ -15,6 +15,8 @@ bool qdf_archive::open(const char *name)
     if (!name)
         return false;
 
+    m_arch_name = name;
+
     FILE *arch = fopen(name, "rb");
     if (!arch)
     {
@@ -181,9 +183,23 @@ bool qdf_archive::read_file_data(int idx, void *data, uint64_t size, uint64_t of
 
     const size_t offset1 = size_t(offset - fidx1 * m_part_size);
 
+#define idx_error(i) printf("failed to read file %s: qdf archive %s%d not found\n", m_fis[idx].name.c_str(), m_arch_name.c_str(), i)
+
+    if (fidx1 >= int(m_rds.size()))
+    {
+        idx_error(fidx1);
+        return false;
+    }
+
     //check if file has been split between 2 parts of the archive
     if (fidx1 != fidx2)
     {
+        if (fidx2 >= int(m_rds.size()))
+        {
+            idx_error(fidx1);
+            return false;
+        }
+
         const size_t size1 = size_t(m_part_size - offset1);
 
         fseek(m_rds[fidx1], offset1, SEEK_SET);
