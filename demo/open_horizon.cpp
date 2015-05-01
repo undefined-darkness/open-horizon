@@ -9,6 +9,7 @@
 
 #include "aircraft.h"
 #include "location.h"
+#include "model.h"
 #include "clouds.h"
 #include "shared.h"
 #include "debug.h"
@@ -164,8 +165,8 @@ public:
     {
         assert(depth.is_valid());
 
-        auto res = shared::load_resource("PostProcess/LensParam.bin");
-        if (!res.get_size())
+        nya_memory::tmp_buffer_scoped res(shared::load_resource("PostProcess/LensParam.bin"));
+        if (!res.get_data())
             return false;
 
         params::memory_reader reader(res.get_data(), res.get_size());
@@ -190,8 +191,6 @@ public:
         f_min = reader.read<float>();
         f_max = reader.read<float>();
         aberration = reader.read<float>();
-
-        res.free();
 
         auto texture = shared::get_texture(shared::load_texture("PostProcess/lens.nut"));
         auto tex_data = texture.internal().get_shared_data();

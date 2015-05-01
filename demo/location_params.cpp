@@ -7,7 +7,7 @@
 #include "memory/tmp_buffer.h"
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
+#include "shared.h"
 
 //------------------------------------------------------------
 
@@ -15,16 +15,7 @@ bool location_params::load(const char *file_name)
 {
     *this = location_params(); //reset if was loaded already
 
-    auto *file_data = nya_resources::get_resources_provider().access(file_name);
-    if (!file_data)
-    {
-        printf("unable to open file %s\n", file_name ? file_name : "<invalid>");
-        return false;
-    }
-
-    nya_memory::tmp_buffer_scoped fi_data(file_data->get_size());
-    file_data->read_all(fi_data.get_data());
-
+    nya_memory::tmp_buffer_scoped fi_data(shared::load_resource(file_name));
     params::memory_reader reader(fi_data.get_data(), fi_data.get_size());
 
     clipping_plane.ground_zfar = reader.read<float>();
@@ -54,7 +45,7 @@ bool location_params::load(const char *file_name)
     reader.skip(60*4); //sand effect
 
     auto tone_control = reader.read<unsigned short>();
-    assert(tone_control == 1);
+    assume(tone_control == 1);
     tone_saturation = reader.read<float>();
 
     reader.skip(11*4); //debug
@@ -124,7 +115,7 @@ bool location_params::load(const char *file_name)
 
     reader.skip(93*4+5*2); //tree
 
-    assert(!reader.get_remained());
+    assume(!reader.get_remained());
 
     return true;
 }

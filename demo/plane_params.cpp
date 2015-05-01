@@ -8,7 +8,7 @@
 #include "memory/tmp_buffer.h"
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
+#include "shared.h"
 
 //------------------------------------------------------------
 
@@ -16,22 +16,14 @@ bool plane_params::load(const char *file_name)
 {
     *this = plane_params(); //reset if was loaded already
 
-    auto *file_data = nya_resources::get_resources_provider().access(file_name);
-    if (!file_data)
-    {
-        printf("unable to open file %s\n", file_name ? file_name : "<invalid>");
-        return false;
-    }
-
-    nya_memory::tmp_buffer_scoped fi_data(file_data->get_size());
-    file_data->read_all(fi_data.get_data());
-    nya_memory::memory_reader reader(fi_data.get_data(), file_data->get_size());
+    nya_memory::tmp_buffer_scoped fi_data(shared::load_resource(file_name));
+    nya_memory::memory_reader reader(fi_data.get_data(), fi_data.get_size());
 
     //ToDo
     unsigned short unknown_144 = reader.read<unsigned short>();
-    assert(unknown_144 == 144);
+    assume(unknown_144 == 144);
     unsigned short unknown_20545 = reader.read<unsigned short>();
-    assert(unknown_20545 == 20545);
+    assume(unknown_20545 == 20545);
 
     float params[183];
     for (int i = 0; i < sizeof(params) / sizeof(params[0]); ++i)

@@ -15,7 +15,6 @@
 #include "math/scalar.h"
 
 #include <math.h>
-#include <assert.h>
 #include <stdint.h>
 
 #include "shared.h"
@@ -174,7 +173,9 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         for (int y = 0; y < quads_per_patch; ++y)
         for (int x = 0; x < quads_per_patch; ++x)
         {
-            int tex_idx = load_data.tex_indices_data[tc_idx * 2 + 1];
+            const int ind = tc_idx * 2 + 1;
+            assert(ind < (int)load_data.tex_indices_data.size());
+            const int tex_idx = load_data.tex_indices_data[ind];
 
             if (tex_idx != last_tex_idx)
             {
@@ -420,9 +421,9 @@ void fhm_location::draw_mptx()
     nya_scene::transform::set(nya_scene::transform());
 
 
+    bool mat_unset = false;
     for (auto &mesh: m_mptx_meshes)
     {
-        bool was_set = false;
 
         m_map_parts_color_texture.set(mesh.color);
         m_map_parts_diffuse_texture.set(mesh.textures.size() > 0 ? shared::get_texture(mesh.textures[0]) : shared::get_black_texture());
@@ -444,13 +445,11 @@ void fhm_location::draw_mptx()
             int idx = m_map_parts_tr->get_count();
             if (idx >= 127) //limited to 500 in shader uniforms, limited to 127 because of ati max instances per draw limitations
             {
+                mat_unset = true;
                 m_map_parts_material.internal().set(nya_scene::material::default_pass);
-                if(!was_set)
-                {
-                    mesh.vbo.bind();
-                    was_set = true;
-                }
+                mesh.vbo.bind();
                 mesh.vbo.draw(0, mesh.vbo.get_verts_count(), mesh.vbo.get_element_type(), idx);
+                mesh.vbo.unbind();
                 idx = 0;
             }
 
@@ -465,22 +464,16 @@ void fhm_location::draw_mptx()
         int instances = m_map_parts_tr->get_count();
         if (instances > 0)
         {
+            mat_unset = true;
             m_map_parts_material.internal().set(nya_scene::material::default_pass);
-            if (!was_set)
-            {
-                mesh.vbo.bind();
-                was_set = true;
-            }
+            mesh.vbo.bind();
             mesh.vbo.draw(0, mesh.vbo.get_verts_count(), mesh.vbo.get_element_type(), instances);
-        }
-
-        if( was_set )
-        {
             mesh.vbo.unbind();
-            m_map_parts_material.internal().unset();
         }
     }
 
+    if (mat_unset)
+        m_map_parts_material.internal().unset();
 }
 
 //------------------------------------------------------------
@@ -575,7 +568,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
         mesh.textures[1] = reader.read<uint>();
     }
 
-    assert(tex_count < 3);
+    assume(tex_count < 3);
 
     reader.seek(120);
     unsigned int vcount = reader.read<unsigned int>();
@@ -621,7 +614,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
         verts[i].color_coord = (float(i) + 0.5f)/ vcount;
 
     const int bpp = int(reader.get_remained() / (vcount * instances_count));
-    assert(bpp == 4 || bpp == 8 || bpp == 12 || bpp == 0);
+    assume(bpp == 4 || bpp == 8 || bpp == 12 || bpp == 0);
 
     nya_scene::shared_texture res;
     if (bpp == 4 || bpp == 12)
@@ -673,8 +666,8 @@ bool fhm_location::read_colh(memory_reader &reader)
     reader.seek(0);
     //print_data(reader, 0, reader.get_remained());
 
-    assert(header.chunk_size == reader.get_remained());
-    assert(header.unknown_zero == 0);
+    assume(header.chunk_size == reader.get_remained());
+    assume(header.unknown_zero == 0);
 
     struct colh_info
     {
@@ -708,7 +701,7 @@ bool fhm_location::read_colh(memory_reader &reader)
         chunks[i].size = reader.read<uint>();
     }
 
-    assert(header.count == 1);
+    assume(header.count == 1);
 
     col_mesh col;
 
@@ -723,8 +716,8 @@ bool fhm_location::read_colh(memory_reader &reader)
 
         //print_data(reader,reader.get_offset(),c.size-sizeof(colh_info));
 
-        assert(c.header.unknown_32 == 32);
-        assert(c.header.unknown_zero == 0);
+        assume(c.header.unknown_32 == 32);
+        assume(c.header.unknown_zero == 0);
         //for (int j = 0; j < 1; ++j)
         {
             nya_math::vec3 p;
@@ -732,14 +725,14 @@ bool fhm_location::read_colh(memory_reader &reader)
             p.y = reader.read<float>();
             p.z = reader.read<float>();
             float f = reader.read<float>();
-            assert(f == 1.0f);
+            assume(f == 1.0f);
             nya_math::vec3 p2;
             p2.x = reader.read<float>();
             p2.y = reader.read<float>();
             p2.z = reader.read<float>();
             //float f = reader.read<float>();
             float f2 = reader.read<float>();
-            assert(f2 == 0);
+            assume(f2 == 0);
             //test.add_point(p, nya_math::vec4(0.0, 1.0, 0.0, 1.0));
             //test.add_line(p, p2, nya_math::vec4(0.0, 1.0, 0.0, 1.0));
             nya_math::aabb b;

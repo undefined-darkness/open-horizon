@@ -7,7 +7,6 @@
 #include "scene/camera.h"
 #include "memory/memory_reader.h"
 #include "shared.h"
-#include <assert.h>
 
 //------------------------------------------------------------
 
@@ -33,7 +32,7 @@ bool effect_clouds::load(const char *location_name, const location_params &param
             char buf[512];
             sprintf(buf, "Effect/%s/ObjCloud/Level%d_%c.BOC", location_name, i, j);
 
-            nya_memory::tmp_buffer_ref res = shared::load_resource(buf);
+            nya_memory::tmp_buffer_scoped res(shared::load_resource(buf));
             assert(res.get_size() > 0);
             nya_memory::memory_reader reader(res.get_data(), res.get_size());
 
@@ -76,8 +75,6 @@ bool effect_clouds::load(const char *location_name, const location_params &param
                     v[t].tc.w = (tc.y * e.tc[5] + 0.5f) * weird_detail_tc_multiply + e.tc[4];
                 }
             }
-
-            res.free();
         }
     }
 
@@ -213,8 +210,8 @@ bool effect_clouds::read_bdd(const char *name, bdd &bdd_res)
 
     bdd_header header = reader.read<bdd_header>();
 
-    assert(header.unknown == '0001');
-    assert(header.zero == 0);
+    assume(header.unknown == '0001');
+    assume(header.zero == 0);
 
     bdd_res.hiflat_clouds.resize(header.hiflat_clouds_count);
     for(auto &p: bdd_res.hiflat_clouds)
@@ -236,7 +233,7 @@ bool effect_clouds::read_bdd(const char *name, bdd &bdd_res)
     for(auto &p: bdd_res.obj_clouds)
         p.first = reader.read<int>(), p.second.x = reader.read<float>(), p.second.y = reader.read<float>();
 
-    assert(reader.get_remained()==0);
+    assume(reader.get_remained()==0);
 
     bdd_res.header=header; //ToDo
 

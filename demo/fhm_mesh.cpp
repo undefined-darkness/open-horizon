@@ -14,7 +14,6 @@
 #include "scene/shader.h"
 
 #include <math.h>
-#include <assert.h>
 #include <stdint.h>
 
 #include "shared.h"
@@ -190,7 +189,7 @@ bool fhm_mesh::load_material(const char *file_name)
         for (size_t j = 0; j < mat_offsets.size(); ++j)
         {
             mat_offsets[j] = r.read<mat_offset>();
-            assert(mat_offsets[j].zero[0] == 0 && mat_offsets[j].zero[1] == 0);
+            assume(mat_offsets[j].zero[0] == 0 && mat_offsets[j].zero[1] == 0);
         }
 
         for (size_t j = 0; j < mat_offsets.size(); ++j)
@@ -210,7 +209,7 @@ bool fhm_mesh::load_material(const char *file_name)
             };
 
             auto header = r.read<mat_header>();
-            assert(header.zero == 0 && header.zero3[0] == 0 && header.zero3[1] == 0 && header.zero3[2] == 0);
+            assume(header.zero == 0 && header.zero3[0] == 0 && header.zero3[1] == 0 && header.zero3[2] == 0);
             r.skip(header.unknown_count * 24);
 
             auto &params = material[j];
@@ -227,7 +226,7 @@ bool fhm_mesh::load_material(const char *file_name)
                 };
 
                 auto v = r.read<value>();
-                assert(v.zero == 0);
+                assume(v.zero == 0);
 
                 const char *name = (char *)r.get_data() + v.offset_to_name - r.get_offset();
                 assert(name && name[0]);
@@ -238,7 +237,7 @@ bool fhm_mesh::load_material(const char *file_name)
                 if (v.unknown_32_or_zero == 0)
                     break;
 
-                assert(v.unknown_32_or_zero == 32);
+                assume(v.unknown_32_or_zero == 32);
             }
         }
 
@@ -256,7 +255,7 @@ bool fhm_mesh::load_material(const char *file_name)
 
             auto b = r.read<bind>();
             assert(b.idx == j);
-            assert(b.zero[0] == 0 && b.zero[1] == 0 && b.zero[2] == 0);
+            assume(b.zero[0] == 0 && b.zero[1] == 0 && b.zero[2] == 0);
 
             render_groups[b.idx] = b.mat_idx;
         }
@@ -273,7 +272,7 @@ bool fhm_mesh::load_material(const char *file_name)
 
             auto b = r.read<bind>();
             assert(b.render_groups_count + b.render_groups_offset <= render_groups.size());
-            assert(b.zero == 0);
+            assume(b.zero == 0);
 
             for (int k = 0; k < b.render_groups_count; ++k)
             {
@@ -330,7 +329,7 @@ bool fhm_mesh::read_mnt(memory_reader &reader, fhm_mesh_load_data &load_data)
     };
 
     const mnt_header header = reader.read<mnt_header>();
-    assert(header.unknown_1 == 1);
+    assume(header.unknown_1 == 1);
 
     struct mnt_bone
     {
@@ -370,7 +369,7 @@ bool fhm_mesh::read_mnt(memory_reader &reader, fhm_mesh_load_data &load_data)
     for (int i = 0; i < header.bones_count; ++i)
     {
         bones[i].header = reader.read<mnt_bone>();
-        assert(bones[i].parent == bones[i].header.parent);
+        assume(bones[i].parent == bones[i].header.parent);
     }
 
     reader.seek(header.offset_to_bones_names);
@@ -562,7 +561,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
         {
             b = kfm1_reader.read<kfm1_bone_info>();
             //assert(b.unknown_4 == 4);
-            assert(b.unknown4 % 4 == 0);
+            assume(b.unknown4 % 4 == 0);
             if (b.unknown2 != 1031 && b.unknown2 != 773) printf("%d\n", b.unknown2);
             assert(b.unknown2 == 1031 || b.unknown2 == 773);
         }
@@ -571,8 +570,8 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
         for (auto &b : kfm1.bones2)
         {
             b = kfm1_reader.read<kfm1_bone_info>();
-            assert(b.unknown_4 == 4);
-            assert(b.unknown4 % 4 == 0);
+            assume(b.unknown_4 == 4);
+            assume(b.unknown4 % 4 == 0);
             if (b.unknown2 != 1031 && b.unknown2 != 773) printf("%d\n", b.unknown2);
             assert(b.unknown2 == 1031 || b.unknown2 == 773);
         }
@@ -625,7 +624,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
             if(!f.bones.empty())
             {
                 auto header_remained = f.bones.front().offset - first_offset;
-                assert(header_remained == 0);
+                assume(header_remained == 0);
             }
 
             size_t last_offset = sequence_reader.get_offset();
@@ -844,9 +843,9 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
         auto &h=groups[i].header = reader.read<ndxr_group_header>();
 
-        //assert(h.unknown_8==8);
-        assert(h.unknown_zero==0);
-        assert(h.unknown_zero2==0);
+        //assume(h.unknown_8==8);
+        assume(h.unknown_zero==0);
+        assume(h.unknown_zero2==0);
 
         //float *f = groups[i].header.origin;
         //test.add_point(nya_math::vec3(f[0], f[1], f[2]), nya_math::vec4(0, 0, 1, 1));

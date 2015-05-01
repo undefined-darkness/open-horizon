@@ -106,17 +106,16 @@ inline void print_data(const nya_memory::memory_reader &reader)
 
 inline void print_data(const char *name)
 {
-    auto r = shared::load_resource(name);
+    nya_memory::tmp_buffer_scoped r(shared::load_resource(name));
     nya_memory::memory_reader reader(r.get_data(),r.get_size());
     print_data(reader, reader.get_offset(), reader.get_remained());
-    r.free();
 }
 
 //------------------------------------------------------------
 
 inline void print_params(const char *name)
 {
-    auto r = shared::load_resource(name);
+    nya_memory::tmp_buffer_scoped r(shared::load_resource(name));
     if (!r.get_size())
         return;
 
@@ -160,8 +159,6 @@ inline void print_params(const char *name)
 
     for (size_t i = 0; i < values.size(); ++i)
         printf("%03zu %s\n", i, values[i].c_str());
-
-    r.free();
 }
 
 //------------------------------------------------------------

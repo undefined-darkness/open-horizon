@@ -5,6 +5,9 @@
 #pragma once
 
 #include "scene/texture.h"
+#include <assert.h>
+
+#define assume(expr) assert(expr) //like assert, but not critical
 
 namespace shared
 {
