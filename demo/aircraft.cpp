@@ -554,7 +554,7 @@ void aircraft::update(int dt)
     m_mesh.set_anim_speed(0, 'alrl', (ideal_al * 0.5f+0.5f - m_mesh.get_relative_anim_time(0, 'alrl')) * ae_anim_speed_k);
     m_mesh.set_anim_speed(0, 'alrr', (ideal_ar * 0.5f+0.5f - m_mesh.get_relative_anim_time(0, 'alrr')) * ae_anim_speed_k);
 
-    const float ideal_cn = -m_controls_rot.x * speed_k;
+    const float ideal_cn = m_controls_rot.x * speed_k;
     m_mesh.set_anim_speed(0, 'cndl', (ideal_cn * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'cndl')) * ae_anim_speed_k);
     m_mesh.set_anim_speed(0, 'cndr', (ideal_cn * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'cndr')) * ae_anim_speed_k);
     m_mesh.set_anim_speed(0, 'cndn', (ideal_cn * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'cndn')) * ae_anim_speed_k);
