@@ -527,24 +527,27 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
 
             return bones[parent].get_rot(bones).rotate(pos) + bones[parent].get_pos(bones);
         }
-
-        nya_math::vec3 get_fake_pos(const std::vector<bone> &bones) const
-        {
-            if (parent < 0)
-                return pos;
-
-            return pos + bones[parent].get_pos(bones);
-        }
     };
 
-    std::vector<bone> base(skeleton.get_bones_count());
-    bool first_anim = true;
-
+    int basepos_idx = -1;
     std::vector<kfm1_struct> kfm1_structs(header.kfm1_count);
     for (int i = 0; i < header.kfm1_count; ++i)
     {
         reader.seek(kfm1_infos[i].offset_to_name);
         kfm1_structs[i].name = reader.read_string();
+        if(kfm1_structs[i].name == "basepose")
+            basepos_idx = i;
+    }
+
+    assert(basepos_idx>=0);
+    assume(basepos_idx == 0);
+
+    std::vector<bone> base(skeleton.get_bones_count());
+    for (int fi = 0; fi < header.kfm1_count; ++fi)
+    {
+        const int i = (fi == 0 ? basepos_idx : (fi == basepos_idx ? 0 : fi));
+        const bool first_anim = i == 0;
+
         reader.seek(kfm1_infos[i].offset_to_data);
         memory_reader kfm1_reader(reader.get_data(), kfm1_infos[i].size);
 
@@ -658,10 +661,6 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                     if (is_quat)
                         value.w = sequence_reader.read<float>();
 
-                    //if( k > 0 ) is_quat = fabsf(value * value - 1.0f) < 0.001f; //ToDo
-                    //if (!is_quat)
-                    //    sequence_reader.rewind(4);
-
                     if (first_anim)
                     {
                         if (is_quat)
@@ -674,17 +673,12 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                         }
                         else
                             base[idx].pos = value.xyz();
-
-                        //if (is_quat) //if (kfm1.bones[j].unknown2 == 1031)
-                        //    anim.anim.add_bone_rot_frame(aidx, k * frame_time, nya_math::quat(value.x, value.y, value.z, value.w));
-                        //else //if (kfm1.bones[j].unknown2 == 773)
-                        //    anim.anim.add_bone_pos_frame(aidx, k * frame_time, value.xyz());
                     }
                     else
                     {
-                        if (is_quat) //if (kfm1.bones[j].unknown2 == 1031)
-                            anim.anim.add_bone_rot_frame(aidx, l * frame_time, base[idx].irot*nya_math::quat(value.x, value.y, value.z, value.w)); //base[idx].irot*
-                        else //if (kfm1.bones[j].unknown2 == 773)
+                        if (is_quat)
+                            anim.anim.add_bone_rot_frame(aidx, l * frame_time, base[idx].irot*nya_math::quat(value.x, value.y, value.z, value.w));
+                        else
                             anim.anim.add_bone_pos_frame(aidx, l * frame_time, value.xyz() - base[idx].pos);
                     }
 
@@ -706,7 +700,6 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                 for (int i = 0; i < skeleton.get_bones_count(); ++i)
                 {
                     const int b = s.add_bone(skeleton.get_bone_name(i), base[i].get_pos(base), base[i].get_rot(base), skeleton.get_bone_parent_idx(i), true);
-                    //const int b = s.add_bone(skeleton.get_bone_name(i), base[i].get_fake_pos(base), nya_math::quat(), skeleton.get_bone_parent_idx(i), true);
                     assert(i == b);
                 }
                 
@@ -714,13 +707,14 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
             }
             
             //printf("    frame %d bones %d\n", k, int(f.bones.size()));
-            first_anim = false;
         }
-        
-        load_data.animations.back().animations[kfm1.name].create(anim);
+
+        if (!first_anim)
+            load_data.animations.back().animations[kfm1.name].create(anim);
+
         //printf("duration %.2fs\n", anim.anim.get_duration()/1000.0f);
     }
-    
+
     return true;
 }
 
@@ -1085,12 +1079,12 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     if (load_data.animations.size() == load_data.ndxr_count)
     {
         auto anims = load_data.animations[lods.size() - 1].animations;
-        assert(!anims.empty());
+        //assert(!anims.empty());
 
         int layer = 0;
         for (auto &a: anims)
         {
-            //assert(a.first == "basepose" || a.first.length() == 4);
+            //assume(a.first == "basepose" || a.first.length() == 4);
             assert(a.first != "base");
 
             union { uint u; char c[4]; } hash_id;
