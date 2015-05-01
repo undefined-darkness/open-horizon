@@ -16,8 +16,8 @@ struct fhm_mesh_load_data;
 class fhm_mesh
 {
 public:
-    bool load(const char *fileName);
-    bool load_material(const char *file_name);
+    bool load(const char *file_name);
+    bool load_material(const char *file_name, const char *shader);
 
 public:
     void draw(int lod_idx);

@@ -25,7 +25,7 @@ extern nya_render::debug_draw test;
 
 //------------------------------------------------------------
 
-static nya_math::vec3 light_dir = nya_math::vec3(0.5f, 1.0f, 0.5f).normalize();
+static nya_math::vec3 light_dir = nya_math::vec3(0.5f, 1.0f, 0.5f).normalize(); //ToDo
 
 //------------------------------------------------------------
 
@@ -75,10 +75,10 @@ void fhm_mesh::set_ndxr_texture(int lod_idx, const char *semantics, const nya_sc
 
 //------------------------------------------------------------
 
-bool fhm_mesh::load(const char *fileName)
+bool fhm_mesh::load(const char *file_name)
 {
     fhm_file fhm;
-    if (!fhm.open(fileName))
+    if (!fhm.open(file_name))
         return false;
 
     fhm_mesh_load_data load_data;
@@ -143,7 +143,7 @@ bool fhm_mesh::load(const char *fileName)
 
 //------------------------------------------------------------
 
-bool fhm_mesh::load_material(const char *file_name)
+bool fhm_mesh::load_material(const char *file_name, const char *shader)
 {
     fhm_file m;
     m.open(file_name);
@@ -260,6 +260,7 @@ bool fhm_mesh::load_material(const char *file_name)
             render_groups[b.idx] = b.mat_idx;
         }
 
+        int idx = 0;
         r.seek(header.offset_to_groups);
         for (uint16_t j = 0; j < header.groups_count; ++j)
         {
@@ -276,6 +277,10 @@ bool fhm_mesh::load_material(const char *file_name)
 
             for (int k = 0; k < b.render_groups_count; ++k)
             {
+                auto &m = lods[0].mesh.modify_material(idx++);
+                m.get_default_pass().set_shader(nya_scene::shader(shader));
+                m.set_param(m.get_param_idx("light dir"), light_dir.x, light_dir.y, light_dir.z, 0.0f);
+
                 auto r = render_groups[b.render_groups_offset + k];
 
                 assert(!lods.empty());
@@ -283,7 +288,6 @@ bool fhm_mesh::load_material(const char *file_name)
 
                 assert(r < material.size());
 
-                auto &m = lods[0].mesh.modify_material(k);
                 for (auto &p: material[r])
                 {
                     if (p.first.find("HASH") != std::string::npos)
@@ -777,14 +781,14 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
         uint unknown_zero5[3];
     };
 
-    struct unknown_substruct2_info
+    struct tex_info_header
     {
         ushort unknown;
         ushort unknown2;
         uint unknown_zero;
 
         ushort unknown3;
-        ushort unknown_substruct2_count;
+        ushort tex_info_count;
         ushort unknown4;
         ushort unknown5;
         ushort unknown6;
@@ -792,16 +796,16 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
         uint unknown_zero2[3];
     };
 
-    struct unknown_substruct2
+    struct tex_info
     {
         uint texture_hash_id;
         uint unknown_zero;
         uint unknown2_zero;
 
-        uint unknown_hash_id;
-        ushort unknown3;
+        uint unknown3;
         ushort unknown4;
-        uint unknown5_zero;
+        ushort unknown5;
+        uint unknown6_zero;
     };
 
     struct ndxr_material_param
@@ -823,8 +827,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     struct render_group
     {
         ndxr_render_group_header header;
-        unknown_substruct2_info substruct2_info;
-        std::vector<unknown_substruct2> unknown_structs;
+        tex_info_header tex_info_header;
+        std::vector<tex_info> tex_infos;
         std::vector<material_param> material_params;
     };
 
@@ -878,10 +882,10 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             reader.seek(rg.header.offset_to_sub_struct2);
             //print_data(reader, reader.get_offset(), sizeof(unknown_substruct2_info));
 
-            rg.substruct2_info = reader.read<unknown_substruct2_info>();
-            rg.unknown_structs.resize(rg.substruct2_info.unknown_substruct2_count);
-            for (int j = 0; j < rg.substruct2_info.unknown_substruct2_count; ++j)
-                rg.unknown_structs[j] = reader.read<unknown_substruct2>();
+            rg.tex_info_header = reader.read<tex_info_header>();
+            rg.tex_infos.resize(rg.tex_info_header.tex_info_count);
+            for (auto &ti: rg.tex_infos)
+                ti = reader.read<tex_info>();
 
             //print_data(reader, reader.get_offset(), 64);
 
@@ -928,10 +932,9 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
     nya_scene::shared_mesh mesh;
 
-    mesh.materials.resize(1);
-    auto &mat = mesh.materials.back();
+    nya_scene::material mat;
     nya_scene::shader plane_shader;
-    plane_shader.load("shaders/player_plane.nsh");
+    plane_shader.load("shaders/object.nsh");
     auto &p=mat.get_pass(mat.add_pass(nya_scene::material::default_pass));
     p.set_shader(plane_shader);
     mat.set_param(mat.get_param_idx("light dir"), light_dir.x, light_dir.y, light_dir.z, 0.0f);
@@ -968,7 +971,14 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             l.groups.resize(mesh.groups.size());
 
             auto &g = mesh.groups.back();
-            g.material_idx = 0;
+            g.material_idx = (int)mesh.materials.size();
+            mesh.materials.push_back(mat);
+
+            if(rgf.tex_infos.size()>0)
+                mesh.materials.back().set_texture("diffuse", shared::get_texture(rgf.tex_infos[0].texture_hash_id));
+
+            //ToDo: specular, ambient, etc
+
             l.groups.back().bone_idx = gf.header.bone_idx;
             g.offset = uint(indices.size());
 
@@ -1053,6 +1063,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             g.name = gf.name;
         }
     }
+
+    //ToDo: regroup groups with the same textures and blend modes, material params and bones via uniforms
 
     assert(verts.size() < 65535);
 

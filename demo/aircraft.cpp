@@ -331,7 +331,7 @@ bool aircraft::load(const char *name, unsigned int color_idx)
     m_mesh.set_ndxr_texture(0, "specular", buf);
 
     sprintf(buf, "model_id/mech/plyr/p_%s/p_%s_pcol%02d.fhm", name, name, color.coledit_idx);
-    m_mesh.load_material(buf);
+    m_mesh.load_material(buf, "shaders/player_plane.nsh");
 
     m_params.load(("Player/Behavior/param_p_" + name_str + ".bin").c_str());
 

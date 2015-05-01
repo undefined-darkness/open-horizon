@@ -22,6 +22,9 @@ public:
     model(const char *name, const location_params &params) { load(name, params); }
 
 private:
+    void load_tdp(const std::string &name);
+
+private:
     fhm_mesh m_mesh;
 };
 
