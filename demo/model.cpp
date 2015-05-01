@@ -75,6 +75,7 @@ bool model::load(const char *name, const location_params &params)
             typedef std::vector<char> buf;
             buf header;
             std::vector<buf> headers;
+            size_t idx = 0;
             for (auto &s: tdp.strings)
             {
                 nya_memory::tmp_buffer_scoped res(shared::load_resource(s.c_str()));
@@ -86,7 +87,24 @@ bool model::load(const char *name, const location_params &params)
                     header.resize(res.get_size());
                     res.copy_to(&header[0], res.get_size());
                 }
+                else if (nya_resources::check_extension(s.c_str(), "pih"))
+                {
+                    buf h(res.get_size());
+                    res.copy_to(&h[0], res.get_size());
+                    headers.push_back(h);
+                }
+                else if (nya_resources::check_extension(s.c_str(), "img"))
+                {
+                    nya_memory::tmp_buffer_scoped buf(header.size() + headers[idx].size() + res.get_size());
+                    buf.copy_from(&header[0], header.size());
+                    buf.copy_from(&(headers[idx])[0], headers[idx].size(), header.size());
+                    buf.copy_from(res.get_data(), res.get_size(), headers[idx].size() + header.size());
+                    ++idx;
+                    auto hash = shared::load_texture(buf.get_data(), buf.get_size());
+                    //printf("tex %d\n", hash);
+                }
             }
+            assert(idx == headers.size());
         }
         else if (nya_resources::check_extension(s.c_str(), "lst"))
         {
