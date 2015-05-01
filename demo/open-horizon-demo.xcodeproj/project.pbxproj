@@ -22,6 +22,7 @@
 		F573FBFC1AEA25FA000AC240 /* ui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F573FBFA1AEA25FA000AC240 /* ui.cpp */; };
 		F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E51F19048D4A00C3590A /* libnya_engine.a */; };
 		F5BF995B190A4462005A8AF5 /* fhm_location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5BF9959190A4462005A8AF5 /* fhm_location.cpp */; };
+		F5C6D34C1AF37797006FB7E6 /* model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D34A1AF37797006FB7E6 /* model.cpp */; };
 		F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D7969F19B3432C006269F0 /* pugixml.cpp */; };
 		F5D796A619B35471006269F0 /* aircraft.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D796A419B35471006269F0 /* aircraft.cpp */; };
 		F5DAA8D21AD7CEAD00C2C633 /* postprocess.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5DAA8CC1AD7CE6900C2C633 /* postprocess.txt */; };
@@ -80,7 +81,7 @@
 		F503E51319048CC100C3590A /* plane_params.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = plane_params.cpp; sourceTree = "<group>"; };
 		F503E51419048CC100C3590A /* plane_params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = plane_params.h; sourceTree = "<group>"; };
 		F503E51919048D4A00C3590A /* nya_engine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = nya_engine.xcodeproj; path = "../deps/nya-engine/build/xcode/nya_engine.xcodeproj"; sourceTree = "<group>"; };
-		F503E52319048E2D00C3590A /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = ../deps/glfw-bin/lib/libglfw3.a; sourceTree = "<group>"; };
+		F503E52319048E2D00C3590A /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = "../deps/glfw-bin/lib/libglfw3.a"; sourceTree = "<group>"; };
 		F503E52519048E5000C3590A /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		F503E52819048E7300C3590A /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		F503E52A1904907200C3590A /* qdf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qdf.cpp; path = ../qdf.cpp; sourceTree = "<group>"; };
@@ -101,6 +102,8 @@
 		F5A0CC131AD35456007076B3 /* debug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = debug.h; sourceTree = "<group>"; };
 		F5BF9959190A4462005A8AF5 /* fhm_location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fhm_location.cpp; sourceTree = "<group>"; };
 		F5BF995A190A4462005A8AF5 /* fhm_location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fhm_location.h; sourceTree = "<group>"; };
+		F5C6D34A1AF37797006FB7E6 /* model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = model.cpp; sourceTree = "<group>"; };
+		F5C6D34B1AF37797006FB7E6 /* model.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = model.h; sourceTree = "<group>"; };
 		F5D7969F19B3432C006269F0 /* pugixml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pugixml.cpp; path = "../deps/pugixml-1.4/src/pugixml.cpp"; sourceTree = "<group>"; };
 		F5D796A019B3432C006269F0 /* pugiconfig.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugiconfig.hpp; path = "../deps/pugixml-1.4/src/pugiconfig.hpp"; sourceTree = "<group>"; };
 		F5D796A119B3432C006269F0 /* pugixml.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugixml.hpp; path = "../deps/pugixml-1.4/src/pugixml.hpp"; sourceTree = "<group>"; };
@@ -153,6 +156,8 @@
 				F503E51119048CC100C3590A /* fhm_mesh.h */,
 				F5DFAD8E19BCA1EA00786736 /* location.cpp */,
 				F5DFAD8F19BCA1EA00786736 /* location.h */,
+				F5C6D34A1AF37797006FB7E6 /* model.cpp */,
+				F5C6D34B1AF37797006FB7E6 /* model.h */,
 				F57342151AC176E900468FD5 /* location_params.cpp */,
 				F57342161AC176E900468FD5 /* location_params.h */,
 				F503E50F19048CC100C3590A /* open_horizon.cpp */,
@@ -340,6 +345,7 @@
 				F5BF995B190A4462005A8AF5 /* fhm_location.cpp in Sources */,
 				F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */,
 				F503E52C1904907200C3590A /* qdf.cpp in Sources */,
+				F5C6D34C1AF37797006FB7E6 /* model.cpp in Sources */,
 				F57342171AC176E900468FD5 /* location_params.cpp in Sources */,
 				F5DFAD9019BCA1EA00786736 /* location.cpp in Sources */,
 				F503E51519048CC100C3590A /* fhm_mesh.cpp in Sources */,
@@ -440,7 +446,7 @@
 				INFOPLIST_FILE = "open-horizon-demo-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../deps/glfw-bin/lib,
+					"../deps/glfw-bin/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
@@ -455,7 +461,7 @@
 				INFOPLIST_FILE = "open-horizon-demo-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					../deps/glfw-bin/lib,
+					"../deps/glfw-bin/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
