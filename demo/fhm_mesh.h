@@ -37,6 +37,9 @@ public:
         set_ndxr_texture(lod_idx,semantics,nya_scene::texture(file_name));
     }
 
+    int get_bone_idx(int lod_idx, const char *name);
+    nya_math::vec3 get_bone_pos(int lod_idx, int bone_idx);
+
 protected:
     bool read_mnt(memory_reader &reader, fhm_mesh_load_data &load_data);
     bool read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data);

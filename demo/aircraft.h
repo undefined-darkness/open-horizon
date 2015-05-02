@@ -28,6 +28,7 @@ public:
     float get_alt() { return m_pos.y; }
     float get_hp() { return m_hp; }
     const nya_math::vec3 &get_camera_offset() const { return m_camera_offset; }
+    nya_math::vec3 get_bone_pos(const char *name);
 
     static unsigned int get_colors_count(const char *plane_name);
 

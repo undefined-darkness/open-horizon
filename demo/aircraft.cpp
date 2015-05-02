@@ -400,6 +400,13 @@ void aircraft::set_controls(const nya_math::vec3 &rot, float throttle, float bra
 
 //------------------------------------------------------------
 
+nya_math::vec3 aircraft::get_bone_pos(const char *name)
+{
+    return m_mesh.get_bone_pos(0, m_mesh.get_bone_idx(0, name));
+}
+
+//------------------------------------------------------------
+
 void aircraft::update(int dt)
 {
     float kdt = dt * 0.001f;

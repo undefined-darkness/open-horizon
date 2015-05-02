@@ -39,9 +39,11 @@ public:
     void add_delta_rot(float dx, float dy);
     void reset_delta_rot() { m_drot.x = 0.0f; m_drot.y = 3.14f; }
     void add_delta_pos(float dx, float dy, float dz);
-    void reset_delta_pos() { m_dpos = nya_math::vec3(); }//0.0f, 2.0f, -10.0f); }
+    void reset_delta_pos() { if (m_ignore_dpos) return; m_dpos = nya_math::vec3(); }//0.0f, 2.0f, -10.0f); }
+    void set_ignore_delta_pos(bool ignore) { m_ignore_dpos = ignore; }
 
     void set_aspect(float aspect);
+    void set_near(float near);
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; update(); }
     void set_rot(const nya_math::quat &rot) { m_rot = rot; update(); }
 
@@ -49,7 +51,7 @@ private:
     void update();
 
 public:
-    plane_camera() { m_drot.y = 3.14f; reset_delta_pos(); }
+    plane_camera(): m_ignore_dpos(false), m_aspect(1.0), m_near(1.0) { m_drot.y = 3.14f; reset_delta_pos(); }
 
 private:
     nya_math::vec3 m_drot;
@@ -57,6 +59,9 @@ private:
 
     nya_math::vec3 m_pos;
     nya_math::quat m_rot;
+    bool m_ignore_dpos;
+    float m_aspect;
+    float m_near;
 };
 
 //------------------------------------------------------------
@@ -87,6 +92,9 @@ void plane_camera::add_delta_rot(float dx, float dy)
 
 void plane_camera::add_delta_pos(float dx, float dy, float dz)
 {
+    if (m_ignore_dpos)
+        return;
+
     m_dpos.x -= dx;
     m_dpos.y -= dy;
     m_dpos.z -= dz;
@@ -103,8 +111,17 @@ void plane_camera::add_delta_pos(float dx, float dy, float dz)
 
 void plane_camera::set_aspect(float aspect)
 {
-    nya_scene::get_camera().set_proj(55.0, aspect, 1.0, 21000.0);
-                      //1300.0);
+    m_aspect = aspect;
+    nya_scene::get_camera().set_proj(50.0, m_aspect, m_near, 21000.0 * m_near);
+    update();
+}
+
+//------------------------------------------------------------
+
+void plane_camera::set_near(float near)
+{
+    m_near = near;
+    nya_scene::get_camera().set_proj(50.0, m_aspect, m_near, 21000.0 * m_near);
     update();
 }
 
@@ -126,7 +143,9 @@ void plane_camera::update()
 
     //nya_math::vec3 pos=m_pos+rot.rotate(m_dpos);
     r.v.x = -r.v.x, r.v.y = -r.v.y;
-    nya_math::vec3 pos = m_pos + r.rotate(m_dpos);
+    nya_math::vec3 pos = m_pos;
+    if (!m_ignore_dpos)
+        pos += r.rotate(m_dpos);
 
     nya_scene::get_camera().set_pos(pos.x, pos.y, pos.z);
 }
@@ -492,12 +511,20 @@ int main(void)
         bool m_loading;
         bool m_fonts_loaded;
 
+        enum
+        {
+            camera_mode_third,
+            camera_mode_cockpit,
+            camera_mode_first,
+
+        } m_camera_mode;
+
     private:
         int m_frame_counter, m_frame_counter_time, m_fps;
 
     public:
         scene(): m_fade_time(0), m_help_time(3000), m_frame_counter(0), m_frame_counter_time(0), m_fps(0), m_paused(false), m_loading(false),
-                 m_fonts_loaded(false) {}
+                 m_fonts_loaded(false), m_camera_mode(camera_mode_third) {}
 
     public:
         void load_location(const char *location_name)
@@ -547,9 +574,12 @@ int main(void)
 
             //ToDo: research camera
             auto off = -player_plane.get_camera_offset();
+            camera.set_ignore_delta_pos(false);
             camera.reset_delta_pos();
-            camera.add_delta_pos(off.x, -0.5 + off.y*1.5, off.z*0.55);
-            if (strcmp(name, "f22a") == 0 || strcmp(name, "kwmr") == 0 || strcmp(name, "su47") == 0)
+            camera.reset_delta_rot();
+            //camera.add_delta_pos(off.x, off.y * 1.5, off.z * 0.5);
+            camera.add_delta_pos(off.x, -0.5 + off.y*1.5, off.z*0.7);
+            if (strcmp(name, "f22a") == 0 || strcmp(name, "kwmr") == 0 || strcmp(name, "su47") == 0 || strcmp(name, "pkfa") == 0)
                 camera.add_delta_pos(0.0, -1.0, 3.0);
 
             if (strcmp(name, "mr2k") == 0)
@@ -565,7 +595,22 @@ int main(void)
                 || strcmp(name, "f02a") == 0 || strcmp(name, "su37") == 0 || strcmp(name, "f35b") == 0)
                 camera.add_delta_pos(0.0, -1.0, 0.0);
 
+            camera.set_ignore_delta_pos(m_camera_mode != camera_mode_third);
             //shared::clear_textures(); //ToDo
+        }
+
+        void switch_camera()
+        {
+            switch (m_camera_mode)
+            {
+                case camera_mode_third: m_camera_mode = camera_mode_cockpit; break;
+                case camera_mode_cockpit: m_camera_mode = camera_mode_first; break;
+                case camera_mode_first: m_camera_mode = camera_mode_third; break;
+            }
+
+            camera.set_ignore_delta_pos(m_camera_mode != camera_mode_third);
+            //camera.reset_delta_pos();
+            camera.reset_delta_rot();
         }
 
         void resize(unsigned int width,unsigned int height)
@@ -591,7 +636,8 @@ int main(void)
             if(!m_paused)
                 player_plane.update(dt);
 
-            camera.set_pos(player_plane.get_pos());
+            //camera.set_pos(player_plane.get_pos());
+            camera.set_pos(player_plane.get_bone_pos(m_camera_mode == camera_mode_third ? "camp" : "ckpp"));
             camera.set_rot(player_plane.get_rot());
 
             set_shader_param("damage_frame_color", nya_math::vec4(1.0, 0.0, 0.0235, nya_math::max(1.0 - player_plane.get_hp(), 0.0)));
@@ -666,7 +712,20 @@ int main(void)
             if (strcmp(tags, "location") == 0)
                 m_loc.draw();
             else if (strcmp(tags, "player") == 0)
-                player_plane.draw();
+            {
+                if (m_camera_mode == camera_mode_third)
+                    player_plane.draw();
+            }
+            else if (strcmp(tags, "cockpit") == 0)
+            {
+                if (m_camera_mode == camera_mode_cockpit)
+                {
+                    nya_render::clear(false, true);
+                    camera.set_near(0.01);
+                    player_plane.draw();
+                    camera.set_near(1.0);
+                }
+            }
             else if (strcmp(tags, "clouds_flat") == 0)
                 m_clouds.draw_flat();
             else if (strcmp(tags, "clouds_obj") == 0)
@@ -839,7 +898,7 @@ int main(void)
             last_btn3 = buttons[3] != 0;
         }
 
-        bool key_mgun = false, key_rocket = false, key_spec = false;
+        bool key_mgun = false, key_rocket = false, key_spec = false, key_camera = false;
 
         if (buttons_count > 14)
         {
@@ -860,10 +919,11 @@ int main(void)
         if (platform.get_key(GLFW_KEY_LEFT_CONTROL)) key_mgun = true;
         if (platform.get_key(GLFW_KEY_SPACE)) key_rocket = true;
         if (platform.get_key(GLFW_KEY_Q)) key_spec = true;
+        if (platform.get_key(GLFW_KEY_V)) key_camera = true;
 
         if (key_mgun) scene.player_plane.fire_mgun();
 
-        static bool last_control_rocket = false, last_control_special = false;
+        static bool last_control_rocket = false, last_control_special = false, last_control_camera = false;
 
         if (key_rocket)
         {
@@ -882,6 +942,15 @@ int main(void)
         }
         else
             last_control_special = false;
+
+        if (key_camera)
+        {
+            if (!last_control_camera)
+                scene.switch_camera();
+            last_control_camera = true;
+        }
+        else
+            last_control_camera = false;
 
         static bool last_btn_p = false, last_btn_esc = false;
         if ((platform.get_key(GLFW_KEY_P) && !last_btn_p) || (platform.get_key(GLFW_KEY_ESCAPE) && !last_btn_esc))

@@ -102,12 +102,12 @@ bool fhm_mesh::load(const char *file_name)
         {
             read_mnt(reader, load_data);
         }
-        else if (sign == 'ETAM') //MATE material?
+        else if (sign == 'ETAM') //MATE material
         {
             //read_mate(reader);
             //read_unknown(reader);
         }
-        else if (sign == 'RXTN') //NTXR texture?
+        else if (sign == 'RXTN') //NTXR texture
         {
             shared::load_texture(reader.get_data(), reader.get_remained());
         }
@@ -380,15 +380,18 @@ bool fhm_mesh::read_mnt(memory_reader &reader, fhm_mesh_load_data &load_data)
     for (int i = 0; i < header.bones_count; ++i)
         bones[i].name = reader.read_string();
 
+    //printf("mnt\n");
     fhm_mesh_load_data::mnt mnt;
     for (int i = 0; i < header.bones_count; ++i)
     {
+        //printf("%d %s\n", i, bones[i].name.c_str());
         int b = mnt.skeleton.add_bone(bones[i].name.c_str(), nya_math::vec3(), nya_math::quat(), bones[i].parent, true);
         assert(b == i);
     }
+    //printf("\n");
 
     load_data.skeletons.push_back(mnt);
-    
+
     return true;
 }
 
@@ -694,7 +697,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                 print_data(sequence_reader);
             //printf("sequence remained %ld\n", sequence_reader.get_remained());
 */
-            if (first_anim)
+            if (first_anim && k == 0)
             {
                 nya_render::skeleton s;
                 for (int i = 0; i < skeleton.get_bones_count(); ++i)
@@ -1134,11 +1137,17 @@ void fhm_mesh::draw(int lod_idx)
         l.mesh.set_rot(m_rot);
         l.mesh.draw_group(i);
     }
+
 /*
     nya_render::depth_test::disable();
     static nya_render::debug_draw d;
     d.clear();
     d.add_skeleton(l.mesh.get_skeleton());
+    //d.add_line(l.mesh.get_skeleton().get_bone_pos(64), l.mesh.get_skeleton().get_bone_pos(64) + nya_math::vec3(0,1,0), nya_math::vec4(1.0,0.0,0.0,1.0));
+    //d.add_line(l.mesh.get_skeleton().get_bone_pos(65), l.mesh.get_skeleton().get_bone_pos(65) + nya_math::vec3(0,1,0), nya_math::vec4(0.0,1.0,0.0,1.0));
+    //d.add_line(l.mesh.get_skeleton().get_bone_pos(66), l.mesh.get_skeleton().get_bone_pos(66) + nya_math::vec3(0,1,0), nya_math::vec4(0.0,0.0,1.0,1.0));
+    //d.add_line(l.mesh.get_skeleton().get_bone_pos(33), l.mesh.get_skeleton().get_bone_pos(33) + nya_math::vec3(0,1,0), nya_math::vec4(1.0,0.0,1.0,1.0));
+    //d.add_line(l.mesh.get_skeleton().get_bone_pos(60), l.mesh.get_skeleton().get_bone_pos(60) + nya_math::vec3(0,1,0), nya_math::vec4(1.0,1.0,0.0,1.0));
     d.draw();
 */
 }
@@ -1148,7 +1157,11 @@ void fhm_mesh::draw(int lod_idx)
 void fhm_mesh::update(int dt)
 {
     for (auto &l: lods)
+    {
+        l.mesh.set_pos(m_pos);
+        l.mesh.set_rot(m_rot);
         l.mesh.update(dt);
+    }
 }
 
 //------------------------------------------------------------
@@ -1208,6 +1221,27 @@ bool fhm_mesh::has_anim(int lod_idx, unsigned int anim_hash_id)
         return false;
 
     return lods[lod_idx].anims.find(anim_hash_id) != lods[lod_idx].anims.end();
+}
+
+int fhm_mesh::get_bone_idx(int lod_idx, const char *name)
+{
+    if (lod_idx < 0 || lod_idx >= lods.size())
+        return -1;
+
+    return lods[lod_idx].mesh.get_bone_idx(name);
+}
+
+//------------------------------------------------------------
+
+nya_math::vec3 fhm_mesh::get_bone_pos(int lod_idx, int bone_idx)
+{
+    if (lod_idx < 0 || lod_idx >= lods.size())
+    {
+        const static nya_math::vec3 pos;
+        return pos;
+    }
+
+    return lods[lod_idx].mesh.get_bone_pos(bone_idx);
 }
 
 //------------------------------------------------------------
