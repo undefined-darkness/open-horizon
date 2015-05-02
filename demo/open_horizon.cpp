@@ -143,9 +143,7 @@ void plane_camera::update()
 
     //nya_math::vec3 pos=m_pos+rot.rotate(m_dpos);
     r.v.x = -r.v.x, r.v.y = -r.v.y;
-    nya_math::vec3 pos = m_pos;
-    if (!m_ignore_dpos)
-        pos += r.rotate(m_dpos);
+    nya_math::vec3 pos = m_pos + r.rotate(m_ignore_dpos? nya_math::vec3(0.0,-0.06,-0.06) : m_dpos);
 
     nya_scene::get_camera().set_pos(pos.x, pos.y, pos.z);
 }
@@ -568,7 +566,7 @@ int main(void)
         {
             auto pos = player_plane.get_pos();
             player_plane = aircraft();
-            player_plane.load(name, color);
+            player_plane.load(name, color, m_loc.get_params());
             player_plane.apply_location(m_location_name.c_str(), m_loc.get_params());
             player_plane.set_pos(pos);
 
@@ -713,16 +711,17 @@ int main(void)
                 m_loc.draw();
             else if (strcmp(tags, "player") == 0)
             {
+                //if (m_camera_mode != camera_mode_first) //ToDo
                 if (m_camera_mode == camera_mode_third)
-                    player_plane.draw();
+                    player_plane.draw(0);
             }
             else if (strcmp(tags, "cockpit") == 0)
             {
                 if (m_camera_mode == camera_mode_cockpit)
                 {
                     nya_render::clear(false, true);
-                    camera.set_near(0.01);
-                    player_plane.draw();
+                    camera.set_near(0.1);
+                    player_plane.draw(1);
                     camera.set_near(1.0);
                 }
             }

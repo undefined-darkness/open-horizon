@@ -61,7 +61,7 @@ struct fhm_mesh_load_data
 
 //------------------------------------------------------------
 
-void fhm_mesh::set_ndxr_texture(int lod_idx, const char *semantics, const nya_scene::texture &tex)
+void fhm_mesh::set_texture(int lod_idx, const char *semantics, const nya_scene::texture &tex)
 {
     if (lod_idx < 0 || lod_idx >= lods.size())
         return;

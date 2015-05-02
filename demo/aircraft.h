@@ -5,7 +5,7 @@
 #pragma once
 
 #include "plane_params.h"
-#include "fhm_mesh.h"
+#include "model.h"
 #include "location_params.h"
 
 //------------------------------------------------------------
@@ -13,11 +13,11 @@
 class aircraft
 {
 public:
-    bool load(const char *name, unsigned int color_idx = 0);
+    bool load(const char *name, unsigned int color_idx, const location_params &params);
 
     void apply_location(const char *location_name, const location_params &params);
 
-    void draw() { m_mesh.draw(0); }
+    void draw(int lod_idx) { m_mesh.draw(lod_idx); }
 
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; }
     void set_rot(const nya_math::quat &rot) { m_rot = rot; }
@@ -42,7 +42,7 @@ public:
 
     aircraft(): m_hp(0), m_controls_throttle(0), m_controls_brake(0), m_thrust_time(0),
     m_controls_mgun(false), m_controls_rocket(false), m_controls_special(false),
-    m_special_selected(false), m_rocket_bay_time(0) {}
+    m_special_selected(false), m_rocket_bay_time(0), m_time(0) {}
 
 private:
     float clamp(float value, float from, float to) { if (value < from) return from; if (value > to) return to; return value; }
@@ -55,7 +55,7 @@ private:
     }
 
     float m_hp;
-    fhm_mesh m_mesh;
+    model m_mesh;
     float m_speed;
     float m_thrust_time;
     nya_math::vec3 m_pos;
@@ -73,6 +73,8 @@ private:
     bool m_special_selected;
 
     float m_rocket_bay_time;
+
+    unsigned int m_time;
 
     nya_math::vec3 m_camera_offset;
 };

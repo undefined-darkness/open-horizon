@@ -291,7 +291,7 @@ private:
 
 //------------------------------------------------------------
 
-bool aircraft::load(const char *name, unsigned int color_idx)
+bool aircraft::load(const char *name, unsigned int color_idx, const location_params &params)
 {
     if (!name)
         return false;
@@ -309,9 +309,9 @@ bool aircraft::load(const char *name, unsigned int color_idx)
 
     m_camera_offset = info->camera_offset;
 
-    m_mesh.load(("model_id/mech/plyr/p_" + name_str + "/p_" + name_str + "_pcom.fhm").c_str());
-    m_mesh.set_ndxr_texture(0, "ambient", ("model_id/tdb/mech/plyr/p_" + name_str + "/00/p_" + name_str + "_00_amb.img").c_str());
-    m_mesh.set_ndxr_texture(0, "normal", ("model_id/tdb/mech/plyr/p_" + name_str + "/00/p_" + name_str + "_00_nor.img").c_str());
+    m_mesh.load(("p_" + name_str).c_str(), params);
+    m_mesh.set_texture(0, "ambient", ("model_id/tdb/mech/plyr/p_" + name_str + "/00/p_" + name_str + "_00_amb.img").c_str());
+    m_mesh.set_texture(0, "normal", ("model_id/tdb/mech/plyr/p_" + name_str + "/00/p_" + name_str + "_00_nor.img").c_str());
 
     char buf[1024];
 
@@ -326,9 +326,9 @@ bool aircraft::load(const char *name, unsigned int color_idx)
     for (int i = 0; i < 6; ++i)
         baker.set_color(i, color.colors[i]);
 
-    m_mesh.set_ndxr_texture(0, "diffuse", baker.bake() );
+    m_mesh.set_texture(0, "diffuse", baker.bake() );
     sprintf(buf, "model_id/tdb/mech/plyr/p_%s/%02d/p_%s_%02d_spe.img", name, color.coledit_idx, name, color.coledit_idx);
-    m_mesh.set_ndxr_texture(0, "specular", buf);
+    m_mesh.set_texture(0, "specular", buf);
 
     sprintf(buf, "model_id/mech/plyr/p_%s/p_%s_pcol%02d.fhm", name, name, color.coledit_idx);
     m_mesh.load_material(buf, "shaders/player_plane.nsh");
@@ -366,6 +366,7 @@ bool aircraft::load(const char *name, unsigned int color_idx)
     //ToDo: su24 spll splr
 
     //m_mesh.set_anim_speed(0, 'vctn', 0.5);
+    //m_mesh.set_anim_speed(1, 'accm', 0.1);
 
     return true;
 }
@@ -374,8 +375,8 @@ bool aircraft::load(const char *name, unsigned int color_idx)
 
 void aircraft::apply_location(const char *location_name, const location_params &params)
 {
-    m_mesh.set_ndxr_texture(0, "reflection", shared::get_texture(shared::load_texture((std::string("Map/envmap_") + location_name + ".nut").c_str())));
-    m_mesh.set_ndxr_texture(0, "ibl", shared::get_texture(shared::load_texture((std::string("Map/ibl_") + location_name + ".nut").c_str())));
+    m_mesh.set_texture(0, "reflection", shared::get_texture(shared::load_texture((std::string("Map/envmap_") + location_name + ".nut").c_str())));
+    m_mesh.set_texture(0, "ibl", shared::get_texture(shared::load_texture((std::string("Map/ibl_") + location_name + ".nut").c_str())));
 }
 
 //------------------------------------------------------------
@@ -417,6 +418,9 @@ void aircraft::update(int dt)
         if (m_hp > 1.0f)
             m_hp = 1.0f;
     }
+
+    auto prev_speed = m_speed;
+    auto prev_pos = m_pos;
 
     //simulation
 
@@ -610,6 +614,39 @@ void aircraft::update(int dt)
     m_mesh.set_anim_speed(0, 'spwc', m_special_selected ? 1.0f : -1.0f);
     m_mesh.set_anim_speed(0, 'swcc', m_special_selected ? 1.0f : -1.0f);
     m_mesh.set_anim_speed(0, 'swc3', m_special_selected ? 1.0f : -1.0f);
+
+    //cockpit
+    auto pyr = m_rot.get_euler() / (2.0 * nya_math::constants::pi);
+    if (pyr.x < 0.0) pyr.x += 1.0;
+    if (pyr.y < 0.0) pyr.y += 1.0;
+    if (pyr.z < 0.0) pyr.z += 1.0;
+
+    //compass
+    m_mesh.set_relative_anim_time(1, 'cmps', 1.0f-pyr.y);
+
+    //speed
+    m_mesh.set_relative_anim_time(1, 'aspk', m_speed / m_params.move.speed.speedMax);
+
+    //barometric altimeter
+    m_mesh.set_relative_anim_time(1, 'altk', m_pos.y / 10000.0f); //ToDo: adjust max height
+
+    //clocks
+    unsigned int seconds = m_time / 1000;
+    m_mesh.set_relative_anim_time(1, 'acks', (seconds % 60 / 60.0));
+    m_mesh.set_relative_anim_time(1, 'ackm', (seconds % (60 * 60) / (60.0 * 60)));
+    m_mesh.set_relative_anim_time(1, 'ackh', (seconds % (60 * 60 * 60) / (60.0 * 60 * 60)));
+    m_time += dt;
+
+    if (dt)
+    {
+        //variometer
+        float vert_speed = ((m_pos - prev_pos) / float(dt)).y;
+        m_mesh.set_relative_anim_time(1, 'vspm', vert_speed * 0.5 + 0.5);
+
+        //accel
+        //float accel = (m_speed - prev_speed) / float(dt);
+        //m_mesh.set_relative_anim_time(1, 'accm', accel * 0.5 + 0.5);
+    }
 
     m_mesh.set_pos(m_pos);
     m_mesh.set_rot(m_rot);
