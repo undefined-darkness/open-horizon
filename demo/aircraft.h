@@ -87,7 +87,7 @@ private:
         int bone_idx;
     };
 
-    wpn_mount m_msls_mount[2];
+    std::vector<wpn_mount> m_msls_mount;
     std::vector<wpn_mount> m_special_mount;
 
     nya_math::vec3 m_camera_offset;

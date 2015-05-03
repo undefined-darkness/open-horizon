@@ -191,3 +191,16 @@ nya_math::vec3 model::get_bone_pos(int lod_idx, int bone_idx)
 }
 
 //------------------------------------------------------------
+
+nya_math::quat model::get_bone_rot(int lod_idx, int bone_idx)
+{
+    if (lod_idx < 0 || lod_idx >= m_mesh.get_lods_count())
+    {
+        const static nya_math::quat rot;
+        return rot;
+    }
+
+    return m_mesh.get_mesh(lod_idx).get_bone_rot(bone_idx);
+}
+
+//------------------------------------------------------------

@@ -377,13 +377,17 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
 
     //weapons
 
+    m_msls_mount.clear();
     for (int i = 0; i < 2; ++i)
     {
         char name[] = "wms1";
         name[3] += i;
 
-        m_msls_mount[i].bone_idx = m_mesh.find_bone_idx(0, name);
-        m_msls_mount[i].visible = true;
+        wpn_mount m;
+        m.bone_idx = m_mesh.find_bone_idx(0, name);
+        m.visible = true;
+        if (m.bone_idx >= 0)
+            m_msls_mount.push_back(m);
     }
 
     m_special_mount.clear();
@@ -406,7 +410,6 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     }
 
     //ToDo: sane way to get weapon information
-    bool has_missiles = false;
     std::string special_wpn_name;
     auto r = shared::load_resource(("model_id/mech/airp/d_" + name_str + "/d_" + name_str + "_t00.tdp").c_str());
     std::string wpn_info((char *)r.get_data(), r.get_size());
@@ -425,10 +428,7 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
 
         std::string name = wpn_info.substr(f, t - f);
         if (name == "w_msl_")
-        {
-            has_missiles = true;
             continue;
-        }
 
         special_wpn_name = name;
         break;
@@ -440,7 +440,7 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     if (strncmp(name, "su", 2) == 0 || strncmp(name, "m2", 2) == 0  || strcmp(name, "pkfa") == 0 )
         wpn_info_suff = "r0";
 
-    if (has_missiles)
+    //if (has_missiles)
         m_missile.load(("w_msl_" + wpn_info_suff).c_str(), params);
 
     if (special_wpn_name == "w_ew1_")
@@ -746,24 +746,18 @@ void aircraft::draw(int lod_idx)
 
     if (lod_idx == 0)
     {
-        for (auto &m: m_msls_mount)
+        for(int i = 0; i < 2; ++i)
         {
-            if (!m.visible || m.bone_idx < 0)
-                continue;
+            for (auto &m: i == 0 ? m_msls_mount : m_special_mount)
+            {
+                if (!m.visible || m.bone_idx < 0)
+                    continue;
 
-            m_missile.set_pos(m_mesh.get_bone_pos(0, m.bone_idx));
-            m_missile.set_rot(m_rot);
-            m_missile.draw(0);
-        }
-
-        for (auto &m: m_special_mount)
-        {
-            if (!m.visible || m.bone_idx < 0)
-                continue;
-
-            m_special.set_pos(m_mesh.get_bone_pos(0, m.bone_idx));
-            m_special.set_rot(m_rot);
-            m_special.draw(0);
+                auto &mesh = i == 0 ? m_missile: m_special;
+                mesh.set_pos(m_mesh.get_bone_pos(0, m.bone_idx));
+                mesh.set_rot(m_mesh.get_bone_rot(0, m.bone_idx));
+                mesh.draw(0);
+            }
         }
     }
 }
