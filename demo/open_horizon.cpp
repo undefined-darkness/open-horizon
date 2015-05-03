@@ -44,7 +44,7 @@ public:
     void set_ignore_delta_pos(bool ignore) { m_ignore_dpos = ignore; }
 
     void set_aspect(float aspect);
-    void set_near(float near);
+    void set_near_far(float near, float far);
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; update(); }
     void set_rot(const nya_math::quat &rot) { m_rot = rot; update(); }
 
@@ -54,7 +54,7 @@ private:
     void update();
 
 public:
-    plane_camera(): m_ignore_dpos(false), m_aspect(1.0), m_near(1.0) { m_drot.y = 3.14f; reset_delta_pos(); }
+    plane_camera(): m_ignore_dpos(false), m_aspect(1.0), m_near(1.0), m_far(1000.0) { m_drot.y = 3.14f; reset_delta_pos(); }
 
 private:
     nya_math::vec3 m_drot;
@@ -64,7 +64,7 @@ private:
     nya_math::quat m_rot;
     bool m_ignore_dpos;
     float m_aspect;
-    float m_near;
+    float m_near, m_far;
 };
 
 //------------------------------------------------------------
@@ -115,16 +115,17 @@ void plane_camera::add_delta_pos(float dx, float dy, float dz)
 void plane_camera::set_aspect(float aspect)
 {
     m_aspect = aspect;
-    nya_scene::get_camera().set_proj(50.0, m_aspect, m_near, 21000.0 * m_near);
+    nya_scene::get_camera().set_proj(50.0, m_aspect, m_near, m_far);
     update();
 }
 
 //------------------------------------------------------------
 
-void plane_camera::set_near(float near)
+void plane_camera::set_near_far(float near, float far)
 {
     m_near = near;
-    nya_scene::get_camera().set_proj(50.0, m_aspect, m_near, 21000.0 * m_near);
+    m_far = far;
+    nya_scene::get_camera().set_proj(50.0, m_aspect, m_near, m_far);
     update();
 }
 
@@ -720,6 +721,8 @@ int main(void)
     private:
         void draw_scene(const char *pass, const char *tags)
         {
+            camera.set_near_far(1.0, 21000.0);
+
             if (strcmp(tags, "location") == 0)
                 m_loc.draw();
             else if (strcmp(tags, "player") == 0)
@@ -737,18 +740,18 @@ int main(void)
                     auto cam_pos = camera.get_pos();
                     player_plane.set_pos(nya_math::vec3());
                     camera.set_pos(player_plane.get_rot().rotate(m_cam_fp_off));
-                    camera.set_near(0.01);
+                    camera.set_near_far(0.01,10.0);
                     //player_plane.draw(2); //ToDo
                     player_plane.draw(1);
-
+/*
                     //fill holes
                     nya_render::set_state(nya_render::state());
                     nya_render::depth_test::enable(nya_render::depth_test::not_greater);
                     m_cockpit_black.internal().set();
                     m_cockpit_black_quad.draw();
                     m_cockpit_black.internal().unset();
-
-                    camera.set_near(1.0);
+*/
+                    //restore
                     player_plane.set_pos(pos);
                     camera.set_pos(cam_pos);
                 }

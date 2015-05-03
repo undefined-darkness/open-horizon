@@ -985,6 +985,17 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             if (gf.name.find("glass") != std::string::npos)
                 l.groups.back().opaque = false;
 
+            l.groups.back().day = gf.name.find("dayt_") != std::string::npos;
+            l.groups.back().night = gf.name.find("nigt_") != std::string::npos;
+
+            if (gf.name.find("_NOSORT") != std::string::npos)
+                //mesh.materials.back().get_default_pass().get_state().depth_comparsion = nya_render::depth_test::allways;
+                mesh.materials.back().get_default_pass().get_state().depth_test = false;
+
+            //const bool as_opaque = gf.name.find("_AS_OPAQUE") != std::string::npos;
+            //if (as_opaque)
+            //    l.groups.back().opaque = true;
+
             //if (gf.name.find("alpha") != std::string::npos)
               //  mesh.materials.back().set_param(mesh.materials.back().get_param_idx("alpha clip"), 1.0, 0.0, 0.0, 0.0);
 
@@ -1141,6 +1152,9 @@ void fhm_mesh::draw(int lod_idx)
         {
             lod::group &g = l.groups[i];
             if ((k == 0 && !g.opaque) || (k == 1 && g.opaque))
+                continue;
+
+            if (g.night) //ToDo
                 continue;
 
             if (g.bone_idx >= 0)

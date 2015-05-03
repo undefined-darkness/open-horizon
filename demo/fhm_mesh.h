@@ -55,6 +55,7 @@ protected:
         struct group
         {
             bool opaque;
+            bool day, night;
             short bone_idx;
         };
 
