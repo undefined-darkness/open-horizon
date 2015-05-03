@@ -1223,6 +1223,8 @@ bool fhm_mesh::has_anim(int lod_idx, unsigned int anim_hash_id)
     return lods[lod_idx].anims.find(anim_hash_id) != lods[lod_idx].anims.end();
 }
 
+//------------------------------------------------------------
+
 int fhm_mesh::get_bone_idx(int lod_idx, const char *name)
 {
     if (lod_idx < 0 || lod_idx >= lods.size())

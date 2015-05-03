@@ -47,6 +47,8 @@ public:
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; update(); }
     void set_rot(const nya_math::quat &rot) { m_rot = rot; update(); }
 
+    const nya_math::vec3 &get_pos() const { return m_pos; }
+
 private:
     void update();
 
@@ -508,6 +510,7 @@ int main(void)
         bool m_paused;
         bool m_loading;
         bool m_fonts_loaded;
+        nya_math::vec3 m_cam_fp_off;
 
         enum
         {
@@ -567,6 +570,7 @@ int main(void)
             auto pos = player_plane.get_pos();
             player_plane = aircraft();
             player_plane.load(name, color, m_loc.get_params());
+            m_cam_fp_off = player_plane.get_bone_pos("ckpp");
             player_plane.apply_location(m_location_name.c_str(), m_loc.get_params());
             player_plane.set_pos(pos);
 
@@ -720,9 +724,15 @@ int main(void)
                 if (m_camera_mode == camera_mode_cockpit)
                 {
                     nya_render::clear(false, true);
+                    auto pos = player_plane.get_pos(); //move player and camera to 0.0 because floats sucks
+                    auto cam_pos = camera.get_pos();
+                    player_plane.set_pos(nya_math::vec3());
+                    camera.set_pos(player_plane.get_rot().rotate(m_cam_fp_off));
                     camera.set_near(0.1);
                     player_plane.draw(1);
                     camera.set_near(1.0);
+                    player_plane.set_pos(pos);
+                    camera.set_pos(cam_pos);
                 }
             }
             else if (strcmp(tags, "clouds_flat") == 0)

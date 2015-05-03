@@ -366,7 +366,7 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     //ToDo: su24 spll splr
 
     //m_mesh.set_anim_speed(0, 'vctn', 0.5);
-    //m_mesh.set_anim_speed(1, 'accm', 0.1);
+    //m_mesh.set_anim_speed(1, 'altr', 0.1);
 
     return true;
 }
@@ -629,6 +629,9 @@ void aircraft::update(int dt)
 
     //barometric altimeter
     m_mesh.set_relative_anim_time(1, 'altk', m_pos.y / 10000.0f); //ToDo: adjust max height
+    m_mesh.set_relative_anim_time(1, 'altm', m_pos.y / 10000.0f); //ToDo: adjust max height
+    //radio altimeter
+    m_mesh.set_relative_anim_time(1, 'altr', m_pos.y / 10000.0f); //ToDo: adjust max height, trace
 
     //clocks
     unsigned int seconds = m_time / 1000;
