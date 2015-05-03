@@ -54,6 +54,7 @@ protected:
     {
         struct group
         {
+            bool opaque;
             short bone_idx;
         };
 

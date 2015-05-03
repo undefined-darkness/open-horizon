@@ -277,14 +277,14 @@ bool fhm_mesh::load_material(const char *file_name, const char *shader)
 
             for (int k = 0; k < b.render_groups_count; ++k)
             {
-                auto &m = lods[0].mesh.modify_material(idx++);
+                auto &m = lods[i].mesh.modify_material(idx++);
                 m.get_default_pass().set_shader(nya_scene::shader(shader));
                 m.set_param(m.get_param_idx("light dir"), light_dir.x, light_dir.y, light_dir.z, 0.0f);
 
                 auto r = render_groups[b.render_groups_offset + k];
 
                 assert(!lods.empty());
-                assert(lods[0].mesh.get_groups_count() == header.render_groups_count);
+                assert(lods[i].mesh.get_groups_count() == header.render_groups_count);
 
                 assert(r < material.size());
 
@@ -723,7 +723,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
 
 //------------------------------------------------------------
 
-bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) //ToDo: add ToDo: add materials, reduce groups to materials count, load textures by hash
+bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) //ToDo: add ToDo: add materials, reduce groups to materials count
 {
     struct ndxr_header
     {
@@ -772,7 +772,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
         uint unknown_zero;
         ushort vcount;
         ushort vertex_format;
-        uint offset_to_sub_struct2;
+        uint offset_to_tex_info;
         uint unknown_zero3[3];
         uint icount;
         uint unknown_zero5[3];
@@ -812,7 +812,12 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
         ushort unknown_zero;
         ushort unknown_1024;
         uint unknown_zero2;
-        float value[4];
+
+        union
+        {
+            float value[4];
+            uint32_t uvalue;
+        };
     };
 
     struct material_param
@@ -876,7 +881,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
         for (int k = 0; k < int(g.render_groups.size()); ++k)
         {
             render_group &rg = g.render_groups[k];
-            reader.seek(rg.header.offset_to_sub_struct2);
+            reader.seek(rg.header.offset_to_tex_info);
             //print_data(reader, reader.get_offset(), sizeof(unknown_substruct2_info));
 
             rg.tex_info_header = reader.read<tex_info_header>();
@@ -930,13 +935,10 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     nya_scene::shared_mesh mesh;
 
     nya_scene::material mat;
-    nya_scene::shader plane_shader;
-    plane_shader.load("shaders/object.nsh");
     auto &p=mat.get_pass(mat.add_pass(nya_scene::material::default_pass));
-    p.set_shader(plane_shader);
+    p.set_shader(nya_scene::shader("shaders/object.nsh"));
     mat.set_param(mat.get_param_idx("light dir"), light_dir.x, light_dir.y, light_dir.z, 0.0f);
     p.get_state().set_cull_face(true, nya_render::cull_face::ccw);
-    p.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha); //ToDo: transparency only on some groups
 
     if (load_data.skeletons.size() == load_data.ndxr_count)
         mesh.skeleton = load_data.skeletons[lods.size() - 1].skeleton;
@@ -952,6 +954,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
     std::vector<vert> verts;
     std::vector<ushort> indices;
+
+    //for(auto g:groups) printf("%s\n", g.name.c_str()); printf("\n");
 
     for (int i = 0; i < header.groups_count; ++i)
     {
@@ -977,7 +981,17 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             //ToDo: specular, ambient, etc
 
             l.groups.back().bone_idx = gf.header.bone_idx;
+            l.groups.back().opaque = gf.name.find("OBJ_O") != std::string::npos; //really?
+            if (gf.name.find("glass") != std::string::npos)
+                l.groups.back().opaque = false;
+
+            //if (gf.name.find("alpha") != std::string::npos)
+              //  mesh.materials.back().set_param(mesh.materials.back().get_param_idx("alpha clip"), 1.0, 0.0, 0.0, 0.0);
+
             g.offset = uint(indices.size());
+
+            if (!l.groups.back().opaque)
+                mesh.materials.back().get_default_pass().get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
 
             //if(gf.header.)
 
@@ -1121,22 +1135,28 @@ void fhm_mesh::draw(int lod_idx)
 
     lod &l = lods[lod_idx];
 
-    for (int i = 0; i < l.groups.size(); ++i)
+    for(int k = 0; k < 2; ++k)
     {
-        lod::group &g = l.groups[i];
-
-        if (g.bone_idx >= 0)
+        for (int i = 0; i < l.groups.size(); ++i)
         {
-            l.mesh.set_pos(m_pos + m_rot.rotate(l.mesh.get_bone_pos(g.bone_idx, true)));
-            l.mesh.set_rot(m_rot * l.mesh.get_bone_rot(g.bone_idx, true));
-            l.mesh.draw_group(i);
-            continue;
-        }
+            lod::group &g = l.groups[i];
+            if ((k == 0 && !g.opaque) || (k == 1 && g.opaque))
+                continue;
 
-        l.mesh.set_pos(m_pos);
-        l.mesh.set_rot(m_rot);
-        l.mesh.draw_group(i);
+            if (g.bone_idx >= 0)
+            {
+                l.mesh.set_pos(m_pos + m_rot.rotate(l.mesh.get_bone_pos(g.bone_idx, true)));
+                l.mesh.set_rot(m_rot * l.mesh.get_bone_rot(g.bone_idx, true));
+                l.mesh.draw_group(i);
+                continue;
+            }
+
+            l.mesh.set_pos(m_pos);
+            l.mesh.set_rot(m_rot);
+            l.mesh.draw_group(i);
+        }
     }
+
 
 /*
     nya_render::depth_test::disable();

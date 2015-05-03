@@ -724,7 +724,6 @@ int main(void)
                 m_loc.draw();
             else if (strcmp(tags, "player") == 0)
             {
-                //if (m_camera_mode != camera_mode_first) //ToDo
                 if (m_camera_mode == camera_mode_third)
                     player_plane.draw(0);
             }
@@ -739,6 +738,7 @@ int main(void)
                     player_plane.set_pos(nya_math::vec3());
                     camera.set_pos(player_plane.get_rot().rotate(m_cam_fp_off));
                     camera.set_near(0.01);
+                    //player_plane.draw(2); //ToDo
                     player_plane.draw(1);
 
                     //fill holes
