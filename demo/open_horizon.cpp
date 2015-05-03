@@ -27,6 +27,7 @@
 #include <vector>
 #include <assert.h>
 #include <stdio.h>
+#include <time.h>
 #ifndef _WIN32
     #include <unistd.h>
 #endif
@@ -574,6 +575,10 @@ int main(void)
             player_plane.apply_location(m_location_name.c_str(), m_loc.get_params());
             player_plane.set_pos(pos);
 
+            time_t now = time(NULL);
+            struct tm *tm_now = localtime(&now);
+            player_plane.set_time(tm_now->tm_sec + tm_now->tm_min * 60 + tm_now->tm_hour * 60 * 60);
+
             //ToDo: research camera
             auto off = -player_plane.get_camera_offset();
             camera.set_ignore_delta_pos(false);
@@ -821,7 +826,7 @@ int main(void)
 
     nya_render::texture::set_default_aniso(2);
 
-    int mx = platform.get_mouse_x(), my = platform.get_mouse_x();
+    int mx = platform.get_mouse_x(), my = platform.get_mouse_y();
     int screen_width = platform.get_width(), screen_height = platform.get_height();
     scene.resize(screen_width, screen_height);
     scene.loading();

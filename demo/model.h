@@ -55,15 +55,11 @@ public:
         return m_mesh.load_material(file_name, shader);
     }
 
-    int get_bone_idx(int lod_idx, const char *name)
-    {
-        return m_mesh.get_bone_idx(lod_idx, name);
-    }
-
-    nya_math::vec3 get_bone_pos(int lod_idx, int bone_idx)
-    {
-        return m_mesh.get_bone_pos(lod_idx, bone_idx);
-    }
+    int get_bones_count(int lod_idx);
+    const char *get_bone_name(int lod_idx, int bone_idx);
+    int get_bone_idx(int lod_idx, const char *name);
+    int find_bone_idx(int lod_idx, const char *name_part);
+    nya_math::vec3 get_bone_pos(int lod_idx, int bone_idx);
 
 public:
     model() {}

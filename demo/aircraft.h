@@ -17,7 +17,7 @@ public:
 
     void apply_location(const char *location_name, const location_params &params);
 
-    void draw(int lod_idx) { m_mesh.draw(lod_idx); }
+    void draw(int lod_idx);
 
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; m_mesh.set_pos(pos); }
     void set_rot(const nya_math::quat &rot) { m_rot = rot; m_mesh.set_rot(rot); }
@@ -37,6 +37,8 @@ public:
     void fire_mgun() { m_controls_mgun = true; }
     void fire_rocket() { m_controls_rocket = true; }
     void change_weapon() { m_controls_special = true; }
+
+    void set_time(unsigned int time) { m_time = time * 1000; } //in seconds
 
     void update(int dt);
 
@@ -75,6 +77,18 @@ private:
     float m_rocket_bay_time;
 
     unsigned int m_time;
+
+    model m_missile;
+    model m_special;
+
+    struct wpn_mount
+    {
+        bool visible;
+        int bone_idx;
+    };
+
+    wpn_mount m_msls_mount[2];
+    std::vector<wpn_mount> m_special_mount;
 
     nya_math::vec3 m_camera_offset;
 };

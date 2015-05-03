@@ -127,3 +127,67 @@ void model::load_tdp(const std::string &name)
 }
 
 //------------------------------------------------------------
+
+int model::get_bones_count(int lod_idx)
+{
+    if (lod_idx < 0 || lod_idx >= m_mesh.get_lods_count())
+        return -1;
+
+    return m_mesh.get_mesh(lod_idx).get_bones_count();
+}
+
+//------------------------------------------------------------
+
+const char *model::get_bone_name(int lod_idx, int bone_idx)
+{
+    if (lod_idx < 0 || lod_idx >= m_mesh.get_lods_count())
+        return 0;
+
+    return m_mesh.get_mesh(lod_idx).get_bone_name(bone_idx);
+}
+
+//------------------------------------------------------------
+
+int model::get_bone_idx(int lod_idx, const char *name)
+{
+    if (lod_idx < 0 || lod_idx >= m_mesh.get_lods_count())
+        return -1;
+
+    return m_mesh.get_mesh(lod_idx).get_bone_idx(name);
+}
+
+//------------------------------------------------------------
+
+int model::find_bone_idx(int lod_idx, const char *name_part)
+{
+    if (!name_part)
+        return -1;
+
+    size_t len = strlen(name_part);
+    for (int j = 0; j < get_bones_count(lod_idx); ++j)
+    {
+        const char *bname = m_mesh.get_mesh(lod_idx).get_bone_name(j);
+        if (!bname || !bname[0])
+            continue;
+
+        if (strncmp(bname, name_part, len) == 0)
+            return j;
+    }
+
+    return -1;
+}
+
+//------------------------------------------------------------
+
+nya_math::vec3 model::get_bone_pos(int lod_idx, int bone_idx)
+{
+    if (lod_idx < 0 || lod_idx >= m_mesh.get_lods_count())
+    {
+        const static nya_math::vec3 pos;
+        return pos;
+    }
+
+    return m_mesh.get_mesh(lod_idx).get_bone_pos(bone_idx);
+}
+
+//------------------------------------------------------------

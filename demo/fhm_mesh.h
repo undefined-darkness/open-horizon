@@ -5,6 +5,7 @@
 #pragma once
 
 #include "scene/mesh.h"
+#include <assert.h>
 
 //------------------------------------------------------------
 
@@ -37,8 +38,8 @@ public:
         set_texture(lod_idx,semantics,nya_scene::texture(file_name));
     }
 
-    int get_bone_idx(int lod_idx, const char *name);
-    nya_math::vec3 get_bone_pos(int lod_idx, int bone_idx);
+    int get_lods_count() const { return (int)lods.size(); }
+    nya_scene::mesh &get_mesh(int lod_idx) { assert(lod_idx>=0 && lod_idx < lods.size()); return lods[lod_idx].mesh; }
 
 protected:
     bool read_mnt(memory_reader &reader, fhm_mesh_load_data &load_data);

@@ -1224,26 +1224,3 @@ bool fhm_mesh::has_anim(int lod_idx, unsigned int anim_hash_id)
 }
 
 //------------------------------------------------------------
-
-int fhm_mesh::get_bone_idx(int lod_idx, const char *name)
-{
-    if (lod_idx < 0 || lod_idx >= lods.size())
-        return -1;
-
-    return lods[lod_idx].mesh.get_bone_idx(name);
-}
-
-//------------------------------------------------------------
-
-nya_math::vec3 fhm_mesh::get_bone_pos(int lod_idx, int bone_idx)
-{
-    if (lod_idx < 0 || lod_idx >= lods.size())
-    {
-        const static nya_math::vec3 pos;
-        return pos;
-    }
-
-    return lods[lod_idx].mesh.get_bone_pos(bone_idx);
-}
-
-//------------------------------------------------------------

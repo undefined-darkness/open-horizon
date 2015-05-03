@@ -368,6 +368,88 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     //m_mesh.set_anim_speed(0, 'vctn', 0.5);
     //m_mesh.set_anim_speed(1, 'altr', 0.1);
 
+    /*
+    printf("%s bones\n", name);
+    for (int i = 0; i < m_mesh.get_bones_count(0); ++i)
+        printf("\t%s\n", m_mesh.get_bone_name(0, i));
+    printf("\n");
+    */
+
+    //weapons
+
+    for (int i = 0; i < 2; ++i)
+    {
+        char name[] = "wms1";
+        name[3] += i;
+
+        m_msls_mount[i].bone_idx = m_mesh.find_bone_idx(0, name);
+        m_msls_mount[i].visible = true;
+    }
+
+    m_special_mount.clear();
+    for (int i = 0; i < 9; ++i)
+    {
+        char name[] = "ws01";
+        name[3]+=i;
+        wpn_mount m;
+        for (int j = 0; j < 5; ++j)
+        {
+            m.bone_idx = m_mesh.find_bone_idx(0, name);
+            if (m.bone_idx >= 0)
+                break;
+            ++name[2];
+        }
+
+        m.visible = true;
+        if (m.bone_idx >= 0)
+            m_special_mount.push_back(m);
+    }
+
+    //ToDo: sane way to get weapon information
+    bool has_missiles = false;
+    std::string special_wpn_name;
+    auto r = shared::load_resource(("model_id/mech/airp/d_" + name_str + "/d_" + name_str + "_t00.tdp").c_str());
+    std::string wpn_info((char *)r.get_data(), r.get_size());
+    for (size_t f = 0;;)
+    {
+        const static std::string fs("/mech/weap/");
+        f = wpn_info.find(fs, f);
+        if (f == std::string::npos)
+            break;
+
+        f += fs.length();
+
+        auto t = wpn_info.find("/00/", f);
+        if (t == std::string::npos)
+            break;
+
+        std::string name = wpn_info.substr(f, t - f);
+        if (name == "w_msl_")
+        {
+            has_missiles = true;
+            continue;
+        }
+
+        special_wpn_name = name;
+        break;
+    }
+
+    std::string wpn_info_suff = "a0";
+    if (name_str == "f02a")
+        wpn_info_suff = "j0";
+    if (strncmp(name, "su", 2) == 0 || strncmp(name, "m2", 2) == 0  || strcmp(name, "pkfa") == 0 )
+        wpn_info_suff = "r0";
+
+    if (has_missiles)
+        m_missile.load(("w_msl_" + wpn_info_suff).c_str(), params);
+
+    if (special_wpn_name == "w_ew1_")
+        wpn_info_suff = "x0";
+    if (special_wpn_name == "w_sod_")
+        wpn_info_suff = "e0";
+
+    m_special.load((special_wpn_name + wpn_info_suff).c_str(), params);
+
     return true;
 }
 
@@ -636,8 +718,8 @@ void aircraft::update(int dt)
     //clocks
     unsigned int seconds = m_time / 1000;
     m_mesh.set_relative_anim_time(1, 'acks', (seconds % 60 / 60.0));
-    m_mesh.set_relative_anim_time(1, 'ackm', (seconds % (60 * 60) / (60.0 * 60)));
-    m_mesh.set_relative_anim_time(1, 'ackh', (seconds % (60 * 60 * 60) / (60.0 * 60 * 60)));
+    m_mesh.set_relative_anim_time(1, 'ackm', ((seconds / 60) % 60 / (60.0)));
+    m_mesh.set_relative_anim_time(1, 'ackh', ((seconds / 60 / 60) % 12 / (12.0)));
     m_time += dt;
 
     if (dt)
@@ -654,6 +736,36 @@ void aircraft::update(int dt)
     m_mesh.set_pos(m_pos);
     m_mesh.set_rot(m_rot);
     m_mesh.update(dt);
+}
+
+//------------------------------------------------------------
+
+void aircraft::draw(int lod_idx)
+{
+    m_mesh.draw(lod_idx);
+
+    if (lod_idx == 0)
+    {
+        for (auto &m: m_msls_mount)
+        {
+            if (!m.visible || m.bone_idx < 0)
+                continue;
+
+            m_missile.set_pos(m_mesh.get_bone_pos(0, m.bone_idx));
+            m_missile.set_rot(m_rot);
+            m_missile.draw(0);
+        }
+
+        for (auto &m: m_special_mount)
+        {
+            if (!m.visible || m.bone_idx < 0)
+                continue;
+
+            m_special.set_pos(m_mesh.get_bone_pos(0, m.bone_idx));
+            m_special.set_rot(m_rot);
+            m_special.draw(0);
+        }
+    }
 }
 
 //------------------------------------------------------------
