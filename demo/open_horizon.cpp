@@ -512,6 +512,8 @@ int main(void)
         bool m_loading;
         bool m_fonts_loaded;
         nya_math::vec3 m_cam_fp_off;
+        nya_scene::shader m_cockpit_black;
+        nya_render::screen_quad m_cockpit_black_quad;
 
         enum
         {
@@ -545,6 +547,8 @@ int main(void)
                 set_shader_param("screen_radius", nya_math::vec4(1.185185, 0.5 * 4.0 / 3.0, 0.0, 0.0));
                 set_shader_param("damage_frame", nya_math::vec4(0.35, 0.5, 1.0, 0.1));
                 m_flare.init(get_texture("main_color"), get_texture("main_depth"));
+                m_cockpit_black.load("shaders/cockpit_black.nsh");
+                m_cockpit_black_quad.init();
             }
 
             m_loc.load(location_name);
@@ -728,13 +732,22 @@ int main(void)
             {
                 if (m_camera_mode == camera_mode_cockpit)
                 {
+                    //move player and camera to 0.0 because floats sucks
                     nya_render::clear(false, true);
-                    auto pos = player_plane.get_pos(); //move player and camera to 0.0 because floats sucks
+                    auto pos = player_plane.get_pos();
                     auto cam_pos = camera.get_pos();
                     player_plane.set_pos(nya_math::vec3());
                     camera.set_pos(player_plane.get_rot().rotate(m_cam_fp_off));
-                    camera.set_near(0.1);
+                    camera.set_near(0.01);
                     player_plane.draw(1);
+
+                    //fill holes
+                    nya_render::set_state(nya_render::state());
+                    nya_render::depth_test::enable(nya_render::depth_test::not_greater);
+                    m_cockpit_black.internal().set();
+                    m_cockpit_black_quad.draw();
+                    m_cockpit_black.internal().unset();
+
                     camera.set_near(1.0);
                     player_plane.set_pos(pos);
                     camera.set_pos(cam_pos);
