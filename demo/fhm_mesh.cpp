@@ -1168,7 +1168,7 @@ void fhm_mesh::draw(int lod_idx)
     static nya_render::debug_draw d;
     d.clear();
     d.add_skeleton(l.mesh.get_skeleton());
-    //d.add_line(l.mesh.get_skeleton().get_bone_pos(64), l.mesh.get_skeleton().get_bone_pos(64) + nya_math::vec3(0,1,0), nya_math::vec4(1.0,0.0,0.0,1.0));
+    //d.add_line(l.mesh.get_skeleton().get_bone_pos(16), l.mesh.get_skeleton().get_bone_pos(18), nya_math::vec4(1.0,0.0,0.0,1.0));
     //d.add_line(l.mesh.get_skeleton().get_bone_pos(65), l.mesh.get_skeleton().get_bone_pos(65) + nya_math::vec3(0,1,0), nya_math::vec4(0.0,1.0,0.0,1.0));
     //d.add_line(l.mesh.get_skeleton().get_bone_pos(66), l.mesh.get_skeleton().get_bone_pos(66) + nya_math::vec3(0,1,0), nya_math::vec4(0.0,0.0,1.0,1.0));
     //d.add_line(l.mesh.get_skeleton().get_bone_pos(33), l.mesh.get_skeleton().get_bone_pos(33) + nya_math::vec3(0,1,0), nya_math::vec4(1.0,0.0,1.0,1.0));

@@ -42,6 +42,8 @@ struct lst
     }
 };
 
+//------------------------------------------------------------
+
 bool model::load(const char *name, const location_params &params)
 {
     if(!name || strlen(name)<3)
@@ -201,6 +203,16 @@ nya_math::quat model::get_bone_rot(int lod_idx, int bone_idx)
     }
 
     return m_mesh.get_mesh(lod_idx).get_bone_rot(bone_idx);
+}
+
+//------------------------------------------------------------
+
+void model::set_bone_rot(int lod_idx, int bone_idx, const nya_math::quat &rot)
+{
+    if (lod_idx < 0 || lod_idx >= m_mesh.get_lods_count())
+        return;
+
+    return m_mesh.get_mesh(lod_idx).set_bone_rot(bone_idx, rot, true);
 }
 
 //------------------------------------------------------------

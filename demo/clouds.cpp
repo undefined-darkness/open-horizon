@@ -136,6 +136,8 @@ bool effect_clouds::load(const char *location_name, const location_params &param
     return true;
 }
 
+//------------------------------------------------------------
+
 void effect_clouds::draw_flat()
 {
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
@@ -156,6 +158,8 @@ void effect_clouds::draw_flat()
     m_shader_hi_flat.internal().unset();
     m_mesh.unbind();
 }
+
+//------------------------------------------------------------
 
 void effect_clouds::draw_obj()
 {

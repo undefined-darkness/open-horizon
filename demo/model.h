@@ -61,6 +61,7 @@ public:
     int find_bone_idx(int lod_idx, const char *name_part);
     nya_math::vec3 get_bone_pos(int lod_idx, int bone_idx);
     nya_math::quat get_bone_rot(int lod_idx, int bone_idx);
+    void set_bone_rot(int lod_idx, int bone_idx, const nya_math::quat &rot);
 
 public:
     model() {}

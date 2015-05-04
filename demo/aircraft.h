@@ -44,7 +44,12 @@ public:
 
     aircraft(): m_hp(0), m_controls_throttle(0), m_controls_brake(0), m_thrust_time(0),
     m_controls_mgun(false), m_controls_rocket(false), m_controls_special(false),
-    m_special_selected(false), m_rocket_bay_time(0), m_time(0) {}
+    m_special_selected(false), m_rocket_bay_time(0), m_time(0)
+    {
+        m_adimx_bone_idx = m_adimx2_bone_idx = -1;
+        m_adimz_bone_idx = m_adimz2_bone_idx = -1;
+        m_adimxz_bone_idx = m_adimxz2_bone_idx = -1;
+    }
 
 private:
     float clamp(float value, float from, float to) { if (value < from) return from; if (value > to) return to; return value; }
@@ -77,6 +82,10 @@ private:
     float m_rocket_bay_time;
 
     unsigned int m_time;
+
+    int m_adimx_bone_idx, m_adimx2_bone_idx;
+    int m_adimz_bone_idx, m_adimz2_bone_idx;
+    int m_adimxz_bone_idx, m_adimxz2_bone_idx;
 
     model m_missile;
     model m_special;

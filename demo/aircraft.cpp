@@ -334,34 +334,11 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     m_mesh.load_material(buf, "shaders/player_plane.nsh");
 
     m_params.load(("Player/Behavior/param_p_" + name_str + ".bin").c_str());
-
     m_speed = m_params.move.speed.speedCruising;
-
     m_hp = 1.0f;
-
-    m_mesh.set_relative_anim_time(0, 'cndl', 0.5); //fgo
-    m_mesh.set_relative_anim_time(0, 'cndr', 0.5);
-    m_mesh.set_relative_anim_time(0, 'cndn', 0.5);
-    m_mesh.set_relative_anim_time(0, 'ldab', 0.0);
-    m_mesh.set_relative_anim_time(0, 'rudl', 0.5); //tail vert
+    m_mesh.set_relative_anim_time(0, 'rudl', 0.5);
     m_mesh.set_relative_anim_time(0, 'rudr', 0.5);
     m_mesh.set_relative_anim_time(0, 'rudn', 0.5);
-    m_mesh.set_relative_anim_time(0, 'elvl', 0.5); //tail hor
-    m_mesh.set_relative_anim_time(0, 'elvr', 0.5);
-    m_mesh.set_relative_anim_time(0, 'tefn', 0.0); //elerons, used only with flaperons
-    m_mesh.set_relative_anim_time(0, 'alrl', 0.5); //wing sides, used with tail hor
-    m_mesh.set_relative_anim_time(0, 'alrr', 0.5);
-    m_mesh.set_relative_anim_time(0, 'lefn', 0.0); //flaperons
-    m_mesh.set_relative_anim_time(0, 'rmpn', 0.0); //engine air supl
-    //m_mesh.set_relative_anim_time(0, 'vctn', 0.0); //engine
-    m_mesh.set_relative_anim_time(0, 'abkn', 0.0); //air brake
-    m_mesh.set_relative_anim_time(0, 'gunc', 0.0); //mgun
-    m_mesh.set_relative_anim_time(0, 'misc', 0.0); //primary weapon
-    m_mesh.set_relative_anim_time(0, 'spwc', 0.0); //special weapon
-    m_mesh.set_relative_anim_time(0, 'swcc', 0.0); //special weapon
-    m_mesh.set_relative_anim_time(0, 'swc3', 0.0); //special weapon
-    m_mesh.set_relative_anim_time(0, 'fdwg', 0.0); //carrier
-    m_mesh.set_relative_anim_time(0, 'tail', 0.0); //carrier, tail only
 
     //ToDo: su24 spll splr
 
@@ -434,11 +411,11 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
         break;
     }
 
-    std::string wpn_info_suff = "a0";
+    const bool is_plane_russian = strncmp(name, "su", 2) == 0 || strncmp(name, "m2", 2) == 0  || strcmp(name, "pkfa") == 0; //ToDo
+
+    std::string wpn_info_suff = is_plane_russian ? "r0" : "a0";
     if (name_str == "f02a")
         wpn_info_suff = "j0";
-    if (strncmp(name, "su", 2) == 0 || strncmp(name, "m2", 2) == 0  || strcmp(name, "pkfa") == 0 )
-        wpn_info_suff = "r0";
 
     //if (has_missiles)
         m_missile.load(("w_msl_" + wpn_info_suff).c_str(), params);
@@ -449,6 +426,16 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
         wpn_info_suff = "e0";
 
     m_special.load((special_wpn_name + wpn_info_suff).c_str(), params);
+
+    m_adimx_bone_idx = m_mesh.get_bone_idx(1, "adimx1");
+    if (m_adimx_bone_idx < 0) m_adimx_bone_idx = m_mesh.get_bone_idx(1, "adimx");
+    m_adimx2_bone_idx = m_mesh.get_bone_idx(1, "adimx2");
+    m_adimz_bone_idx = m_mesh.get_bone_idx(1, "adimz1");
+    if (m_adimz_bone_idx < 0) m_adimz_bone_idx = m_mesh.get_bone_idx(1, "adimz");
+    m_adimz2_bone_idx = m_mesh.get_bone_idx(1, "adimz2");
+    m_adimxz_bone_idx = m_mesh.get_bone_idx(1, "adimxz1");
+    if (m_adimxz_bone_idx < 0) m_adimxz_bone_idx = m_mesh.get_bone_idx(1, "adimxz");
+    m_adimxz2_bone_idx = m_mesh.get_bone_idx(1, "adimxz2");
 
     return true;
 }
@@ -697,7 +684,21 @@ void aircraft::update(int dt)
     m_mesh.set_anim_speed(0, 'swc3', m_special_selected ? 1.0f : -1.0f);
 
     //cockpit
-    auto pyr = m_rot.get_euler() / (2.0 * nya_math::constants::pi);
+    auto pyr = m_rot.get_euler();
+
+    //attitude indicator
+    const nya_math::quat atti_x(pyr.x, 0.0, 0.0);
+    const nya_math::quat atti_z(0.0, 0.0, -pyr.z);
+    const nya_math::quat atti_xz = atti_z * atti_x;
+    m_mesh.set_bone_rot(1, m_adimxz_bone_idx, atti_xz);
+    m_mesh.set_bone_rot(1, m_adimxz2_bone_idx, atti_xz);
+    m_mesh.set_bone_rot(1, m_adimx_bone_idx, atti_x);
+    m_mesh.set_bone_rot(1, m_adimx2_bone_idx, atti_x);
+    m_mesh.set_bone_rot(1, m_adimz_bone_idx, atti_z);
+    m_mesh.set_bone_rot(1, m_adimz2_bone_idx, atti_z);
+
+    pyr /= (2.0 * nya_math::constants::pi);
+
     if (pyr.x < 0.0) pyr.x += 1.0;
     if (pyr.y < 0.0) pyr.y += 1.0;
     if (pyr.z < 0.0) pyr.z += 1.0;
@@ -732,6 +733,10 @@ void aircraft::update(int dt)
         //float accel = (m_speed - prev_speed) / float(dt);
         //m_mesh.set_relative_anim_time(1, 'accm', accel * 0.5 + 0.5);
     }
+
+    //ToDo: aoam - angle of attack
+    //ecsp - engine temp?
+    //erpm - engine rpm
 
     m_mesh.set_pos(m_pos);
     m_mesh.set_rot(m_rot);
