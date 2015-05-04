@@ -829,7 +829,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     struct render_group
     {
         ndxr_render_group_header header;
-        tex_info_header tex_info_header;
+        tex_info_header tex_header;
         std::vector<tex_info> tex_infos;
         std::vector<material_param> material_params;
     };
@@ -884,8 +884,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             reader.seek(rg.header.offset_to_tex_info);
             //print_data(reader, reader.get_offset(), sizeof(unknown_substruct2_info));
 
-            rg.tex_info_header = reader.read<tex_info_header>();
-            rg.tex_infos.resize(rg.tex_info_header.tex_info_count);
+            rg.tex_header = reader.read<tex_info_header>();
+            rg.tex_infos.resize(rg.tex_header.tex_info_count);
             for (auto &ti: rg.tex_infos)
                 ti = reader.read<tex_info>();
 
