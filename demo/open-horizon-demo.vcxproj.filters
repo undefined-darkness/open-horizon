@@ -57,6 +57,9 @@
     <ClCompile Include="ui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fhm.h">
@@ -123,6 +126,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="ui.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

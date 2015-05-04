@@ -44,7 +44,7 @@ public:
     void set_ignore_delta_pos(bool ignore) { m_ignore_dpos = ignore; }
 
     void set_aspect(float aspect);
-    void set_near_far(float near, float far);
+    void set_near_far(float znear, float zfar);
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; update(); }
     void set_rot(const nya_math::quat &rot) { m_rot = rot; update(); }
 
@@ -121,10 +121,10 @@ void plane_camera::set_aspect(float aspect)
 
 //------------------------------------------------------------
 
-void plane_camera::set_near_far(float near, float far)
+void plane_camera::set_near_far(float znear, float zfar)
 {
-    m_near = near;
-    m_far = far;
+    m_near = znear;
+    m_far = zfar;
     nya_scene::get_camera().set_proj(50.0, m_aspect, m_near, m_far);
     update();
 }
