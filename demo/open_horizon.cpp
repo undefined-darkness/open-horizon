@@ -743,14 +743,14 @@ int main(void)
                     camera.set_near_far(0.01,10.0);
                     //player_plane.draw(2); //ToDo
                     player_plane.draw(1);
-/*
+
                     //fill holes
                     nya_render::set_state(nya_render::state());
                     nya_render::depth_test::enable(nya_render::depth_test::not_greater);
                     m_cockpit_black.internal().set();
                     m_cockpit_black_quad.draw();
                     m_cockpit_black.internal().unset();
-*/
+
                     //restore
                     player_plane.set_pos(pos);
                     camera.set_pos(cam_pos);

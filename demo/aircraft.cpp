@@ -501,7 +501,6 @@ void aircraft::update(int dt)
             m_hp = 1.0f;
     }
 
-    auto prev_speed = m_speed;
     auto prev_pos = m_pos;
 
     //simulation
@@ -714,6 +713,7 @@ void aircraft::update(int dt)
     m_mesh.set_relative_anim_time(1, 'altm', m_pos.y / 10000.0f); //ToDo: adjust max height
     //radio altimeter
     m_mesh.set_relative_anim_time(1, 'altr', m_pos.y / 10000.0f); //ToDo: adjust max height, trace
+    m_mesh.set_relative_anim_time(1, 'alts', m_pos.y / 10000.0f); //ToDo: adjust max height, trace
 
     //clocks
     unsigned int seconds = m_time / 1000;

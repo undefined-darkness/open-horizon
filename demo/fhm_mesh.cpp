@@ -939,6 +939,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     p.set_shader(nya_scene::shader("shaders/object.nsh"));
     mat.set_param(mat.get_param_idx("light dir"), light_dir.x, light_dir.y, light_dir.z, 0.0f);
     p.get_state().set_cull_face(true, nya_render::cull_face::ccw);
+    p.get_state().depth_comparsion = nya_render::depth_test::not_greater;
 
     if (load_data.skeletons.size() == load_data.ndxr_count)
         mesh.skeleton = load_data.skeletons[lods.size() - 1].skeleton;
@@ -982,33 +983,24 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
             l.groups.back().bone_idx = gf.header.bone_idx;
             l.groups.back().opaque = gf.name.find("OBJ_O") != std::string::npos; //really?
-            if (gf.name.find("glass") != std::string::npos)
-                l.groups.back().opaque = false;
 
             l.groups.back().day = gf.name.find("dayt_") != std::string::npos;
             l.groups.back().night = gf.name.find("nigt_") != std::string::npos;
 
-            if (gf.name.find("_NOSORT") != std::string::npos)
-                //mesh.materials.back().get_default_pass().get_state().depth_comparsion = nya_render::depth_test::allways;
-                mesh.materials.back().get_default_pass().get_state().depth_test = false;
+            if (gf.name.find("_SHR") == std::string::npos && gf.name.find("_shl") == std::string::npos && gf.name.find("_l") == std::string::npos)
+                mesh.materials.back().set_param(mesh.materials.back().get_param_idx("diff k"), 1.0, 0.0, 0.0, 0.0);
 
-            //const bool as_opaque = gf.name.find("_AS_OPAQUE") != std::string::npos;
-            //if (as_opaque)
-            //    l.groups.back().opaque = true;
+            const bool as_opaque = gf.name.find("_AS_OPAQUE") != std::string::npos;
+            if (as_opaque || l.groups.back().day || l.groups.back().night)
+                l.groups.back().opaque = true;
 
-            //if (gf.name.find("alpha") != std::string::npos)
-              //  mesh.materials.back().set_param(mesh.materials.back().get_param_idx("alpha clip"), 1.0, 0.0, 0.0, 0.0);
+            if (gf.name.find("alpha") != std::string::npos)
+                mesh.materials.back().set_param(mesh.materials.back().get_param_idx("alpha clip"), 8/255.0, 0.0, 0.0, 0.0);
 
-            g.offset = uint(indices.size());
-
-            if (!l.groups.back().opaque)
+            if (!l.groups.back().opaque || as_opaque)
                 mesh.materials.back().get_default_pass().get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
 
-            //if(gf.header.)
-
-            //if (gf.header.unknown3[2] != 15) //test
-            //  continue;
-
+            g.offset = uint(indices.size());
             reader.seek(header.offset_to_indices + 48 + header.indices_buffer_size + rgf.header.vbuf_offset);
 
             const float *ndxr_verts = (float *)reader.get_data();
@@ -1145,7 +1137,6 @@ void fhm_mesh::draw(int lod_idx)
         return;
 
     lod &l = lods[lod_idx];
-
     for(int k = 0; k < 2; ++k)
     {
         for (int i = 0; i < l.groups.size(); ++i)
@@ -1159,18 +1150,18 @@ void fhm_mesh::draw(int lod_idx)
 
             if (g.bone_idx >= 0)
             {
+
                 l.mesh.set_pos(m_pos + m_rot.rotate(l.mesh.get_bone_pos(g.bone_idx, true)));
                 l.mesh.set_rot(m_rot * l.mesh.get_bone_rot(g.bone_idx, true));
-                l.mesh.draw_group(i);
-                continue;
             }
-
-            l.mesh.set_pos(m_pos);
-            l.mesh.set_rot(m_rot);
+            else
+            {
+                l.mesh.set_pos(m_pos);
+                l.mesh.set_rot(m_rot);
+            }
             l.mesh.draw_group(i);
         }
     }
-
 
 /*
     nya_render::depth_test::disable();
