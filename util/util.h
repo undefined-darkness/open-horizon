@@ -8,8 +8,9 @@
 #include "memory/memory_reader.h"
 #include "resources/resources.h"
 #include <assert.h>
-#include <vector>
 #include <math.h>
+#include <vector>
+#include <algorithm>
 
 #define assume(expr) assert(expr) //like assert, but not critical
 
