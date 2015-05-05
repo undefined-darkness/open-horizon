@@ -334,7 +334,7 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     m_mesh.load_material(buf, "shaders/player_plane.nsh");
 
     m_params.load(("Player/Behavior/param_p_" + name_str + ".bin").c_str());
-    m_speed = m_params.move.speed.speedCruising;
+    m_vel = nya_math::vec3(0.0, 0.0, m_params.move.speed.speedCruising);
     m_hp = 1.0f;
     m_mesh.set_relative_anim_time(0, 'rudl', 0.5);
     m_mesh.set_relative_anim_time(0, 'rudr', 0.5);
@@ -494,11 +494,13 @@ void aircraft::update(int dt)
 
     const float d2r = 3.1416 / 180.0f;
 
-    const float speed_arg = m_params.rotgraph.speed.get(m_speed);
+    float speed = m_vel.length();
+    const float speed_arg = m_params.rotgraph.speed.get(speed);
 
     const nya_math::vec3 rot_speed = m_params.rotgraph.speedRot.get(speed_arg);
 
     const float eps = 0.001f;
+
     if (fabsf(m_controls_rot.z) > eps)
         m_rot_speed.z = tend(m_rot_speed.z, m_controls_rot.z * rot_speed.z, m_params.rot.addRotR.z * fabsf(m_controls_rot.z) * kdt * 100.0);
     else
@@ -538,7 +540,7 @@ void aircraft::update(int dt)
 
     //nose goes down during stall
 
-    if (m_speed < m_params.move.speed.speedStall)
+    if (speed < m_params.move.speed.speedStall)
     {
         float stallRotSpeed = m_params.rot.rotStallR * kdt * d2r * 10.0f;
         m_rot = m_rot * nya_math::quat(nya_math::vec3(1.0, 0.0, 0.0), up.y * stallRotSpeed);
@@ -551,10 +553,10 @@ void aircraft::update(int dt)
     float brake = m_controls_brake;
     if (brake < 0.01f && throttle < 0.01f)
     {
-        if (m_speed < m_params.move.speed.speedCruising)
-            throttle = nya_math::min((m_params.move.speed.speedCruising - m_speed) * 0.1f, 0.1f);
-        else if (m_speed > m_params.move.speed.speedCruising)
-            brake = nya_math::min((m_speed - m_params.move.speed.speedCruising) * 0.1f, 0.1f);
+        if (speed < m_params.move.speed.speedCruising)
+            throttle = nya_math::min((m_params.move.speed.speedCruising - speed) * 0.1f, 0.5f);
+        else if (speed > m_params.move.speed.speedCruising)
+            brake = nya_math::min((speed - m_params.move.speed.speedCruising) * 0.1f, 0.1f);
     }
 
     //afterburner
@@ -578,31 +580,35 @@ void aircraft::update(int dt)
         m_mesh.set_anim_speed(0, 'rmpn', -0.5f);
     }
 
-    m_mesh.set_anim_speed(0, 'vwgn', m_speed >  m_params.move.speed.speedCruising + 250 ? 0.8: -0.8);
+    m_mesh.set_anim_speed(0, 'vwgn', speed >  m_params.move.speed.speedCruising + 250 ? 0.8: -0.8);
 
     //apply acceleration
 
-    m_speed += m_params.move.accel.acceleR * throttle * kdt * 50.0f;
-    m_speed -= m_params.move.accel.deceleR * brake * kdt * m_speed * 0.04f;
-    if (m_speed < m_params.move.speed.speedMin)
-        m_speed = m_params.move.speed.speedMin;
-    if (m_speed > m_params.move.speed.speedMax)
-        m_speed = m_params.move.speed.speedMax;
+    m_vel = nya_math::vec3::lerp(m_vel, forward * speed, nya_math::min(5.0 * kdt, 1.0));
+
+    m_vel += forward * (m_params.move.accel.acceleR * throttle * kdt * 50.0f - m_params.move.accel.deceleR * brake * kdt * speed * 0.04f);
+    speed = m_vel.length();
+    if (speed < m_params.move.speed.speedMin)
+        m_vel = m_vel * (m_params.move.speed.speedMin / speed);
+    if (speed > m_params.move.speed.speedMax)
+        m_vel = m_vel * (m_params.move.speed.speedMax / speed);
 
     //apply speed
 
-    m_pos += forward * (m_speed / 3.6f) * kdt;
+    const float kmph_to_meps = 1.0 / 3.6f;
+    m_pos += m_vel * (kmph_to_meps * kdt);
     if (m_pos.y < 5.0f)
     {
         m_pos.y = 5.0f;
         m_rot = nya_math::quat(-0.5, m_rot.get_euler().y, 0.0);
+        m_vel = m_rot.rotate(nya_math::vec3(0.0, 0.0, 1.0)) * m_params.move.speed.speedCruising * 0.8;
         m_hp = 0.0f;
     }
 
     //animations
 
     float flap_anim_speed = 0.5f;
-    if (m_speed < m_params.move.speed.speedCruising - 100)
+    if (speed < m_params.move.speed.speedCruising - 100)
     {
         m_mesh.set_anim_speed(0, 'lefn', flap_anim_speed);
         m_mesh.set_anim_speed(0, 'tefn', -flap_anim_speed);
@@ -619,7 +625,7 @@ void aircraft::update(int dt)
         }
     }
 
-    const float speed_k = std::max((m_params.move.speed.speedMax - m_speed) / m_params.move.speed.speedMax, 0.1f);
+    const float speed_k = std::max((m_params.move.speed.speedMax - speed) / m_params.move.speed.speedMax, 0.1f);
     const float ae_anim_speed_k = 5.0f;
     float ideal_el = clamp(-m_controls_rot.z - m_controls_rot.x, -1.0f, 1.0f) * speed_k;
     float ideal_er = clamp(m_controls_rot.z - m_controls_rot.x, -1.0f, 1.0f) * speed_k;
@@ -707,7 +713,7 @@ void aircraft::update(int dt)
     m_mesh.set_relative_anim_time(1, 'cmps', 1.0f-pyr.y);
 
     //speed
-    m_mesh.set_relative_anim_time(1, 'aspk', m_speed / m_params.move.speed.speedMax);
+    m_mesh.set_relative_anim_time(1, 'aspk', speed / m_params.move.speed.speedMax);
 
     //barometric altimeter
     m_mesh.set_relative_anim_time(1, 'altk', m_pos.y / 10000.0f); //ToDo: adjust max height
@@ -734,8 +740,9 @@ void aircraft::update(int dt)
         //m_mesh.set_relative_anim_time(1, 'accm', accel * 0.5 + 0.5);
     }
 
-    //ToDo: aoam - angle of attack
-    //ecsp - engine temp?
+    m_mesh.set_relative_anim_time(1, 'aoam', nya_math::min(10.0 * nya_math::max(1.0 - nya_math::vec3::normalize(m_vel)*forward, 0.0), 1.0));
+    m_mesh.set_relative_anim_time(1, 'ecsp', 0.5 + 0.5 * m_thrust_time/m_params.move.accel.thrustMinWait);
+
     //erpm - engine rpm
 
     m_mesh.set_pos(m_pos);

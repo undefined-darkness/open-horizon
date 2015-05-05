@@ -24,7 +24,7 @@ public:
     const nya_math::vec3 &get_pos() { return m_pos; }
     nya_math::quat get_rot() { return m_rot; }
 
-    float get_speed() { return m_speed; }
+    float get_speed() { return m_vel.length(); }
     float get_alt() { return m_pos.y; }
     float get_hp() { return m_hp; }
     const nya_math::vec3 &get_camera_offset() const { return m_camera_offset; }
@@ -63,11 +63,11 @@ private:
 
     float m_hp;
     model m_mesh;
-    float m_speed;
     float m_thrust_time;
     nya_math::vec3 m_pos;
     nya_math::vec3 m_rot_speed;
     nya_math::quat m_rot;
+    nya_math::vec3 m_vel;
 
     nya_math::vec3 m_controls_rot;
     float m_controls_throttle;
