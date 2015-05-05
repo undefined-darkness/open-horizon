@@ -32,7 +32,7 @@ bool effect_clouds::load(const char *location_name, const location_params &param
             char buf[512];
             sprintf(buf, "Effect/%s/ObjCloud/Level%d_%c.BOC", location_name, i, j);
 
-            nya_memory::tmp_buffer_scoped res(shared::load_resource(buf));
+            nya_memory::tmp_buffer_scoped res(load_resource(buf));
             assert(res.get_size() > 0);
             nya_memory::memory_reader reader(res.get_data(), res.get_size());
 
@@ -206,7 +206,7 @@ void effect_clouds::draw_obj()
 
 bool effect_clouds::read_bdd(const char *name, bdd &bdd_res)
 {
-    nya_memory::tmp_buffer_ref res = shared::load_resource(name);
+    nya_memory::tmp_buffer_ref res = load_resource(name);
     if(!res.get_size())
         return false;
 

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "math/vector.h"
+#include "util/params.h"
 
 //------------------------------------------------------------
 
@@ -14,17 +14,7 @@ struct plane_params
 //      types
 
 public:
-    //float value with auto-initialisation
-    class fvalue
-    {
-    public:
-        inline fvalue(): value(0.0f) {}
-        inline fvalue(const float& v): value(v) {}
-        inline operator float&() { return value; }
-        inline operator const float&() const { return value; }
-
-    private: float value;
-    };
+    typedef params::fvalue fvalue;
 
     //ex: graph.get( argument.get( a ) )
 

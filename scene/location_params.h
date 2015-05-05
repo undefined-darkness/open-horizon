@@ -5,7 +5,7 @@
 #pragma once
 
 #include "math/vector.h"
-#include "params.h"
+#include "util/params.h"
 
 //------------------------------------------------------------
 

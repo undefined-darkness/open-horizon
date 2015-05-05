@@ -3,12 +3,9 @@
 //
 
 #include "plane_params.h"
-#include "resources/resources.h"
-#include "memory/memory_reader.h"
-#include "memory/tmp_buffer.h"
+#include "util/util.h"
 #include <string.h>
 #include <stdio.h>
-#include "shared.h"
 
 //------------------------------------------------------------
 
@@ -16,7 +13,7 @@ bool plane_params::load(const char *file_name)
 {
     *this = plane_params(); //reset if was loaded already
 
-    nya_memory::tmp_buffer_scoped fi_data(shared::load_resource(file_name));
+    nya_memory::tmp_buffer_scoped fi_data(load_resource(file_name));
     nya_memory::memory_reader reader(fi_data.get_data(), fi_data.get_size());
 
     //ToDo

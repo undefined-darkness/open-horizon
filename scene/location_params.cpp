@@ -15,7 +15,7 @@ bool location_params::load(const char *file_name)
 {
     *this = location_params(); //reset if was loaded already
 
-    nya_memory::tmp_buffer_scoped fi_data(shared::load_resource(file_name));
+    nya_memory::tmp_buffer_scoped fi_data(load_resource(file_name));
     params::memory_reader reader(fi_data.get_data(), fi_data.get_size());
 
     clipping_plane.ground_zfar = reader.read<float>();

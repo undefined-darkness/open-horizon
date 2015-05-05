@@ -3,7 +3,7 @@
 //
 
 #include "fhm_mesh.h"
-#include "fhm.h"
+#include "containers/fhm.h"
 
 #include "resources/resources.h"
 #include "memory/tmp_buffer.h"
@@ -17,8 +17,6 @@
 #include <stdint.h>
 
 #include "shared.h"
-
-#include "debug.h"
 
 #include "render/debug_draw.h"
 extern nya_render::debug_draw test;

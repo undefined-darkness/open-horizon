@@ -8,10 +8,9 @@
 #include "render/screen_quad.h"
 #include "render/fbo.h"
 #include "math/scalar.h"
-#include "fhm.h"
-#include "debug.h"
-#include <assert.h>
-#include "dpl.h"
+#include "containers/fhm.h"
+#include "containers/dpl.h"
+#include "scene/shared.h"
 #include <stdint.h>
 
 //------------------------------------------------------------
@@ -124,7 +123,7 @@ public:
     {
         //ToDo: don't determine aircraft order by camera offsets file
 
-        auto r = shared::load_resource("Camera/AdjustedCameraOffset.txt");
+        auto r = load_resource("Camera/AdjustedCameraOffset.txt");
 
         std::vector<std::string> values;
         std::string tmp;
@@ -188,7 +187,7 @@ public:
 
         r.free();
 
-        r = shared::load_resource(name);
+        r = load_resource(name);
         nya_memory::memory_reader reader(r.get_data(),r.get_size());
 
         struct ain_header
@@ -388,7 +387,7 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
 
     //ToDo: sane way to get weapon information
     std::string special_wpn_name;
-    auto r = shared::load_resource(("model_id/mech/airp/d_" + name_str + "/d_" + name_str + "_t00.tdp").c_str());
+    auto r = load_resource(("model_id/mech/airp/d_" + name_str + "/d_" + name_str + "_t00.tdp").c_str());
     std::string wpn_info((char *)r.get_data(), r.get_size());
     for (size_t f = 0;;)
     {

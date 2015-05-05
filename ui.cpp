@@ -3,12 +3,8 @@
 //
 
 #include "ui.h"
-#include "fhm.h"
-#include "shared.h"
-#include "memory/memory_reader.h"
-
-#include "debug.h"
-#include <assert.h>
+#include "containers/fhm.h"
+#include "scene/shared.h"
 
 //------------------------------------------------------------
 

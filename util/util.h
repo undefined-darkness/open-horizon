@@ -4,7 +4,29 @@
 
 #pragma once
 
-#include "shared.h"
+#include "memory/tmp_buffer.h"
+#include "memory/memory_reader.h"
+#include "resources/resources.h"
+#include <assert.h>
+#include <vector>
+#include <math.h>
+
+#define assume(expr) assert(expr) //like assert, but not critical
+
+//------------------------------------------------------------
+
+inline nya_memory::tmp_buffer_ref load_resource(const char *name)
+{
+    nya_resources::resource_data *res = nya_resources::get_resources_provider().access(name);
+    if (!res)
+        return nya_memory::tmp_buffer_ref();
+
+    nya_memory::tmp_buffer_ref buf(res->get_size());
+    res->read_all(buf.get_data());
+    res->release();
+
+    return buf;
+}
 
 //------------------------------------------------------------
 
@@ -23,7 +45,7 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
     if (size > reader.get_remained())
         size = reader.get_remained();
 
-    bool had_zero = false;
+    //bool had_zero = false;
     for (int i = 0; reader.get_offset() < offset+size; ++i)
     {
         int off = int(reader.get_offset());
@@ -106,7 +128,7 @@ inline void print_data(const nya_memory::memory_reader &reader)
 
 inline void print_data(const char *name)
 {
-    nya_memory::tmp_buffer_scoped r(shared::load_resource(name));
+    nya_memory::tmp_buffer_scoped r(load_resource(name));
     nya_memory::memory_reader reader(r.get_data(),r.get_size());
     print_data(reader, reader.get_offset(), reader.get_remained());
 }
@@ -115,7 +137,7 @@ inline void print_data(const char *name)
 
 inline void print_params(const char *name)
 {
-    nya_memory::tmp_buffer_scoped r(shared::load_resource(name));
+    nya_memory::tmp_buffer_scoped r(load_resource(name));
     if (!r.get_size())
         return;
 

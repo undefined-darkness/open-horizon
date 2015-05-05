@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "plane_params.h"
-#include "model.h"
-#include "location_params.h"
+#include "phys/plane_params.h"
+#include "scene/model.h"
+#include "scene/location_params.h"
 
 //------------------------------------------------------------
 

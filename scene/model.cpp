@@ -15,7 +15,7 @@ struct lst
 
     lst(const std::string &name)
     {
-        nya_memory::tmp_buffer_scoped res(shared::load_resource(name.c_str()));
+        nya_memory::tmp_buffer_scoped res(load_resource(name.c_str()));
         if(!res.get_data())
             return;
 
@@ -99,7 +99,7 @@ void model::load_tdp(const std::string &name)
     size_t idx = 0;
     for (auto &s: tdp.strings)
     {
-        nya_memory::tmp_buffer_scoped res(shared::load_resource(s.c_str()));
+        nya_memory::tmp_buffer_scoped res(load_resource(s.c_str()));
         assert(res.get_data());
 
         if (nya_resources::check_extension(s.c_str(), "nfh"))

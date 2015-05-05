@@ -10,7 +10,7 @@
 
 //------------------------------------------------------------
 
-bool load_xml(const char *name, pugi::xml_document &doc)
+inline bool load_xml(const char *name, pugi::xml_document &doc)
 {
     if (!name)
         return false;

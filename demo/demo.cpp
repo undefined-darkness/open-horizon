@@ -4,15 +4,14 @@
 
 #include "GLFW/glfw3.h"
 
-#include "qdf_provider.h"
-#include "dpl_provider.h"
+#include "containers/qdf_provider.h"
+#include "containers/dpl_provider.h"
 
 #include "aircraft.h"
-#include "location.h"
-#include "model.h"
-#include "clouds.h"
-#include "shared.h"
-#include "debug.h"
+#include "scene/location.h"
+#include "scene/model.h"
+#include "scene/clouds.h"
+#include "scene/shared.h"
 #include "ui.h"
 
 #include "render/render.h"
@@ -157,7 +156,7 @@ void plane_camera::update()
 nya_scene::texture load_tonecurve(const char *file_name)
 {
     nya_scene::shared_texture t;
-    auto res = shared::load_resource(file_name);
+    auto res = load_resource(file_name);
     assert(res.get_size() == 256 * 3);
 
     const unsigned char *data = (const unsigned char *)res.get_data();
@@ -186,7 +185,7 @@ public:
     {
         assert(depth.is_valid());
 
-        nya_memory::tmp_buffer_scoped res(shared::load_resource("PostProcess/LensParam.bin"));
+        nya_memory::tmp_buffer_scoped res(load_resource("PostProcess/LensParam.bin"));
         if (!res.get_data())
             return false;
 
