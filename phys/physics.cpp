@@ -3,6 +3,7 @@
 //
 
 #include "physics.h"
+#include <algorithm>
 
 namespace phys
 {
