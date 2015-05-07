@@ -69,7 +69,7 @@ aircraft_ptr scene::add_aircraft(const char *name, int color, bool player)
         || strcmp(name, "f02a") == 0 || strcmp(name, "su37") == 0 || strcmp(name, "f35b") == 0)
         camera.add_delta_pos(0.0, -1.0, 0.0);
 
-    camera.set_ignore_delta_pos(m_camera_mode != camera_mode_third);
+    camera.reset_delta_rot();
     //shared::clear_textures(); //ToDo
     return a;
 }
@@ -118,7 +118,9 @@ void scene::update(int dt)
 
     if (m_player_aircraft.is_valid())
     {
-        camera.set_pos(m_player_aircraft->get_bone_pos(m_camera_mode == camera_mode_third ? "camp" : "ckpp"));
+        const bool is_camera_third = m_player_aircraft->get_camera_mode() == aircraft::camera_mode_third;
+        camera.set_ignore_delta_pos(!is_camera_third);
+        camera.set_pos(m_player_aircraft->get_bone_pos(is_camera_third ? "camp" : "ckpp"));
         camera.set_rot(m_player_aircraft->get_rot());
 /*
         set_shader_param("damage_frame_color", nya_math::vec4(1.0, 0.0, 0.0235, nya_math::max(1.0 - player_plane.get_hp(), 0.0)));
@@ -147,22 +149,6 @@ void scene::update(int dt)
         m_frame_counter = 0;
         m_frame_counter_time -= 1000;
     }
-}
-
-//------------------------------------------------------------
-
-void scene::switch_camera()
-{
-    switch (m_camera_mode)
-    {
-        case camera_mode_third: m_camera_mode = camera_mode_cockpit; break;
-        case camera_mode_cockpit: m_camera_mode = camera_mode_first; break;
-        case camera_mode_first: m_camera_mode = camera_mode_third; break;
-    }
-
-    camera.set_ignore_delta_pos(m_camera_mode != camera_mode_third);
-    //camera.reset_delta_pos();
-    camera.reset_delta_rot();
 }
 
 //------------------------------------------------------------
@@ -206,14 +192,16 @@ void scene::draw()
     }
     else
     {
-        /*
-         swprintf(buf, sizeof(buf), L"%d", int(player_plane.get_speed()));
-         m_ui.draw_text(L"SPEED", "NowGE20", m_ui.get_width() * 0.35, m_ui.get_height() * 0.5 - 20, green);
-         m_ui.draw_text(buf, "NowGE20", m_ui.get_width() * 0.35, m_ui.get_height() * 0.5, green);
-         swprintf(buf, sizeof(buf), L"%d", int(player_plane.get_alt()));
-         m_ui.draw_text(L"ALT", "NowGE20", m_ui.get_width() * 0.6, m_ui.get_height() * 0.5 - 20, green);
-         m_ui.draw_text(buf, "NowGE20", m_ui.get_width() * 0.6, m_ui.get_height() * 0.5, green);
-         */
+        auto a = get_player_aircraft();
+        if (a.is_valid())
+        {
+            swprintf(buf, sizeof(buf), L"%d", int(a->get_speed()));
+            m_ui.draw_text(L"SPEED", "NowGE20", m_ui.get_width() * 0.35, m_ui.get_height() * 0.5 - 20, green);
+            m_ui.draw_text(buf, "NowGE20", m_ui.get_width() * 0.35, m_ui.get_height() * 0.5, green);
+            swprintf(buf, sizeof(buf), L"%d", int(a->get_alt()));
+            m_ui.draw_text(L"ALT", "NowGE20", m_ui.get_width() * 0.6, m_ui.get_height() * 0.5 - 20, green);
+            m_ui.draw_text(buf, "NowGE20", m_ui.get_width() * 0.6, m_ui.get_height() * 0.5, green);
+        }
         if(m_paused)
             m_ui.draw_text(L"PAUSED", "NowGE24", m_ui.get_width() * 0.5 - 45, m_ui.get_height() * 0.5, white);
     }
@@ -244,23 +232,25 @@ void scene::draw_scene(const char *pass, const char *tags)
     }
     else if (strcmp(tags, "player") == 0)
     {
-        if (m_camera_mode == camera_mode_third)
-            m_player_aircraft->draw(0);
+        if (m_player_aircraft.is_valid())
+        {
+            if (m_player_aircraft->get_camera_mode() == aircraft::camera_mode_third)
+                m_player_aircraft->draw(0);
+        }
     }
     else if (strcmp(tags, "cockpit") == 0)
     {
-        if (m_camera_mode == camera_mode_cockpit)
+        if (m_player_aircraft.is_valid() && m_player_aircraft->get_camera_mode() == aircraft::camera_mode_cockpit)
         {
-            /*
              //move player and camera to 0.0 because floats sucks
              nya_render::clear(false, true);
-             auto pos = player_plane.get_pos();
+             auto pos = m_player_aircraft->get_pos();
              auto cam_pos = camera.get_pos();
-             player_plane.set_pos(nya_math::vec3());
-             camera.set_pos(player_plane.get_rot().rotate(m_cam_fp_off));
+             m_player_aircraft->set_pos(nya_math::vec3());
+             camera.set_pos(m_player_aircraft->get_rot().rotate(m_cam_fp_off));
              camera.set_near_far(0.01,10.0);
-             //player_plane.draw(2); //ToDo
-             player_plane.draw(1);
+             //m_player_aircraft->draw(2); //ToDo
+             m_player_aircraft->draw(1);
 
              //fill holes
              nya_render::set_state(nya_render::state());
@@ -270,9 +260,8 @@ void scene::draw_scene(const char *pass, const char *tags)
              m_cockpit_black.internal().unset();
 
              //restore
-             player_plane.set_pos(pos);
+             m_player_aircraft->set_pos(pos);
              camera.set_pos(cam_pos);
-             */
         }
     }
     else if (strcmp(tags, "clouds_flat") == 0)

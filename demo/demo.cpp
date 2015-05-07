@@ -352,6 +352,8 @@ int main(void)
         player->controls.missile = key_rocket;
         player->controls.change_weapon = key_spec;
         player->controls.change_camera = key_camera;
+        if (key_camera)
+            scene.camera.reset_delta_rot();
 
         //demo purpose
 

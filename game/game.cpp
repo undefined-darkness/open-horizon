@@ -57,11 +57,6 @@ void world::update_plane(plane_ptr &p)
     p->render->set_pos(p->phys->pos);
     p->render->set_rot(p->phys->rot);
 
-    if (p->controls.change_camera != p->last_controls.change_camera)
-    {
-        //ToDo
-    }
-
     //aircraft animations
 
     const float speed = p->phys->vel.length();
@@ -83,9 +78,24 @@ void world::update_plane(plane_ptr &p)
 
     p->render->set_intake_ramp(p->phys->thrust_time >= p->phys->params.move.accel.thrustMinWait ? 1.0 : -1.0);
 
-    //cockpit animations
+    //cockpit animations and ui
 
-    //ToDo
+    if (p->render == m_render_world.get_player_aircraft())
+    {
+        p->render->set_speed(speed);
+
+        if (p->controls.change_camera && p->controls.change_camera != p->last_controls.change_camera)
+        {
+            switch (p->render->get_camera_mode())
+            {
+                case renderer::aircraft::camera_mode_third: p->render->set_camera_mode(renderer::aircraft::camera_mode_cockpit); break;
+                case renderer::aircraft::camera_mode_cockpit: p->render->set_camera_mode(renderer::aircraft::camera_mode_first); break;
+                case renderer::aircraft::camera_mode_first: p->render->set_camera_mode(renderer::aircraft::camera_mode_third); break;
+            }
+        }
+
+        //ToDo
+    }
 
     p->last_controls = p->controls;
 }

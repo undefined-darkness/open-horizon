@@ -24,8 +24,6 @@ public:
     void set_rot(const nya_math::quat &rot) { m_rot = rot; m_mesh.set_rot(rot); }
     const nya_math::vec3 &get_pos() { return m_pos; }
     nya_math::quat get_rot() { return m_rot; }
-
-    const nya_math::vec3 &get_camera_offset() const { return m_camera_offset; }
     nya_math::vec3 get_bone_pos(const char *name);
 
     //aircraft animations
@@ -40,11 +38,25 @@ public:
 
     //cockpit and ui
     void set_time(unsigned int time) { m_time = time * 1000; } //in seconds
+    void set_speed(float speed) { m_speed = speed; }
+    float get_speed() { return m_speed; }
+    float get_alt() { return m_pos.y; }
+
+    //camera
+    enum camera_mode
+    {
+        camera_mode_third,
+        camera_mode_cockpit,
+        camera_mode_first,
+    };
+    camera_mode get_camera_mode() const { return m_camera_mode; }
+    void set_camera_mode(camera_mode mode) { m_camera_mode = mode; }
+    const nya_math::vec3 &get_camera_offset() const { return m_camera_offset; }
 
     //info
     static unsigned int get_colors_count(const char *plane_name);
 
-    aircraft(): m_special_selected(false), m_rocket_bay_time(0), m_time(0)
+    aircraft(): m_special_selected(false), m_rocket_bay_time(0), m_time(0), m_camera_mode(camera_mode_third)
     {
         m_adimx_bone_idx = m_adimx2_bone_idx = -1;
         m_adimz_bone_idx = m_adimz2_bone_idx = -1;
@@ -64,6 +76,7 @@ private:
     renderer::model m_mesh;
     nya_math::vec3 m_pos;
     nya_math::quat m_rot;
+    params::fvalue m_speed;
 
     bool m_special_selected;
     float m_rocket_bay_time;
@@ -87,6 +100,7 @@ private:
     std::vector<wpn_mount> m_special_mount;
 
     nya_math::vec3 m_camera_offset;
+    camera_mode m_camera_mode;
 };
 
 //------------------------------------------------------------

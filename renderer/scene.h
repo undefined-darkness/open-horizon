@@ -33,20 +33,12 @@ private:
     nya_scene::shader m_cockpit_black;
     nya_render::screen_quad m_cockpit_black_quad;
 
-    enum
-    {
-        camera_mode_third,
-        camera_mode_cockpit,
-        camera_mode_first,
-
-    } m_camera_mode;
-
 private:
     int m_frame_counter, m_frame_counter_time, m_fps;
 
 public:
     scene(): m_fade_time(0), m_help_time(3000), m_frame_counter(0), m_frame_counter_time(0), m_fps(0), m_paused(false), m_loading(false),
-    m_fonts_loaded(false), m_camera_mode(camera_mode_third) {}
+    m_fonts_loaded(false) {}
 
 public:
     void switch_camera();
