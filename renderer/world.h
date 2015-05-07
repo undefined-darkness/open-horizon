@@ -60,6 +60,7 @@ class world
 {
 public:
     virtual void set_location(const char *name);
+    const location_params &get_location_params() { return m_location.get_params(); }
     virtual aircraft_ptr add_aircraft(const char *name, int color, bool player);
     virtual void update(int dt);
     aircraft_ptr get_player_aircraft() { return m_player_aircraft; }

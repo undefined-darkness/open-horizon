@@ -5,6 +5,7 @@
 #include "game.h"
 #include "math/scalar.h"
 #include "util/util.h"
+#include "util/xml.h"
 #include <algorithm>
 #include <time.h>
 
@@ -12,8 +13,87 @@ namespace game
 {
 //------------------------------------------------------------
 
+class weapon_information
+{
+public:
+    struct weapon
+    {
+        std::string id;
+        std::string model;
+        int count;
+    };
+
+    struct aircraft_weapons
+    {
+        weapon missile;
+        std::vector<weapon> special;
+        weapon flare;
+    };
+
+public:
+    static weapon_information &get()
+    {
+        static weapon_information info("weapons.xml", "common/Arms/ArmsParam.txt");
+        return info;
+    }
+
+    aircraft_weapons *get_aircraft_weapons(const char *name)
+    {
+        if (!name)
+            return 0;
+
+        std::string name_str(name);
+        std::transform(name_str.begin(), name_str.end(), name_str.begin(), ::tolower);
+        auto a = m_aircrafts.find(name);
+        if (a == m_aircrafts.end())
+            return 0;
+
+        return &a->second;
+    }
+
+private:
+    weapon_information(const char *xml_name, const char *params)
+    {
+        pugi::xml_document doc;
+        if (!load_xml(xml_name, doc))
+            return;
+
+        pugi::xml_node root = doc.child("weapons");
+        if (!root)
+            return;
+
+        for (pugi::xml_node ac = root.child("aircraft"); ac; ac = ac.next_sibling("aircraft"))
+        {
+            aircraft_weapons &a = m_aircrafts[ac.attribute("name").as_string("")];
+
+            for (pugi::xml_node wpn = ac.first_child(); wpn; wpn = wpn.next_sibling())
+            {
+                weapon w;
+                w.id = wpn.attribute("id").as_string("");
+                w.model = wpn.attribute("model").as_string("");
+                w.count = wpn.attribute("count").as_int(0);
+
+                std::string name(wpn.name() ? wpn.name() : "");
+                if (name == "msl")
+                    a.missile = w;
+                else if (name == "spc")
+                    a.special.push_back(w);
+                else if (name == "flr")
+                    a.flare = w;
+            }
+        }
+    }
+
+    std::map<std::string, aircraft_weapons> m_aircrafts;
+};
+
+//------------------------------------------------------------
+
 plane_ptr world::add_plane(const char *name, int color, bool player)
 {
+    if (!name)
+        return plane_ptr();
+
     plane_ptr p(true);
     p->phys = m_phys_world.add_plane(name);
     p->render = m_render_world.add_aircraft(name, color, player);
@@ -21,6 +101,14 @@ plane_ptr world::add_plane(const char *name, int color, bool player)
     time_t now = time(NULL);
     struct tm *tm_now = localtime(&now);
     p->render->set_time(tm_now->tm_sec + tm_now->tm_min * 60 + tm_now->tm_hour * 60 * 60); //ToDo
+
+    auto wi = weapon_information::get().get_aircraft_weapons(name);
+    if (wi)
+    {
+        p->render->load_missile(wi->missile.model.c_str(), m_render_world.get_location_params());
+        if (!wi->special.empty())
+            p->render->load_special(wi->special[0].model.c_str(), m_render_world.get_location_params());
+    }
 
     m_planes.push_back(p);
     return p;
@@ -128,8 +216,6 @@ void plane::update(int dt, bool player)
                 case renderer::aircraft::camera_mode_first: render->set_camera_mode(renderer::aircraft::camera_mode_third); break;
             }
         }
-
-        //ToDo
     }
 
     last_controls = controls;

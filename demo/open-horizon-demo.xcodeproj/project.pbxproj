@@ -12,6 +12,7 @@
 		F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52519048E5000C3590A /* OpenGL.framework */; };
 		F503E52919048E7300C3590A /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52819048E7300C3590A /* IOKit.framework */; };
 		F578323E1AFBE859005FE829 /* ui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F578323C1AFBE859005FE829 /* ui.cpp */; };
+		F57832401AFC20B7005FE829 /* weapons.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F578323F1AFC20B1005FE829 /* weapons.xml */; };
 		F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E51F19048D4A00C3590A /* libnya_engine.a */; };
 		F59AB5921AFA389500137527 /* game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F59AB5901AFA389500137527 /* game.cpp */; };
 		F59AB5A71AFA4F1800137527 /* scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F59AB5981AFA4F1800137527 /* scene.cpp */; };
@@ -63,6 +64,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				F57832401AFC20B7005FE829 /* weapons.xml in CopyFiles */,
 				F5C6D39E1AF96A18006FB7E6 /* DATA.PAC.xml in CopyFiles */,
 				F5C6D39F1AF96A18006FB7E6 /* postprocess.txt in CopyFiles */,
 				F5C6D3A01AF96A18006FB7E6 /* shaders in CopyFiles */,
@@ -85,6 +87,7 @@
 		F503E52819048E7300C3590A /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		F578323C1AFBE859005FE829 /* ui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ui.cpp; path = ../gui/ui.cpp; sourceTree = "<group>"; };
 		F578323D1AFBE859005FE829 /* ui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui.h; path = ../gui/ui.h; sourceTree = "<group>"; };
+		F578323F1AFC20B1005FE829 /* weapons.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = weapons.xml; path = ../resources/weapons.xml; sourceTree = "<group>"; };
 		F59AB5901AFA389500137527 /* game.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = game.cpp; path = ../game/game.cpp; sourceTree = "<group>"; };
 		F59AB5911AFA389500137527 /* game.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = game.h; path = ../game/game.h; sourceTree = "<group>"; };
 		F59AB5971AFA4F1800137527 /* scene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = scene.h; path = ../renderer/scene.h; sourceTree = "<group>"; };
@@ -339,6 +342,7 @@
 		F5DAA8CB1AD7CE5000C2C633 /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				F578323F1AFC20B1005FE829 /* weapons.xml */,
 				F5C6D39B1AF96A08006FB7E6 /* DATA.PAC.xml */,
 				F5C6D39C1AF96A08006FB7E6 /* postprocess.txt */,
 				F5C6D39D1AF96A08006FB7E6 /* shaders */,

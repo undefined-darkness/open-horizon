@@ -384,47 +384,7 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
             m_special_mount.push_back(m);
     }
 
-    //ToDo: sane way to get weapon information
-    std::string special_wpn_name;
-    auto r = load_resource(("model_id/mech/airp/d_" + name_str + "/d_" + name_str + "_t00.tdp").c_str());
-    std::string wpn_info((char *)r.get_data(), r.get_size());
-    for (size_t f = 0;;)
-    {
-        const static std::string fs("/mech/weap/");
-        f = wpn_info.find(fs, f);
-        if (f == std::string::npos)
-            break;
-
-        f += fs.length();
-
-        auto t = wpn_info.find("/00/", f);
-        if (t == std::string::npos)
-            break;
-
-        std::string name = wpn_info.substr(f, t - f);
-        if (name == "w_msl_")
-            continue;
-
-        special_wpn_name = name;
-        break;
-    }
-
-    const bool is_plane_russian = strncmp(name, "su", 2) == 0 || strncmp(name, "m2", 2) == 0  || strcmp(name, "pkfa") == 0; //ToDo
-
-    std::string wpn_info_suff = is_plane_russian ? "r0" : "a0";
-    if (name_str == "f02a")
-        wpn_info_suff = "j0";
-
-    //if (has_missiles)
-        m_missile.load(("w_msl_" + wpn_info_suff).c_str(), params);
-
-    if (special_wpn_name == "w_ew1_")
-        wpn_info_suff = "x0";
-    if (special_wpn_name == "w_sod_")
-        wpn_info_suff = "e0";
-
-    m_special.load((special_wpn_name + wpn_info_suff).c_str(), params);
-
+    //attitude
     m_adimx_bone_idx = m_mesh.get_bone_idx(1, "adimx1");
     if (m_adimx_bone_idx < 0) m_adimx_bone_idx = m_mesh.get_bone_idx(1, "adimx");
     m_adimx2_bone_idx = m_mesh.get_bone_idx(1, "adimx2");
@@ -438,6 +398,20 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     m_half_flaps_flag = name_str == "f22a" || name_str == "m21b" || name_str == "av8b";
 
     return true;
+}
+
+//------------------------------------------------------------
+
+void aircraft::load_missile(const char *name, const location_params &params)
+{
+    m_missile.load((std::string("w_") + name).c_str(), params);
+}
+
+//------------------------------------------------------------
+
+void aircraft::load_special(const char *name, const location_params &params)
+{
+    m_special.load((std::string("w_") + name).c_str(), params);
 }
 
 //------------------------------------------------------------

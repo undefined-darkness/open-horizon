@@ -1,0 +1,34 @@
+<!--ids from common/Arms/ArmsParam.txt-->
+<!--models from target/model_id/mech/weap/w_-->
+
+<weapons>
+
+<aircraft name="su33">
+    <msl id="MISSILE" model="msl_r0" count="198"/>
+    <spc id="SAAM" model="saa_r0" count="24"/>
+    <spc id="_6AAM" model="aam_r0" count="28"/>
+    <flr id="FlareFighter" count="5"/>
+</aircraft>
+
+<aircraft name="su35">
+    <msl id="MISSILE" model="msl_r0" count="216"/>
+    <spc id="_4AAM" model="aam_r0" count="32"/>
+    <spc id="QAAM" model="qaa_r0" count="34"/>
+    <flr id="FlareFighter" count="5"/>
+</aircraft>
+
+<aircraft name="pkfa">
+    <msl id="MISSILE" model="msl_r0" count="234"/>
+    <spc id="_4AAM" model="aam_r0" count="32"/>
+    <spc id="QAAM" model="qaa_r0" count="36"/>
+    <flr id="FlareMultirole" count="6"/>
+</aircraft>
+
+<aircraft name="f22a">
+    <msl id="MISSILE" model="msl_a0" count="226"/>
+    <spc id="_4AAM" model="aam_a0" count="30"/>
+    <spc id="QAAM" model="qaa_a0" count="36"/>
+    <flr id="FlareMultirole" count="5"/>
+</aircraft>
+
+</weapons>
