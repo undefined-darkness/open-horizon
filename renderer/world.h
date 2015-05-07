@@ -3,7 +3,7 @@
 //
 
 #include "aircraft.h"
-#include "params.h"
+#include "util/params.h"
 #include "memory/shared_ptr.h"
 #include "location.h"
 #include "model.h"

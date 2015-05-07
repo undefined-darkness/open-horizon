@@ -11,6 +11,7 @@
 		F503E52419048E2D00C3590A /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52319048E2D00C3590A /* libglfw3.a */; };
 		F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52519048E5000C3590A /* OpenGL.framework */; };
 		F503E52919048E7300C3590A /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52819048E7300C3590A /* IOKit.framework */; };
+		F578323E1AFBE859005FE829 /* ui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F578323C1AFBE859005FE829 /* ui.cpp */; };
 		F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E51F19048D4A00C3590A /* libnya_engine.a */; };
 		F59AB5921AFA389500137527 /* game.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F59AB5901AFA389500137527 /* game.cpp */; };
 		F59AB5A71AFA4F1800137527 /* scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F59AB5981AFA4F1800137527 /* scene.cpp */; };
@@ -25,7 +26,6 @@
 		F59AB5B41AFA799B00137527 /* lens_flare.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F59AB5B21AFA799B00137527 /* lens_flare.cpp */; };
 		F59AB5B71AFA7D1600137527 /* plane_camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F59AB5B51AFA7D1600137527 /* plane_camera.cpp */; };
 		F59AB5BA1AFAA0C000137527 /* aircraft.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F59AB5B91AFAA0C000137527 /* aircraft.cpp */; };
-		F5C6D3831AF968F9006FB7E6 /* ui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D3801AF968F9006FB7E6 /* ui.cpp */; };
 		F5C6D3861AF9694D006FB7E6 /* demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D3851AF9694D006FB7E6 /* demo.cpp */; };
 		F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D3881AF969A5006FB7E6 /* dpl.cpp */; };
 		F5C6D3921AF969A5006FB7E6 /* fhm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D38C1AF969A5006FB7E6 /* fhm.cpp */; };
@@ -83,6 +83,8 @@
 		F503E52319048E2D00C3590A /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = "../deps/glfw-bin/lib/libglfw3.a"; sourceTree = "<group>"; };
 		F503E52519048E5000C3590A /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		F503E52819048E7300C3590A /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		F578323C1AFBE859005FE829 /* ui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ui.cpp; path = ../gui/ui.cpp; sourceTree = "<group>"; };
+		F578323D1AFBE859005FE829 /* ui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui.h; path = ../gui/ui.h; sourceTree = "<group>"; };
 		F59AB5901AFA389500137527 /* game.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = game.cpp; path = ../game/game.cpp; sourceTree = "<group>"; };
 		F59AB5911AFA389500137527 /* game.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = game.h; path = ../game/game.h; sourceTree = "<group>"; };
 		F59AB5971AFA4F1800137527 /* scene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = scene.h; path = ../renderer/scene.h; sourceTree = "<group>"; };
@@ -111,8 +113,6 @@
 		F59AB5B91AFAA0C000137527 /* aircraft.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aircraft.cpp; path = ../renderer/aircraft.cpp; sourceTree = "<group>"; };
 		F5C6D37C1AF968E7006FB7E6 /* params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = params.h; path = ../util/params.h; sourceTree = "<group>"; };
 		F5C6D37D1AF968E7006FB7E6 /* xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xml.h; path = ../util/xml.h; sourceTree = "<group>"; };
-		F5C6D3801AF968F9006FB7E6 /* ui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ui.cpp; path = ../ui.cpp; sourceTree = "<group>"; };
-		F5C6D3811AF968F9006FB7E6 /* ui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui.h; path = ../ui.h; sourceTree = "<group>"; };
 		F5C6D3851AF9694D006FB7E6 /* demo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = demo.cpp; sourceTree = SOURCE_ROOT; };
 		F5C6D3881AF969A5006FB7E6 /* dpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dpl.cpp; sourceTree = "<group>"; };
 		F5C6D3891AF969A5006FB7E6 /* dpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dpl.h; sourceTree = "<group>"; };
@@ -160,12 +160,11 @@
 				F5C6D3851AF9694D006FB7E6 /* demo.cpp */,
 				F5C6D3871AF969A5006FB7E6 /* containers */,
 				F59AB58D1AFA387500137527 /* game */,
+				F57832381AFBE804005FE829 /* gui */,
 				F5C6D3941AF969BE006FB7E6 /* phys */,
 				F5DAA8CB1AD7CE5000C2C633 /* resources */,
 				F5C6D3641AF9689D006FB7E6 /* renderer */,
 				F5C6D37A1AF968C5006FB7E6 /* util */,
-				F5C6D3801AF968F9006FB7E6 /* ui.cpp */,
-				F5C6D3811AF968F9006FB7E6 /* ui.h */,
 				F503E4E019048C6700C3590A /* open-horizon-demo */,
 				F5D796A319B34350006269F0 /* deps */,
 				F503E4D919048C6700C3590A /* Frameworks */,
@@ -228,6 +227,15 @@
 				F503E52119048D4A00C3590A /* libnya_engine_ios.a */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F57832381AFBE804005FE829 /* gui */ = {
+			isa = PBXGroup;
+			children = (
+				F578323C1AFBE859005FE829 /* ui.cpp */,
+				F578323D1AFBE859005FE829 /* ui.h */,
+			);
+			name = gui;
 			sourceTree = "<group>";
 		};
 		F59AB58D1AFA387500137527 /* game */ = {
@@ -416,6 +424,7 @@
 				F59AB5A81AFA4F1800137527 /* fhm_location.cpp in Sources */,
 				F5C6D3921AF969A5006FB7E6 /* fhm.cpp in Sources */,
 				F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */,
+				F578323E1AFBE859005FE829 /* ui.cpp in Sources */,
 				F59AB5A91AFA4F1800137527 /* fhm_mesh.cpp in Sources */,
 				F59AB5AE1AFA4F1800137527 /* location.cpp in Sources */,
 				F5C6D3931AF969A5006FB7E6 /* qdf.cpp in Sources */,
@@ -431,7 +440,6 @@
 				F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */,
 				F59AB5921AFA389500137527 /* game.cpp in Sources */,
 				F59AB5B11AFA4FEC00137527 /* world.cpp in Sources */,
-				F5C6D3831AF968F9006FB7E6 /* ui.cpp in Sources */,
 				F59AB5A71AFA4F1800137527 /* scene.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

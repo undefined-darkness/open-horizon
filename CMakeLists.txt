@@ -8,10 +8,11 @@ include_directories(deps/pugixml-1.4/src)
 include_directories(.)
 
 define_source_files(demo)
-define_source_files(.)
 define_source_files(containers)
+define_source_files(game)
+define_source_files(gui)
 define_source_files(phys)
-define_source_files(scene)
+define_source_files(renderer)
 define_source_files(util)
 define_source_files(deps/pugixml-1.4/src)
 

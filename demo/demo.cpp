@@ -7,7 +7,7 @@
 #include "containers/qdf_provider.h"
 #include "containers/dpl_provider.h"
 
-#include "game.h"
+#include "game/game.h"
 
 #include "resources/file_resources_provider.h"
 #include "resources/composite_resources_provider.h"

@@ -6,7 +6,7 @@
 #include "lens_flare.h"
 #include "plane_camera.h"
 #include "scene/postprocess.h"
-#include "ui.h"
+#include "gui/ui.h"
 
 namespace renderer
 {
