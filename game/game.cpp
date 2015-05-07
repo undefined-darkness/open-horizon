@@ -45,59 +45,91 @@ void world::update(int dt)
     m_phys_world.update(dt, [](phys::object_ptr &a, phys::object_ptr &b) {});
 
     for (auto &p: m_planes)
-        update_plane(p);
+        p->update(dt, p->render == m_render_world.get_player_aircraft());
 
     m_render_world.update(dt);
 }
 
 //------------------------------------------------------------
 
-void world::update_plane(plane_ptr &p)
+void plane::update(int dt, bool player)
 {
-    p->render->set_pos(p->phys->pos);
-    p->render->set_rot(p->phys->rot);
+    render->set_pos(phys->pos);
+    render->set_rot(phys->rot);
 
     //aircraft animations
 
-    const float speed = p->phys->vel.length();
-    const float speed_k = nya_math::max((p->phys->params.move.speed.speedMax - speed) / p->phys->params.move.speed.speedMax, 0.1f);
+    const float speed = phys->vel.length();
+    const float speed_k = nya_math::max((phys->params.move.speed.speedMax - speed) / phys->params.move.speed.speedMax, 0.1f);
 
-    const float el = nya_math::clamp(-p->controls.rot.z - p->controls.rot.x, -1.0f, 1.0f) * speed_k;
-    const float er = nya_math::clamp(p->controls.rot.z - p->controls.rot.x, -1.0f, 1.0f) * speed_k;
-    p->render->set_elev(el, er);
+    const float el = nya_math::clamp(-controls.rot.z - controls.rot.x, -1.0f, 1.0f) * speed_k;
+    const float er = nya_math::clamp(controls.rot.z - controls.rot.x, -1.0f, 1.0f) * speed_k;
+    render->set_elev(el, er);
 
-    const float rl = nya_math::clamp(-p->controls.rot.y + p->controls.brake, -1.0f, 1.0f) * speed_k;
-    const float rr = nya_math::clamp(-p->controls.rot.y - p->controls.brake, -1.0f, 1.0f) * speed_k;
-    p->render->set_rudder(rl, rr, -p->controls.rot.y);
+    const float rl = nya_math::clamp(-controls.rot.y + controls.brake, -1.0f, 1.0f) * speed_k;
+    const float rr = nya_math::clamp(-controls.rot.y - controls.brake, -1.0f, 1.0f) * speed_k;
+    render->set_rudder(rl, rr, -controls.rot.y);
 
-    p->render->set_aileron(-p->controls.rot.z * speed_k, p->controls.rot.z * speed_k);
-    p->render->set_canard(p->controls.rot.x * speed_k);
-    p->render->set_brake(p->controls.brake);
-    p->render->set_flaperon(speed < p->phys->params.move.speed.speedCruising - 100 ? -1.0 : 1.0);
-    p->render->set_wing_sweep(speed >  p->phys->params.move.speed.speedCruising + 250);
+    render->set_aileron(-controls.rot.z * speed_k, controls.rot.z * speed_k);
+    render->set_canard(controls.rot.x * speed_k);
+    render->set_brake(controls.brake);
+    render->set_flaperon(speed < phys->params.move.speed.speedCruising - 100 ? -1.0 : 1.0);
+    render->set_wing_sweep(speed >  phys->params.move.speed.speedCruising + 250 ? 1.0 : -1.0);
 
-    p->render->set_intake_ramp(p->phys->thrust_time >= p->phys->params.move.accel.thrustMinWait ? 1.0 : -1.0);
+    render->set_intake_ramp(phys->thrust_time >= phys->params.move.accel.thrustMinWait ? 1.0 : -1.0);
+
+    //weapons
+
+    if (controls.change_weapon && controls.change_weapon != last_controls.change_weapon)
+    {
+        if (!special_weapon && render->is_special_bay_closed())
+            special_weapon = true;
+
+        if (special_weapon && render->is_special_bay_opened())
+            special_weapon = false;
+
+        render->set_special_bay(special_weapon);
+    }
+
+    if (controls.missile && controls.missile != last_controls.missile)
+    {
+        if (!special_weapon)
+        {
+            rocket_bay_time = 3000;
+            render->set_missile_bay(true);
+        }
+    }
+
+    if (rocket_bay_time > 0)
+    {
+        rocket_bay_time -= dt;
+        if (rocket_bay_time <= 0)
+        {
+            render->set_missile_bay(false);
+            rocket_bay_time = 0;
+        }
+    }
 
     //cockpit animations and ui
 
-    if (p->render == m_render_world.get_player_aircraft())
+    if (player)
     {
-        p->render->set_speed(speed);
+        render->set_speed(speed);
 
-        if (p->controls.change_camera && p->controls.change_camera != p->last_controls.change_camera)
+        if (controls.change_camera && controls.change_camera != last_controls.change_camera)
         {
-            switch (p->render->get_camera_mode())
+            switch (render->get_camera_mode())
             {
-                case renderer::aircraft::camera_mode_third: p->render->set_camera_mode(renderer::aircraft::camera_mode_cockpit); break;
-                case renderer::aircraft::camera_mode_cockpit: p->render->set_camera_mode(renderer::aircraft::camera_mode_first); break;
-                case renderer::aircraft::camera_mode_first: p->render->set_camera_mode(renderer::aircraft::camera_mode_third); break;
+                case renderer::aircraft::camera_mode_third: render->set_camera_mode(renderer::aircraft::camera_mode_cockpit); break;
+                case renderer::aircraft::camera_mode_cockpit: render->set_camera_mode(renderer::aircraft::camera_mode_first); break;
+                case renderer::aircraft::camera_mode_first: render->set_camera_mode(renderer::aircraft::camera_mode_third); break;
             }
         }
 
         //ToDo
     }
 
-    p->last_controls = p->controls;
+    last_controls = controls;
 }
 
 //------------------------------------------------------------

@@ -35,6 +35,11 @@ public:
     void set_brake(float value);
     void set_wing_sweep(float value);
     void set_intake_ramp(float value);
+    void set_special_bay(bool value);
+    void set_missile_bay(bool value);
+    bool is_special_bay_opened();
+    bool is_special_bay_closed();
+    bool is_missile_ready();
 
     //cockpit and ui
     void set_time(unsigned int time) { m_time = time * 1000; } //in seconds
@@ -56,7 +61,7 @@ public:
     //info
     static unsigned int get_colors_count(const char *plane_name);
 
-    aircraft(): m_special_selected(false), m_rocket_bay_time(0), m_time(0), m_camera_mode(camera_mode_third)
+    aircraft(): m_time(0), m_camera_mode(camera_mode_third), m_half_flaps_flag(false)
     {
         m_adimx_bone_idx = m_adimx2_bone_idx = -1;
         m_adimz_bone_idx = m_adimz2_bone_idx = -1;
@@ -78,14 +83,13 @@ private:
     nya_math::quat m_rot;
     params::fvalue m_speed;
 
-    bool m_special_selected;
-    float m_rocket_bay_time;
-
     unsigned int m_time;
 
     int m_adimx_bone_idx, m_adimx2_bone_idx;
     int m_adimz_bone_idx, m_adimz2_bone_idx;
     int m_adimxz_bone_idx, m_adimxz2_bone_idx;
+
+    bool m_half_flaps_flag;
 
     renderer::model m_missile;
     renderer::model m_special;

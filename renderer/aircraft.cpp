@@ -435,6 +435,8 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     if (m_adimxz_bone_idx < 0) m_adimxz_bone_idx = m_mesh.get_bone_idx(1, "adimxz");
     m_adimxz2_bone_idx = m_mesh.get_bone_idx(1, "adimxz2");
 
+    m_half_flaps_flag = name_str == "f22a" || name_str == "m21b" || name_str == "av8b";
+
     return true;
 }
 
@@ -513,6 +515,9 @@ void aircraft::set_flaperon(float value)
     float flap_anim_speed = 0.5f;
     m_mesh.set_anim_speed(0, 'lefn', -value * flap_anim_speed);
     m_mesh.set_anim_speed(0, 'tefn', value * flap_anim_speed);
+
+    if (m_half_flaps_flag && m_mesh.get_relative_anim_time(0, 'tefn') > 0.5)
+        m_mesh.set_relative_anim_time(0, 'tefn', 0.5);
 }
 
 //------------------------------------------------------------
@@ -538,6 +543,47 @@ void aircraft::set_wing_sweep(float value)
 void aircraft::set_intake_ramp(float value)
 {
     m_mesh.set_anim_speed(0, 'rmpn', value > 0 ? 0.7f : -0.5f);
+}
+
+//------------------------------------------------------------
+
+void aircraft::set_special_bay(bool value)
+{
+    m_mesh.set_anim_speed(0, 'spwc', value > 0 ? 1.0f : -1.0f);
+    m_mesh.set_anim_speed(0, 'swcc', value > 0 ? 1.0f : -1.0f);
+    m_mesh.set_anim_speed(0, 'swc3', value > 0 ? 1.0f : -1.0f);
+}
+
+//------------------------------------------------------------
+
+void aircraft::set_missile_bay(bool value)
+{
+    m_mesh.set_anim_speed(0, 'misc', value ? 1.0f : -1.0f);
+}
+
+//------------------------------------------------------------
+
+bool aircraft::is_special_bay_opened()
+{
+    return m_mesh.get_relative_anim_time(0, 'spwc') > 0.999f
+        || m_mesh.get_relative_anim_time(0, 'swcc') > 0.999f
+        || m_mesh.get_relative_anim_time(0, 'swc3') > 0.999f;
+}
+
+//------------------------------------------------------------
+
+bool aircraft::is_special_bay_closed()
+{
+    return m_mesh.get_relative_anim_time(0, 'spwc') < 0.01f
+        && m_mesh.get_relative_anim_time(0, 'swcc') < 0.01f
+        && m_mesh.get_relative_anim_time(0, 'swc3') < 0.01f;
+}
+
+//------------------------------------------------------------
+
+bool aircraft::is_missile_ready()
+{
+    return m_mesh.get_relative_anim_time(0, 'misc') >= 0.999f;
 }
 
 //------------------------------------------------------------

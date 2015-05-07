@@ -15,6 +15,7 @@ typedef nya_math::vec3 vec3;
 typedef nya_math::quat quat;
 typedef params::fvalue fvalue;
 typedef params::uvalue uvalue;
+typedef params::value<int> ivalue;
 typedef params::value<bool> bvalue;
 
 //------------------------------------------------------------
@@ -59,11 +60,15 @@ struct plane: public object
     plane_controls last_controls;
     phys::plane_ptr phys;
     renderer::aircraft_ptr render;
+    bvalue special_weapon;
+    ivalue rocket_bay_time;
 
     void set_pos(const vec3 &pos) { if (phys.is_valid()) phys->pos = pos; }
     void set_rot(const quat &rot) { if (phys.is_valid()) phys->rot = rot; }
     const vec3 &get_pos() { if (phys.is_valid()) return phys->pos; static vec3 p; return p; }
     const quat &get_rot() { if (phys.is_valid()) return phys->rot; static quat r; return r; }
+
+    void update(int dt, bool player);
 };
 
 typedef ptr<plane> plane_ptr;
