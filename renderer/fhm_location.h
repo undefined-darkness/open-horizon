@@ -8,6 +8,8 @@
 #include "location_params.h"
 #include "render/debug_draw.h"
 
+namespace renderer
+{
 //------------------------------------------------------------
 
 class memory_reader;
@@ -104,3 +106,4 @@ protected:
 };
 
 //------------------------------------------------------------
+}

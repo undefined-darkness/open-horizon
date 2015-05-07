@@ -7,6 +7,8 @@
 #include "memory/memory_reader.h"
 #include "shared.h"
 
+namespace renderer
+{
 //------------------------------------------------------------
 
 struct lst
@@ -216,3 +218,4 @@ void model::set_bone_rot(int lod_idx, int bone_idx, const nya_math::quat &rot)
 }
 
 //------------------------------------------------------------
+}

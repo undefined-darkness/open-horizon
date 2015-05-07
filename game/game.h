@@ -4,19 +4,18 @@
 
 #pragma once
 
-#include "plane_params.h"
-#include "memory/shared_ptr.h"
-#include "math/quaternion.h"
-#include <functional>
-#include <vector>
+#include "phys/physics.h"
+#include "renderer/scene.h"
 
-namespace phys
+namespace game
 {
 //------------------------------------------------------------
 
 typedef nya_math::vec3 vec3;
 typedef nya_math::quat quat;
 typedef params::fvalue fvalue;
+typedef params::uvalue uvalue;
+typedef params::value<bool> bvalue;
 
 //------------------------------------------------------------
 
@@ -36,34 +35,35 @@ private:
 
 struct object
 {
-    vec3 pos;
-    quat rot;
-    vec3 vel;
 };
 
 typedef ptr<object> object_ptr;
 
 //------------------------------------------------------------
 
-struct plane_controls
+struct plane_controls: public phys::plane_controls
 {
-    vec3 rot;
-    fvalue throttle;
-    fvalue brake;
+    bvalue missile;
+    bvalue mgun;
+    bvalue flares;
+    bvalue change_weapon;
+    bvalue switch_target;
+    bvalue change_camera;
 };
 
 //------------------------------------------------------------
 
 struct plane: public object
 {
-    fvalue thrust_time;
-    vec3 rot_speed;
-
     plane_controls controls;
-    plane_params params;
-    //col_mesh mesh;
+    plane_controls last_controls;
+    phys::plane_ptr phys;
+    renderer::aircraft_ptr render;
 
-    void update(int dt);
+    void set_pos(const vec3 &pos) { if (phys.is_valid()) phys->pos = pos; }
+    void set_rot(const quat &rot) { if (phys.is_valid()) phys->rot = rot; }
+    const vec3 &get_pos() { if (phys.is_valid()) return phys->pos; static vec3 p; return p; }
+    const quat &get_rot() { if (phys.is_valid()) return phys->rot; static quat r; return r; }
 };
 
 typedef ptr<plane> plane_ptr;
@@ -81,12 +81,24 @@ typedef ptr<missile> missile_ptr;
 class world
 {
 public:
-    plane_ptr add_plane(const char *name);
+    void set_location(const char *name);
 
-    void update(int dt, std::function<void(object_ptr &a, object_ptr &b)> on_hit);
+    plane_ptr add_plane(const char *name, int color, bool player);
+
+    int get_planes_count();
+    plane_ptr get_plane(int idx);
+
+    void update(int dt);
+
+    world(renderer::world &w): m_render_world(w) {}
+
+private:
+    void update_plane(plane_ptr &p);
 
 private:
     std::vector<plane_ptr> m_planes;
+    renderer::world &m_render_world;
+    phys::world m_phys_world;
 };
 
 //------------------------------------------------------------

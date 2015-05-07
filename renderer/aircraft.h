@@ -5,46 +5,46 @@
 #pragma once
 
 #include "phys/plane_params.h"
-#include "scene/model.h"
-#include "scene/location_params.h"
+#include "renderer/model.h"
+#include "renderer/location_params.h"
 
+namespace renderer
+{
 //------------------------------------------------------------
 
 class aircraft
 {
 public:
     bool load(const char *name, unsigned int color_idx, const location_params &params);
-
     void apply_location(const char *location_name, const location_params &params);
-
     void draw(int lod_idx);
+    void update(int dt);
 
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; m_mesh.set_pos(pos); }
     void set_rot(const nya_math::quat &rot) { m_rot = rot; m_mesh.set_rot(rot); }
     const nya_math::vec3 &get_pos() { return m_pos; }
     nya_math::quat get_rot() { return m_rot; }
 
-    float get_speed() { return m_vel.length(); }
-    float get_alt() { return m_pos.y; }
-    float get_hp() { return m_hp; }
     const nya_math::vec3 &get_camera_offset() const { return m_camera_offset; }
     nya_math::vec3 get_bone_pos(const char *name);
 
-    static unsigned int get_colors_count(const char *plane_name);
+    //aircraft animations
+    void set_elev(float left, float right); //elevons and tailerons
+    void set_rudder(float left, float right, float center);
+    void set_aileron(float left, float right);
+    void set_flaperon(float value);
+    void set_canard(float value);
+    void set_brake(float value);
+    void set_wing_sweep(float value);
+    void set_intake_ramp(float value);
 
-    void set_controls(const nya_math::vec3 &rot, float throttle, float brake);
-
-    void fire_mgun() { m_controls_mgun = true; }
-    void fire_rocket() { m_controls_rocket = true; }
-    void change_weapon() { m_controls_special = true; }
-
+    //cockpit and ui
     void set_time(unsigned int time) { m_time = time * 1000; } //in seconds
 
-    void update(int dt);
+    //info
+    static unsigned int get_colors_count(const char *plane_name);
 
-    aircraft(): m_hp(0), m_controls_throttle(0), m_controls_brake(0), m_thrust_time(0),
-    m_controls_mgun(false), m_controls_rocket(false), m_controls_special(false),
-    m_special_selected(false), m_rocket_bay_time(0), m_time(0)
+    aircraft(): m_special_selected(false), m_rocket_bay_time(0), m_time(0)
     {
         m_adimx_bone_idx = m_adimx2_bone_idx = -1;
         m_adimz_bone_idx = m_adimz2_bone_idx = -1;
@@ -61,24 +61,11 @@ private:
         return target;
     }
 
-    float m_hp;
-    model m_mesh;
-    float m_thrust_time;
+    renderer::model m_mesh;
     nya_math::vec3 m_pos;
-    nya_math::vec3 m_rot_speed;
     nya_math::quat m_rot;
-    nya_math::vec3 m_vel;
-
-    nya_math::vec3 m_controls_rot;
-    float m_controls_throttle;
-    float m_controls_brake;
-    plane_params m_params;
-    bool m_controls_mgun;
-    bool m_controls_rocket;
-    bool m_controls_special;
 
     bool m_special_selected;
-
     float m_rocket_bay_time;
 
     unsigned int m_time;
@@ -87,8 +74,8 @@ private:
     int m_adimz_bone_idx, m_adimz2_bone_idx;
     int m_adimxz_bone_idx, m_adimxz2_bone_idx;
 
-    model m_missile;
-    model m_special;
+    renderer::model m_missile;
+    renderer::model m_special;
 
     struct wpn_mount
     {
@@ -103,3 +90,4 @@ private:
 };
 
 //------------------------------------------------------------
+}

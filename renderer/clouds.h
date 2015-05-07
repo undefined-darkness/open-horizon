@@ -7,6 +7,8 @@
 #include "scene/mesh.h"
 #include "location_params.h"
 
+namespace renderer
+{
 //------------------------------------------------------------
 
 class effect_clouds
@@ -106,3 +108,4 @@ private:
 };
 
 //------------------------------------------------------------
+}

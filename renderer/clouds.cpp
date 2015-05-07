@@ -8,6 +8,8 @@
 #include "memory/memory_reader.h"
 #include "shared.h"
 
+namespace renderer
+{
 //------------------------------------------------------------
 
 bool effect_clouds::load(const char *location_name, const location_params &params)
@@ -246,3 +248,4 @@ bool effect_clouds::read_bdd(const char *name, bdd &bdd_res)
 }
 
 //------------------------------------------------------------
+}

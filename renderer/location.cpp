@@ -7,6 +7,8 @@
 #include "shared.h"
 #include "math/constants.h"
 
+namespace renderer
+{
 //------------------------------------------------------------
 
 struct solid_sphere
@@ -202,3 +204,4 @@ void location::draw()
 }
 
 //------------------------------------------------------------
+}

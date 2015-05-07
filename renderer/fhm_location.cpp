@@ -22,6 +22,8 @@
 #include "render/debug_draw.h"
 extern nya_render::debug_draw test;
 
+namespace renderer
+{
 //------------------------------------------------------------
 
 static const int location_size = 16;
@@ -239,7 +241,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
 
             //read_unknown(reader);
             //int i = 5;
-            //print_data(reader, 0, 200);
+            //print_data(reader, 0, reader.get_remained());
         }
         else if (sign == 'RXTN') //NTXR texture
         {
@@ -789,3 +791,4 @@ float fhm_location::landscape::get_height(float x,float y) const
 }
 
 //------------------------------------------------------------
+}

@@ -7,6 +7,8 @@
 #include "fhm_location.h"
 #include "location_params.h"
 
+namespace renderer
+{
 //------------------------------------------------------------
 
 class sky_mesh
@@ -55,3 +57,4 @@ private:
 };
 
 //------------------------------------------------------------
+}

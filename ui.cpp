@@ -4,7 +4,7 @@
 
 #include "ui.h"
 #include "containers/fhm.h"
-#include "scene/shared.h"
+#include "renderer/shared.h"
 
 //------------------------------------------------------------
 

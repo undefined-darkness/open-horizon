@@ -2,15 +2,16 @@
 // open horizon -- undefined_darkness@outlook.com
 //
 
-#pragma once
-
-#include "plane_params.h"
+#include "aircraft.h"
+#include "params.h"
 #include "memory/shared_ptr.h"
-#include "math/quaternion.h"
+#include "location.h"
+#include "model.h"
+#include "clouds.h"
 #include <functional>
 #include <vector>
 
-namespace phys
+namespace renderer
 {
 //------------------------------------------------------------
 
@@ -36,37 +37,14 @@ private:
 
 struct object
 {
-    vec3 pos;
-    quat rot;
-    vec3 vel;
+    model mdl;
 };
 
 typedef ptr<object> object_ptr;
 
 //------------------------------------------------------------
 
-struct plane_controls
-{
-    vec3 rot;
-    fvalue throttle;
-    fvalue brake;
-};
-
-//------------------------------------------------------------
-
-struct plane: public object
-{
-    fvalue thrust_time;
-    vec3 rot_speed;
-
-    plane_controls controls;
-    plane_params params;
-    //col_mesh mesh;
-
-    void update(int dt);
-};
-
-typedef ptr<plane> plane_ptr;
+typedef ptr<aircraft> aircraft_ptr;
 
 //------------------------------------------------------------
 
@@ -81,12 +59,19 @@ typedef ptr<missile> missile_ptr;
 class world
 {
 public:
-    plane_ptr add_plane(const char *name);
+    virtual void set_location(const char *name);
+    virtual aircraft_ptr add_aircraft(const char *name, int color, bool player);
+    virtual void update(int dt);
+    aircraft_ptr get_player_aircraft() { return m_player_aircraft; }
 
-    void update(int dt, std::function<void(object_ptr &a, object_ptr &b)> on_hit);
+protected:
+    std::vector<aircraft_ptr> m_aircrafts;
 
-private:
-    std::vector<plane_ptr> m_planes;
+protected:
+    std::string m_location_name;
+    location m_location;
+    effect_clouds m_clouds;
+    aircraft_ptr m_player_aircraft;
 };
 
 //------------------------------------------------------------
