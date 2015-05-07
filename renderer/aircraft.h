@@ -37,6 +37,7 @@ public:
     void set_intake_ramp(float value);
     void set_special_bay(bool value);
     void set_missile_bay(bool value);
+    void set_mgun_bay(bool value);
     bool is_special_bay_opened();
     bool is_special_bay_closed();
     bool is_missile_ready();

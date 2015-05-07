@@ -563,6 +563,13 @@ void aircraft::set_missile_bay(bool value)
 
 //------------------------------------------------------------
 
+void aircraft::set_mgun_bay(bool value)
+{
+    m_mesh.set_anim_speed(0, 'gunc', value ? 5.0f : -5.0f);
+}
+
+//------------------------------------------------------------
+
 bool aircraft::is_special_bay_opened()
 {
     return m_mesh.get_relative_anim_time(0, 'spwc') > 0.999f
@@ -590,39 +597,7 @@ bool aircraft::is_missile_ready()
 
 void aircraft::update(int dt)
 {
-    //ToDo
-/*
-    //weapon animations
-
-    m_mesh.set_anim_speed(0, 'gunc', 5.0 * (m_controls_mgun ? 1.0f : -1.0f));
-    m_controls_mgun = false;
-
-    if (m_controls_rocket)
-    {
-        //if (m_mesh.get_relative_anim_time(0, 'spwc') < 0.01f)
-        if (!m_special_selected)
-            m_rocket_bay_time = 3.0f;
-        m_controls_rocket = false;
-    }
-
-    m_rocket_bay_time -= kdt;
-    m_mesh.set_anim_speed(0, 'misc', m_rocket_bay_time > 0.01f ? 1.0f : -1.0f);
-
-    if (m_controls_special)
-    {
-        m_special_selected = !m_special_selected;
-        if (m_special_selected)
-            m_rocket_bay_time = 0.0f;
-        m_controls_special = false;
-    }
-
-    m_mesh.set_anim_speed(0, 'spwc', m_special_selected ? 1.0f : -1.0f);
-    m_mesh.set_anim_speed(0, 'swcc', m_special_selected ? 1.0f : -1.0f);
-    m_mesh.set_anim_speed(0, 'swc3', m_special_selected ? 1.0f : -1.0f);
-*/
-
-
-    //cockpit
+    //cockpit animations
     auto pyr = m_rot.get_euler();
 
     //attitude indicator
@@ -661,12 +636,16 @@ void aircraft::update(int dt)
     //radio altimeter
     m_mesh.set_relative_anim_time(1, 'altr', m_pos.y / 10000.0f); //ToDo: adjust max height, trace
     m_mesh.set_relative_anim_time(1, 'alts', m_pos.y / 10000.0f); //ToDo: adjust max height, trace
-/*
+
+    //ToDo
+    /*
     if (dt)
     {
         //variometer
+        static nya_math::vec3 prev_pos = m_pos;
         float vert_speed = ((m_pos - prev_pos) / float(dt)).y;
         m_mesh.set_relative_anim_time(1, 'vspm', vert_speed * 0.5 + 0.5);
+        prev_pos = m_pos;
 
         //accel
         //float accel = (m_speed - prev_speed) / float(dt);
@@ -675,9 +654,8 @@ void aircraft::update(int dt)
 
     m_mesh.set_relative_anim_time(1, 'aoam', nya_math::min(10.0 * nya_math::max(1.0 - nya_math::vec3::normalize(m_vel)*forward, 0.0), 1.0));
     m_mesh.set_relative_anim_time(1, 'ecsp', 0.5 + 0.5 * m_thrust_time/m_params.move.accel.thrustMinWait);
-
-    //erpm - engine rpm
-*/
+     //erpm - engine rpm
+    */
 
     m_mesh.update(dt);
 }

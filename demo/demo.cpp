@@ -255,7 +255,7 @@ int main(void)
 
         app_time = time;
 
-        static bool speed10x = false;
+        static bool speed10x = false, paused = false;
 
         if (platform.get_width() != screen_width || platform.get_height() != screen_height)
         {
@@ -263,7 +263,7 @@ int main(void)
             scene.resize(screen_width, screen_height);
         }
 
-        world.update(speed10x ? dt * 10 : dt);
+        world.update(paused ? 0 : (speed10x ? dt * 10 : dt));
         scene.draw();
         platform.end_frame();
 
@@ -337,10 +337,10 @@ int main(void)
         if (platform.get_key(GLFW_KEY_V)) key_camera = true;
 
         static bool last_btn_p = false, last_btn_esc = false;
-/*
+
         if ((platform.get_key(GLFW_KEY_P) && !last_btn_p) || (platform.get_key(GLFW_KEY_ESCAPE) && !last_btn_esc))
-            scene.pause();
-*/
+            scene.pause(paused = !paused);
+
         last_btn_p = platform.get_key(GLFW_KEY_P);
         last_btn_esc = platform.get_key(GLFW_KEY_ESCAPE);
         speed10x = platform.get_key(GLFW_KEY_RIGHT_SHIFT);
@@ -374,6 +374,9 @@ int main(void)
             current_location = (current_location + 1) % locations_count;
             world.set_location(locations[current_location]);
             scene.loading(false);
+
+            player->set_pos(nya_math::vec3(-300, 50, 2000));
+            player->set_rot(nya_math::quat());
         }
 
         if (fkeys[1] && fkeys[1] != fkeys_last[1])
@@ -385,6 +388,9 @@ int main(void)
             current_location = (current_location + locations_count - 1) % locations_count;
             world.set_location(locations[current_location]);
             scene.loading(false);
+
+            player->set_pos(nya_math::vec3(-300, 50, 2000));
+            player->set_rot(nya_math::quat());
         }
 
         const unsigned int planes_count = sizeof(planes) / sizeof(planes[0]);

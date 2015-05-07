@@ -110,6 +110,9 @@ void plane::update(int dt, bool player)
         }
     }
 
+    if (controls.mgun != last_controls.mgun)
+        render->set_mgun_bay(controls.mgun);
+
     //cockpit animations and ui
 
     if (player)
