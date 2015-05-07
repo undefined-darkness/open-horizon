@@ -575,7 +575,7 @@ void aircraft::update(int dt)
     m_mesh.set_anim_speed(0, 'swc3', m_special_selected ? 1.0f : -1.0f);
 */
 
-/*
+
     //cockpit
     auto pyr = m_rot.get_euler();
 
@@ -600,14 +600,7 @@ void aircraft::update(int dt)
     m_mesh.set_relative_anim_time(1, 'cmps', 1.0f-pyr.y);
 
     //speed
-    m_mesh.set_relative_anim_time(1, 'aspk', speed / m_params.move.speed.speedMax);
-
-    //barometric altimeter
-    m_mesh.set_relative_anim_time(1, 'altk', m_pos.y / 10000.0f); //ToDo: adjust max height
-    m_mesh.set_relative_anim_time(1, 'altm', m_pos.y / 10000.0f); //ToDo: adjust max height
-    //radio altimeter
-    m_mesh.set_relative_anim_time(1, 'altr', m_pos.y / 10000.0f); //ToDo: adjust max height, trace
-    m_mesh.set_relative_anim_time(1, 'alts', m_pos.y / 10000.0f); //ToDo: adjust max height, trace
+    m_mesh.set_relative_anim_time(1, 'aspk', m_speed / 2000.0); //ToDo: adjust max speed
 
     //clocks
     unsigned int seconds = m_time / 1000;
@@ -616,6 +609,13 @@ void aircraft::update(int dt)
     m_mesh.set_relative_anim_time(1, 'ackh', ((seconds / 60 / 60) % 12 / (12.0)));
     m_time += dt;
 
+    //barometric altimeter
+    m_mesh.set_relative_anim_time(1, 'altk', m_pos.y / 10000.0f); //ToDo: adjust max height
+    m_mesh.set_relative_anim_time(1, 'altm', m_pos.y / 10000.0f); //ToDo: adjust max height
+    //radio altimeter
+    m_mesh.set_relative_anim_time(1, 'altr', m_pos.y / 10000.0f); //ToDo: adjust max height, trace
+    m_mesh.set_relative_anim_time(1, 'alts', m_pos.y / 10000.0f); //ToDo: adjust max height, trace
+/*
     if (dt)
     {
         //variometer
