@@ -557,6 +557,13 @@ void aircraft::set_mgun_bay(bool value)
 
 //------------------------------------------------------------
 
+bool aircraft::has_special_bay()
+{
+    return m_mesh.has_anim(0, 'spwc') || m_mesh.has_anim(0, 'swcc') || m_mesh.has_anim(0, 'swc3');
+}
+
+//------------------------------------------------------------
+
 bool aircraft::is_special_bay_opened()
 {
     return m_mesh.get_relative_anim_time(0, 'spwc') > 0.999f
@@ -577,7 +584,50 @@ bool aircraft::is_special_bay_closed()
 
 bool aircraft::is_missile_ready()
 {
+    if (!m_mesh.has_anim(0, 'misc'))
+        return true;
+
     return m_mesh.get_relative_anim_time(0, 'misc') >= 0.999f;
+}
+
+//------------------------------------------------------------
+
+nya_math::vec3 aircraft::get_missile_mount_pos(int idx)
+{
+    if (idx < 0 || idx >= m_msls_mount.size())
+        return nya_math::vec3();
+
+    return m_mesh.get_bone_pos(0, m_msls_mount[idx].bone_idx);
+}
+
+//------------------------------------------------------------
+
+nya_math::quat aircraft::get_missile_mount_rot(int idx)
+{
+    if (idx < 0 || idx >= m_msls_mount.size())
+        return nya_math::quat();
+
+    return m_mesh.get_bone_rot(0, m_msls_mount[idx].bone_idx);
+}
+
+//------------------------------------------------------------
+
+nya_math::vec3 aircraft::get_special_mount_pos(int idx)
+{
+    if (idx < 0 || idx >= m_special_mount.size())
+        return nya_math::vec3();
+
+    return m_mesh.get_bone_pos(0, m_special_mount[idx].bone_idx);
+}
+
+//------------------------------------------------------------
+
+nya_math::quat aircraft::get_special_mount_rot(int idx)
+{
+    if (idx < 0 || idx >= m_special_mount.size())
+        return nya_math::quat();
+
+    return m_mesh.get_bone_rot(0, m_special_mount[idx].bone_idx);
 }
 
 //------------------------------------------------------------

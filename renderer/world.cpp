@@ -28,6 +28,16 @@ aircraft_ptr world::add_aircraft(const char *name, int color, bool player)
 
 //------------------------------------------------------------
 
+missile_ptr world::add_missile(const char *name)
+{
+    missile_ptr m(true);
+    m->mdl.load((std::string("w_") + name).c_str(), m_location.get_params());
+    m_missiles.push_back(m);
+    return m;
+}
+
+//------------------------------------------------------------
+
 void world::set_location(const char *name)
 {
     m_location_name.assign(name);
@@ -53,6 +63,8 @@ void world::update(int dt)
 
     m_aircrafts.erase(std::remove_if(m_aircrafts.begin(), m_aircrafts.end(), [](aircraft_ptr &a){ return a.get_ref_count() <= 1; }), m_aircrafts.end());
     for (auto &a: m_aircrafts) a->update(dt);
+
+    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m){ return m.get_ref_count() <= 1; }), m_missiles.end());
 }
 
 //------------------------------------------------------------

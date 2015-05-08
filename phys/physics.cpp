@@ -28,9 +28,20 @@ plane_ptr world::add_plane(const char *name)
 {
     plane_ptr p(true);
     p->params.load(("Player/Behavior/param_p_" + std::string(name) + ".bin").c_str());
-    p->vel = nya_math::vec3(0.0, 0.0, p->params.move.speed.speedCruising);
+    const float kmph_to_meps = 1.0 / 3.6f;
+    p->vel = nya_math::vec3(0.0, 0.0, p->params.move.speed.speedCruising * kmph_to_meps);
     m_planes.push_back(p);
     return p;
+}
+
+//------------------------------------------------------------
+
+missile_ptr world::add_missile(const char *name)
+{
+    missile_ptr m(true);
+
+    m_missiles.push_back(m);
+    return m;
 }
 
 //------------------------------------------------------------
@@ -39,6 +50,9 @@ void world::update(int dt, std::function<void(object_ptr &a, object_ptr &b)> on_
 {
     m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](plane_ptr &p){ return p.get_ref_count() <= 1; }), m_planes.end());
     for (auto &p: m_planes) p->update(dt);
+
+    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m){ return m.get_ref_count() <= 1; }), m_missiles.end());
+    for (auto &m: m_missiles) m->update(dt);
 }
 
 //------------------------------------------------------------
@@ -46,6 +60,10 @@ void world::update(int dt, std::function<void(object_ptr &a, object_ptr &b)> on_
 void plane::update(int dt)
 {
     float kdt = dt * 0.001f;
+
+    const float kmph_to_meps = 1.0 / 3.6f;
+
+    vel *= (1.0 / kmph_to_meps);
 
     //simulation
 
@@ -148,14 +166,24 @@ void plane::update(int dt)
 
     //apply speed
 
-    const float kmph_to_meps = 1.0 / 3.6f;
-    pos += vel * (kmph_to_meps * kdt);
+    vel *= kmph_to_meps;
+
+    pos += vel * kdt;
     if (pos.y < 5.0f)
     {
         pos.y = 5.0f;
         rot = nya_math::quat(-0.5, rot.get_euler().y, 0.0);
         vel = rot.rotate(nya_math::vec3(0.0, 0.0, 1.0)) * params.move.speed.speedCruising * 0.8;
     }
+}
+
+//------------------------------------------------------------
+
+void missile::update(int dt)
+{
+    float kdt = 0.001f * dt;
+    vel.y -= 9.8 * kdt;
+    pos += vel * kdt;
 }
 
 //------------------------------------------------------------

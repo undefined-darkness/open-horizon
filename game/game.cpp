@@ -89,6 +89,21 @@ private:
 
 //------------------------------------------------------------
 
+missile_ptr world::add_missile(const char *model, const char *id)
+{
+    if (!model || !id)
+        return missile_ptr();
+
+    missile_ptr m(true);
+    m->phys = m_phys_world.add_missile(id);
+    m->render = m_render_world.add_missile(model);
+
+    m_missiles.push_back(m);
+    return m;
+}
+
+//------------------------------------------------------------
+
 plane_ptr world::add_plane(const char *name, int color, bool player)
 {
     if (!name)
@@ -107,7 +122,12 @@ plane_ptr world::add_plane(const char *name, int color, bool player)
     {
         p->render->load_missile(wi->missile.model.c_str(), m_render_world.get_location_params());
         if (!wi->special.empty())
+        {
             p->render->load_special(wi->special[0].model.c_str(), m_render_world.get_location_params());
+            p->special_model = wi->special[0].model, p->special_id = wi->special[0].id;
+        }
+
+        p->missile_model = wi->missile.model, p->missile_id = wi->missile.id;
     }
 
     m_planes.push_back(p);
@@ -126,6 +146,7 @@ void world::set_location(const char *name)
 void world::update(int dt)
 {
     m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](plane_ptr &p){ return p.get_ref_count() <= 1; }), m_planes.end());
+    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m){ return m.get_ref_count() <= 1; }), m_missiles.end());
 
     for (auto &p: m_planes)
         p->phys->controls = p->controls;
@@ -133,21 +154,25 @@ void world::update(int dt)
     m_phys_world.update(dt, [](phys::object_ptr &a, phys::object_ptr &b) {});
 
     for (auto &p: m_planes)
-        p->update(dt, p->render == m_render_world.get_player_aircraft());
+        p->update(dt, *this, p->render == m_render_world.get_player_aircraft());
+
+    for (auto &m: m_missiles)
+        m->update(dt, *this);
 
     m_render_world.update(dt);
 }
 
 //------------------------------------------------------------
 
-void plane::update(int dt, bool player)
+void plane::update(int dt, world &w, bool player)
 {
     render->set_pos(phys->pos);
     render->set_rot(phys->rot);
 
     //aircraft animations
 
-    const float speed = phys->vel.length();
+    const float meps_to_kmph = 3.6f;
+    const float speed = phys->vel.length() * meps_to_kmph;
     const float speed_k = nya_math::max((phys->params.move.speed.speedMax - speed) / phys->params.move.speed.speedMax, 0.1f);
 
     const float el = nya_math::clamp(-controls.rot.z - controls.rot.x, -1.0f, 1.0f) * speed_k;
@@ -170,21 +195,67 @@ void plane::update(int dt, bool player)
 
     if (controls.change_weapon && controls.change_weapon != last_controls.change_weapon)
     {
-        if (!special_weapon && render->is_special_bay_closed())
-            special_weapon = true;
+        if (render->has_special_bay())
+        {
+            if (!special_weapon && render->is_special_bay_closed())
+                special_weapon = true;
 
-        if (special_weapon && render->is_special_bay_opened())
-            special_weapon = false;
+            if (special_weapon && render->is_special_bay_opened())
+                special_weapon = false;
 
-        render->set_special_bay(special_weapon);
+            render->set_special_bay(special_weapon);
+        }
+        else
+            special_weapon = !special_weapon;
     }
 
     if (controls.missile && controls.missile != last_controls.missile)
     {
-        if (!special_weapon)
+        if (special_weapon)
+        {
+            if (!render->has_special_bay() || render->is_special_bay_opened())
+            {
+                if (render->get_special_mount_count() > 0 && !special_id.empty())
+                {
+                    int count = 1;
+                    if (special_id[1] == '4')
+                        count = 4;
+                    else if (special_id[1] == '6')
+                        count = 6;
+
+                    render->update(0);
+                    for (int i = 0; i < count; ++i)
+                    {
+                        auto m = w.add_missile(special_model.c_str(), special_id.c_str());
+                        special_mount_idx = ++special_mount_idx % render->get_special_mount_count();
+                        m->phys->pos = render->get_special_mount_pos(special_mount_idx);
+                        m->phys->rot = render->get_special_mount_rot(special_mount_idx);
+                        m->phys->vel = phys->vel;
+                        missiles_shot.push_back(m);
+                    }
+                }
+            }
+        }
+        else
         {
             rocket_bay_time = 3000;
             render->set_missile_bay(true);
+            need_fire_missile = true;
+        }
+    }
+
+    if (need_fire_missile && render->is_missile_ready())
+    {
+        need_fire_missile = false;
+        if (render->get_missile_mount_count() > 0)
+        {
+            render->update(0);
+            auto m = w.add_missile(missile_model.c_str(), missile_id.c_str());
+            missile_mount_idx = ++missile_mount_idx % render->get_missile_mount_count();
+            m->phys->pos = render->get_missile_mount_pos(missile_mount_idx);
+            m->phys->rot = render->get_missile_mount_rot(missile_mount_idx);
+            m->phys->vel = phys->vel;
+            missiles_shot.push_back(m);
         }
     }
 
@@ -219,6 +290,14 @@ void plane::update(int dt, bool player)
     }
 
     last_controls = controls;
+}
+
+//------------------------------------------------------------
+
+void missile::update(int dt, world &w)
+{
+    render->mdl.set_pos(phys->pos);
+    render->mdl.set_rot(phys->rot);
 }
 
 //------------------------------------------------------------

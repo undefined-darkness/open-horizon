@@ -229,6 +229,9 @@ void scene::draw_scene(const char *pass, const char *tags)
 
             a->draw(0);
         }
+
+        for (auto &m:m_missiles)
+            m->mdl.draw(0);
     }
     else if (strcmp(tags, "player") == 0)
     {

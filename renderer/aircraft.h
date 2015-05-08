@@ -41,9 +41,18 @@ public:
     void set_special_bay(bool value);
     void set_missile_bay(bool value);
     void set_mgun_bay(bool value);
+
+    //weapons
+    bool has_special_bay();
     bool is_special_bay_opened();
     bool is_special_bay_closed();
     bool is_missile_ready();
+    int get_missile_mount_count() { return (int)m_msls_mount.size(); }
+    nya_math::vec3 get_missile_mount_pos(int idx);
+    nya_math::quat get_missile_mount_rot(int idx);
+    int get_special_mount_count() { return (int)m_special_mount.size(); }
+    nya_math::vec3 get_special_mount_pos(int idx);
+    nya_math::quat get_special_mount_rot(int idx);
 
     //cockpit and ui
     void set_time(unsigned int time) { m_time = time * 1000; } //in seconds

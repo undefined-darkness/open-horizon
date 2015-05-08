@@ -91,6 +91,7 @@
 @set_target main
 @clear
 @draw_scene default = location
+@draw_scene default = aircrafts
 @draw_scene default = player
 @draw_scene default = clouds_flat
 @draw_scene default = clouds_obj
