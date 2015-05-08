@@ -18,7 +18,7 @@ class fhm_mesh
 {
 public:
     bool load(const char *file_name);
-    bool load_material(const char *file_name, const char *shader);
+    bool load_material(int lod_idx, int material_idx, const char *file_name, const char *shader);
 
 public:
     void draw(int lod_idx);

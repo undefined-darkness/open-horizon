@@ -17,6 +17,7 @@
 #include <stdint.h>
 
 #include "shared.h"
+#include "util/half.h"
 
 #include "render/debug_draw.h"
 extern nya_render::debug_draw test;
@@ -24,6 +25,14 @@ extern nya_render::debug_draw test;
 //------------------------------------------------------------
 
 static nya_math::vec3 light_dir = nya_math::vec3(0.5f, 1.0f, 0.5f).normalize(); //ToDo
+
+//------------------------------------------------------------
+
+void float3_to_half3(const float *from, unsigned short *to)
+{
+    for (int i = 0; i < 3; ++i)
+        to[i] = Float16Compressor::compress(from[i]);
+}
 
 //------------------------------------------------------------
 
@@ -141,15 +150,22 @@ bool fhm_mesh::load(const char *file_name)
 
 //------------------------------------------------------------
 
-bool fhm_mesh::load_material(const char *file_name, const char *shader)
+bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_name, const char *shader)
 {
     fhm_file m;
     m.open(file_name);
+    int mat_idx = 0;
     for (int i = 0; i < m.get_chunks_count(); ++i)
     {
         auto t = m.get_chunk_type(i);
         if (t == 'RXTM')
             continue;
+
+        if (material_idx >=0 && mat_idx != material_idx)
+        {
+            ++mat_idx;
+            continue;
+        }
 
         typedef std::vector< std::pair<std::string, nya_math::vec4> > material_params;
         std::vector<material_params> material;
@@ -172,6 +188,11 @@ bool fhm_mesh::load_material(const char *file_name, const char *shader)
         auto header = r.read<mate_header>();
         if (memcmp(header.sign, "MATE", 4) != 0)
             return false;
+
+        //printf("MATE %d %d\n", header.groups_count, header.render_groups_count); continue;
+
+        assert(!lods.empty());
+        assert(lods[lod_idx].mesh.get_groups_count() == header.render_groups_count);
 
         material.resize(header.mat_count);
         r.seek(header.offset_to_mat_offsets);
@@ -275,14 +296,11 @@ bool fhm_mesh::load_material(const char *file_name, const char *shader)
 
             for (int k = 0; k < b.render_groups_count; ++k)
             {
-                auto &m = lods[i].mesh.modify_material(idx++);
+                auto &m = lods[lod_idx].mesh.modify_material(idx++);
                 m.get_default_pass().set_shader(nya_scene::shader(shader));
                 m.set_param(m.get_param_idx("light dir"), light_dir.x, light_dir.y, light_dir.z, 0.0f);
 
                 auto r = render_groups[b.render_groups_offset + k];
-
-                assert(!lods.empty());
-                assert(lods[i].mesh.get_groups_count() == header.render_groups_count);
 
                 assert(r < material.size());
 
@@ -304,10 +322,10 @@ bool fhm_mesh::load_material(const char *file_name, const char *shader)
             }
         }
 
-        return true;  //ToDo: lods
+        ++mat_idx;
     }
 
-    return false;
+    return true;
 }
 
 //------------------------------------------------------------
@@ -767,13 +785,14 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     {
         uint ibuf_offset;
         uint vbuf_offset;
-        uint unknown_zero;
+        ushort unknown1;
+        ushort unknown2;
         ushort vcount;
         ushort vertex_format;
         uint offset_to_tex_info;
         uint unknown_zero3[3];
         ushort icount;
-        ushort unknown; //skining-related
+        ushort unknown3; //skining-related
         uint unknown_zero5[3];
     };
 
@@ -957,6 +976,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
     //for(auto g:groups) printf("%s\n", g.name.c_str()); printf("\n");
 
+    uint add_vertex_offset = 0; //ToDo
     for (int i = 0; i < header.groups_count; ++i)
     {
         group &gf = groups[i];
@@ -1030,15 +1050,15 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                         memcpy(verts[i + first_index].bitangent, &ndxr_verts[i * 11 + 5], sizeof(verts[0].bitangent));
                     }
                     break;
-/*
-                //case 4112: //ToDo
-                //case 4369:
+
+                case 4112:
+                case 4369:
                 case 4371:
                 {
                     for (int i = 0; i < rgf.header.vcount; ++i)
                         memcpy(verts[i + first_index].tc, &ndxr_verts[i * 2], sizeof(verts[0].tc));
 
-                    reader.skip(header.vertices_buffer_size);
+                    reader.seek(header.offset_to_indices + 48 + header.indices_buffer_size + header.vertices_buffer_size + add_vertex_offset);
                     const float *ndxr_verts = (float *)reader.get_data();
 
                     //print_data(reader,reader.get_offset(),512);
@@ -1051,24 +1071,33 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                             for (int i = 0; i < rgf.header.vcount; ++i)
                             {
                                 memcpy(verts[i + first_index].pos, &ndxr_verts[i * 12], sizeof(verts[0].pos));
+                                float3_to_half3(&ndxr_verts[i * 12 + 3], verts[i + first_index].normal);
                                 //ToDo
                             }
+                            add_vertex_offset += rgf.header.vcount * 12 * 4;
                             break;
 
                         case 4369:
                             for (int i = 0; i < rgf.header.vcount; ++i)
                             {
                                 memcpy(verts[i + first_index].pos, &ndxr_verts[i * 16], sizeof(verts[0].pos));
+                                float3_to_half3(&ndxr_verts[i * 16 + 3], verts[i + first_index].normal);
                                 //ToDo
                             }
+                            //print_data(reader,reader.get_offset(),512);
+                            add_vertex_offset += rgf.header.vcount * 16 * 4;
                             break;
 
                         case 4371:
                             for (int i = 0; i < rgf.header.vcount; ++i)
                             {
                                 memcpy(verts[i + first_index].pos, &ndxr_verts[i * 24], sizeof(verts[0].pos));
+                                float3_to_half3(&ndxr_verts[i * 24 + 3], verts[i + first_index].normal);
+                                //float3_to_half3(&ndxr_verts[i * 24 + 12], verts[i + first_index].tangent);
+                                //float3_to_half3(&ndxr_verts[i * 24 + 6], verts[i + first_index].bitangent);
                                 //ToDo
                             }
+                            add_vertex_offset += rgf.header.vcount * 24 * 4;
                             break;
                     }
                 }
@@ -1077,7 +1106,6 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                 case 4096:
                     //ToDo
                     break;
-*/
 /*
                 case 4096:
                     for (int i = 0; i < rgf.header.vcount; ++i)
@@ -1092,7 +1120,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                     //  stride = 3*sizeof(float), rg.vbo.set_tc(0, 4 * sizeof(float), 3); break;
 
                 default:
-                    //printf("ERROR: invalid stride. Vertex format: %d\n", rgf.header.vertex_format);
+                    printf("ERROR: invalid stride. Vertex format: %d\n", rgf.header.vertex_format);
                     //print_data(reader,reader.get_offset(),512);
                     continue;
             }

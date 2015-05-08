@@ -311,8 +311,12 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     m_camera_offset = info->camera_offset;
 
     m_mesh.load(("p_" + name_str).c_str(), params);
-    m_mesh.set_texture(0, "ambient", ("model_id/tdb/mech/plyr/p_" + name_str + "/00/p_" + name_str + "_00_amb.img").c_str());
-    m_mesh.set_texture(0, "normal", ("model_id/tdb/mech/plyr/p_" + name_str + "/00/p_" + name_str + "_00_nor.img").c_str());
+    auto amb_name = "model_id/tdb/mech/plyr/p_" + name_str + "/00/p_" + name_str + "_00_amb.img";
+    m_mesh.set_texture(0, "ambient", amb_name.c_str());
+    m_mesh.set_texture(3, "ambient", amb_name.c_str());
+    auto norm_name = "model_id/tdb/mech/plyr/p_" + name_str + "/00/p_" + name_str + "_00_nor.img";
+    m_mesh.set_texture(0, "normal", norm_name.c_str());
+    m_mesh.set_texture(3, "normal", norm_name.c_str());
 
     char buf[1024];
 
@@ -327,12 +331,17 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     for (int i = 0; i < 6; ++i)
         baker.set_color(i, color.colors[i]);
 
-    m_mesh.set_texture(0, "diffuse", baker.bake() );
+    auto diff_tex = baker.bake();
+    m_mesh.set_texture(0, "diffuse", diff_tex );
+    m_mesh.set_texture(3, "diffuse", diff_tex );
     sprintf(buf, "model_id/tdb/mech/plyr/p_%s/%02d/p_%s_%02d_spe.img", name, color.coledit_idx, name, color.coledit_idx);
     m_mesh.set_texture(0, "specular", buf);
+    m_mesh.set_texture(3, "specular", buf);
 
     sprintf(buf, "model_id/mech/plyr/p_%s/p_%s_pcol%02d.fhm", name, name, color.coledit_idx);
-    m_mesh.load_material(buf, "shaders/player_plane.nsh");
+    m_mesh.load_material(0, 0, buf, "shaders/player_plane.nsh");
+    if (m_mesh.get_lods_count() == 11)
+        m_mesh.load_material(3, 2, buf, "shaders/player_plane.nsh");
 
     m_mesh.set_relative_anim_time(0, 'rudl', 0.5);
     m_mesh.set_relative_anim_time(0, 'rudr', 0.5);
@@ -418,8 +427,12 @@ void aircraft::load_special(const char *name, const location_params &params)
 
 void aircraft::apply_location(const char *location_name, const location_params &params)
 {
-    m_mesh.set_texture(0, "reflection", shared::get_texture(shared::load_texture((std::string("Map/envmap_") + location_name + ".nut").c_str())));
-    m_mesh.set_texture(0, "ibl", shared::get_texture(shared::load_texture((std::string("Map/ibl_") + location_name + ".nut").c_str())));
+    auto refl_tex = shared::get_texture(shared::load_texture((std::string("Map/envmap_") + location_name + ".nut").c_str()));
+    m_mesh.set_texture(0, "reflection", refl_tex);
+    m_mesh.set_texture(3, "reflection", refl_tex);
+    auto ibl_tex = shared::get_texture(shared::load_texture((std::string("Map/ibl_") + location_name + ".nut").c_str()));
+    m_mesh.set_texture(0, "ibl", ibl_tex);
+    m_mesh.set_texture(3, "ibl", ibl_tex);
 }
 
 //------------------------------------------------------------
