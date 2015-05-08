@@ -3,10 +3,17 @@
 
 <weapons>
 
+<aircraft name="m29a">
+    <msl id="MISSILE" model="msl_r0" count="270"/>
+    <spc id="QAAM" model="qaa_r0" count="42"/>
+    <spc id="_4AAM" model="aam_r0" count="36"/>
+    <flr id="FlareFighter" count="5"/>
+</aircraft>
+
 <aircraft name="su33">
     <msl id="MISSILE" model="msl_r0" count="198"/>
     <spc id="SAAM" model="saa_r0" count="24"/>
-    <spc id="_6AAM" model="aam_r0" count="28"/>
+    <spc id="_6AAM" model="xla_r0" count="28"/>
     <flr id="FlareFighter" count="5"/>
 </aircraft>
 
@@ -17,6 +24,20 @@
     <flr id="FlareFighter" count="5"/>
 </aircraft>
 
+<aircraft name="su37">
+    <msl id="MISSILE" model="msl_r0" count="297"/>
+    <spc id="QAAM" model="qaa_r0" count="45"/>
+    <spc id="_4AAM" model="aam_r0" count="39"/>
+    <flr id="FlareFighter" count="5"/>
+</aircraft>
+
+<aircraft name="su47">
+    <msl id="MISSILE" model="msl_r0" count="297"/>
+    <spc id="QAAM" model="qaa_r0" count="45"/>
+    <spc id="SAAM" model="saa_r0" count="36"/>
+    <flr id="FlareFighter" count="5"/>
+</aircraft>
+
 <aircraft name="pkfa">
     <msl id="MISSILE" model="msl_r0" count="234"/>
     <spc id="_4AAM" model="aam_r0" count="32"/>
@@ -24,10 +45,38 @@
     <flr id="FlareMultirole" count="6"/>
 </aircraft>
 
+<aircraft name="f14d">
+    <msl id="MISSILE" model="msl_a0" count="270"/>
+    <spc id="_6AAM" model="xla_a0" count="39"/>
+    <spc id="SAAM" model="saa_a0" count="33"/>
+    <flr id="FlareMultirole" count="5"/>
+</aircraft>
+
+<aircraft name="f15c">
+    <msl id="MISSILE" model="msl_a0" count="324"/>
+    <spc id="_4AAM" model="aam_a0" count="42"/>
+    <spc id="SAAM" model="saa_a0" count="39"/>
+    <flr id="FlareMultirole" count="5"/>
+</aircraft>
+
+<aircraft name="f16c">
+    <msl id="MISSILE" model="msl_a0" count="258"/>
+    <spc id="QAAM" model="qaa_a0" count="39"/>
+    <spc id="_4AAM" model="aam_a0" count="33"/>
+    <flr id="FlareMultirole" count="5"/>
+</aircraft>
+
 <aircraft name="f22a">
     <msl id="MISSILE" model="msl_a0" count="226"/>
     <spc id="_4AAM" model="aam_a0" count="30"/>
     <spc id="QAAM" model="qaa_a0" count="36"/>
+    <flr id="FlareMultirole" count="5"/>
+</aircraft>
+
+<aircraft name="typn">
+    <msl id="MISSILE" model="msl_a0" count="297"/>
+    <spc id="_4AAM" model="aam_a0" count="39"/>
+    <spc id="_6AAM" model="xla_a0" count="42"/>
     <flr id="FlareMultirole" count="5"/>
 </aircraft>
 

@@ -20,6 +20,7 @@ public:
     void load_special(const char *name, const location_params &params);
     void apply_location(const char *location_name, const location_params &params);
     void draw(int lod_idx);
+    int get_lods_count() const { return m_mesh.get_lods_count(); }
     void update(int dt);
 
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; m_mesh.set_pos(pos); }

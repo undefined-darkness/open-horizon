@@ -16,6 +16,7 @@ class model
 public:
     bool load(const char *name, const location_params &params);
     void draw(int lod_idx) { m_mesh.draw(lod_idx); }
+    int get_lods_count() const { return m_mesh.get_lods_count(); }
     void update(int dt) { m_mesh.update(dt); }
 
     void set_pos(const nya_math::vec3 &pos) { m_mesh.set_pos(pos); }

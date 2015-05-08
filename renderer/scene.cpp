@@ -235,7 +235,15 @@ void scene::draw_scene(const char *pass, const char *tags)
         if (m_player_aircraft.is_valid())
         {
             if (m_player_aircraft->get_camera_mode() == aircraft::camera_mode_third)
+            {
                 m_player_aircraft->draw(0);
+
+                const int lods = m_player_aircraft->get_lods_count();
+                if (lods == 11)
+                    m_player_aircraft->draw(3); //engine
+
+                //m_player_aircraft->draw(4); //(3 if no engine skining) landing gear
+            }
         }
     }
     else if (strcmp(tags, "cockpit") == 0)

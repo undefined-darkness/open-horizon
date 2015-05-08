@@ -342,9 +342,9 @@
 		F5DAA8CB1AD7CE5000C2C633 /* resources */ = {
 			isa = PBXGroup;
 			children = (
-				F578323F1AFC20B1005FE829 /* weapons.xml */,
 				F5C6D39B1AF96A08006FB7E6 /* DATA.PAC.xml */,
 				F5C6D39C1AF96A08006FB7E6 /* postprocess.txt */,
+				F578323F1AFC20B1005FE829 /* weapons.xml */,
 				F5C6D39D1AF96A08006FB7E6 /* shaders */,
 			);
 			name = resources;

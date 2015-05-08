@@ -772,7 +772,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
         ushort vertex_format;
         uint offset_to_tex_info;
         uint unknown_zero3[3];
-        uint icount;
+        ushort icount;
+        ushort unknown; //skining-related
         uint unknown_zero5[3];
     };
 
@@ -1008,7 +1009,6 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
             switch(rgf.header.vertex_format)
             {
-
                 case 4358:
                     for (int i = 0; i < rgf.header.vcount; ++i)
                     {
@@ -1031,6 +1031,54 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                     }
                     break;
 /*
+                //case 4112: //ToDo
+                //case 4369:
+                case 4371:
+                {
+                    for (int i = 0; i < rgf.header.vcount; ++i)
+                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 2], sizeof(verts[0].tc));
+
+                    reader.skip(header.vertices_buffer_size);
+                    const float *ndxr_verts = (float *)reader.get_data();
+
+                    //print_data(reader,reader.get_offset(),512);
+
+                    //ToDo: skining
+
+                    switch (rgf.header.vertex_format)
+                    {
+                        case 4112:
+                            for (int i = 0; i < rgf.header.vcount; ++i)
+                            {
+                                memcpy(verts[i + first_index].pos, &ndxr_verts[i * 12], sizeof(verts[0].pos));
+                                //ToDo
+                            }
+                            break;
+
+                        case 4369:
+                            for (int i = 0; i < rgf.header.vcount; ++i)
+                            {
+                                memcpy(verts[i + first_index].pos, &ndxr_verts[i * 16], sizeof(verts[0].pos));
+                                //ToDo
+                            }
+                            break;
+
+                        case 4371:
+                            for (int i = 0; i < rgf.header.vcount; ++i)
+                            {
+                                memcpy(verts[i + first_index].pos, &ndxr_verts[i * 24], sizeof(verts[0].pos));
+                                //ToDo
+                            }
+                            break;
+                    }
+                }
+                break;
+
+                case 4096:
+                    //ToDo
+                    break;
+*/
+/*
                 case 4096:
                     for (int i = 0; i < rgf.header.vcount; ++i)
                     {
@@ -1040,11 +1088,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                     break;
 */
                     // case 4865: stride = 11 * 4; break;
-                    //case 4371:
-                    //  stride = 8*sizeof(float), rg.vbo.set_tc(0, 4 * sizeof(float), 3); break;
                     //case 4096:
                     //  stride = 3*sizeof(float), rg.vbo.set_tc(0, 4 * sizeof(float), 3); break;
-                    //4112 stride = 8 * 4, half
 
                 default:
                     //printf("ERROR: invalid stride. Vertex format: %d\n", rgf.header.vertex_format);
@@ -1064,8 +1109,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                     indices.push_back(indices.back());
             }
 
-            uint ind_offset = uint(indices.size());
-            uint ind_size = rgf.header.icount;
+            const uint ind_offset = uint(indices.size());
+            const uint ind_size = rgf.header.icount;
             indices.resize(ind_offset + ind_size);
             for (int i = 0; i < ind_size; ++i)
                 indices[i + ind_offset] = first_index + ndxr_indices[i];
