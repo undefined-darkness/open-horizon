@@ -60,6 +60,7 @@ struct missile: public object
 {
     phys::missile_ptr phys;
     renderer::missile_ptr render;
+    ivalue time;
 
     void update(int dt, world &w);
 };
@@ -80,7 +81,11 @@ struct plane: public object
 
     std::string missile_model, missile_id;
     ivalue missile_mount_idx;
+    ivalue missile_cooldown[2];
+    std::vector<ivalue> missile_mount_cooldown;
     std::string special_model, special_id;
+    ivalue special_cooldown[2];
+    std::vector<ivalue> special_mount_cooldown;
     ivalue special_mount_idx;
 
     std::vector<missile_ptr> missiles_shot;

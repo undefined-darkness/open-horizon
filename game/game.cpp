@@ -98,6 +98,10 @@ missile_ptr world::add_missile(const char *model, const char *id)
     m->phys = m_phys_world.add_missile(id);
     m->render = m_render_world.add_missile(model);
 
+    static params::text_params param("Arms/ArmsParam.txt");
+    const std::string pref = "." + std::string(id) + ".action.";
+    m->time = param.get_float(pref + "endTime") * 1000;
+
     m_missiles.push_back(m);
     return m;
 }
@@ -166,6 +170,9 @@ void world::update(int dt)
 
 void plane::update(int dt, world &w, bool player)
 {
+    const int missile_cooldown_time = 3500;
+    const int special_cooldown_time = 7000;
+
     render->set_pos(phys->pos);
     render->set_rot(phys->rot);
 
@@ -215,7 +222,7 @@ void plane::update(int dt, world &w, bool player)
         {
             if (!render->has_special_bay() || render->is_special_bay_opened())
             {
-                if (render->get_special_mount_count() > 0 && !special_id.empty())
+                if ((special_cooldown[0] <=0 || special_cooldown[1] <= 0) && render->get_special_mount_count() > 0 && !special_id.empty())
                 {
                     int count = 1;
                     if (special_id[1] == '4')
@@ -223,11 +230,25 @@ void plane::update(int dt, world &w, bool player)
                     else if (special_id[1] == '6')
                         count = 6;
 
+                    if (count == 1)
+                    {
+                        if (special_cooldown[0] <= 0)
+                            special_cooldown[0] = special_cooldown_time;
+                        else if (special_cooldown[1] <= 0)
+                            special_cooldown[1] = special_cooldown_time;
+                    }
+                    else
+                        special_cooldown[0] = special_cooldown[1] = special_cooldown_time;
+
+                    special_mount_cooldown.resize(render->get_special_mount_count());
+
                     render->update(0);
                     for (int i = 0; i < count; ++i)
                     {
                         auto m = w.add_missile(special_model.c_str(), special_id.c_str());
                         special_mount_idx = ++special_mount_idx % render->get_special_mount_count();
+                        special_mount_cooldown[special_mount_idx] = special_cooldown_time;
+                        render->set_special_visible(special_mount_idx, false);
                         m->phys->pos = render->get_special_mount_pos(special_mount_idx);
                         m->phys->rot = render->get_special_mount_rot(special_mount_idx);
                         m->phys->vel = phys->vel;
@@ -247,11 +268,19 @@ void plane::update(int dt, world &w, bool player)
     if (need_fire_missile && render->is_missile_ready())
     {
         need_fire_missile = false;
-        if (render->get_missile_mount_count() > 0)
+        missile_mount_cooldown.resize(render->get_missile_mount_count());
+        if ((missile_cooldown[0] <=0 || missile_cooldown[1] <= 0) && render->get_missile_mount_count() > 0)
         {
+            if (missile_cooldown[0] <= 0)
+                missile_cooldown[0] = missile_cooldown_time;
+            else if (missile_cooldown[1] <= 0)
+                missile_cooldown[1] = missile_cooldown_time;
+
             render->update(0);
             auto m = w.add_missile(missile_model.c_str(), missile_id.c_str());
             missile_mount_idx = ++missile_mount_idx % render->get_missile_mount_count();
+            missile_mount_cooldown[missile_mount_idx] = missile_cooldown_time;
+            render->set_missile_visible(missile_mount_idx, false);
             m->phys->pos = render->get_missile_mount_pos(missile_mount_idx);
             m->phys->rot = render->get_missile_mount_rot(missile_mount_idx);
             m->phys->vel = phys->vel;
@@ -267,6 +296,29 @@ void plane::update(int dt, world &w, bool player)
             render->set_missile_bay(false);
             rocket_bay_time = 0;
         }
+    }
+
+    for (auto &m: missile_cooldown) if (m > 0) m -= dt;
+    for (auto &s: special_cooldown) if (s > 0) s -= dt;
+
+    for (int i = 0; i < (int)missile_mount_cooldown.size(); ++i)
+    {
+        if (missile_mount_cooldown[i] < 0)
+            continue;
+
+        missile_mount_cooldown[i] -= dt;
+        if (missile_mount_cooldown[i] < 0)
+            render->set_missile_visible(i, true);
+    }
+
+    for (int i = 0; i < (int)special_mount_cooldown.size(); ++i)
+    {
+        if (special_mount_cooldown[i] < 0)
+            continue;
+
+        special_mount_cooldown[i] -= dt;
+        if (special_mount_cooldown[i] < 0)
+            render->set_special_visible(i, true);
     }
 
     if (controls.mgun != last_controls.mgun)
@@ -289,6 +341,8 @@ void plane::update(int dt, world &w, bool player)
         }
     }
 
+    missiles_shot.erase(std::remove_if(missiles_shot.begin(), missiles_shot.end(), [](missile_ptr &m){ return m->time <= 0; }), missiles_shot.end());
+
     last_controls = controls;
 }
 
@@ -298,6 +352,9 @@ void missile::update(int dt, world &w)
 {
     render->mdl.set_pos(phys->pos);
     render->mdl.set_rot(phys->rot);
+
+    if (time > 0)
+        time -= dt;
 }
 
 //------------------------------------------------------------

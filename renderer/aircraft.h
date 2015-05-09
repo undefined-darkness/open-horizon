@@ -50,9 +50,11 @@ public:
     int get_missile_mount_count() { return (int)m_msls_mount.size(); }
     nya_math::vec3 get_missile_mount_pos(int idx);
     nya_math::quat get_missile_mount_rot(int idx);
+    void set_missile_visible(int idx, bool visible);
     int get_special_mount_count() { return (int)m_special_mount.size(); }
     nya_math::vec3 get_special_mount_pos(int idx);
     nya_math::quat get_special_mount_rot(int idx);
+    void set_special_visible(int idx, bool visible);
 
     //cockpit and ui
     void set_time(unsigned int time) { m_time = time * 1000; } //in seconds

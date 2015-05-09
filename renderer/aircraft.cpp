@@ -612,6 +612,14 @@ nya_math::quat aircraft::get_missile_mount_rot(int idx)
 
 //------------------------------------------------------------
 
+void aircraft::set_missile_visible(int idx, bool visible)
+{
+    if (idx >= 0 && idx < m_msls_mount.size())
+        m_msls_mount[idx].visible = visible;
+}
+
+//------------------------------------------------------------
+
 nya_math::vec3 aircraft::get_special_mount_pos(int idx)
 {
     if (idx < 0 || idx >= m_special_mount.size())
@@ -628,6 +636,14 @@ nya_math::quat aircraft::get_special_mount_rot(int idx)
         return nya_math::quat();
 
     return m_mesh.get_bone_rot(0, m_special_mount[idx].bone_idx);
+}
+
+//------------------------------------------------------------
+
+void aircraft::set_special_visible(int idx, bool visible)
+{
+    if (idx >= 0 && idx < m_special_mount.size())
+        m_special_mount[idx].visible = visible;
 }
 
 //------------------------------------------------------------
