@@ -17,6 +17,8 @@ namespace phys
 typedef nya_math::vec3 vec3;
 typedef nya_math::quat quat;
 typedef params::fvalue fvalue;
+typedef params::value<int> ivalue;
+typedef params::value<bool> bvalue;
 
 //------------------------------------------------------------
 
@@ -72,6 +74,17 @@ typedef ptr<plane> plane_ptr;
 
 struct missile: public object
 {
+    ivalue no_accel_time;
+    fvalue gravity;
+    fvalue accel;
+    fvalue speed_init;
+    fvalue max_speed;
+    bvalue accel_started;
+
+    fvalue rot_max;
+    fvalue rot_max_low;
+    fvalue rot_max_hi;
+
     void update(int dt);
 };
 

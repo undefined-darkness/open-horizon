@@ -3,11 +3,18 @@
 //
 
 #include "physics.h"
+#include "math/constants.h"
 #include "math/scalar.h"
 #include <algorithm>
 
 namespace phys
 {
+//------------------------------------------------------------
+
+static const float meps_to_kmph = 3.6f;
+static const float kmph_to_meps = 1.0 / meps_to_kmph;
+static const float ang_to_rad = nya_math::constants::pi / 180.0;
+
 //------------------------------------------------------------
 
 inline float clamp(float value, float from, float to) { if (value < from) return from; if (value > to) return to; return value; }
@@ -28,8 +35,7 @@ plane_ptr world::add_plane(const char *name)
 {
     plane_ptr p(true);
     p->params.load(("Player/Behavior/param_p_" + std::string(name) + ".bin").c_str());
-    const float kmph_to_meps = 1.0 / 3.6f;
-    p->vel = nya_math::vec3(0.0, 0.0, p->params.move.speed.speedCruising * kmph_to_meps);
+    p->vel = vec3(0.0, 0.0, p->params.move.speed.speedCruising * kmph_to_meps);
     m_planes.push_back(p);
     return p;
 }
@@ -39,6 +45,20 @@ plane_ptr world::add_plane(const char *name)
 missile_ptr world::add_missile(const char *name)
 {
     missile_ptr m(true);
+
+    static params::text_params param("Arms/ArmsParam.txt");
+
+    const std::string pref = "." + std::string(name) + ".action.";
+
+    m->no_accel_time = param.get_float(pref + "noAcceleTime") * 1000;
+    m->accel = param.get_float(pref + "accele") * kmph_to_meps;
+    m->speed_init = param.get_float(pref + "speedInit") * kmph_to_meps;
+    m->max_speed = param.get_float(pref + "speedMax") * kmph_to_meps;
+    m->gravity = param.get_float(pref + "gravity");
+
+    m->rot_max = param.get_float(pref + "rotAngMax") * ang_to_rad;
+    m->rot_max_hi = param.get_float(pref + "rotAngMaxHi") * ang_to_rad;
+    m->rot_max_low = param.get_float(pref + "rotAngMaxLow") * ang_to_rad;
 
     m_missiles.push_back(m);
     return m;
@@ -61,9 +81,7 @@ void plane::update(int dt)
 {
     float kdt = dt * 0.001f;
 
-    const float kmph_to_meps = 1.0 / 3.6f;
-
-    vel *= (1.0 / kmph_to_meps);
+    vel *= meps_to_kmph;
 
     //simulation
 
@@ -72,7 +90,7 @@ void plane::update(int dt)
     float speed = vel.length();
     const float speed_arg = params.rotgraph.speed.get(speed);
 
-    const nya_math::vec3 rspeed = params.rotgraph.speedRot.get(speed_arg);
+    const vec3 rspeed = params.rotgraph.speedRot.get(speed_arg);
 
     const float eps = 0.001f;
 
@@ -93,9 +111,9 @@ void plane::update(int dt)
 
     //get axis
 
-    nya_math::vec3 up(0.0, 1.0, 0.0);
-    nya_math::vec3 forward(0.0, 0.0, 1.0);
-    nya_math::vec3 right(1.0, 0.0, 0.0);
+    vec3 up(0.0, 1.0, 0.0);
+    vec3 forward(0.0, 0.0, 1.0);
+    vec3 right(1.0, 0.0, 0.0);
     forward = rot.rotate(forward);
     up = rot.rotate(up);
     right = rot.rotate(right);
@@ -103,24 +121,24 @@ void plane::update(int dt)
     //rotation
 
     float high_g_turn = 1.0f + controls.brake * 0.5;
-    rot = rot * nya_math::quat(nya_math::vec3(0.0, 0.0, 1.0), rot_speed.z * kdt * d2r * 0.7);
-    rot = rot * nya_math::quat(nya_math::vec3(0.0, 1.0, 0.0), rot_speed.y * kdt * d2r * 0.12);
-    rot = rot * nya_math::quat(nya_math::vec3(1.0, 0.0, 0.0), rot_speed.x * kdt * d2r * (0.13 + 0.05 * (1.0f - fabsf(up.y)))
+    rot = rot * quat(vec3(0.0, 0.0, 1.0), rot_speed.z * kdt * d2r * 0.7);
+    rot = rot * quat(vec3(0.0, 1.0, 0.0), rot_speed.y * kdt * d2r * 0.12);
+    rot = rot * quat(vec3(1.0, 0.0, 0.0), rot_speed.x * kdt * d2r * (0.13 + 0.05 * (1.0f - fabsf(up.y)))
                                * high_g_turn * (rot_speed.x < 0 ? 1.0f : 1.0f * params.rot.pitchUpDownR));
 
     //nose goes down while upside-down
 
-    const nya_math::vec3 rot_grav = params.rotgraph.rotGravR.get(speed_arg);
-    rot = rot * nya_math::quat(nya_math::vec3(1.0, 0.0, 0.0), -(1.0 - up.y) * kdt * d2r * rot_grav.x * 0.5f);
-    rot = rot * nya_math::quat(nya_math::vec3(0.0, 1.0, 0.0), -right.y * kdt * d2r * rot_grav.y * 0.5f);
+    const vec3 rot_grav = params.rotgraph.rotGravR.get(speed_arg);
+    rot = rot * quat(vec3(1.0, 0.0, 0.0), -(1.0 - up.y) * kdt * d2r * rot_grav.x * 0.5f);
+    rot = rot * quat(vec3(0.0, 1.0, 0.0), -right.y * kdt * d2r * rot_grav.y * 0.5f);
 
     //nose goes down during stall
 
     if (speed < params.move.speed.speedStall)
     {
         float stallRotSpeed = params.rot.rotStallR * kdt * d2r * 10.0f;
-        rot = rot * nya_math::quat(nya_math::vec3(1.0, 0.0, 0.0), up.y * stallRotSpeed);
-        rot = rot * nya_math::quat(nya_math::vec3(0.0, 1.0, 0.0), -right.y * stallRotSpeed);
+        rot = rot * quat(vec3(1.0, 0.0, 0.0), up.y * stallRotSpeed);
+        rot = rot * quat(vec3(0.0, 1.0, 0.0), -right.y * stallRotSpeed);
     }
 
     //adjust throttle to fit cruising speed
@@ -155,7 +173,7 @@ void plane::update(int dt)
 
     //apply acceleration
 
-    vel = nya_math::vec3::lerp(vel, forward * speed, nya_math::min(5.0 * kdt, 1.0));
+    vel = vec3::lerp(vel, forward * speed, nya_math::min(5.0 * kdt, 1.0));
 
     vel += forward * (params.move.accel.acceleR * throttle * kdt * 50.0f - params.move.accel.deceleR * brake * kdt * speed * 0.04f);
     speed = vel.length();
@@ -172,8 +190,8 @@ void plane::update(int dt)
     if (pos.y < 5.0f)
     {
         pos.y = 5.0f;
-        rot = nya_math::quat(-0.5, rot.get_euler().y, 0.0);
-        vel = rot.rotate(nya_math::vec3(0.0, 0.0, 1.0)) * params.move.speed.speedCruising * 0.8;
+        rot = quat(-0.5, rot.get_euler().y, 0.0);
+        vel = rot.rotate(vec3(0.0, 0.0, 1.0)) * params.move.speed.speedCruising * 0.8;
     }
 }
 
@@ -181,8 +199,27 @@ void plane::update(int dt)
 
 void missile::update(int dt)
 {
-    float kdt = 0.001f * dt;
-    vel.y -= 9.8 * kdt;
+    const float kdt = 0.001f * dt;
+
+    if (no_accel_time > 0)
+    {
+        no_accel_time -= dt;
+        vel.y -= gravity * kdt;
+    }
+    else
+    {
+        if (!accel_started)
+        {
+            vel += rot.rotate(vec3(0.0, 0.0, speed_init));
+            accel_started = true;
+        }
+
+        vel += rot.rotate(vec3(0.0, 0.0, accel * kdt));
+        const float speed = vel.length();
+        if (speed > max_speed)
+            vel = vel * (max_speed / speed);
+    }
+
     pos += vel * kdt;
 }
 

@@ -1234,6 +1234,8 @@ void fhm_mesh::draw(int lod_idx)
         }
     }
 
+    l.mesh.set_pos(m_pos);
+    l.mesh.set_rot(m_rot);
 /*
     nya_render::depth_test::disable();
     static nya_render::debug_draw d;
