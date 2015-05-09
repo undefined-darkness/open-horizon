@@ -95,6 +95,7 @@
 @draw_scene default = player
 @draw_scene default = clouds_flat
 @draw_scene default = clouds_obj
+@draw_scene default = particles
 @draw_scene default = cockpit
 
 @set_target fxaa

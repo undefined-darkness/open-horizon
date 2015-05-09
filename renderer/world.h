@@ -8,6 +8,7 @@
 #include "location.h"
 #include "model.h"
 #include "clouds.h"
+#include "missile_trail.h"
 #include <functional>
 #include <vector>
 
@@ -50,6 +51,9 @@ typedef ptr<aircraft> aircraft_ptr;
 
 struct missile: public object
 {
+    missile_trail trail;
+    void update(int dt);
+    void release();
 };
 
 typedef ptr<missile> missile_ptr;

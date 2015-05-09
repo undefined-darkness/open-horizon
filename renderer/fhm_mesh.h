@@ -26,6 +26,8 @@ public:
 
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; }
     void set_rot(const nya_math::quat &rot) { m_rot = rot; }
+    const nya_math::vec3 &get_pos() const { return m_pos; }
+    const nya_math::quat &get_rot() const { return m_rot; }
 
     bool has_anim(int lod_idx, unsigned int anim_hash_id);
     float get_relative_anim_time(int lod_idx, unsigned int anim_hash_id);

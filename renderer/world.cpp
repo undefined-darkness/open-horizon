@@ -32,6 +32,7 @@ missile_ptr world::add_missile(const char *name)
 {
     missile_ptr m(true);
     m->mdl.load((std::string("w_") + name).c_str(), m_location.get_params());
+    m->trail.init();
     m_missiles.push_back(m);
     return m;
 }
@@ -64,7 +65,27 @@ void world::update(int dt)
     m_aircrafts.erase(std::remove_if(m_aircrafts.begin(), m_aircrafts.end(), [](aircraft_ptr &a){ return a.get_ref_count() <= 1; }), m_aircrafts.end());
     for (auto &a: m_aircrafts) a->update(dt);
 
-    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m){ return m.get_ref_count() <= 1; }), m_missiles.end());
+    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m)
+                                    { if (m.get_ref_count() > 1)
+                                          return false; m->release();
+                                      return true;
+                                    }), m_missiles.end());
+
+    for (auto &m: m_missiles) m->update(dt);
+}
+
+//------------------------------------------------------------
+
+void missile::update(int dt)
+{
+    trail.update(mdl.get_pos(), dt);
+}
+
+//------------------------------------------------------------
+
+void missile::release()
+{
+    trail.release();
 }
 
 //------------------------------------------------------------

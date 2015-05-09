@@ -249,6 +249,11 @@ void scene::draw_scene(const char *pass, const char *tags)
             }
         }
     }
+    else if (strcmp(tags, "particles") == 0)
+    {
+        for (auto &m:m_missiles)
+            m->trail.draw();
+    }
     else if (strcmp(tags, "cockpit") == 0)
     {
         if (m_player_aircraft.is_valid() && m_player_aircraft->get_camera_mode() == aircraft::camera_mode_cockpit)

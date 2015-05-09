@@ -63,6 +63,7 @@ struct missile: public object
     ivalue time;
 
     void update(int dt, world &w);
+    void release();
 };
 
 typedef ptr<missile> missile_ptr;
@@ -87,8 +88,6 @@ struct plane: public object
     ivalue special_cooldown[2];
     std::vector<ivalue> special_mount_cooldown;
     ivalue special_mount_idx;
-
-    std::vector<missile_ptr> missiles_shot;
 
     void set_pos(const vec3 &pos) { if (phys.is_valid()) phys->pos = pos; }
     void set_rot(const quat &rot) { if (phys.is_valid()) phys->rot = rot; }
