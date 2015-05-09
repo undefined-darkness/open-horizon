@@ -155,9 +155,12 @@ void scene::update(int dt)
 
 void scene::resize(unsigned int width,unsigned int height)
 {
+    nya_render::set_viewport(0, 0, width, height);
+
     if (!m_fonts_loaded)
     {
-        m_ui.load_fonts("UI/text/menuCommon.acf");
+        m_ui_fonts.load("UI/text/menuCommon.acf");
+        m_ui_render.init();
         m_fonts_loaded = true;
     }
 
@@ -166,7 +169,7 @@ void scene::resize(unsigned int width,unsigned int height)
     if (height)
         camera.set_aspect(height > 0 ? float(width) / height : 1.0f);
 
-    m_ui.resize(width, height);
+    m_ui_render.resize(width, height);
 }
 
 //------------------------------------------------------------
@@ -181,14 +184,15 @@ void scene::draw()
     //if (m_help_time > 0)
     //    m_ui.draw_text(L"Press 1-2 to change location, 3-4 to change plane, 5-6 to change paint", "NowGE24", 50, 100, white);
 
+
     wchar_t buf[255];
     swprintf(buf, sizeof(buf), L"FPS: %d", m_fps);
-    m_ui.draw_text(buf, "NowGE20", m_ui.get_width() - 90, 20, white);
+    m_ui_fonts.draw_text(m_ui_render, buf, "NowGE20", m_ui_render.get_width() - 90, 0, white);
 
     if(m_loading)
     {
         m_loading = false;
-        m_ui.draw_text(L"LOADING", "NowGE24", m_ui.get_width() * 0.5 - 50, m_ui.get_height() * 0.5, white);
+        m_ui_fonts.draw_text(m_ui_render, L"LOADING", "NowGE24", m_ui_render.get_width() * 0.5 - 50, m_ui_render.get_height() * 0.5, white);
     }
     else
     {
@@ -196,19 +200,19 @@ void scene::draw()
         if (a.is_valid())
         {
             swprintf(buf, sizeof(buf), L"%d", int(a->get_speed()));
-            m_ui.draw_text(L"SPEED", "NowGE20", m_ui.get_width() * 0.35, m_ui.get_height() * 0.5 - 20, green);
-            m_ui.draw_text(buf, "NowGE20", m_ui.get_width() * 0.35, m_ui.get_height() * 0.5, green);
+            m_ui_fonts.draw_text(m_ui_render, L"SPEED", "NowGE20", m_ui_render.get_width() * 0.35, m_ui_render.get_height() * 0.5 - 20, green);
+            m_ui_fonts.draw_text(m_ui_render, buf, "NowGE20", m_ui_render.get_width() * 0.35, m_ui_render.get_height() * 0.5, green);
             swprintf(buf, sizeof(buf), L"%d", int(a->get_alt()));
-            m_ui.draw_text(L"ALT", "NowGE20", m_ui.get_width() * 0.6, m_ui.get_height() * 0.5 - 20, green);
-            m_ui.draw_text(buf, "NowGE20", m_ui.get_width() * 0.6, m_ui.get_height() * 0.5, green);
+            m_ui_fonts.draw_text(m_ui_render, L"ALT", "NowGE20", m_ui_render.get_width() * 0.6, m_ui_render.get_height() * 0.5 - 20, green);
+            m_ui_fonts.draw_text(m_ui_render, buf, "NowGE20", m_ui_render.get_width() * 0.6, m_ui_render.get_height() * 0.5, green);
         }
         if(m_paused)
-            m_ui.draw_text(L"PAUSED", "NowGE24", m_ui.get_width() * 0.5 - 45, m_ui.get_height() * 0.5, white);
+            m_ui_fonts.draw_text(m_ui_render, L"PAUSED", "NowGE24", m_ui_render.get_width() * 0.5 - 45, m_ui_render.get_height() * 0.5, white);
     }
 
-    //m_ui.draw_text(L"This is a test. The quick brown fox jumps over the lazy dog's back 1234567890", "NowGE24", 50, 100, green);
-    //m_ui.draw_text(L"テストです。いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす。", "ShinGo18outline", 50, 150, green);
-    //m_ui.draw_text(L"ASDFGHJKLasdfghjklQWERTYUIOPqwertyuiopZXCVBNMzxcvbnm\"\'*_", "NowGE24", 50, 200, green);
+    //m_ui_fonts.draw_text(m_ui_render, L"This is a test. The quick brown fox jumps over the lazy dog's back 1234567890", "NowGE24", 50, 100, green);
+    //m_ui_fonts.draw_text(m_ui_render, L"テストです。いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす。", "ShinGo18outline", 50, 150, green);
+    //m_ui_fonts.draw_text(m_ui_render, L"ASDFGHJKLasdfghjklQWERTYUIOPqwertyuiopZXCVBNMzxcvbnm\"\'*_", "NowGE24", 50, 200, green);
     
 }
 

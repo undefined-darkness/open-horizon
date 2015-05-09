@@ -16,7 +16,7 @@ uniform vec4 tc_tr[200];
 void main()
 {
     tc = tc_tr[gl_InstanceID].xy + tc_tr[gl_InstanceID].zw * gl_MultiTexCoord0.xy;
-    gl_Position = vec4(tr[gl_InstanceID].xy + tr[gl_InstanceID].zw *gl_Vertex.xy, 0.0, 1.0);
+    gl_Position = vec4(tr[gl_InstanceID].xy + tr[gl_InstanceID].zw * gl_Vertex.xy, 0.0, 1.0);
 }
 
 @fragment

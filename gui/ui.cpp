@@ -6,9 +6,106 @@
 #include "containers/fhm.h"
 #include "renderer/shared.h"
 
+namespace gui
+{
 //------------------------------------------------------------
 
-bool ui::load_fonts(const char *name)
+const int elements_per_batch = 127; //200 //ToDo: draw without instancing
+
+//------------------------------------------------------------
+
+void render::init()
+{
+    if (m_tex.is_valid()) //already initialised
+        return;
+
+    m_tex.create();
+    m_color.create();
+    m_tr.create();
+    m_tc_tr.create();
+    m_mesh.init();
+
+    auto &pass = m_material.get_pass(m_material.add_pass(nya_scene::material::default_pass));
+    pass.set_shader(nya_scene::shader("shaders/ui.nsh"));
+    pass.get_state().set_cull_face(false);
+    pass.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
+    pass.get_state().zwrite = false;
+    pass.get_state().depth_test = false;
+    m_material.set_texture("diffuse", m_tex);
+    m_material.set_param(m_material.get_param_idx("color"), m_color);
+    m_material.set_param_array(m_material.get_param_idx("transform"), m_tr);
+    m_material.set_param_array(m_material.get_param_idx("tc transform"), m_tc_tr);
+}
+
+//------------------------------------------------------------
+
+void render::draw(const std::vector<rect_pair> &elements, const nya_scene::texture &tex, const nya_math::vec4 &color) const
+{
+    if (!m_tex.is_valid()) //not initialised
+        return;
+
+    if (!m_width || !m_height)
+        return;
+
+    if (!tex.get_width() || !tex.get_height())
+        return;
+
+    if (elements.empty())
+        return;
+
+    assert(elements.size()<elements_per_batch); //ToDo: draw multiple times
+
+    m_color->set(color);
+    m_tex.set(tex);
+
+    const float aspect = float(m_width) / m_height / (float(get_width()) / get_height() );
+    const float iwidth = 1.0f / get_width();
+    const float iheight = 1.0f / get_height();
+    const float itwidth = 1.0f / tex.get_width();
+    const float itheight = 1.0f / tex.get_height();
+
+    for (int i = 0; i < (int)elements.size(); ++i)
+    {
+        auto &e = elements[i];
+        m_tr->set_count(i + 1);
+        m_tc_tr->set_count(i + 1);
+
+        nya_math::vec4 pos;
+        pos.z = float(e.r.w) * iwidth;
+        pos.w = float(e.r.h) * iheight;
+        pos.x = pos.z - 1.0 + 2.0 * e.r.x * iwidth;
+        pos.y = -pos.w + 1.0 - 2.0 * e.r.y * iheight;
+        if (aspect > 1.0)
+        {
+            pos.x /= aspect;
+            pos.z /= aspect;
+        }
+        else
+        {
+            pos.y *= aspect;
+            pos.w *= aspect;
+        }
+        m_tr->set(i, pos);
+
+        nya_math::vec4 tc;
+        tc.z = float(e.tc.w) * itwidth;
+        tc.w = -float(e.tc.h) * itheight;
+        tc.x = float(e.tc.x) * itwidth;
+        tc.y = float(e.tc.y) * itheight - tc.w;
+        m_tc_tr->set(i, tc);
+    }
+
+    m_material.internal().set(nya_scene::material::default_pass);
+    m_mesh.draw((int)elements.size());
+    m_material.internal().unset();
+
+    static nya_scene::texture empty;
+    m_tex.set(empty);
+}
+
+//------------------------------------------------------------
+
+bool fonts::load(const char *name)
 {
     fhm_file m;
     if (!m.open(name))
@@ -81,7 +178,9 @@ bool ui::load_fonts(const char *name)
 
             continue;
         }
-/*
+ 
+        continue;
+
         char *c = (char *)&t;
         printf("%c%c%c%c\n",c[3],c[2],c[1],c[0]);
 
@@ -89,73 +188,37 @@ bool ui::load_fonts(const char *name)
         m.read_chunk_data(i, b.get_data());
         nya_memory::memory_reader r(b.get_data(),b.get_size());
         print_data(r);
-*/
     }
 
-    init();
     return true;
 }
 
 //------------------------------------------------------------
 
-void ui::init()
+int fonts::draw_text(const render &r, const wchar_t *text, const char *font_name, int x, int y, const nya_math::vec4 &color) const
 {
-    if (m_tex.is_valid()) //already initialised
-        return;
-
-    m_tex.create();
-    m_color.create();
-    m_tr.create();
-    m_tc_tr.create();
-    m_mesh.init();
-
-    auto &pass = m_material.get_pass(m_material.add_pass(nya_scene::material::default_pass));
-    pass.set_shader(nya_scene::shader("shaders/ui.nsh"));
-    pass.get_state().set_cull_face(false);
-    pass.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
-    pass.get_state().zwrite = false;
-    pass.get_state().depth_test = false;
-    m_material.set_texture("diffuse", m_tex);
-    m_material.set_param(m_material.get_param_idx("color"), m_color);
-    m_material.set_param_array(m_material.get_param_idx("transform"), m_tr);
-    m_material.set_param_array(m_material.get_param_idx("tc transform"), m_tc_tr);
-}
-
-//------------------------------------------------------------
-
-int ui::draw_text(const wchar_t *text, const char *font, int x, int y, const nya_math::vec4 &color) const
-{
-    if (!m_tex.is_valid()) //not initialised
+    if(!text || !font_name)
         return 0;
 
-    if (!m_width || !m_height)
-        return 0;
-
-    if(!text || !font)
-        return 0;
-
-    const auto f = std::find_if(m_fonts.begin(), m_fonts.end(), [font](const ui::font &fnt) { return fnt.name == font; });
+    const auto f = std::find_if(m_fonts.begin(), m_fonts.end(), [font_name](const font &fnt) { return fnt.name == font_name; });
     if (f == m_fonts.end())
         return 0;
 
-    if (!m_font_texture.get_width() || !m_font_texture.get_height())
-        return 0;
-
-    m_color->set(color);
-    m_tex.set(m_font_texture);
-
-    int idx = 0, width = 0;
+    int width = 0;
+    std::vector<rect_pair> elements;
     for (const wchar_t *c = text; *c; ++c)
     {
-        assert(idx<200); //ToDo
-
-        m_tr->set_count(idx + 1);
-        m_tc_tr->set_count(idx + 1);
-
+        rect_pair e;
         auto fc = f->chars.find(*c);
         if (fc == f->chars.end())
             continue;
 
+        e.r.w = fc->second.w;
+        e.r.h = fc->second.h;
+        e.r.x = x + width;
+        e.r.y = y;
+
+        /*
         nya_math::vec4 pos;
         pos.z = float(fc->second.w) / m_width;
         pos.w = float(fc->second.h) / m_height;
@@ -165,28 +228,21 @@ int ui::draw_text(const wchar_t *text, const char *font, int x, int y, const nya
         //pos.y = 1.0 - 2.0 * (y + fc->second.t.unknown5 * 0.5 - 2.0 * fc->second.t.unknown3[1]) / m_height;
         //pos.y = -pos.w + 1.0 - 2.0 * (y + fc->second.t.unknown5 * 0.5 - 2.0 * fc->second.t.unknown3[1]) / m_height;
         m_tr->set(idx, pos);
+        */
 
-        nya_math::vec4 tc;
-        tc.z = float(fc->second.w) / m_tex->get_width();
-        tc.w = -float(fc->second.h) / m_tex->get_height();
-        tc.x = float(fc->second.x) / m_tex->get_width();
-        tc.y = float(fc->second.y) / m_tex->get_height() - tc.w;
-        m_tc_tr->set(idx, tc);
+        e.tc.w = fc->second.w;
+        e.tc.h = fc->second.h;
+        e.tc.x = fc->second.x;
+        e.tc.y = fc->second.y;
 
         width += fc->second.w + fc->second.t.unknown3[3];
-        //width += fc->second.w + fc->second.t.unknown3[3];
-        //width += fc->second.t.unknown5;
-        ++idx;
+
+        elements.push_back(e);
     }
 
-    m_material.internal().set(nya_scene::material::default_pass);
-    m_mesh.draw(idx);
-    m_material.internal().unset();
-
-    static nya_scene::texture empty;
-    m_tex.set(empty);
-
+    r.draw(elements, m_font_texture, color);
     return width;
 }
 
 //------------------------------------------------------------
+}

@@ -8,6 +8,7 @@
 #include "containers/dpl_provider.h"
 
 #include "game/game.h"
+#include "util/util.h"
 
 #include "resources/file_resources_provider.h"
 #include "resources/composite_resources_provider.h"
@@ -242,6 +243,7 @@ int main(void)
 
     world.set_location(locations[current_location]);
     auto player = world.add_plane(planes[current_plane], current_color, true);
+    scene.load_hud(planes[current_plane]);
     player->set_pos(nya_math::vec3(-300, 50, 2000));
     player->set_rot(nya_math::quat());
 
@@ -405,6 +407,7 @@ int main(void)
             current_plane = (current_plane + 1) % planes_count;
             auto p = player->get_pos(); auto r = player->get_rot();
             player = world.add_plane(planes[current_plane], current_color, true);
+            scene.load_hud(planes[current_plane]);
             player->set_pos(p); player->set_rot(r);
             scene.loading(false);
         }
@@ -419,6 +422,7 @@ int main(void)
             current_plane = (current_plane + planes_count - 1) % planes_count;
             auto p = player->get_pos(); auto r = player->get_rot();
             player = world.add_plane(planes[current_plane], current_color, true);
+            scene.load_hud(planes[current_plane]);
             player->set_pos(p); player->set_rot(r);
             scene.loading(false);
         }

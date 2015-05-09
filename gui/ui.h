@@ -8,24 +8,55 @@
 #include "render/screen_quad.h"
 #include <stdint.h>
 
+namespace gui
+{
 //------------------------------------------------------------
 
-class ui
+struct rect
+{
+    int x, y, w, h;
+
+    rect(): x(0), y(0), w(0), h(0) {}
+    rect(int x, int y, int w, int h): x(x), y(y), w(w), h(h) {}
+};
+
+//------------------------------------------------------------
+
+struct rect_pair { rect r, tc; };
+
+//------------------------------------------------------------
+
+class render
 {
 public:
-    bool load_fonts(const char *name);
+    void init();
     void resize(int width, int height) { m_width = width, m_height = height; }
+    void draw(const std::vector<rect_pair> &elements, const nya_scene::texture &tex, const nya_math::vec4 &color) const;
+    int get_width(bool real = false) const { return real ? m_width : 1280; }
+    int get_height(bool real = false) const { return real ? m_height : 720; }
 
-public:
-    int draw_text(const wchar_t *text, const char *font, int x, int y, const nya_math::vec4 &color) const; //returns width of drawn text
-    int get_width() const { return m_width; }
-    int get_height() const { return m_height; }
-
-public:
-    ui(): m_width(0), m_height(0) {}
+    render(): m_width(0), m_height(0) {}
 
 private:
-    void init();
+    int m_width, m_height;
+    nya_render::screen_quad m_mesh;
+    nya_scene::material m_material;
+    mutable nya_scene::material::param_proxy m_color;
+    mutable nya_scene::material::param_array_proxy m_tr;
+    mutable nya_scene::material::param_array_proxy m_tc_tr;
+    mutable nya_scene::texture_proxy m_tex;
+};
+
+//------------------------------------------------------------
+
+class fonts
+{
+public:
+    bool load(const char *name);
+
+public:
+    //returns width of drawn text
+    int draw_text(const render &r, const wchar_t *text, const char *font, int x, int y, const nya_math::vec4 &color) const;
 
 private:
     struct acf_font_header
@@ -68,15 +99,7 @@ private:
 
     std::vector<font> m_fonts;
     nya_scene::texture m_font_texture;
-
-private:
-    int m_width, m_height;
-    nya_render::screen_quad m_mesh;
-    nya_scene::material m_material;
-    mutable nya_scene::material::param_proxy m_color;
-    mutable nya_scene::material::param_array_proxy m_tr;
-    mutable nya_scene::material::param_array_proxy m_tc_tr;
-    mutable nya_scene::texture_proxy m_tex;
 };
 
 //------------------------------------------------------------
+}

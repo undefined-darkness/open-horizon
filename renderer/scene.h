@@ -6,7 +6,7 @@
 #include "lens_flare.h"
 #include "plane_camera.h"
 #include "scene/postprocess.h"
-#include "gui/ui.h"
+#include "gui/hud.h"
 
 namespace renderer
 {
@@ -17,8 +17,10 @@ class scene: private nya_scene::postprocess, public world
 public:
     plane_camera camera;
 
-private: //ui temporary here, needs refactoring
-    ui m_ui;
+private:
+    gui::render m_ui_render;
+    gui::fonts m_ui_fonts;
+    //gui::hud m_hud;
     bool m_paused;
     bool m_loading;
     bool m_fonts_loaded;
@@ -41,6 +43,7 @@ public:
     m_fonts_loaded(false) {}
 
 public:
+    void load_hud(const char *aircraft_name) {} // m_hud.load(aircraft_name); } //ToDo
     void switch_camera();
     void resize(unsigned int width,unsigned int height);
     void update(int dt);
