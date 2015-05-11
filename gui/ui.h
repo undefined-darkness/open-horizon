@@ -31,7 +31,8 @@ class render
 public:
     void init();
     void resize(int width, int height) { m_width = width, m_height = height; }
-    void draw(const std::vector<rect_pair> &elements, const nya_scene::texture &tex, const nya_math::vec4 &color) const;
+    void draw(const std::vector<rect_pair> &elements, const nya_scene::texture &tex,
+              const nya_math::vec4 &color = nya_math::vec4(1.0, 1.0, 1.0, 1.0)) const;
     int get_width(bool real = false) const { return real ? m_width : 1280; }
     int get_height(bool real = false) const { return real ? m_height : 720; }
 
@@ -99,6 +100,41 @@ private:
 
     std::vector<font> m_fonts;
     nya_scene::texture m_font_texture;
+};
+
+//------------------------------------------------------------
+
+class tiles
+{
+public:
+    bool load(const char *name);
+    void debug_draw(const render &r);
+
+private:
+    struct uitx_header
+    {
+        char sign[4];
+        uint32_t zero[2];
+        uint32_t count;
+        uint32_t unknown;
+
+    };
+
+    struct uitx_entry
+    {
+        uint16_t x,y;
+        uint16_t w,h;
+        uint32_t tex_idx;
+    };
+
+    struct uitx
+    {
+        uitx_header header;
+        std::vector<uitx_entry> entries;
+    };
+
+    std::vector<uitx> m_uitxs;
+    std::vector<nya_scene::texture> m_textures;
 };
 
 //------------------------------------------------------------

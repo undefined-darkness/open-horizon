@@ -20,7 +20,7 @@ public:
 private:
     gui::render m_ui_render;
     gui::fonts m_ui_fonts;
-    //gui::hud m_hud;
+    gui::hud m_hud;
     bool m_paused;
     bool m_loading;
     bool m_fonts_loaded;
@@ -43,7 +43,7 @@ public:
     m_fonts_loaded(false) {}
 
 public:
-    void load_hud(const char *aircraft_name) {} // m_hud.load(aircraft_name); } //ToDo
+    void load_hud(const char *aircraft_name) { m_hud.load(aircraft_name); }
     void switch_camera();
     void resize(unsigned int width,unsigned int height);
     void update(int dt);

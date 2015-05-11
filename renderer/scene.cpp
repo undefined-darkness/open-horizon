@@ -141,6 +141,13 @@ void scene::update(int dt)
     if (m_help_time > 0)
         m_help_time -= dt;
 
+    auto a = get_player_aircraft();
+    if (a.is_valid())
+    {
+        m_hud.set_speed(int(a->get_speed()));
+        m_hud.set_alt(int(a->get_alt()));
+    }
+
     m_frame_counter_time += dt;
     ++m_frame_counter;
     if (m_frame_counter_time > 1000)
@@ -178,12 +185,25 @@ void scene::draw()
 {
     nya_scene::postprocess::draw(0);
 
-    const auto green = nya_math::vec4(103,223,144,255)/255.0;
+    /*
+    static nya_scene::texture ui_ref_texture("ui_ref.tga");
+    static std::vector<gui::rect_pair> ui_ref_rects(1);
+    ui_ref_rects[0].r.w = m_ui_render.get_width();
+    ui_ref_rects[0].r.y = m_ui_render.get_height();
+    ui_ref_rects[0].r.h = -m_ui_render.get_height();
+    ui_ref_rects[0].tc.w = ui_ref_texture.get_width();
+    ui_ref_rects[0].tc.h = ui_ref_texture.get_height();
+    m_ui_render.draw(ui_ref_rects, ui_ref_texture, nya_math::vec4(1.0,1.0,1.0,1.0));
+    */
+
     const auto white = nya_math::vec4(1.0, 1.0, 1.0, 1.0);
+
+    //m_ui_fonts.draw_text(m_ui_render, L"ASDFGHJKLasdfghjklQWERTYUIOPqwertyuiopZXCVBNMzxcvbnm\"\'*_-=.,0123456789", "NowGE24", 50, 200, white);
+    //m_ui_fonts.draw_text(m_ui_render, L"This is a test. The quick brown fox jumps over the lazy dog's back 1234567890", "NowGE24", 50, 100, white);
+    //m_ui_fonts.draw_text(m_ui_render, L"テストです。いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす。", "ShinGo18outline", 50, 150, white);
 
     //if (m_help_time > 0)
     //    m_ui.draw_text(L"Press 1-2 to change location, 3-4 to change plane, 5-6 to change paint", "NowGE24", 50, 100, white);
-
 
     wchar_t buf[255];
     swprintf(buf, sizeof(buf), L"FPS: %d", m_fps);
@@ -196,24 +216,10 @@ void scene::draw()
     }
     else
     {
-        auto a = get_player_aircraft();
-        if (a.is_valid())
-        {
-            swprintf(buf, sizeof(buf), L"%d", int(a->get_speed()));
-            m_ui_fonts.draw_text(m_ui_render, L"SPEED", "NowGE20", m_ui_render.get_width() * 0.35, m_ui_render.get_height() * 0.5 - 20, green);
-            m_ui_fonts.draw_text(m_ui_render, buf, "NowGE20", m_ui_render.get_width() * 0.35, m_ui_render.get_height() * 0.5, green);
-            swprintf(buf, sizeof(buf), L"%d", int(a->get_alt()));
-            m_ui_fonts.draw_text(m_ui_render, L"ALT", "NowGE20", m_ui_render.get_width() * 0.6, m_ui_render.get_height() * 0.5 - 20, green);
-            m_ui_fonts.draw_text(m_ui_render, buf, "NowGE20", m_ui_render.get_width() * 0.6, m_ui_render.get_height() * 0.5, green);
-        }
+        m_hud.draw(m_ui_render);
         if(m_paused)
             m_ui_fonts.draw_text(m_ui_render, L"PAUSED", "NowGE24", m_ui_render.get_width() * 0.5 - 45, m_ui_render.get_height() * 0.5, white);
     }
-
-    //m_ui_fonts.draw_text(m_ui_render, L"This is a test. The quick brown fox jumps over the lazy dog's back 1234567890", "NowGE24", 50, 100, green);
-    //m_ui_fonts.draw_text(m_ui_render, L"テストです。いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす。", "ShinGo18outline", 50, 150, green);
-    //m_ui_fonts.draw_text(m_ui_render, L"ASDFGHJKLasdfghjklQWERTYUIOPqwertyuiopZXCVBNMzxcvbnm\"\'*_", "NowGE24", 50, 200, green);
-    
 }
 
 //------------------------------------------------------------

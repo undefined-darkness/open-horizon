@@ -159,7 +159,7 @@ int main(void)
     nya_resources::set_resources_provider(&trp);
 
     platform platform;
-    if (!platform.init(1000, 562, "Open Horizon 2nd demo"))
+    if (!platform.init(1000, 562, "Open Horizon 3rd demo"))
         return -1;
 
     for (int i = 0; glfwJoystickPresent(i); ++i)

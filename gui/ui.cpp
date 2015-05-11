@@ -111,14 +111,19 @@ bool fonts::load(const char *name)
     if (!m.open(name))
         return false;
 
+    bool need_load_tex = false;
     for (int i = 0; i < m.get_chunks_count(); ++i)
     {
         auto t = m.get_chunk_type(i);
         if (t == 'RXTN')
         {
-            if (m.get_chunk_size(i)<96)
+            if (m.get_chunk_size(i) <= 96)
                 continue;
 
+            if (!need_load_tex)
+                continue;
+
+            need_load_tex = false;
             nya_memory::tmp_buffer_scoped b(m.get_chunk_size(i));
             m.read_chunk_data(i, b.get_data());
             m_font_texture = shared::get_texture(shared::load_texture(b.get_data(), b.get_size()));
@@ -127,6 +132,7 @@ bool fonts::load(const char *name)
 
         if (t == '\0FCA')
         {
+            need_load_tex = true;
             nya_memory::tmp_buffer_scoped b(m.get_chunk_size(i));
             m.read_chunk_data(i, b.get_data());
             nya_memory::memory_reader reader(b.get_data(),b.get_size());
@@ -157,6 +163,8 @@ bool fonts::load(const char *name)
                 f.name.assign((char *)r.get_data());
                 r.seek(32);
 
+                //print_data(r, r.get_offset(), sizeof(acf_font_header));
+
                 auto header = r.read<acf_font_header>();
                 r.skip(1024);
 
@@ -164,6 +172,7 @@ bool fonts::load(const char *name)
 
                 for (uint32_t j = 0; j < header.char_count; ++j)
                 {
+                    //print_data(r, r.get_offset(), sizeof(acf_char));
 
                     auto c = r.read<acf_char>();
 
@@ -218,17 +227,18 @@ int fonts::draw_text(const render &r, const wchar_t *text, const char *font_name
         e.r.x = x + width;
         e.r.y = y;
 
-        /*
-        nya_math::vec4 pos;
-        pos.z = float(fc->second.w) / m_width;
-        pos.w = float(fc->second.h) / m_height;
-        pos.x = pos.z - 1.0 + 2.0 * (x + width) / m_width;
-        //pos.y = pos.w + 1.0 - 2.0 * (float(y) + fc->second.h*0.5 - 2.0 * fc->second.t.unknown3[1]) / m_height;
-        pos.y = 1.0 - 2.0 * (y - 2.0 * fc->second.t.unknown3[1]) / m_height;
-        //pos.y = 1.0 - 2.0 * (y + fc->second.t.unknown5 * 0.5 - 2.0 * fc->second.t.unknown3[1]) / m_height;
-        //pos.y = -pos.w + 1.0 - 2.0 * (y + fc->second.t.unknown5 * 0.5 - 2.0 * fc->second.t.unknown3[1]) / m_height;
-        m_tr->set(idx, pos);
-        */
+        //ToDo
+
+        //e.r.y -= fc->second.h;
+        //e.r.y -= fc->second.t.unknown3[1] * 4;
+
+        //e.r.y -= fc->second.h/2;
+        //e.r.y -= fc->second.t.unknown3[1] * 2;
+
+        //e.r.y -= fc->second.h * fc->second.t.unknown3[0] / 128;
+        //e.r.y -= fc->second.t.unknown5 * fc->second.t.unknown3[0] / 128;
+
+        //+ fc->second.t.unknown5;
 
         e.tc.w = fc->second.w;
         e.tc.h = fc->second.h;
@@ -242,6 +252,125 @@ int fonts::draw_text(const render &r, const wchar_t *text, const char *font_name
 
     r.draw(elements, m_font_texture, color);
     return width;
+}
+
+//------------------------------------------------------------
+
+bool tiles::load(const char *name)
+{
+    fhm_file m;
+    if (!m.open(name))
+        return false;
+
+    bool skip_fonts_texture = false;
+    for (int i = 0; i < m.get_chunks_count(); ++i)
+    {
+        auto t = m.get_chunk_type(i);
+
+        if (t == '\0FCA')
+        {
+            skip_fonts_texture = true;
+            continue;
+        }
+
+        if (t == 'RXTN')
+        {
+            if (m.get_chunk_size(i) <= 96)
+                continue;
+
+            if (skip_fonts_texture)
+            {
+                skip_fonts_texture = false;
+                continue;
+            }
+
+            nya_memory::tmp_buffer_scoped b(m.get_chunk_size(i));
+            m.read_chunk_data(i, b.get_data());
+            m_textures.resize(m_textures.size() + 1);
+            m_textures.back() = shared::get_texture(shared::load_texture(b.get_data(), b.get_size()));
+            continue;
+        }
+
+        nya_memory::tmp_buffer_scoped b(m.get_chunk_size(i));
+        m.read_chunk_data(i, b.get_data());
+        nya_memory::memory_reader reader(b.get_data(),b.get_size());
+
+        if (t == ' MSH')
+        {
+            //ToDo
+            continue;
+        }
+
+        if (t == ' DUH')
+        {
+            //ToDo
+            continue;
+        }
+
+        if (t == 'XTIU')
+        {
+            m_uitxs.resize(m_uitxs.size() + 1);
+            auto &tx = m_uitxs.back();
+            tx.header = reader.read<uitx_header>();
+            assume(tx.header.zero[0] == 0 && tx.header.zero[1] == 0);
+            tx.entries.resize(tx.header.count);
+            for (auto &e: tx.entries)
+                e = reader.read<uitx_entry>();
+            continue;
+        }
+
+        if (t == '\0TCA')
+        {
+            //ToDo
+            continue;
+        }
+
+        if (m.get_chunk_size(i) == 0)
+            continue;
+
+        char *c = (char *)&t;
+        printf("%c%c%c%c %d %d %d %d\n",c[3],c[2],c[1],c[0],c[3],c[2],c[1],c[0]);
+        //continue;
+
+        print_data(reader);
+    }
+
+    return true;
+}
+
+//------------------------------------------------------------
+
+void tiles::debug_draw(const render &r)
+{
+    int y = 0, idx = 0;
+    std::vector<rect_pair> rects(1);
+    for (auto &tx: m_uitxs)
+    {
+        int height = 0, x = 0;
+        for (auto &e: tx.entries)
+        {
+            if (x + e.w > r.get_width())
+            {
+                y += height + 5;
+                x = height = 0;
+            }
+
+            rects[0].tc.x = e.x;
+            rects[0].tc.y = e.y;
+            rects[0].tc.w = e.w;
+            rects[0].tc.h = e.h;
+            rects[0].r = rects[0].tc;
+            rects[0].r.x = x;
+            rects[0].r.y = y;
+            if (e.h > height)
+                height = e.h;
+            x += e.w + 5;
+
+            r.draw(rects, m_textures[e.tex_idx]);
+        }
+        y += height + 5;
+        ++idx;
+    }
 }
 
 //------------------------------------------------------------

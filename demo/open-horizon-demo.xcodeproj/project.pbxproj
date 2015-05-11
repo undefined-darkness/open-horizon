@@ -28,6 +28,7 @@
 		F59AB5B71AFA7D1600137527 /* plane_camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F59AB5B51AFA7D1600137527 /* plane_camera.cpp */; };
 		F59AB5BA1AFAA0C000137527 /* aircraft.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F59AB5B91AFAA0C000137527 /* aircraft.cpp */; };
 		F5A2A2D71AFE3258009765C1 /* missile_trail.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2D61AFE3258009765C1 /* missile_trail.cpp */; };
+		F5A2A2DC1AFE86E4009765C1 /* hud.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2DA1AFE86E4009765C1 /* hud.cpp */; };
 		F5C6D3861AF9694D006FB7E6 /* demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D3851AF9694D006FB7E6 /* demo.cpp */; };
 		F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D3881AF969A5006FB7E6 /* dpl.cpp */; };
 		F5C6D3921AF969A5006FB7E6 /* fhm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D38C1AF969A5006FB7E6 /* fhm.cpp */; };
@@ -118,6 +119,8 @@
 		F59AB5B91AFAA0C000137527 /* aircraft.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = aircraft.cpp; path = ../renderer/aircraft.cpp; sourceTree = "<group>"; };
 		F5A2A2D51AFE3258009765C1 /* missile_trail.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = missile_trail.h; path = ../renderer/missile_trail.h; sourceTree = "<group>"; };
 		F5A2A2D61AFE3258009765C1 /* missile_trail.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = missile_trail.cpp; path = ../renderer/missile_trail.cpp; sourceTree = "<group>"; };
+		F5A2A2DA1AFE86E4009765C1 /* hud.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hud.cpp; path = ../gui/hud.cpp; sourceTree = "<group>"; };
+		F5A2A2DB1AFE86E4009765C1 /* hud.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hud.h; path = ../gui/hud.h; sourceTree = "<group>"; };
 		F5C6D37C1AF968E7006FB7E6 /* params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = params.h; path = ../util/params.h; sourceTree = "<group>"; };
 		F5C6D37D1AF968E7006FB7E6 /* xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xml.h; path = ../util/xml.h; sourceTree = "<group>"; };
 		F5C6D3851AF9694D006FB7E6 /* demo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = demo.cpp; sourceTree = SOURCE_ROOT; };
@@ -239,6 +242,8 @@
 		F57832381AFBE804005FE829 /* gui */ = {
 			isa = PBXGroup;
 			children = (
+				F5A2A2DA1AFE86E4009765C1 /* hud.cpp */,
+				F5A2A2DB1AFE86E4009765C1 /* hud.h */,
 				F578323C1AFBE859005FE829 /* ui.cpp */,
 				F578323D1AFBE859005FE829 /* ui.h */,
 			);
@@ -434,6 +439,7 @@
 				F59AB5BA1AFAA0C000137527 /* aircraft.cpp in Sources */,
 				F5A2A2D71AFE3258009765C1 /* missile_trail.cpp in Sources */,
 				F59AB5A81AFA4F1800137527 /* fhm_location.cpp in Sources */,
+				F5A2A2DC1AFE86E4009765C1 /* hud.cpp in Sources */,
 				F5C6D3921AF969A5006FB7E6 /* fhm.cpp in Sources */,
 				F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */,
 				F578323E1AFBE859005FE829 /* ui.cpp in Sources */,
