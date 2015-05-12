@@ -444,8 +444,8 @@ void tiles::draw(const render &r)
             rects[0].r = rects[0].tc;
             rects[0].r.x = t3.x + r.get_width()/2;
             rects[0].r.y = t3.y + r.get_height()/2;
-            rects[0].r.w *= t3.w;
-            rects[0].r.h *= t3.h;
+            rects[0].r.w = t3.w * t3.ws;
+            rects[0].r.h = t3.h * t3.hs;
 
             //printf("%d %d | %f %f\n", e.w, e.h, t3.x, t3.y);
 

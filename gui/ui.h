@@ -118,11 +118,12 @@ private:
         uint32_t tile_idx;
         uint16_t tx, ty;
         uint16_t tw, th;
-        uint32_t unknown[2];
         float x;
         float y;
         float w;
         float h;
+        float ws;
+        float hs;
         uint32_t unknown2;
         uint32_t unknown3; //0,2,4,5...
     };
