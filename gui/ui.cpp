@@ -303,7 +303,94 @@ bool tiles::load(const char *name)
 
         if (t == ' DUH')
         {
-            //ToDo
+            reader.skip(4);
+            auto count = reader.read<uint32_t>();
+
+            struct hud_chunk_info
+            {
+                uint32_t unknown;
+                uint32_t offset;
+                uint32_t size;
+            };
+
+            std::vector<hud_chunk_info> infos(count);
+            for (auto &inf: infos)
+                inf = reader.read<hud_chunk_info>();
+
+            m_hud.resize(count);
+
+            for (uint32_t i = 0; i < count; ++i)
+            {
+                auto &inf = infos[i];
+                reader.seek(inf.offset);
+                nya_memory::memory_reader r(reader.get_data(), inf.size);
+
+                struct hud_sub_chunk_info
+                {
+                    uint32_t unknown_6;
+                    uint32_t unknown_1;
+                    uint32_t unknown_17988; //DF\0\0
+                    uint32_t offset;
+                    uint32_t size;
+                };
+
+                auto info = reader.read<hud_sub_chunk_info>();
+                assume(info.unknown_6 == 6);
+                assume(info.unknown_1 == 1);
+                assume(info.unknown_17988 == 17988);
+
+                r.seek(info.offset);
+                r = nya_memory::memory_reader(r.get_data(), info.size);
+                auto count = r.read<uint32_t>();
+                struct hud_sub_sub_info { uint32_t offset, size; };
+                std::vector<hud_sub_sub_info> infos(count);
+                for (auto &inf: infos)
+                    inf = r.read<hud_sub_sub_info>();
+
+                auto &h = m_hud[i];
+                h.unknown = inf.unknown;
+
+                for (auto &inf: infos)
+                {
+                    r.seek(inf.offset);
+
+                    struct hud_type_header
+                    {
+                        uint32_t type;
+                        uint32_t unknown; //often 0xffffffff
+                        uint32_t unknown_0_or_1_or_2;
+                        uint32_t unknown_0;
+                    };
+
+                    auto header = r.read<hud_type_header>();
+                    assume(header.type == 1 || header.type == 3 || header.type == 4 || header.type == 5);
+                    assume(header.unknown_0_or_1_or_2 == 0 || header.unknown_0_or_1_or_2 == 1 || header.unknown_0_or_1_or_2 == 2);
+                    assume(header.unknown_0 == 0);
+
+                    if (header.type == 3)
+                    {
+                        h.type3.push_back(r.read<hud_type3>());
+                    }
+                    else if (header.type == 4)
+                    {
+                        h.type4.push_back(r.read<hud_type4>());
+                        assume(h.type4.back().unknown_zero[0] == 0);
+                        assume(h.type4.back().unknown_zero[1] == 0);
+                        assume(h.type4.back().unknown_zero[2] == 0);
+                    }
+                    else if (header.type == 5)
+                    {
+                        //ToDo
+                    }
+                    else if (header.type == 1)
+                    {
+                        //ToDo
+                    }
+                }
+
+                //print_data(r);
+            }
+
             continue;
         }
 
@@ -329,13 +416,42 @@ bool tiles::load(const char *name)
             continue;
 
         char *c = (char *)&t;
-        printf("%c%c%c%c %d %d %d %d\n",c[3],c[2],c[1],c[0],c[3],c[2],c[1],c[0]);
+        printf("%c%c%c%c %d %d %d %d size %ld\n",c[3],c[2],c[1],c[0],c[3],c[2],c[1],c[0],m.get_chunk_size(i));
         //continue;
 
         print_data(reader);
     }
 
     return true;
+}
+
+//------------------------------------------------------------
+
+void tiles::draw(const render &r)
+{
+    std::vector<rect_pair> rects(1);
+
+    for (auto &h: m_hud)
+    {
+        for (auto t3: h.type3)
+        {
+            auto &e = m_uitxs[0].entries[t3.tile_idx];
+
+            rects[0].tc.x = e.x;
+            rects[0].tc.y = e.y;
+            rects[0].tc.w = e.w;
+            rects[0].tc.h = e.h;
+            rects[0].r = rects[0].tc;
+            rects[0].r.x = t3.x + r.get_width()/2;
+            rects[0].r.y = t3.y + r.get_height()/2;
+            rects[0].r.w *= t3.w;
+            rects[0].r.h *= t3.h;
+
+            //printf("%d %d | %f %f\n", e.w, e.h, t3.x, t3.y);
+
+            r.draw(rects, m_textures[e.tex_idx]);
+        }
+    }
 }
 
 //------------------------------------------------------------
