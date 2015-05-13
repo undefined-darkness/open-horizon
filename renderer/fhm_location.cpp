@@ -353,7 +353,8 @@ bool fhm_location::load(const char *fileName, const location_params &params)
 
     nya_scene::material::param light_dir(-params.sky.sun_dir);
     nya_scene::material::param fog_color(about_fog_color.x, about_fog_color.y, about_fog_color.z, -0.01*params.sky.fog_density);
-    nya_scene::material::param fog_height(params.sky.fog_height_fresnel, 0.0, 0.0, 0.0); //ToDo: height fade density
+    nya_scene::material::param fog_height(params.sky.fog_height_fresnel, params.sky.fog_height,
+                                          -0.01 * params.sky.fog_height_fade_density, -0.01 * params.sky.fog_height_density);
     nya_scene::material::param map_param_vs(s.parts_power, 0, 0, 0);
     nya_scene::material::param map_param_ps(s.parts_scale, s.parts_fog_power, s.parts_fresnel_max, s.parts_fresnel);
     nya_scene::material::param map_param2_ps(d.mesh_range, d.mesh_power, d.mesh_repeat, s.parts_reflection_power);
