@@ -264,3 +264,14 @@ inline void find_data(nya_resources::resources_provider &rp, float *f, size_t co
 }
 
 //------------------------------------------------------------
+
+struct debug_variable
+{
+    static int get() { return *value(); }
+    static void set(int v) { *value() = v; printf("debug variable %d\n", v); }
+
+private:
+    static int *value() { static int *value = new int(0); return value; }
+};
+
+//------------------------------------------------------------

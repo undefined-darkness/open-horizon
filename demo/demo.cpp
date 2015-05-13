@@ -47,6 +47,7 @@ public:
             return false;
         }
 
+        glfwSetKeyCallback(m_window, key_func);
         glfwMakeContextCurrent(m_window);
         glfwGetFramebufferSize(m_window, &m_screen_w, &m_screen_h);
 
@@ -66,6 +67,7 @@ public:
     void end_frame()
     {
         glfwSwapBuffers(m_window);
+        m_last_buttons = m_buttons;
         glfwPollEvents();
 
         double mx,my;
@@ -74,7 +76,17 @@ public:
         glfwGetFramebufferSize(m_window, &m_screen_w, &m_screen_h);
     }
 
-    bool get_key(int key) { return glfwGetKey(m_window, key); }
+    bool was_pressed(int key)
+    {
+        auto k = m_buttons.find(key);
+        if (k == m_buttons.end() || !k->second)
+            return false;
+
+        auto l = m_last_buttons.find(key);
+        return l == m_last_buttons.end() || !l->second;
+    }
+
+    bool get_key(int key) { auto k = m_buttons.find(key); return k == m_buttons.end() ? false : k->second; }
     bool get_mouse_lbtn() { return glfwGetMouseButton(m_window, 0); }
     bool get_mouse_rbtn() { return glfwGetMouseButton(m_window, 1); }
     int get_mouse_x() { return m_mouse_x; }
@@ -85,10 +97,25 @@ public:
     platform(): m_window(0) {}
 
 private:
+    static void key_func(GLFWwindow *, int key, int scancode, int action, int mods)
+    {
+        if (action == GLFW_PRESS)
+            m_buttons[key] = true;
+        else if (action == GLFW_RELEASE)
+            m_buttons[key] = false;
+    }
+
+private:
     GLFWwindow *m_window;
     int m_mouse_x, m_mouse_y;
     int m_screen_w, m_screen_h;
+    static std::map<int, bool> m_buttons;
+    std::map<int, bool> m_last_buttons;
 };
+
+//------------------------------------------------------------
+
+std::map<int, bool> platform::m_buttons;
 
 //------------------------------------------------------------
 
@@ -338,13 +365,9 @@ int main(void)
         if (platform.get_key(GLFW_KEY_Q)) key_spec = true;
         if (platform.get_key(GLFW_KEY_V)) key_camera = true;
 
-        static bool last_btn_p = false, last_btn_esc = false;
-
-        if ((platform.get_key(GLFW_KEY_P) && !last_btn_p) || (platform.get_key(GLFW_KEY_ESCAPE) && !last_btn_esc))
+        if (platform.was_pressed(GLFW_KEY_P) || platform.was_pressed(GLFW_KEY_ESCAPE))
             scene.pause(paused = !paused);
 
-        last_btn_p = platform.get_key(GLFW_KEY_P);
-        last_btn_esc = platform.get_key(GLFW_KEY_ESCAPE);
         speed10x = platform.get_key(GLFW_KEY_RIGHT_SHIFT);
 
         player->controls.rot = c_rot;
@@ -357,17 +380,16 @@ int main(void)
         if (key_camera)
             scene.camera.reset_delta_rot();
 
+        if (platform.was_pressed(GLFW_KEY_COMMA))
+            debug_variable::set(debug_variable::get() - 1);
+        if (platform.was_pressed(GLFW_KEY_PERIOD))
+            debug_variable::set(debug_variable::get() + 1);
+
         //demo purpose
-
-        std::vector<bool> fkeys(6, false);
-        static std::vector<bool> fkeys_last(6, false);
-
-        for (int i = 0; i < fkeys.size(); ++i)
-            fkeys[i] = platform.get_key(GLFW_KEY_1 + i);
 
         const unsigned int locations_count = sizeof(locations) / sizeof(locations[0]);
 
-        if (fkeys[0] && fkeys[0] != fkeys_last[0])
+        if (platform.was_pressed(GLFW_KEY_1))
         {
             scene.loading(true);
             scene.draw();
@@ -381,7 +403,7 @@ int main(void)
             player->set_rot(nya_math::quat());
         }
 
-        if (fkeys[1] && fkeys[1] != fkeys_last[1])
+        if (platform.was_pressed(GLFW_KEY_2))
         {
             scene.loading(true);
             scene.draw();
@@ -397,7 +419,7 @@ int main(void)
 
         const unsigned int planes_count = sizeof(planes) / sizeof(planes[0]);
 
-        if (fkeys[2] && fkeys[2] != fkeys_last[2])
+        if (platform.was_pressed(GLFW_KEY_3))
         {
             scene.loading(true);
             scene.draw();
@@ -412,7 +434,7 @@ int main(void)
             scene.loading(false);
         }
 
-        if (fkeys[3] && fkeys[3] != fkeys_last[3])
+        if (platform.was_pressed(GLFW_KEY_4))
         {
             scene.loading(true);
             scene.draw();
@@ -427,7 +449,7 @@ int main(void)
             scene.loading(false);
         }
 
-        if (fkeys[5] && fkeys[5] != fkeys_last[5])
+        if (platform.was_pressed(GLFW_KEY_6))
         {
             auto colors_count = renderer::aircraft::get_colors_count(planes[current_plane]);
             current_color = (current_color + 1) % colors_count;
@@ -436,7 +458,7 @@ int main(void)
             player->set_pos(p); player->set_rot(r);
         }
 
-        if (fkeys[4] && fkeys[4] != fkeys_last[4])
+        if (platform.was_pressed(GLFW_KEY_5))
         {
             auto colors_count = renderer::aircraft::get_colors_count(planes[current_plane]);
             current_color = (current_color + colors_count - 1) % colors_count;
@@ -444,8 +466,6 @@ int main(void)
             player = world.add_plane(planes[current_plane], current_color, true);
             player->set_pos(p); player->set_rot(r);
         }
-
-        fkeys_last = fkeys;
     }
 
     platform.terminate();
