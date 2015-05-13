@@ -308,7 +308,7 @@ bool tiles::load(const char *name)
 
             struct hud_chunk_info
             {
-                uint32_t unknown;
+                uint32_t id;
                 uint32_t offset;
                 uint32_t size;
             };
@@ -348,7 +348,9 @@ bool tiles::load(const char *name)
                     inf = r.read<hud_sub_sub_info>();
 
                 auto &h = m_hud[i];
-                h.unknown = inf.unknown;
+                h.id = inf.id;
+
+                m_hud_map[h.id] = i;
 
                 for (auto &inf: infos)
                 {
@@ -427,36 +429,47 @@ bool tiles::load(const char *name)
 
 //------------------------------------------------------------
 
-void tiles::draw(const render &r)
+int tiles::get_id(int idx)
 {
+    if (idx < 0 || idx >= get_count())
+        return -1;
+
+    return m_hud[idx].id;
+}
+
+//------------------------------------------------------------
+
+void tiles::draw(const render &r, int idx, const nya_math::vec4 &color)
+{
+    auto it = m_hud_map.find(idx);
+    if (it == m_hud_map.end())
+        return;
+
+    auto &h = m_hud[it->second];
     std::vector<rect_pair> rects(1);
-
-    for (auto &h: m_hud)
+    for (auto t3: h.type3)
     {
-        for (auto t3: h.type3)
-        {
-            auto &e = m_uitxs[0].entries[t3.tile_idx];
+        auto &e = m_uitxs[0].entries[t3.tile_idx];
 
-            rects[0].tc.x = e.x;
-            rects[0].tc.y = e.y;
-            rects[0].tc.w = e.w;
-            rects[0].tc.h = e.h;
-            rects[0].r = rects[0].tc;
-            rects[0].r.x = t3.x + r.get_width()/2;
-            rects[0].r.y = t3.y + r.get_height()/2;
-            rects[0].r.w = t3.w * t3.ws;
-            rects[0].r.h = t3.h * t3.hs;
+        rects[0].tc.x = e.x;
+        rects[0].tc.y = e.y;
+        rects[0].tc.w = e.w;
+        rects[0].tc.h = e.h;
+        rects[0].r = rects[0].tc;
+        rects[0].r.x = t3.x + r.get_width()/2;
+        rects[0].r.y = t3.y + r.get_height()/2;
+        rects[0].r.w = t3.w * t3.ws;
+        rects[0].r.h = t3.h * t3.hs;
 
-            //printf("%d %d | %f %f\n", e.w, e.h, t3.x, t3.y);
+        //printf("%d %d | %f %f\n", e.w, e.h, t3.x, t3.y);
 
-            r.draw(rects, m_textures[e.tex_idx]);
-        }
+        r.draw(rects, m_textures[e.tex_idx], color);
     }
 }
 
 //------------------------------------------------------------
 
-void tiles::debug_draw(const render &r)
+void tiles::debug_draw_tx(const render &r)
 {
     int y = 0, idx = 0;
     std::vector<rect_pair> rects(1);

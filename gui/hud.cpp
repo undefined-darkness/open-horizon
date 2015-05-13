@@ -41,8 +41,13 @@ void hud::draw(const render &r)
     m_fonts.draw_text(r, L"ALT", "NowGE20", r.get_width() * 0.6, r.get_height() * 0.5 - 20, green);
     m_fonts.draw_text(r, buf, "NowGE20", r.get_width() * 0.6, r.get_height() * 0.5, green);
 
-    //m_common.debug_draw(r);
-    //m_aircraft.debug_draw(r);
+    //m_common.debug_draw_tx(r);
+    //m_aircraft.debug_draw_tx(r);
+    //m_common.draw(r, debug_variable::get());
+    //m_aircraft.debug_draw(r, debug_variable::get());
+
+    //m_common.draw(r, 158, green);
+    //m_common.draw(r, 159, green);
 }
 
 //------------------------------------------------------------

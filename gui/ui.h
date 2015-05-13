@@ -108,9 +108,12 @@ class tiles
 {
 public:
     bool load(const char *name);
-    void draw(const render &r);
+    void draw(const render &r, int id, const nya_math::vec4 &color);
+    int get_count() { return (int)m_hud.size(); }
+    int get_id(int idx);
 
-    void debug_draw(const render &r);
+    void debug_draw(const render &r, int idx) { draw(r, get_id(idx), nya_math::vec4(1.0, 1.0, 1.0, 1.0)); }
+    void debug_draw_tx(const render &r);
 
 private:
     struct hud_type3
@@ -139,12 +142,13 @@ private:
 
     struct hud
     {
-        uint32_t unknown;
+        uint32_t id;
         std::vector<hud_type3> type3;
         std::vector<hud_type4> type4;
     };
 
     std::vector<hud> m_hud;
+    std::map<int, int> m_hud_map;
 
     struct uitx_header
     {
