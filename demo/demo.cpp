@@ -200,7 +200,7 @@ int main(void)
     }
 
     renderer::scene scene;
-    game::world world(scene);
+    game::world world(scene, scene.hud);
 
     int mx = platform.get_mouse_x(), my = platform.get_mouse_y();
     int screen_width = platform.get_width(), screen_height = platform.get_height();

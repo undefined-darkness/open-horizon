@@ -141,13 +141,6 @@ void scene::update(int dt)
     if (m_help_time > 0)
         m_help_time -= dt;
 
-    auto a = get_player_aircraft();
-    if (a.is_valid())
-    {
-        m_hud.set_speed(int(a->get_speed()));
-        m_hud.set_alt(int(a->get_alt()));
-    }
-
     m_frame_counter_time += dt;
     ++m_frame_counter;
     if (m_frame_counter_time > 1000)
@@ -216,7 +209,7 @@ void scene::draw()
     }
     else
     {
-        m_hud.draw(m_ui_render);
+        hud.draw(m_ui_render);
         if(m_paused)
             m_ui_fonts.draw_text(m_ui_render, L"PAUSED", "NowGE24", m_ui_render.get_width() * 0.5 - 45, m_ui_render.get_height() * 0.5, white);
     }

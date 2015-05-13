@@ -56,11 +56,9 @@ public:
     nya_math::quat get_special_mount_rot(int idx);
     void set_special_visible(int idx, bool visible);
 
-    //cockpit and ui
+    //cockpit
     void set_time(unsigned int time) { m_time = time * 1000; } //in seconds
     void set_speed(float speed) { m_speed = speed; }
-    float get_speed() { return m_speed; }
-    float get_alt() { return m_pos.y; }
 
     //camera
     enum camera_mode

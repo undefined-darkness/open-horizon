@@ -6,10 +6,16 @@
 
 #include "scene/material.h"
 #include "render/screen_quad.h"
+#include "util/params.h"
 #include <stdint.h>
 
 namespace gui
 {
+//------------------------------------------------------------
+
+typedef params::value<int> ivalue;
+typedef params::uvalue uvalue;
+
 //------------------------------------------------------------
 
 struct rect
@@ -33,9 +39,9 @@ public:
     void resize(int width, int height) { m_width = width, m_height = height; }
     void draw(const std::vector<rect_pair> &elements, const nya_scene::texture &tex,
               const nya_math::vec4 &color = nya_math::vec4(1.0, 1.0, 1.0, 1.0)) const;
-    int get_width(bool real = false) const { return real ? m_width : 1280; }
-    int get_height(bool real = false) const { return real ? m_height : 720; }
-
+    int get_width(bool real = false) const { return real ? m_width : 1366; }
+    int get_height(bool real = false) const { return real ? m_height : 768; }
+//1366	×	768
     render(): m_width(0), m_height(0) {}
 
 private:
@@ -108,11 +114,12 @@ class tiles
 {
 public:
     bool load(const char *name);
-    void draw(const render &r, int id, const nya_math::vec4 &color);
+    void draw(const render &r, int id, int x, int y, const nya_math::vec4 &color);
     int get_count() { return (int)m_hud.size(); }
     int get_id(int idx);
 
-    void debug_draw(const render &r, int idx) { draw(r, get_id(idx), nya_math::vec4(1.0, 1.0, 1.0, 1.0)); }
+    void debug_draw(const render &r, int idx) { draw(r, get_id(idx), r.get_width() / 2,
+                                                     r.get_height() / 2, nya_math::vec4(1.0, 1.0, 1.0, 1.0)); }
     void debug_draw_tx(const render &r);
 
 private:

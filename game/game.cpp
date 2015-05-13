@@ -158,7 +158,7 @@ void world::update(int dt)
     m_phys_world.update(dt, [](phys::object_ptr &a, phys::object_ptr &b) {});
 
     for (auto &p: m_planes)
-        p->update(dt, *this, p->render == m_render_world.get_player_aircraft());
+        p->update(dt, *this, m_hud, p->render == m_render_world.get_player_aircraft());
 
     for (auto &m: m_missiles)
         m->update(dt, *this);
@@ -168,7 +168,7 @@ void world::update(int dt)
 
 //------------------------------------------------------------
 
-void plane::update(int dt, world &w, bool player)
+void plane::update(int dt, world &w, gui::hud &h, bool player)
 {
     const int missile_cooldown_time = 3500;
     const int special_cooldown_time = 7000;
@@ -214,6 +214,14 @@ void plane::update(int dt, world &w, bool player)
         }
         else
             special_weapon = !special_weapon;
+
+        if (player)
+        {
+            if (special_weapon)
+                h.set_missiles(special_id.c_str(), 1); //ToDo: idx
+            else
+                h.set_missiles(missile_id.c_str(), 0);
+        }
     }
 
     if (controls.missile && controls.missile != last_controls.missile)
@@ -322,11 +330,15 @@ void plane::update(int dt, world &w, bool player)
     if (controls.mgun != last_controls.mgun)
         render->set_mgun_bay(controls.mgun);
 
-    //cockpit animations and ui
+    //cockpit animations and hud
 
     if (player)
     {
         render->set_speed(speed);
+
+        h.set_project_pos(phys->pos + phys->rot.rotate(nya_math::vec3(0.0, 0.0, 1000.0)));
+        h.set_speed(speed);
+        h.set_alt(phys->pos.y);
 
         if (controls.change_camera && controls.change_camera != last_controls.change_camera)
         {

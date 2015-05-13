@@ -439,47 +439,54 @@ int tiles::get_id(int idx)
 
 //------------------------------------------------------------
 
-void tiles::draw(const render &r, int idx, const nya_math::vec4 &color)
+void tiles::draw(const render &r, int idx, int x, int y, const nya_math::vec4 &color)
 {
     auto it = m_hud_map.find(idx);
     if (it == m_hud_map.end())
         return;
 
     auto &h = m_hud[it->second];
-    std::vector<rect_pair> rects(1);
+    std::vector<rect_pair> rects;
+    int tex_idx = -1;
     for (auto t3: h.type3)
     {
         auto &e = m_uitxs[0].entries[t3.tile_idx];
+        rect_pair rp;
 
-        rects[0].tc.x = e.x;
-        rects[0].tc.y = e.y;
-        rects[0].tc.w = e.w;
-        rects[0].tc.h = e.h;
-        rects[0].r = rects[0].tc;
-        rects[0].r.x = t3.x + r.get_width()/2;
-        rects[0].r.y = t3.y + r.get_height()/2;
-        rects[0].r.w = t3.w * t3.ws;
-        rects[0].r.h = t3.h * t3.hs;
+        rp.tc.x = e.x;
+        rp.tc.y = e.y;
+        rp.tc.w = e.w;
+        rp.tc.h = e.h;
+        rp.r.x = t3.x + x;
+        rp.r.y = t3.y + y;
+        rp.r.w = t3.w * t3.ws;
+        rp.r.h = t3.h * t3.hs;
 
         if (t3.unknown2 == 1127481344) //ToDo ? 1127481344 3266576384 3258187776 (flags)
         {
-            rects[0].r.x += rects[0].r.w;
-            rects[0].r.w = -rects[0].r.w;
+            rp.r.x += rp.r.w;
+            rp.r.w = -rp.r.w;
         }
 
         switch(t3.unknown3)
         {
             case 0: break;
-            case 1: rects[0].r.y -= t3.h * t3.hs; break;
-            case 2: rects[0].r.x -= t3.w * t3.ws; break;
-            case 3: rects[0].r.x -= t3.w * t3.ws, rects[0].r.y -= t3.h * t3.hs; break;
-            case 4: rects[0].r.x -= t3.w/2 * t3.ws, rects[0].r.y -=t3.h/2 * t3.hs; break;
+            case 1: rp.r.y -= t3.h * t3.hs; break;
+            case 2: rp.r.x -= t3.w * t3.ws; break;
+            case 3: rp.r.x -= t3.w * t3.ws, rp.r.y -= t3.h * t3.hs; break;
+            case 4: rp.r.x -= t3.w/2 * t3.ws, rp.r.y -=t3.h/2 * t3.hs; break;
         };
 
-        //printf("%d %d | %f %f\n", e.w, e.h, t3.x, t3.y);
+        assert(tex_idx < 0 || tex_idx == e.tex_idx);
 
-        r.draw(rects, m_textures[e.tex_idx], color);
+        tex_idx = e.tex_idx;
+        rects.push_back(rp);
+
+        //printf("%d %d | %f %f\n", e.w, e.h, t3.x, t3.y);
     }
+
+    if (tex_idx >= 0)
+        r.draw(rects, m_textures[tex_idx], color);
 }
 
 //------------------------------------------------------------

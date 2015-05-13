@@ -6,6 +6,7 @@
 
 #include "phys/physics.h"
 #include "renderer/scene.h"
+#include "gui/hud.h"
 
 namespace game
 {
@@ -94,7 +95,7 @@ struct plane: public object
     const vec3 &get_pos() { if (phys.is_valid()) return phys->pos; static vec3 p; return p; }
     const quat &get_rot() { if (phys.is_valid()) return phys->rot; static quat r; return r; }
 
-    void update(int dt, world &w, bool player);
+    void update(int dt, world &w, gui::hud &h, bool player);
 };
 
 typedef ptr<plane> plane_ptr;
@@ -114,7 +115,7 @@ public:
 
     void update(int dt);
 
-    world(renderer::world &w): m_render_world(w) {}
+    world(renderer::world &w, gui::hud &h): m_render_world(w), m_hud(h) {}
 
 private:
     void update_plane(plane_ptr &p);
@@ -123,6 +124,7 @@ private:
     std::vector<plane_ptr> m_planes;
     std::vector<missile_ptr> m_missiles;
     renderer::world &m_render_world;
+    gui::hud &m_hud;
     phys::world m_phys_world;
 };
 
