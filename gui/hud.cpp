@@ -43,11 +43,13 @@ void hud::draw(const render &r)
 
     //m_common.debug_draw_tx(r);
     //m_aircraft.debug_draw_tx(r);
-    //m_common.draw(r, debug_variable::get());
+    //m_common.debug_draw(r, debug_variable::get());
     //m_aircraft.debug_draw(r, debug_variable::get());
 
+    //m_common.draw(r, 3, green);
     //m_common.draw(r, 158, green);
     //m_common.draw(r, 159, green);
+    //m_common.draw(r, 214, green);
 }
 
 //------------------------------------------------------------

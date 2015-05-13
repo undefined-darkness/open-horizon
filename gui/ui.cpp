@@ -461,6 +461,21 @@ void tiles::draw(const render &r, int idx, const nya_math::vec4 &color)
         rects[0].r.w = t3.w * t3.ws;
         rects[0].r.h = t3.h * t3.hs;
 
+        if (t3.unknown2 == 1127481344) //ToDo ? 1127481344 3266576384 3258187776 (flags)
+        {
+            rects[0].r.x += rects[0].r.w;
+            rects[0].r.w = -rects[0].r.w;
+        }
+
+        switch(t3.unknown3)
+        {
+            case 0: break;
+            case 1: rects[0].r.y -= t3.h * t3.hs; break;
+            case 2: rects[0].r.x -= t3.w * t3.ws; break;
+            case 3: rects[0].r.x -= t3.w * t3.ws, rects[0].r.y -= t3.h * t3.hs; break;
+            case 4: rects[0].r.x -= t3.w/2 * t3.ws, rects[0].r.y -=t3.h/2 * t3.hs; break;
+        };
+
         //printf("%d %d | %f %f\n", e.w, e.h, t3.x, t3.y);
 
         r.draw(rects, m_textures[e.tex_idx], color);
