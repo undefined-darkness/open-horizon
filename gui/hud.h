@@ -22,6 +22,9 @@ public:
     void set_missiles(const char *id, int icon);
     void set_missile_reload(int idx, float value);
 
+    void clear_targets() { m_targets.clear(); }
+    void add_target(const nya_math::vec3 &pos, bool locked);
+
     hud(): m_common_loaded(false) {}
 
 private:
@@ -30,6 +33,8 @@ private:
     ivalue m_alt;
     ivalue m_missiles_icon;
     ivalue m_missiles_cross;
+
+    std::vector<std::pair<nya_math::vec3, bool> > m_targets;
 
 private:
     bool m_common_loaded;

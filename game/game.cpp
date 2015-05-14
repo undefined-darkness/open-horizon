@@ -343,6 +343,9 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         h.set_speed(speed);
         h.set_alt(phys->pos.y);
 
+        h.clear_targets();
+        h.add_target(nya_math::vec3(), true); //ToDo
+
         if (special_weapon)
         {
             if (count == 1)

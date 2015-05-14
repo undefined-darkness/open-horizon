@@ -48,6 +48,7 @@ void hud::load(const char *aircraft_name)
 void hud::draw(const render &r)
 {
     const auto green = nya_math::vec4(103,223,144,255)/255.0;
+    const auto red = nya_math::vec4(200,0,0,255)/255.0;
 
     wchar_t buf[255];
     swprintf(buf, sizeof(buf), L"%d", m_speed);
@@ -75,6 +76,25 @@ void hud::draw(const render &r)
         //ToDo
     }
 
+    for (auto &t: m_targets)
+    {
+        if (!get_project_pos(t.first, proj_pos))
+            continue;
+
+        if (t.second)
+        {
+            m_common.draw(r, 102, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, red);
+            m_common.draw(r, 103, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, red);
+            m_common.draw(r, 100, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, red);
+        }
+        else
+        {
+            const bool far = (nya_scene::get_camera().get_pos() - t.first).length() > 10000.0;
+            m_common.draw(r, far ? 121 : 102, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, green);
+            m_common.draw(r, far ? 122 : 103, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, green);
+        }
+    }
+
     m_common.draw(r, 10, r.get_width()/2 - 150, r.get_height()/2, green);
     m_common.draw(r, 16, r.get_width()/2 + 150, r.get_height()/2, green);
 
@@ -95,6 +115,13 @@ void hud::set_missiles(const char *id, int icon)
 void hud::set_missile_reload(int idx, float value)
 {
     m_aircraft.set_progress(m_missiles_icon + 406, idx, value);
+}
+
+//------------------------------------------------------------
+
+void hud::add_target(const nya_math::vec3 &pos, bool locked)
+{
+    m_targets.push_back(std::make_pair(pos, locked));
 }
 
 //------------------------------------------------------------
