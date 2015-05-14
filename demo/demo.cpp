@@ -7,7 +7,9 @@
 #include "containers/qdf_provider.h"
 #include "containers/dpl_provider.h"
 
-#include "game/game.h"
+#include "game/deathmatch.h"
+#include "game/team_deathmatch.h"
+#include "game/free_flight.h"
 #include "util/util.h"
 
 #include "resources/file_resources_provider.h"
@@ -201,6 +203,10 @@ int main(void)
 
     renderer::scene scene;
     game::world world(scene, scene.hud);
+    game::free_flight game_mode_ff(world);
+    game::deathmatch game_mode_dm(world);
+    game::team_deathmatch game_mode_tdm(world);
+    game::game_mode *active_game_mode = &game_mode_ff;
 
     int mx = platform.get_mouse_x(), my = platform.get_mouse_y();
     int screen_width = platform.get_width(), screen_height = platform.get_height();
@@ -268,11 +274,8 @@ int main(void)
     unsigned int current_plane = 0;
     unsigned int current_color = 0;
 
-    world.set_location(locations[current_location]);
-    auto player = world.add_plane(planes[current_plane], current_color, true);
-    scene.load_hud(planes[current_plane]);
-    player->set_pos(nya_math::vec3(-300, 50, 2000));
-    player->set_rot(nya_math::quat());
+    if (active_game_mode == &game_mode_ff)
+        game_mode_ff.start(planes[current_plane], current_color, locations[current_location]);
 
     unsigned long app_time = nya_system::get_time();
     while (!platform.should_terminate())
@@ -370,6 +373,10 @@ int main(void)
 
         speed10x = platform.get_key(GLFW_KEY_RIGHT_SHIFT);
 
+        assert(active_game_mode);
+        auto &player = active_game_mode->get_player();
+        assert(player.is_valid());
+
         player->controls.rot = c_rot;
         player->controls.throttle = c_throttle;
         player->controls.brake = c_brake;
@@ -387,6 +394,9 @@ int main(void)
 
         //demo purpose
 
+        if (active_game_mode != &game_mode_ff)
+            continue;
+
         const unsigned int locations_count = sizeof(locations) / sizeof(locations[0]);
 
         if (platform.was_pressed(GLFW_KEY_1))
@@ -395,12 +405,8 @@ int main(void)
             scene.draw();
             platform.end_frame();
 
-            current_location = (current_location + 1) % locations_count;
-            world.set_location(locations[current_location]);
+            game_mode_ff.set_location(locations[current_location = (current_location + 1) % locations_count]);
             scene.loading(false);
-
-            player->set_pos(nya_math::vec3(-300, 50, 2000));
-            player->set_rot(nya_math::quat());
         }
 
         if (platform.was_pressed(GLFW_KEY_2))
@@ -409,12 +415,8 @@ int main(void)
             scene.draw();
             platform.end_frame();
 
-            current_location = (current_location + locations_count - 1) % locations_count;
-            world.set_location(locations[current_location]);
+            game_mode_ff.set_location(locations[current_location = (current_location + locations_count - 1) % locations_count]);
             scene.loading(false);
-
-            player->set_pos(nya_math::vec3(-300, 50, 2000));
-            player->set_rot(nya_math::quat());
         }
 
         const unsigned int planes_count = sizeof(planes) / sizeof(planes[0]);
@@ -427,10 +429,7 @@ int main(void)
 
             current_color = 0;
             current_plane = (current_plane + 1) % planes_count;
-            auto p = player->get_pos(); auto r = player->get_rot();
-            player = world.add_plane(planes[current_plane], current_color, true);
-            scene.load_hud(planes[current_plane]);
-            player->set_pos(p); player->set_rot(r);
+            game_mode_ff.set_plane(planes[current_plane], current_color);
             scene.loading(false);
         }
 
@@ -442,10 +441,7 @@ int main(void)
 
             current_color = 0;
             current_plane = (current_plane + planes_count - 1) % planes_count;
-            auto p = player->get_pos(); auto r = player->get_rot();
-            player = world.add_plane(planes[current_plane], current_color, true);
-            scene.load_hud(planes[current_plane]);
-            player->set_pos(p); player->set_rot(r);
+            game_mode_ff.set_plane(planes[current_plane], current_color);
             scene.loading(false);
         }
 
@@ -453,18 +449,14 @@ int main(void)
         {
             auto colors_count = renderer::aircraft::get_colors_count(planes[current_plane]);
             current_color = (current_color + 1) % colors_count;
-            auto p = player->get_pos(); auto r = player->get_rot();
-            player = world.add_plane(planes[current_plane], current_color, true);
-            player->set_pos(p); player->set_rot(r);
+            game_mode_ff.set_plane(planes[current_plane], current_color);
         }
 
         if (platform.was_pressed(GLFW_KEY_5))
         {
             auto colors_count = renderer::aircraft::get_colors_count(planes[current_plane]);
             current_color = (current_color + colors_count - 1) % colors_count;
-            auto p = player->get_pos(); auto r = player->get_rot();
-            player = world.add_plane(planes[current_plane], current_color, true);
-            player->set_pos(p); player->set_rot(r);
+            game_mode_ff.set_plane(planes[current_plane], current_color);
         }
     }
 

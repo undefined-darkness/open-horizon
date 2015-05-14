@@ -29,6 +29,10 @@
 		F59AB5BA1AFAA0C000137527 /* aircraft.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F59AB5B91AFAA0C000137527 /* aircraft.cpp */; };
 		F5A2A2D71AFE3258009765C1 /* missile_trail.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2D61AFE3258009765C1 /* missile_trail.cpp */; };
 		F5A2A2DC1AFE86E4009765C1 /* hud.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2DA1AFE86E4009765C1 /* hud.cpp */; };
+		F5A2A2E41B05466C009765C1 /* ai.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E01B05466C009765C1 /* ai.cpp */; };
+		F5A2A2E51B05466C009765C1 /* deathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E11B05466C009765C1 /* deathmatch.cpp */; };
+		F5A2A2E61B05466C009765C1 /* free_flight.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E21B05466C009765C1 /* free_flight.cpp */; };
+		F5A2A2E71B05466C009765C1 /* team_deathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E31B05466C009765C1 /* team_deathmatch.cpp */; };
 		F5C6D3861AF9694D006FB7E6 /* demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D3851AF9694D006FB7E6 /* demo.cpp */; };
 		F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D3881AF969A5006FB7E6 /* dpl.cpp */; };
 		F5C6D3921AF969A5006FB7E6 /* fhm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D38C1AF969A5006FB7E6 /* fhm.cpp */; };
@@ -121,6 +125,14 @@
 		F5A2A2D61AFE3258009765C1 /* missile_trail.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = missile_trail.cpp; path = ../renderer/missile_trail.cpp; sourceTree = "<group>"; };
 		F5A2A2DA1AFE86E4009765C1 /* hud.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hud.cpp; path = ../gui/hud.cpp; sourceTree = "<group>"; };
 		F5A2A2DB1AFE86E4009765C1 /* hud.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hud.h; path = ../gui/hud.h; sourceTree = "<group>"; };
+		F5A2A2DD1B05466C009765C1 /* ai.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ai.h; path = ../game/ai.h; sourceTree = "<group>"; };
+		F5A2A2DE1B05466C009765C1 /* free_flight.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = free_flight.h; path = ../game/free_flight.h; sourceTree = "<group>"; };
+		F5A2A2DF1B05466C009765C1 /* team_deathmatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = team_deathmatch.h; path = ../game/team_deathmatch.h; sourceTree = "<group>"; };
+		F5A2A2E01B05466C009765C1 /* ai.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ai.cpp; path = ../game/ai.cpp; sourceTree = "<group>"; };
+		F5A2A2E11B05466C009765C1 /* deathmatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = deathmatch.cpp; path = ../game/deathmatch.cpp; sourceTree = "<group>"; };
+		F5A2A2E21B05466C009765C1 /* free_flight.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = free_flight.cpp; path = ../game/free_flight.cpp; sourceTree = "<group>"; };
+		F5A2A2E31B05466C009765C1 /* team_deathmatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = team_deathmatch.cpp; path = ../game/team_deathmatch.cpp; sourceTree = "<group>"; };
+		F5A2A2E81B0546EF009765C1 /* deathmatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = deathmatch.h; path = ../game/deathmatch.h; sourceTree = "<group>"; };
 		F5C6D37C1AF968E7006FB7E6 /* params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = params.h; path = ../util/params.h; sourceTree = "<group>"; };
 		F5C6D37D1AF968E7006FB7E6 /* xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xml.h; path = ../util/xml.h; sourceTree = "<group>"; };
 		F5C6D3851AF9694D006FB7E6 /* demo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = demo.cpp; sourceTree = SOURCE_ROOT; };
@@ -253,8 +265,16 @@
 		F59AB58D1AFA387500137527 /* game */ = {
 			isa = PBXGroup;
 			children = (
+				F5A2A2E01B05466C009765C1 /* ai.cpp */,
+				F5A2A2DD1B05466C009765C1 /* ai.h */,
+				F5A2A2E11B05466C009765C1 /* deathmatch.cpp */,
+				F5A2A2E81B0546EF009765C1 /* deathmatch.h */,
+				F5A2A2E21B05466C009765C1 /* free_flight.cpp */,
+				F5A2A2DE1B05466C009765C1 /* free_flight.h */,
 				F59AB5901AFA389500137527 /* game.cpp */,
 				F59AB5911AFA389500137527 /* game.h */,
+				F5A2A2E31B05466C009765C1 /* team_deathmatch.cpp */,
+				F5A2A2DF1B05466C009765C1 /* team_deathmatch.h */,
 			);
 			name = game;
 			sourceTree = "<group>";
@@ -437,7 +457,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				F59AB5BA1AFAA0C000137527 /* aircraft.cpp in Sources */,
+				F5A2A2E51B05466C009765C1 /* deathmatch.cpp in Sources */,
 				F5A2A2D71AFE3258009765C1 /* missile_trail.cpp in Sources */,
+				F5A2A2E61B05466C009765C1 /* free_flight.cpp in Sources */,
 				F59AB5A81AFA4F1800137527 /* fhm_location.cpp in Sources */,
 				F5A2A2DC1AFE86E4009765C1 /* hud.cpp in Sources */,
 				F5C6D3921AF969A5006FB7E6 /* fhm.cpp in Sources */,
@@ -453,8 +475,10 @@
 				F5C6D3991AF969BE006FB7E6 /* physics.cpp in Sources */,
 				F59AB5B41AFA799B00137527 /* lens_flare.cpp in Sources */,
 				F59AB5AD1AFA4F1800137527 /* shared.cpp in Sources */,
+				F5A2A2E41B05466C009765C1 /* ai.cpp in Sources */,
 				F5C6D3861AF9694D006FB7E6 /* demo.cpp in Sources */,
 				F59AB5AA1AFA4F1800137527 /* location_params.cpp in Sources */,
+				F5A2A2E71B05466C009765C1 /* team_deathmatch.cpp in Sources */,
 				F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */,
 				F59AB5921AFA389500137527 /* game.cpp in Sources */,
 				F59AB5B11AFA4FEC00137527 /* world.cpp in Sources */,

@@ -43,7 +43,6 @@ public:
     m_fonts_loaded(false) {}
 
 public:
-    void load_hud(const char *aircraft_name) { hud.load(aircraft_name); }
     void switch_camera();
     void resize(unsigned int width,unsigned int height);
     void update(int dt);

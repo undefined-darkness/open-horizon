@@ -113,6 +113,8 @@ public:
     int get_planes_count();
     plane_ptr get_plane(int idx);
 
+    gui::hud &get_hud() { return m_hud; }
+
     void update(int dt);
 
     world(renderer::world &w, gui::hud &h): m_render_world(w), m_hud(h) {}
@@ -128,5 +130,19 @@ private:
     phys::world m_phys_world;
 };
 
+//------------------------------------------------------------
+
+class game_mode
+{
+public:
+    virtual void process(int dt) {}
+    virtual plane_ptr &get_player() { return m_player; }
+
+    game_mode(world &w): m_world(w) {}
+
+protected:
+    world &m_world;
+    plane_ptr m_player;
+};
 //------------------------------------------------------------
 }
