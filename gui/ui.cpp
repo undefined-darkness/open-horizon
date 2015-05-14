@@ -10,7 +10,7 @@ namespace gui
 {
 //------------------------------------------------------------
 
-const int elements_per_batch = 127; //200 //ToDo: draw without instancing
+const int elements_per_batch = 200;
 
 //------------------------------------------------------------
 
@@ -23,7 +23,49 @@ void render::init()
     m_color.create();
     m_tr.create();
     m_tc_tr.create();
-    m_mesh.init();
+
+    struct vert { float x,y,s,t,i; } verts[elements_per_batch][4];
+
+    uint16_t inds[elements_per_batch][6];
+
+    for (int i = 0; i < elements_per_batch; ++i)
+    {
+        auto &v = verts[i];
+        for(int j=0;j<4;++j)
+        {
+            v[j].x=j>1?-1.0f:1.0f,v[j].y=j%2?1.0f:-1.0f;
+            v[j].s=j>1? 0.0f:1.0f,v[j].t=j%2?1.0f:0.0f;
+            if (nya_render::get_render_api() == nya_render::render_api_directx11)
+                v[j].t=1.0f-v[j].t;
+            v[j].i = i;
+        }
+
+        inds[i][0] = i * 4;
+        inds[i][1] = i * 4 + 1;
+        inds[i][2] = i * 4 + 2;
+
+        inds[i][3] = i * 4 + 2;
+        inds[i][4] = i * 4 + 1;
+        inds[i][5] = i * 4 + 3;
+    }
+
+    m_quads_mesh.set_vertex_data(verts,sizeof(verts[0][0]), elements_per_batch * 4);
+    m_quads_mesh.set_vertices(0,2);
+    m_quads_mesh.set_tc(0,2*4,3);
+    m_quads_mesh.set_index_data(inds, nya_render::vbo::index2b, elements_per_batch * 6);
+
+    vert line_verts[elements_per_batch];
+    for (int i = 0; i < elements_per_batch; ++i)
+    {
+        auto &v = line_verts[i];
+        v.x = v.y = 0.0f;
+        v.i = i;
+    }
+
+    m_lines_mesh.set_vertex_data(line_verts, sizeof(line_verts[0]), elements_per_batch);
+    m_lines_mesh.set_vertices(0, 2);
+    m_lines_mesh.set_tc(0, 2*4, 3);
+    m_lines_mesh.set_element_type(nya_render::vbo::line_strip);
 
     auto &pass = m_material.get_pass(m_material.add_pass(nya_scene::material::default_pass));
     pass.set_shader(nya_scene::shader("shaders/ui.nsh"));
@@ -96,7 +138,55 @@ void render::draw(const std::vector<rect_pair> &elements, const nya_scene::textu
     }
 
     m_material.internal().set(nya_scene::material::default_pass);
-    m_mesh.draw((int)elements.size());
+    m_quads_mesh.bind();
+    m_quads_mesh.draw((unsigned int)elements.size() * 6);
+    m_quads_mesh.unbind();
+    m_material.internal().unset();
+
+    static nya_scene::texture empty;
+    m_tex.set(empty);
+}
+
+//------------------------------------------------------------
+
+void render::draw(const std::vector<nya_math::vec2> &elements, const nya_math::vec4 &color) const
+{
+    if (!m_width || !m_height)
+        return;
+
+    if (elements.empty())
+        return;
+
+    assert(elements.size()<elements_per_batch); //ToDo: draw multiple times
+
+    m_tex.set(shared::get_white_texture());
+    m_color.set(color);
+
+    const float aspect = float(m_width) / m_height / (float(get_width()) / get_height() );
+    const float iwidth = 1.0f / get_width();
+    const float iheight = 1.0f / get_height();
+
+    for (int i = 0; i < (int)elements.size(); ++i)
+    {
+        auto &e = elements[i];
+        m_tr->set_count(i + 1);
+        m_tc_tr->set_count(i + 1);
+
+        nya_math::vec4 pos;
+        pos.x = -1.0 + 2.0 * e.x * iwidth;
+        pos.y = 1.0 - 2.0 * e.y * iheight;
+        if (aspect > 1.0)
+            pos.x /= aspect;
+        else
+            pos.y *= aspect;
+        m_tr->set(i, pos);
+    }
+
+    m_material.internal().set(nya_scene::material::default_pass);
+    m_lines_mesh.bind();
+    glLineWidth(1.0);
+    m_lines_mesh.draw((unsigned int)elements.size());
+    m_lines_mesh.unbind();
     m_material.internal().unset();
 
     static nya_scene::texture empty;
@@ -365,11 +455,42 @@ bool tiles::load(const char *name)
                     };
 
                     auto header = r.read<hud_type_header>();
-                    assume(header.type == 1 || header.type == 3 || header.type == 4 || header.type == 5);
                     assume(header.unknown_0_or_1_or_2 == 0 || header.unknown_0_or_1_or_2 == 1 || header.unknown_0_or_1_or_2 == 2);
                     assume(header.unknown_0 == 0);
 
-                    if (header.type == 3)
+                    if (header.type == 1)
+                    {
+                        hud_type1 ht1;
+                        while(r.get_remained())
+                        {
+                            ht1.line_loops.resize(ht1.line_loops.size() + 1);
+                            auto &loop = ht1.line_loops.back();
+                            auto count = r.read<uint32_t>();
+                            if (count == 1)
+                            {
+                                struct unknown_struct
+                                {
+                                    uint8_t unknown[4];
+                                    uint32_t unknown_2;
+                                    uint32_t unknown_0;
+                                };
+
+                                auto u = r.read<unknown_struct>();
+                                assume(u.unknown_2 == 2);
+                                assume(u.unknown_0 == 0);
+                            }
+                            else
+                            {
+                                assume(count != 0);
+                                loop.resize(count);
+                                for (auto &l: loop)
+                                    l = r.read<nya_math::vec2>();
+                            }
+                        }
+
+                        h.type1.push_back(ht1);
+                    }
+                    else if (header.type == 3)
                     {
                         h.type3.push_back(r.read<hud_type3>());
                     }
@@ -384,10 +505,8 @@ bool tiles::load(const char *name)
                     {
                         //ToDo
                     }
-                    else if (header.type == 1)
-                    {
-                        //ToDo
-                    }
+                    else
+                        assume(0 && header.type);
                 }
 
                 //print_data(r);
@@ -446,9 +565,23 @@ void tiles::draw(const render &r, int idx, int x, int y, const nya_math::vec4 &c
         return;
 
     auto &h = m_hud[it->second];
+    for (auto &t1: h.type1)
+    {
+        for (auto &l: t1.line_loops)
+        {
+            auto loop = l;
+            for (auto &l: loop)
+            {
+                l.x += x;
+                l.y += y;
+            }
+            r.draw(loop, color);
+        }
+    }
+
     std::vector<rect_pair> rects;
     int tex_idx = -1;
-    for (auto t3: h.type3)
+    for (auto &t3: h.type3)
     {
         auto &e = m_uitxs[0].entries[t3.tile_idx];
         rect_pair rp;
@@ -462,19 +595,19 @@ void tiles::draw(const render &r, int idx, int x, int y, const nya_math::vec4 &c
         rp.r.w = t3.w * t3.ws;
         rp.r.h = t3.h * t3.hs;
 
-        if (t3.unknown2 == 1127481344) //ToDo ? 1127481344 3266576384 3258187776 (flags)
+        if (t3.flags == 1127481344) //ToDo ? 1127481344 3266576384 3258187776 (flags)
         {
             rp.r.x += rp.r.w;
             rp.r.w = -rp.r.w;
         }
 
-        switch(t3.unknown3)
+        switch(t3.align)
         {
-            case 0: break;
-            case 1: rp.r.y -= t3.h * t3.hs; break;
-            case 2: rp.r.x -= t3.w * t3.ws; break;
-            case 3: rp.r.x -= t3.w * t3.ws, rp.r.y -= t3.h * t3.hs; break;
-            case 4: rp.r.x -= t3.w/2 * t3.ws, rp.r.y -=t3.h/2 * t3.hs; break;
+            case align_top_left: break;
+            case align_bottom_left: rp.r.y -= t3.h * t3.hs; break;
+            case align_top_right: rp.r.x -= t3.w * t3.ws; break;
+            case align_bottom_right: rp.r.x -= t3.w * t3.ws, rp.r.y -= t3.h * t3.hs; break;
+            case align_center: rp.r.x -= t3.w/2 * t3.ws, rp.r.y -=t3.h/2 * t3.hs; break;
         };
 
         assert(tex_idx < 0 || tex_idx == e.tex_idx);
@@ -484,6 +617,25 @@ void tiles::draw(const render &r, int idx, int x, int y, const nya_math::vec4 &c
 
         //printf("%d %d | %f %f\n", e.w, e.h, t3.x, t3.y);
     }
+
+    /*
+    for (auto &t4: h.type4)
+    {
+        nya_math::vec2 pos(t4.x + x, t4.y + y);
+        nya_math::vec2 left(5.0, 0.0);
+        nya_math::vec2 top(0.0, 5.0);
+
+        nya_math::vec4 red(1.0, 0.0, 0.0, 1.0);
+        std::vector<nya_math::vec2> lines;
+        lines.push_back(pos + left + top);
+        lines.push_back(pos - left - top);
+        r.draw(lines, red);
+        lines.clear();
+        lines.push_back(pos - left + top);
+        lines.push_back(pos + left - top);
+        r.draw(lines, red);
+    }
+    */
 
     if (tex_idx >= 0)
         r.draw(rects, m_textures[tex_idx], color);

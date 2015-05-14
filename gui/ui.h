@@ -39,6 +39,7 @@ public:
     void resize(int width, int height) { m_width = width, m_height = height; }
     void draw(const std::vector<rect_pair> &elements, const nya_scene::texture &tex,
               const nya_math::vec4 &color = nya_math::vec4(1.0, 1.0, 1.0, 1.0)) const;
+    void draw(const std::vector<nya_math::vec2> &elements, const nya_math::vec4 &color = nya_math::vec4(1.0, 1.0, 1.0, 1.0)) const;
     int get_width(bool real = false) const { return real ? m_width : 1366; }
     int get_height(bool real = false) const { return real ? m_height : 768; }
 //1366	×	768
@@ -46,7 +47,8 @@ public:
 
 private:
     int m_width, m_height;
-    nya_render::screen_quad m_mesh;
+    nya_render::vbo m_quads_mesh;
+    nya_render::vbo m_lines_mesh;
     nya_scene::material m_material;
     mutable nya_scene::material::param_proxy m_color;
     mutable nya_scene::material::param_array_proxy m_tr;
@@ -123,6 +125,20 @@ public:
     void debug_draw_tx(const render &r);
 
 private:
+    enum align_mode
+    {
+        align_top_left,
+        align_bottom_left,
+        align_top_right,
+        align_bottom_right,
+        align_center
+    };
+
+    struct hud_type1
+    {
+        std::vector<std::vector<nya_math::vec2> > line_loops;
+    };
+
     struct hud_type3
     {
         uint32_t tile_idx;
@@ -134,8 +150,8 @@ private:
         float h;
         float ws;
         float hs;
-        uint32_t unknown2;
-        uint32_t unknown3; //0,2,4,5...
+        uint32_t flags;
+        align_mode align;
     };
 
     struct hud_type4
@@ -150,6 +166,7 @@ private:
     struct hud
     {
         uint32_t id;
+        std::vector<hud_type1> type1;
         std::vector<hud_type3> type3;
         std::vector<hud_type4> type4;
     };

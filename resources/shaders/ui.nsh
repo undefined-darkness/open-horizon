@@ -15,8 +15,9 @@ uniform vec4 tc_tr[200];
 
 void main()
 {
-    tc = tc_tr[gl_InstanceID].xy + tc_tr[gl_InstanceID].zw * gl_MultiTexCoord0.xy;
-    gl_Position = vec4(tr[gl_InstanceID].xy + tr[gl_InstanceID].zw * gl_Vertex.xy, 0.0, 1.0);
+    int idx = int(gl_MultiTexCoord0.z);
+    tc = tc_tr[idx].xy + tc_tr[idx].zw * gl_MultiTexCoord0.xy;
+    gl_Position = vec4(tr[idx].xy + tr[idx].zw * gl_Vertex.xy, 0.0, 1.0);
 }
 
 @fragment
@@ -26,5 +27,7 @@ uniform vec4 color;
 
 void main()
 {
-    gl_FragColor = texture2D(base_map, tc) * color;
+    vec4 base = texture2D(base_map, tc);
+    gl_FragColor = base * color;
+    //gl_FragColor = mix(vec4(1.0,0.0,0.0,0.5),base * color,base.a);
 }

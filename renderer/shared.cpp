@@ -102,6 +102,24 @@ const nya_scene::texture &get_texture(unsigned int hash_id)
 
 //------------------------------------------------------------
 
+const nya_scene::texture &get_white_texture()
+{
+    static nya_scene::texture white;
+    static bool initialised=false;
+    if(!initialised)
+    {
+        const unsigned char data[4]={255,255,255,255};
+        nya_scene::shared_texture res;
+        res.tex.build_texture(data,1,1,nya_render::texture::color_rgba);
+        white.create(res);
+        initialised=true;
+    }
+
+    return white;
+}
+
+//------------------------------------------------------------
+
 const nya_scene::texture &get_black_texture()
 {
     static nya_scene::texture black;

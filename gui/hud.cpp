@@ -59,7 +59,7 @@ void hud::draw(const render &r)
 
     //m_common.debug_draw_tx(r);
     //m_aircraft.debug_draw_tx(r);
-    //m_common.debug_draw(r, debug_variable::get());
+    //m_common.debug_draw(r, debug_variable::get()); static int last_idx = 0; if (last_idx != debug_variable::get()) printf("%d %d\n", debug_variable::get(), m_common.get_id(debug_variable::get())); last_idx = debug_variable::get();
     //m_aircraft.debug_draw(r, debug_variable::get()); static int last_idx = 0; if (last_idx != debug_variable::get()) printf("%d %d\n", debug_variable::get(), m_aircraft.get_id(debug_variable::get())); last_idx = debug_variable::get();
 
     //m_common.draw(r, 3, green);
@@ -70,6 +70,7 @@ void hud::draw(const render &r)
     nya_math::vec2 proj_pos;
     if (get_project_pos(m_project_pos, proj_pos))
     {
+        //m_common.draw(r, 215, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, green);
         m_common.draw(r, 2, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, green);
         //ToDo
     }
