@@ -92,9 +92,9 @@ void hud::set_missiles(const char *id, int icon)
 
 //------------------------------------------------------------
 
-void set_missile_reload(int idx, float value)
+void hud::set_missile_reload(int idx, float value)
 {
-    //ToDo
+    m_aircraft.set_progress(m_missiles_icon + 406, idx, value);
 }
 
 //------------------------------------------------------------

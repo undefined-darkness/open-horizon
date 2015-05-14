@@ -509,6 +509,8 @@ bool tiles::load(const char *name)
                         assume(0 && header.type);
                 }
 
+                h.type3_progress.resize(h.type3.size(), 1.0f);
+
                 //print_data(r);
             }
 
@@ -558,9 +560,9 @@ int tiles::get_id(int idx)
 
 //------------------------------------------------------------
 
-void tiles::draw(const render &r, int idx, int x, int y, const nya_math::vec4 &color)
+void tiles::draw(const render &r, int id, int x, int y, const nya_math::vec4 &color)
 {
-    auto it = m_hud_map.find(idx);
+    auto it = m_hud_map.find(id);
     if (it == m_hud_map.end())
         return;
 
@@ -581,19 +583,20 @@ void tiles::draw(const render &r, int idx, int x, int y, const nya_math::vec4 &c
 
     std::vector<rect_pair> rects;
     int tex_idx = -1;
-    for (auto &t3: h.type3)
+    for (size_t i = 0; i < h.type3.size(); ++i)
     {
+        auto &t3 = h.type3[i];
         auto &e = m_uitxs[0].entries[t3.tile_idx];
         rect_pair rp;
 
         rp.tc.x = e.x;
         rp.tc.y = e.y;
         rp.tc.w = e.w;
-        rp.tc.h = e.h;
+        rp.tc.h = e.h * h.type3_progress[i];
         rp.r.x = t3.x + x;
         rp.r.y = t3.y + y;
         rp.r.w = t3.w * t3.ws;
-        rp.r.h = t3.h * t3.hs;
+        rp.r.h = t3.h * t3.hs * h.type3_progress[i];
 
         if (t3.flags == 1127481344) //ToDo ? 1127481344 3266576384 3258187776 (flags)
         {
@@ -639,6 +642,21 @@ void tiles::draw(const render &r, int idx, int x, int y, const nya_math::vec4 &c
 
     if (tex_idx >= 0)
         r.draw(rects, m_textures[tex_idx], color);
+}
+
+//------------------------------------------------------------
+
+void tiles::set_progress(int id, int sub_idx, float value)
+{
+    auto it = m_hud_map.find(id);
+    if (it == m_hud_map.end())
+        return;
+
+    auto &h = m_hud[it->second];
+    if (sub_idx < 0 || sub_idx >= (int)h.type3_progress.size())
+        return;
+
+    h.type3_progress[sub_idx] = value;
 }
 
 //------------------------------------------------------------

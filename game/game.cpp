@@ -224,20 +224,23 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         }
     }
 
+    int count = 1;
+    if (!special_id.empty())
+    {
+        if (special_id[1] == '4')
+            count = 4;
+        else if (special_id[1] == '6')
+            count = 6;
+    }
+
     if (controls.missile && controls.missile != last_controls.missile)
     {
         if (special_weapon)
         {
             if (!render->has_special_bay() || render->is_special_bay_opened())
             {
-                if ((special_cooldown[0] <=0 || special_cooldown[1] <= 0) && render->get_special_mount_count() > 0 && !special_id.empty())
+                if ((special_cooldown[0] <=0 || special_cooldown[1] <= 0) && render->get_special_mount_count() > 0)
                 {
-                    int count = 1;
-                    if (special_id[1] == '4')
-                        count = 4;
-                    else if (special_id[1] == '6')
-                        count = 6;
-
                     if (count == 1)
                     {
                         if (special_cooldown[0] <= 0)
@@ -339,6 +342,26 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         h.set_project_pos(phys->pos + phys->rot.rotate(nya_math::vec3(0.0, 0.0, 1000.0)));
         h.set_speed(speed);
         h.set_alt(phys->pos.y);
+
+        if (special_weapon)
+        {
+            if (count == 1)
+            {
+                h.set_missile_reload(0, 1.0f - float(special_cooldown[0]) / special_cooldown_time);
+                h.set_missile_reload(1, 1.0f - float(special_cooldown[1]) / special_cooldown_time);
+            }
+            else
+            {
+                float value = 1.0f - float(special_cooldown[0]) / special_cooldown_time;
+                for (int i = 0; i < count; ++i)
+                    h.set_missile_reload(i, value);
+            }
+        }
+        else
+        {
+            h.set_missile_reload(0, 1.0f - float(missile_cooldown[0]) / missile_cooldown_time);
+            h.set_missile_reload(1, 1.0f - float(missile_cooldown[1]) / missile_cooldown_time);
+        }
 
         if (controls.change_camera && controls.change_camera != last_controls.change_camera)
         {

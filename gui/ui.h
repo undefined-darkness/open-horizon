@@ -119,6 +119,7 @@ public:
     void draw(const render &r, int id, int x, int y, const nya_math::vec4 &color);
     int get_count() { return (int)m_hud.size(); }
     int get_id(int idx);
+    void set_progress(int id, int sub_idx, float value);
 
     void debug_draw(const render &r, int idx) { draw(r, get_id(idx), r.get_width() / 2,
                                                      r.get_height() / 2, nya_math::vec4(1.0, 1.0, 1.0, 1.0)); }
@@ -169,6 +170,8 @@ private:
         std::vector<hud_type1> type1;
         std::vector<hud_type3> type3;
         std::vector<hud_type4> type4;
+
+        std::vector<float> type3_progress;
     };
 
     std::vector<hud> m_hud;
