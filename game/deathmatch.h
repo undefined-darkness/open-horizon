@@ -13,7 +13,7 @@ namespace game
 class deathmatch: public game_mode
 {
 public:
-    virtual void process(int dt) override {}
+    virtual void update(int dt, const plane_controls &player_controls) override {}
 
     deathmatch(world &w): game_mode(w) {}
 };

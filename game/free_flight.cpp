@@ -16,8 +16,12 @@ void free_flight::start(const char *plane, int color, const char *location)
 
 //------------------------------------------------------------
 
-void free_flight::process(int dt)
+void free_flight::update(int dt, const plane_controls &player_controls)
 {
+    if (m_player.is_valid())
+        m_player->controls = player_controls;
+
+    m_world.update(dt);
 }
 
 //------------------------------------------------------------

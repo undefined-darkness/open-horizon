@@ -135,14 +135,12 @@ private:
 class game_mode
 {
 public:
-    virtual void process(int dt) {}
-    virtual plane_ptr &get_player() { return m_player; }
+    virtual void update(int dt, const plane_controls &player_controls) {}
 
     game_mode(world &w): m_world(w) {}
 
 protected:
     world &m_world;
-    plane_ptr m_player;
 };
 //------------------------------------------------------------
 }

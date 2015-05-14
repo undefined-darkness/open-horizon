@@ -207,6 +207,7 @@ int main(void)
     game::deathmatch game_mode_dm(world);
     game::team_deathmatch game_mode_tdm(world);
     game::game_mode *active_game_mode = &game_mode_ff;
+    game::plane_controls controls;
 
     int mx = platform.get_mouse_x(), my = platform.get_mouse_y();
     int screen_width = platform.get_width(), screen_height = platform.get_height();
@@ -295,11 +296,13 @@ int main(void)
             scene.resize(screen_width, screen_height);
         }
 
-        world.update(paused ? 0 : (speed10x ? dt * 10 : dt));
+        active_game_mode->update(paused ? 0 : (speed10x ? dt * 10 : dt), controls);
         scene.draw();
         platform.end_frame();
 
         //controls
+
+        controls = game::plane_controls();
 
         if (platform.get_mouse_lbtn())
             scene.camera.add_delta_rot((platform.get_mouse_y() - my) * 0.03, (platform.get_mouse_x() - mx) * 0.03);
@@ -309,17 +312,14 @@ int main(void)
 
         mx = platform.get_mouse_x(), my = platform.get_mouse_y();
 
-        nya_math::vec3 c_rot;
-        float c_throttle = 0.0f, c_brake = 0.0f;
-
         int axis_count = 0, buttons_count = 0;
         const float *axis = glfwGetJoystickAxes(0, &axis_count);
         const unsigned char *buttons = glfwGetJoystickButtons(0, &buttons_count);
         const float joy_dead_zone = 0.1f;
         if (axis_count > 1)
         {
-            if (fabsf(axis[0]) > joy_dead_zone) c_rot.z = axis[0];
-            if (fabsf(axis[1]) > joy_dead_zone) c_rot.x = axis[1];
+            if (fabsf(axis[0]) > joy_dead_zone) controls.rot.z = axis[0];
+            if (fabsf(axis[1]) > joy_dead_zone) controls.rot.x = axis[1];
         }
 
         if (axis_count > 3)
@@ -330,10 +330,10 @@ int main(void)
 
         if (buttons_count > 11)
         {
-            if (buttons[8]) c_rot.y = -1.0f;
-            if (buttons[9]) c_rot.y = 1.0f;
-            if (buttons[10]) c_brake = 1.0f;
-            if (buttons[11]) c_throttle = 1.0f;
+            if (buttons[8]) controls.rot.y = -1.0f;
+            if (buttons[9]) controls.rot.y = 1.0f;
+            if (buttons[10]) controls.brake = 1.0f;
+            if (buttons[11]) controls.throttle = 1.0f;
 
             if (buttons[2]) scene.camera.reset_delta_rot();
 /*
@@ -345,46 +345,33 @@ int main(void)
 */
         }
 
-        bool key_mgun = false, key_rocket = false, key_spec = false, key_camera = false;
-
         if (buttons_count > 14)
         {
-            if(buttons[13]) key_rocket = true;
-            if(buttons[14]) key_mgun = true;
-            if(buttons[0]) key_spec = true;
+            if(buttons[13]) controls.missile = true;
+            if(buttons[14]) controls.mgun = true;
+            if(buttons[0]) controls.change_weapon = true;
         }
 
-        if (platform.get_key(GLFW_KEY_W)) c_throttle = 1.0f;
-        if (platform.get_key(GLFW_KEY_S)) c_brake = 1.0f;
-        if (platform.get_key(GLFW_KEY_A)) c_rot.y = -1.0f;
-        if (platform.get_key(GLFW_KEY_D)) c_rot.y = 1.0f;
-        if (platform.get_key(GLFW_KEY_UP)) c_rot.x = 1.0f;
-        if (platform.get_key(GLFW_KEY_DOWN)) c_rot.x = -1.0f;
-        if (platform.get_key(GLFW_KEY_LEFT)) c_rot.z = -1.0f;
-        if (platform.get_key(GLFW_KEY_RIGHT)) c_rot.z = 1.0f;
+        if (platform.get_key(GLFW_KEY_W)) controls.throttle = 1.0f;
+        if (platform.get_key(GLFW_KEY_S)) controls.brake = 1.0f;
+        if (platform.get_key(GLFW_KEY_A)) controls.rot.y = -1.0f;
+        if (platform.get_key(GLFW_KEY_D)) controls.rot.y = 1.0f;
+        if (platform.get_key(GLFW_KEY_UP)) controls.rot.x = 1.0f;
+        if (platform.get_key(GLFW_KEY_DOWN)) controls.rot.x = -1.0f;
+        if (platform.get_key(GLFW_KEY_LEFT)) controls.rot.z = -1.0f;
+        if (platform.get_key(GLFW_KEY_RIGHT)) controls.rot.z = 1.0f;
 
-        if (platform.get_key(GLFW_KEY_LEFT_CONTROL)) key_mgun = true;
-        if (platform.get_key(GLFW_KEY_SPACE)) key_rocket = true;
-        if (platform.get_key(GLFW_KEY_Q)) key_spec = true;
-        if (platform.get_key(GLFW_KEY_V)) key_camera = true;
+        if (platform.get_key(GLFW_KEY_LEFT_CONTROL)) controls.mgun = true;
+        if (platform.get_key(GLFW_KEY_SPACE)) controls.missile = true;
+        if (platform.get_key(GLFW_KEY_Q)) controls.change_weapon = true;
+        if (platform.get_key(GLFW_KEY_V)) controls.change_camera = true;
 
         if (platform.was_pressed(GLFW_KEY_P) || platform.was_pressed(GLFW_KEY_ESCAPE))
             scene.pause(paused = !paused);
 
         speed10x = platform.get_key(GLFW_KEY_RIGHT_SHIFT);
 
-        assert(active_game_mode);
-        auto &player = active_game_mode->get_player();
-        assert(player.is_valid());
-
-        player->controls.rot = c_rot;
-        player->controls.throttle = c_throttle;
-        player->controls.brake = c_brake;
-        player->controls.mgun = key_mgun;
-        player->controls.missile = key_rocket;
-        player->controls.change_weapon = key_spec;
-        player->controls.change_camera = key_camera;
-        if (key_camera)
+        if (controls.change_camera)
             scene.camera.reset_delta_rot();
 
         if (platform.was_pressed(GLFW_KEY_COMMA))

@@ -427,6 +427,9 @@ void aircraft::load_special(const char *name, const location_params &params)
 
 void aircraft::apply_location(const char *location_name, const location_params &params)
 {
+    if (!location_name || !location_name[0])
+        return;
+
     auto refl_tex = shared::get_texture(shared::load_texture((std::string("Map/envmap_") + location_name + ".nut").c_str()));
     m_mesh.set_texture(0, "reflection", refl_tex);
     m_mesh.set_texture(3, "reflection", refl_tex);
