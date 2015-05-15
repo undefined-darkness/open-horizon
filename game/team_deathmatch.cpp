@@ -3,6 +3,7 @@
 //
 
 #include "team_deathmatch.h"
+#include "util/xml.h"
 
 namespace game
 {
@@ -32,17 +33,42 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
     }
 
     bool is_player = true;
+    bool easter_edge = true;
+
+    //ToDo
+    std::vector<std::string> planes;
+    size_t plane_idx = 0;
+    pugi::xml_document doc;
+    if (load_xml("weapons.xml", doc))
+    {
+        pugi::xml_node root = doc.child("weapons");
+        for (pugi::xml_node ac = root.child("aircraft"); ac; ac = ac.next_sibling("aircraft"))
+            planes.push_back(ac.attribute("name").as_string(""));
+    }
+    assert(!planes.empty());
 
     for (int t = 0; t < 2; ++t)
     {
         for (int i = 0; i < players_count / 2; ++i)
         {
-            plane_ptr p = m_world.add_plane(plane, color, is_player);
+            plane_ptr p;
             if (is_player)
-                m_player = p;
+            {
+                m_player = p = m_world.add_plane(plane, color, is_player);
+                is_player = false;
+            }
+            else if(easter_edge)
+            {
+                p = m_world.add_plane("f14d", 3, is_player);
+                easter_edge = false;
+            }
+            else
+            {
+                const char *plane_name = planes[plane_idx = (plane_idx + 1) % planes.size()].c_str(); //ToDo
+                p = m_world.add_plane(plane_name, 0, is_player);
+            }
 
             m_planes[p] = {team(t)};
-            is_player = false;
 
             auto rp = get_respawn_point(team(t));
             p->set_pos(rp.first);
