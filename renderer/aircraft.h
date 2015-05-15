@@ -15,7 +15,7 @@ namespace renderer
 class aircraft
 {
 public:
-    bool load(const char *name, unsigned int color_idx, const location_params &params);
+    bool load(const char *name, unsigned int color_idx, const location_params &params, bool player);
     void load_missile(const char *name, const location_params &params);
     void load_special(const char *name, const location_params &params);
     void apply_location(const char *location_name, const location_params &params);

@@ -17,6 +17,7 @@ namespace shared
     const nya_scene::texture &get_texture(unsigned int hash_id);
     const nya_scene::texture &get_white_texture();
     const nya_scene::texture &get_black_texture();
+    const nya_scene::texture &get_normal_texture();
 
 //------------------------------------------------------------
 }

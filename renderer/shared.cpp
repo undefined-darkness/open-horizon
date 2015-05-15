@@ -138,4 +138,22 @@ const nya_scene::texture &get_black_texture()
 
 //------------------------------------------------------------
 
+const nya_scene::texture &get_normal_texture()
+{
+    static nya_scene::texture normal;
+    static bool initialised=false;
+    if(!initialised)
+    {
+        const unsigned char data[4]={0,128,0,128};
+        nya_scene::shared_texture res;
+        res.tex.build_texture(data,1,1,nya_render::texture::color_rgba);
+        normal.create(res);
+        initialised=true;
+    }
+
+    return normal;
+}
+
+//------------------------------------------------------------
+
 }

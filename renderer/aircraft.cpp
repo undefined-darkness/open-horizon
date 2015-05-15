@@ -292,12 +292,17 @@ private:
 
 //------------------------------------------------------------
 
-bool aircraft::load(const char *name, unsigned int color_idx, const location_params &params)
+bool aircraft::load(const char *name, unsigned int color_idx, const location_params &params, bool player)
 {
     if (!name)
         return false;
 
     std::string name_str(name);
+
+    m_half_flaps_flag = name_str == "f22a" || name_str == "m21b" || name_str == "av8b";
+
+    std::string name_tmp_str = "p_" + name_str; //ToDo: d_
+    name_str = (player ? "p_" : "d_") + name_str;
 
     auto info = aircraft_information::get().get_info(name);
     if (!info)
@@ -310,23 +315,35 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
 
     m_camera_offset = info->camera_offset;
 
-    m_mesh.load(("p_" + name_str).c_str(), params);
-    auto amb_name = "model_id/tdb/mech/plyr/p_" + name_str + "/00/p_" + name_str + "_00_amb.img";
-    m_mesh.set_texture(0, "ambient", amb_name.c_str());
-    m_mesh.set_texture(3, "ambient", amb_name.c_str());
-    auto norm_name = "model_id/tdb/mech/plyr/p_" + name_str + "/00/p_" + name_str + "_00_nor.img";
-    m_mesh.set_texture(0, "normal", norm_name.c_str());
-    m_mesh.set_texture(3, "normal", norm_name.c_str());
+    std::string tex_pref = std::string("model_id/tdb/mech/") + (player ? "plyr/" : "airp/");
 
-    char buf[1024];
+    m_mesh.load(name_tmp_str.c_str(), params);
+
+    name = name_str.c_str();
+
+    if (player)
+    {
+        auto amb_name = tex_pref + name_str + "/00/" + name_str + "_00_amb.img";
+        m_mesh.set_texture(0, "ambient", amb_name.c_str());
+        m_mesh.set_texture(3, "ambient", amb_name.c_str());
+        auto norm_name = tex_pref + name_str + "/00/" + name_str + "_00_nor.img";
+        m_mesh.set_texture(0, "normal", norm_name.c_str());
+        m_mesh.set_texture(3, "normal", norm_name.c_str());
+    }
+    else
+    {
+        m_mesh.set_texture(0, "ambient", shared::get_white_texture());
+        m_mesh.set_texture(0, "normal", shared::get_normal_texture());
+    }
+
+    char cfldr[256];
+    sprintf(cfldr, "%02d", color.coledit_idx);
+    std::string cfldr2 = std::string(cfldr) + (player ? "" : "_l");
 
     color_baker baker;
-    sprintf(buf, "model_id/tdb/mech/plyr/p_%s/%02d/p_%s_%02d_col.img", name, color.coledit_idx, name, color.coledit_idx);
-    baker.set_base(buf);
-    sprintf(buf, "model_id/tdb/mech/plyr/p_%s/coledit%02d/p_%s_%02d_mkx.img", name, color.coledit_idx, name, color.coledit_idx);
-    baker.set_colx(buf);
-    sprintf(buf, "model_id/tdb/mech/plyr/p_%s/coledit%02d/p_%s_%02d_mky.img", name, color.coledit_idx, name, color.coledit_idx);
-    baker.set_coly(buf);
+    baker.set_base((tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_col.img").c_str());
+    baker.set_colx((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mkx.img").c_str());
+    baker.set_coly((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mky.img").c_str());
 
     for (int i = 0; i < 6; ++i)
         baker.set_color(i, color.colors[i]);
@@ -334,14 +351,18 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     auto diff_tex = baker.bake();
     m_mesh.set_texture(0, "diffuse", diff_tex );
     m_mesh.set_texture(3, "diffuse", diff_tex );
-    sprintf(buf, "model_id/tdb/mech/plyr/p_%s/%02d/p_%s_%02d_spe.img", name, color.coledit_idx, name, color.coledit_idx);
-    m_mesh.set_texture(0, "specular", buf);
-    m_mesh.set_texture(3, "specular", buf);
 
-    sprintf(buf, "model_id/mech/plyr/p_%s/p_%s_pcol%02d.fhm", name, name, color.coledit_idx);
-    m_mesh.load_material(0, 0, buf, "shaders/player_plane.nsh");
-    if (m_mesh.get_lods_count() == 11)
-        m_mesh.load_material(3, 2, buf, "shaders/player_plane.nsh");
+    std::string spec_tex = tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_spe.img";
+    m_mesh.set_texture(0, "specular", spec_tex.c_str());
+    m_mesh.set_texture(3, "specular", spec_tex.c_str());
+
+    player = true, name_str = name_tmp_str; //ToDo d_
+
+    std::string mat_name = std::string("model_id/mech/") + (player ? "plyr/" : "airp/") + name_str + "/" + name_str + "_pcol" + cfldr + ".fhm";
+
+    m_mesh.load_material(0, 0, mat_name.c_str(), "shaders/player_plane.nsh");
+    if (player && m_mesh.get_lods_count() == 11)
+        m_mesh.load_material(3, 2, mat_name.c_str(), "shaders/player_plane.nsh");
 
     m_mesh.set_relative_anim_time(0, 'rudl', 0.5);
     m_mesh.set_relative_anim_time(0, 'rudr', 0.5);
@@ -403,8 +424,6 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     m_adimxz_bone_idx = m_mesh.get_bone_idx(1, "adimxz1");
     if (m_adimxz_bone_idx < 0) m_adimxz_bone_idx = m_mesh.get_bone_idx(1, "adimxz");
     m_adimxz2_bone_idx = m_mesh.get_bone_idx(1, "adimxz2");
-
-    m_half_flaps_flag = name_str == "f22a" || name_str == "m21b" || name_str == "av8b";
 
     return true;
 }
