@@ -384,7 +384,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             if (me == p)
                 continue;
 
-            h.add_target(p->get_pos(), w.is_ally(me, p) ? gui::hud::target_air_ally : gui::hud::target_air_lock);
+            h.add_target(p->get_pos(), w.is_ally(me, p) ? gui::hud::target_air_ally : gui::hud::target_air);
         }
 
         if (special_weapon)
