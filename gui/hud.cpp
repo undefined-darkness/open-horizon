@@ -49,6 +49,7 @@ void hud::draw(const render &r)
 {
     const auto green = nya_math::vec4(103,223,144,255)/255.0;
     const auto red = nya_math::vec4(200,0,0,255)/255.0;
+    const auto blue = nya_math::vec4(100,200,200,255)/255.0;
 
     wchar_t buf[255];
     swprintf(buf, sizeof(buf), L"%d", m_speed);
@@ -81,18 +82,27 @@ void hud::draw(const render &r)
         if (!get_project_pos(t.first, proj_pos))
             continue;
 
-        if (t.second)
+        int icon = 102;
+        auto color = green;
+
+        const bool far = (nya_scene::get_camera().get_pos() - t.first).length() > 10000.0;
+        if (far)
+            icon = 121;
+
+        if (t.second == target_air_lock)
         {
-            m_common.draw(r, 102, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, red);
-            m_common.draw(r, 103, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, red);
+            color = red;
             m_common.draw(r, 100, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, red);
         }
-        else
+
+        if (t.second == target_air_ally)
         {
-            const bool far = (nya_scene::get_camera().get_pos() - t.first).length() > 10000.0;
-            m_common.draw(r, far ? 121 : 102, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, green);
-            m_common.draw(r, far ? 122 : 103, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, green);
+            icon = 106;
+            color = blue;
         }
+
+        m_common.draw(r, icon, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, color);
+        m_common.draw(r, icon + 1, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, color);
     }
 
     m_common.draw(r, 10, r.get_width()/2 - 150, r.get_height()/2, green);
@@ -119,9 +129,9 @@ void hud::set_missile_reload(int idx, float value)
 
 //------------------------------------------------------------
 
-void hud::add_target(const nya_math::vec3 &pos, bool locked)
+void hud::add_target(const nya_math::vec3 &pos, target_type type)
 {
-    m_targets.push_back(std::make_pair(pos, locked));
+    m_targets.push_back(std::make_pair(pos, type));
 }
 
 //------------------------------------------------------------

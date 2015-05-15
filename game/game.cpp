@@ -117,6 +117,9 @@ plane_ptr world::add_plane(const char *name, int color, bool player)
     p->phys = m_phys_world.add_plane(name);
     p->render = m_render_world.add_aircraft(name, color, player);
 
+    if (player)
+        m_hud.load(name);
+
     time_t now = time(NULL);
     struct tm *tm_now = localtime(&now);
     p->render->set_time(tm_now->tm_sec + tm_now->tm_min * 60 + tm_now->tm_hour * 60 * 60); //ToDo
@@ -136,6 +139,16 @@ plane_ptr world::add_plane(const char *name, int color, bool player)
 
     m_planes.push_back(p);
     return p;
+}
+
+//------------------------------------------------------------
+
+plane_ptr world::get_plane(int idx)
+{
+    if (idx < 0 || idx >= (int)m_planes.size())
+        return plane_ptr();
+
+    return m_planes[idx];
 }
 
 //------------------------------------------------------------
@@ -164,6 +177,16 @@ void world::update(int dt)
         m->update(dt, *this);
 
     m_render_world.update(dt);
+}
+
+//------------------------------------------------------------
+
+bool world::is_ally(const plane_ptr &a, const plane_ptr &b)
+{
+    if (!m_ally_handler)
+        return false;
+
+    return m_ally_handler(a, b);
 }
 
 //------------------------------------------------------------
@@ -343,8 +366,26 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         h.set_speed(speed);
         h.set_alt(phys->pos.y);
 
+        plane_ptr me;
+        for (int i = 0; i < w.get_planes_count(); ++i) //ugly
+        {
+            auto p = w.get_plane(i);
+            if (p.operator->() == this)
+            {
+                me = p;
+                break;
+            }
+        }
+
         h.clear_targets();
-        h.add_target(nya_math::vec3(), true); //ToDo
+        for (int i = 0; i < w.get_planes_count(); ++i)
+        {
+            auto p = w.get_plane(i);
+            if (me == p)
+                continue;
+
+            h.add_target(p->get_pos(), w.is_ally(me, p) ? gui::hud::target_air_ally : gui::hud::target_air_lock);
+        }
 
         if (special_weapon)
         {

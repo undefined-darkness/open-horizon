@@ -277,6 +277,8 @@ int main(void)
 
     if (active_game_mode == &game_mode_ff)
         game_mode_ff.start(planes[current_plane], current_color, locations[current_location]);
+    else if (active_game_mode == &game_mode_tdm)
+        game_mode_tdm.start(planes[current_plane], current_color, 0, locations[current_location], 8);
 
     unsigned long app_time = nya_system::get_time();
     while (!platform.should_terminate())

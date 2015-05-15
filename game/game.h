@@ -31,6 +31,8 @@ public:
     ptr(): nya_memory::shared_ptr<t>() {}
     ptr(const ptr &p): nya_memory::shared_ptr<t>(p) {}
 
+    bool operator < (const ptr &p) const { return this->operator->() < p.operator->(); }
+
 private:
     explicit ptr(bool): nya_memory::shared_ptr<t>(t()) {}
 };
@@ -110,8 +112,12 @@ public:
     plane_ptr add_plane(const char *name, int color, bool player);
     missile_ptr add_missile(const char *model, const char *id);
 
-    int get_planes_count();
+    int get_planes_count() { return (int)m_planes.size(); }
     plane_ptr get_plane(int idx);
+
+    bool is_ally(const plane_ptr &a, const plane_ptr &b);
+    typedef std::function<bool(const plane_ptr &a, const plane_ptr &b)> is_ally_handler;
+    void set_ally_handler(is_ally_handler &handler) { m_ally_handler = handler; }
 
     gui::hud &get_hud() { return m_hud; }
 
@@ -128,6 +134,8 @@ private:
     renderer::world &m_render_world;
     gui::hud &m_hud;
     phys::world m_phys_world;
+
+    is_ally_handler m_ally_handler;
 };
 
 //------------------------------------------------------------

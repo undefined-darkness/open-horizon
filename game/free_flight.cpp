@@ -65,8 +65,6 @@ void free_flight::set_plane(const char *plane, int color)
     m_player = m_world.add_plane(plane, color, true);
     m_player->set_pos(p);
     m_player->set_rot(r);
-
-    m_world.get_hud().load(plane);
 }
 
 //------------------------------------------------------------
