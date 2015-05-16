@@ -18,7 +18,7 @@ void free_flight::start(const char *plane, int color, const char *location)
 
 void free_flight::update(int dt, const plane_controls &player_controls)
 {
-    if (m_player.is_valid())
+    if (m_player)
         m_player->controls = player_controls;
 
     m_world.update(dt);
@@ -28,7 +28,7 @@ void free_flight::update(int dt, const plane_controls &player_controls)
 
 void free_flight::end()
 {
-    m_player.free();
+    m_player.reset();
 }
 
 //------------------------------------------------------------
@@ -39,7 +39,7 @@ void free_flight::set_location(const char *location)
         return;
 
     m_world.set_location(location);
-    if (!m_player.is_valid())
+    if (!m_player)
         return;
 
     m_player->set_pos(nya_math::vec3(-300, 50, 2000));
@@ -56,7 +56,7 @@ void free_flight::set_plane(const char *plane, int color)
     nya_math::vec3 p;
     nya_math::quat r;
 
-    if (m_player.is_valid())
+    if (m_player)
     {
         p = m_player->get_pos();
         r = m_player->get_rot();

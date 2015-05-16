@@ -81,7 +81,7 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
 
 void team_deathmatch::update(int dt, const plane_controls &player_controls)
 {
-    if (m_player.is_valid())
+    if (m_player)
         m_player->controls = player_controls;
 
     m_world.update(dt);
@@ -92,7 +92,7 @@ void team_deathmatch::update(int dt, const plane_controls &player_controls)
 void team_deathmatch::end()
 {
     m_planes.clear();
-    m_player.free();
+    m_player.reset();
 }
 
 //------------------------------------------------------------

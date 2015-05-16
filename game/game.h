@@ -7,6 +7,8 @@
 #include "phys/physics.h"
 #include "renderer/scene.h"
 #include "gui/hud.h"
+#include <memory>
+#include <list>
 
 namespace game
 {
@@ -23,19 +25,8 @@ class world;
 
 //------------------------------------------------------------
 
-template<typename t> class ptr: public nya_memory::shared_ptr<t>
-{
-    friend class world;
-
-public:
-    ptr(): nya_memory::shared_ptr<t>() {}
-    ptr(const ptr &p): nya_memory::shared_ptr<t>(p) {}
-
-    bool operator < (const ptr &p) const { return this->operator->() < p.operator->(); }
-
-private:
-    explicit ptr(bool): nya_memory::shared_ptr<t>(t()) {}
-};
+template <typename t> using ptr = std::shared_ptr<t>;
+template <typename t> using w_ptr = std::weak_ptr<t>;
 
 //------------------------------------------------------------
 
@@ -53,7 +44,7 @@ struct plane_controls: public phys::plane_controls
     bvalue mgun;
     bvalue flares;
     bvalue change_weapon;
-    bvalue switch_target;
+    bvalue change_target;
     bvalue change_camera;
 };
 
@@ -92,10 +83,12 @@ struct plane: public object
     std::vector<ivalue> special_mount_cooldown;
     ivalue special_mount_idx;
 
-    void set_pos(const vec3 &pos) { if (phys.is_valid()) phys->pos = pos; }
-    void set_rot(const quat &rot) { if (phys.is_valid()) phys->rot = rot; }
-    const vec3 &get_pos() { if (phys.is_valid()) return phys->pos; static vec3 p; return p; }
-    const quat &get_rot() { if (phys.is_valid()) return phys->rot; static quat r; return r; }
+    std::list<w_ptr<plane> > targets_air;
+
+    void set_pos(const vec3 &pos) { if (phys) phys->pos = pos; }
+    void set_rot(const quat &rot) { if (phys) phys->rot = rot; }
+    const vec3 &get_pos() { if (phys) return phys->pos; static vec3 p; return p; }
+    const quat &get_rot() { if (phys) return phys->rot; static quat r; return r; }
 
     void update(int dt, world &w, gui::hud &h, bool player);
 };

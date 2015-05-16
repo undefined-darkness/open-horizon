@@ -94,7 +94,7 @@ missile_ptr world::add_missile(const char *model, const char *id)
     if (!model || !id)
         return missile_ptr();
 
-    missile_ptr m(true);
+    missile_ptr m(new missile());
     m->phys = m_phys_world.add_missile(id);
     m->render = m_render_world.add_missile(model);
 
@@ -113,7 +113,7 @@ plane_ptr world::add_plane(const char *name, int color, bool player)
     if (!name)
         return plane_ptr();
 
-    plane_ptr p(true);
+    plane_ptr p(new plane());
     p->phys = m_phys_world.add_plane(name);
     p->render = m_render_world.add_aircraft(name, color, player);
 
@@ -162,8 +162,8 @@ void world::set_location(const char *name)
 
 void world::update(int dt)
 {
-    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](plane_ptr &p){ return p.get_ref_count() <= 1; }), m_planes.end());
-    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m){ return m.get_ref_count() <= 1 && m->time <= 0; }), m_missiles.end());
+    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](plane_ptr &p){ return p.use_count() <= 1; }), m_planes.end());
+    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m){ return m.use_count() <= 1 && m->time <= 0; }), m_missiles.end());
 
     for (auto &p: m_planes)
         p->phys->controls = p->controls;
@@ -377,6 +377,15 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             }
         }
 
+        if (controls.change_target && controls.change_target != last_controls.change_target)
+        {
+            if (targets_air.size() > 1)
+            {
+                targets_air.push_back(targets_air.front());
+                targets_air.pop_front();
+            }
+        }
+
         h.clear_targets();
         for (int i = 0; i < w.get_planes_count(); ++i)
         {
@@ -384,7 +393,31 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             if (me == p)
                 continue;
 
-            h.add_target(p->get_pos(), w.is_ally(me, p) ? gui::hud::target_air_ally : gui::hud::target_air);
+            auto select = gui::hud::select_not;
+
+            if (!w.is_ally(me, p))
+            {
+                const float dist = (p->get_pos() - me->get_pos()).length();
+                auto fp = std::find_if(targets_air.begin(), targets_air.end(), [p](w_ptr<plane> &t){ return p == t.lock(); });
+                if (dist < 12000.0f) //ToDo
+                {
+                    if (fp == targets_air.end())
+                        targets_air.push_back(p);
+                }
+                else
+                    targets_air.erase(fp);
+
+                auto first_target = targets_air.begin();
+                if (first_target != targets_air.end())
+                {
+                    if (p == first_target->lock())
+                        select = gui::hud::select_current;
+                    else if (++first_target != targets_air.end() && p == first_target->lock())
+                        select = gui::hud::select_next;
+                }
+            }
+
+            h.add_target(p->get_pos(), w.is_ally(me, p) ? gui::hud::target_air_ally : gui::hud::target_air, select);
         }
 
         if (special_weapon)

@@ -29,8 +29,15 @@ public:
         target_air_ally
     };
 
+    enum select_type
+    {
+        select_not,
+        select_current,
+        select_next
+    };
+
     void clear_targets() { m_targets.clear(); }
-    void add_target(const nya_math::vec3 &pos, target_type type);
+    void add_target(const nya_math::vec3 &pos, target_type target, select_type select);
 
     hud(): m_common_loaded(false) {}
 
@@ -41,7 +48,14 @@ private:
     ivalue m_missiles_icon;
     ivalue m_missiles_cross;
 
-    std::vector<std::pair<nya_math::vec3, target_type> > m_targets;
+    struct target
+    {
+        nya_math::vec3 pos;
+        target_type target;
+        select_type select;
+    };
+
+    std::vector<target> m_targets;
 
 private:
     bool m_common_loaded;

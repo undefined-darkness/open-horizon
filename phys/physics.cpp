@@ -33,7 +33,7 @@ inline float tend(float value, float target, float speed)
 
 plane_ptr world::add_plane(const char *name)
 {
-    plane_ptr p(true);
+    plane_ptr p(new plane());
     p->params.load(("Player/Behavior/param_p_" + std::string(name) + ".bin").c_str());
     p->vel = vec3(0.0, 0.0, p->params.move.speed.speedCruising * kmph_to_meps);
     m_planes.push_back(p);
@@ -44,7 +44,7 @@ plane_ptr world::add_plane(const char *name)
 
 missile_ptr world::add_missile(const char *name)
 {
-    missile_ptr m(true);
+    missile_ptr m(new missile());
 
     static params::text_params param("Arms/ArmsParam.txt");
 
@@ -68,10 +68,10 @@ missile_ptr world::add_missile(const char *name)
 
 void world::update(int dt, std::function<void(object_ptr &a, object_ptr &b)> on_hit)
 {
-    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](plane_ptr &p){ return p.get_ref_count() <= 1; }), m_planes.end());
+    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](plane_ptr &p){ return p.use_count() <= 1; }), m_planes.end());
     for (auto &p: m_planes) p->update(dt);
 
-    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m){ return m.get_ref_count() <= 1; }), m_missiles.end());
+    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m){ return m.use_count() <= 1; }), m_missiles.end());
     for (auto &m: m_missiles) m->update(dt);
 }
 

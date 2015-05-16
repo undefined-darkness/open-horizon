@@ -366,6 +366,7 @@ int main(void)
         if (platform.get_key(GLFW_KEY_LEFT_CONTROL)) controls.mgun = true;
         if (platform.get_key(GLFW_KEY_SPACE)) controls.missile = true;
         if (platform.get_key(GLFW_KEY_Q)) controls.change_weapon = true;
+        if (platform.get_key(GLFW_KEY_E)) controls.change_target = true;
         if (platform.get_key(GLFW_KEY_V)) controls.change_camera = true;
 
         if (platform.was_pressed(GLFW_KEY_P) || platform.was_pressed(GLFW_KEY_ESCAPE))

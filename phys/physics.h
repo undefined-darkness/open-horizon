@@ -5,10 +5,10 @@
 #pragma once
 
 #include "plane_params.h"
-#include "memory/shared_ptr.h"
 #include "math/quaternion.h"
 #include <functional>
 #include <vector>
+#include <memory>
 
 namespace phys
 {
@@ -22,17 +22,7 @@ typedef params::value<bool> bvalue;
 
 //------------------------------------------------------------
 
-template<typename t> class ptr: public nya_memory::shared_ptr<t>
-{
-    friend class world;
-
-public:
-    ptr(): nya_memory::shared_ptr<t>() {}
-    ptr(const ptr &p): nya_memory::shared_ptr<t>(p) {}
-
-private:
-    explicit ptr(bool): nya_memory::shared_ptr<t>(t()) {}
-};
+template <typename t> using ptr = std::shared_ptr<t>;
 
 //------------------------------------------------------------
 

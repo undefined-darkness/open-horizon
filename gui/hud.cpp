@@ -79,23 +79,23 @@ void hud::draw(const render &r)
 
     for (auto &t: m_targets)
     {
-        if (!get_project_pos(t.first, proj_pos))
+        if (!get_project_pos(t.pos, proj_pos))
             continue;
 
         int icon = 102;
         auto color = green;
 
-        const bool far = (nya_scene::get_camera().get_pos() - t.first).length() > 10000.0;
+        const bool far = (nya_scene::get_camera().get_pos() - t.pos).length() > 10000.0;
         if (far)
             icon = 121;
 
-        if (t.second == target_air_lock)
+        if (t.target == target_air_lock)
         {
             color = red;
             m_common.draw(r, 100, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, red);
         }
 
-        if (t.second == target_air_ally)
+        if (t.target == target_air_ally)
         {
             icon = 106;
             color = blue;
@@ -103,6 +103,9 @@ void hud::draw(const render &r)
 
         m_common.draw(r, icon, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, color);
         m_common.draw(r, icon + 1, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, color);
+
+        if (t.select != select_not)
+            m_common.draw(r, t.select == select_current ? 117 : 116, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, color);
     }
 
     m_common.draw(r, 10, r.get_width()/2 - 150, r.get_height()/2, green);
@@ -129,9 +132,9 @@ void hud::set_missile_reload(int idx, float value)
 
 //------------------------------------------------------------
 
-void hud::add_target(const nya_math::vec3 &pos, target_type type)
+void hud::add_target(const nya_math::vec3 &pos, target_type target, select_type select)
 {
-    m_targets.push_back(std::make_pair(pos, type));
+    m_targets.push_back({pos, target, select});
 }
 
 //------------------------------------------------------------
