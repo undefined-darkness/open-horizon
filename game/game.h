@@ -112,7 +112,8 @@ struct missile: public object
     w_ptr<plane> target;
     fvalue homing_angle_cos;
 
-    void update(int dt, world &w);
+    void update_homing(int dt);
+    void update(int dt);
     void release();
 };
 

@@ -186,13 +186,16 @@ void world::update(int dt)
     for (auto &p: m_planes)
         p->phys->controls = p->controls;
 
+    for (auto &m: m_missiles)
+        m->update_homing(dt);
+
     m_phys_world.update(dt, [](phys::object_ptr &a, phys::object_ptr &b) {});
 
     for (auto &p: m_planes)
         p->update(dt, *this, m_hud, p->render == m_render_world.get_player_aircraft());
 
     for (auto &m: m_missiles)
-        m->update(dt, *this);
+        m->update(dt);
 
     m_render_world.update(dt);
 }
@@ -440,7 +443,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                     {
                         if (dist > missile.lockon_range)
                             fp->locked = false;
-                        //else
+                        else
                         {
                             const float c = target_dir * me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0)) / dist;
                             if (c < missile.lockon_angle_cos)
@@ -507,18 +510,23 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
 //------------------------------------------------------------
 
-void missile::update(int dt, world &w)
+void missile::update_homing(int dt)
+{
+    if (target.expired())
+        return;
+
+    const vec3 dir = phys->rot.rotate(vec3(0.0, 0.0, 1.0));
+    const vec3 target_dir = (target.lock()->get_pos() - phys->pos).normalize();
+    if (dir * target_dir > homing_angle_cos)
+        phys->target_dir = target_dir;
+}
+
+//------------------------------------------------------------
+
+void missile::update(int dt)
 {
     render->mdl.set_pos(phys->pos);
     render->mdl.set_rot(phys->rot);
-
-    if (!target.expired())
-    {
-        const vec3 dir = phys->rot.rotate(vec3(0.0, 0.0, 1.0));
-        const vec3 target_dir = (target.lock()->get_pos() - phys->pos).normalize();
-        if (dir * target_dir > homing_angle_cos)
-            phys->target_dir = target_dir;
-    }
 
     if (time > 0)
         time -= dt;
