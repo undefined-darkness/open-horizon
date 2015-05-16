@@ -214,6 +214,16 @@ void missile::update(int dt)
             accel_started = true;
         }
 
+        //ToDo: non-ideal rotation (clamp aoa)
+
+        const float eps=1.0e-6f;
+        const nya_math::vec3 v=nya_math::vec3::normalize(target_dir);
+        const float xz_sqdist=v.x*v.x+v.z*v.z;
+
+        const float new_yaw=(xz_sqdist>eps*eps)? (atan2(v.x,v.z)) : rot.get_euler().y;
+        const float new_pitch=(fabsf(v.y)>eps)? (-atan2(v.y,sqrtf(xz_sqdist))) : 0.0f;
+        rot = nya_math::quat(new_pitch, new_yaw, 0.0);
+
         vel += rot.rotate(vec3(0.0, 0.0, accel * kdt));
         const float speed = vel.length();
         if (speed > max_speed)

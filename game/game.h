@@ -50,19 +50,19 @@ struct plane_controls: public phys::plane_controls
 
 //------------------------------------------------------------
 
-struct missile: public object
+struct wpn_missile_params
 {
-    phys::missile_ptr phys;
-    renderer::missile_ptr render;
-    ivalue time;
+    std::string id, model;
+    fvalue lockon_range;
+    fvalue lockon_angle_cos;
+    ivalue lockon_reload;
+    ivalue lockon_count;
+    bvalue lockon_air;
+    bvalue lockon_ground;
 
-    void update(int dt, world &w);
-    void release();
+    wpn_missile_params() {}
+    wpn_missile_params(std::string id, std::string model);
 };
-
-typedef ptr<missile> missile_ptr;
-
-//------------------------------------------------------------
 
 struct plane: public object
 {
@@ -74,16 +74,23 @@ struct plane: public object
     bvalue need_fire_missile;
     ivalue rocket_bay_time;
 
-    std::string missile_model, missile_id;
-    ivalue missile_mount_idx;
+    wpn_missile_params missile;
     ivalue missile_cooldown[2];
     std::vector<ivalue> missile_mount_cooldown;
-    std::string special_model, special_id;
+    ivalue missile_mount_idx;
+
+    wpn_missile_params special;
     ivalue special_cooldown[2];
     std::vector<ivalue> special_mount_cooldown;
     ivalue special_mount_idx;
 
-    std::list<w_ptr<plane> > targets_air;
+    struct target_lock
+    {
+        w_ptr<plane> plane;
+        bvalue locked;
+    };
+
+    std::list<target_lock> targets;
 
     void set_pos(const vec3 &pos) { if (phys) phys->pos = pos; }
     void set_rot(const quat &rot) { if (phys) phys->rot = rot; }
@@ -97,13 +104,29 @@ typedef ptr<plane> plane_ptr;
 
 //------------------------------------------------------------
 
+struct missile: public object
+{
+    phys::missile_ptr phys;
+    renderer::missile_ptr render;
+    ivalue time;
+    w_ptr<plane> target;
+    fvalue homing_angle_cos;
+
+    void update(int dt, world &w);
+    void release();
+};
+
+typedef ptr<missile> missile_ptr;
+
+//------------------------------------------------------------
+
 class world
 {
 public:
     void set_location(const char *name);
 
     plane_ptr add_plane(const char *name, int color, bool player);
-    missile_ptr add_missile(const char *model, const char *id);
+    missile_ptr add_missile(const char *id, const char *model);
 
     int get_planes_count() { return (int)m_planes.size(); }
     plane_ptr get_plane(int idx);

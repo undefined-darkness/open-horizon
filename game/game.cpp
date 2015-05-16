@@ -33,7 +33,7 @@ public:
 public:
     static weapon_information &get()
     {
-        static weapon_information info("weapons.xml", "common/Arms/ArmsParam.txt");
+        static weapon_information info("weapons.xml");
         return info;
     }
 
@@ -52,7 +52,7 @@ public:
     }
 
 private:
-    weapon_information(const char *xml_name, const char *params)
+    weapon_information(const char *xml_name)
     {
         pugi::xml_document doc;
         if (!load_xml(xml_name, doc))
@@ -87,9 +87,26 @@ private:
     std::map<std::string, aircraft_weapons> m_aircrafts;
 };
 
+wpn_missile_params::wpn_missile_params(std::string id, std::string model)
+{
+    static params::text_params param("Arms/ArmsParam.txt");
+
+    const std::string lockon = "." + id + ".lockon.";
+
+    this->id = id;
+    this->model = model;
+
+    lockon_range = param.get_float(lockon + "range");
+    lockon_angle_cos = cosf(param.get_float(lockon + "angle") * nya_math::constants::pi / 180.0f);
+    lockon_reload = param.get_float(lockon + "reload");
+    lockon_count = param.get_float(lockon + "lockonNum");
+    lockon_air = param.get_int(lockon + "target_air") > 0;
+    lockon_ground = param.get_int(lockon + "target_grd") > 0;
+}
+
 //------------------------------------------------------------
 
-missile_ptr world::add_missile(const char *model, const char *id)
+missile_ptr world::add_missile(const char *id, const char *model)
 {
     if (!model || !id)
         return missile_ptr();
@@ -101,6 +118,7 @@ missile_ptr world::add_missile(const char *model, const char *id)
     static params::text_params param("Arms/ArmsParam.txt");
     const std::string pref = "." + std::string(id) + ".action.";
     m->time = param.get_float(pref + "endTime") * 1000;
+    m->homing_angle_cos = cosf(param.get_float(".MISSILE.action.hormingAng"));
 
     m_missiles.push_back(m);
     return m;
@@ -127,14 +145,14 @@ plane_ptr world::add_plane(const char *name, int color, bool player)
     auto wi = weapon_information::get().get_aircraft_weapons(name);
     if (wi)
     {
-        p->render->load_missile(wi->missile.model.c_str(), m_render_world.get_location_params());
         if (!wi->special.empty())
         {
             p->render->load_special(wi->special[0].model.c_str(), m_render_world.get_location_params());
-            p->special_model = wi->special[0].model, p->special_id = wi->special[0].id;
+            p->special = wpn_missile_params(wi->special[0].id, wi->special[0].model);
         }
 
-        p->missile_model = wi->missile.model, p->missile_id = wi->missile.id;
+        p->render->load_missile(wi->missile.model.c_str(), m_render_world.get_location_params());
+        p->missile = wpn_missile_params(wi->missile.id, wi->missile.model);
     }
 
     m_planes.push_back(p);
@@ -241,18 +259,18 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         if (player)
         {
             if (special_weapon)
-                h.set_missiles(special_id.c_str(), 1); //ToDo: idx
+                h.set_missiles(special.id.c_str(), 1); //ToDo: idx
             else
-                h.set_missiles(missile_id.c_str(), 0);
+                h.set_missiles(missile.id.c_str(), 0);
         }
     }
 
     int count = 1;
-    if (!special_id.empty())
+    if (!special.id.empty())
     {
-        if (special_id[1] == '4')
+        if (special.id[1] == '4')
             count = 4;
-        else if (special_id[1] == '6')
+        else if (special.id[1] == '6')
             count = 6;
     }
 
@@ -279,13 +297,14 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                     render->update(0);
                     for (int i = 0; i < count; ++i)
                     {
-                        auto m = w.add_missile(special_model.c_str(), special_id.c_str());
+                        auto m = w.add_missile(special.id.c_str(), special.model.c_str());
                         special_mount_idx = ++special_mount_idx % render->get_special_mount_count();
                         special_mount_cooldown[special_mount_idx] = special_cooldown_time;
                         render->set_special_visible(special_mount_idx, false);
                         m->phys->pos = render->get_special_mount_pos(special_mount_idx);
                         m->phys->rot = render->get_special_mount_rot(special_mount_idx);
                         m->phys->vel = phys->vel;
+                        m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0)); //ToDo
                     }
                 }
             }
@@ -310,13 +329,17 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 missile_cooldown[1] = missile_cooldown_time;
 
             render->update(0);
-            auto m = w.add_missile(missile_model.c_str(), missile_id.c_str());
+            auto m = w.add_missile(missile.id.c_str(), missile.model.c_str());
             missile_mount_idx = ++missile_mount_idx % render->get_missile_mount_count();
             missile_mount_cooldown[missile_mount_idx] = missile_cooldown_time;
             render->set_missile_visible(missile_mount_idx, false);
             m->phys->pos = render->get_missile_mount_pos(missile_mount_idx);
             m->phys->rot = render->get_missile_mount_rot(missile_mount_idx);
             m->phys->vel = phys->vel;
+
+            m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0));
+            if (!targets.empty() && targets.front().locked)
+                m->target = targets.front().plane;
         }
     }
 
@@ -379,10 +402,10 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
         if (controls.change_target && controls.change_target != last_controls.change_target)
         {
-            if (targets_air.size() > 1)
+            if (targets.size() > 1)
             {
-                targets_air.push_back(targets_air.front());
-                targets_air.pop_front();
+                targets.push_back(targets.front());
+                targets.pop_front();
             }
         }
 
@@ -394,30 +417,58 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 continue;
 
             auto select = gui::hud::select_not;
+            auto target = gui::hud::target_air;
 
-            if (!w.is_ally(me, p))
+            if (w.is_ally(me, p))
             {
-                const float dist = (p->get_pos() - me->get_pos()).length();
-                auto fp = std::find_if(targets_air.begin(), targets_air.end(), [p](w_ptr<plane> &t){ return p == t.lock(); });
+                target = gui::hud::target_air_ally;
+            }
+            else
+            {
+                auto target_dir = p->get_pos() - me->get_pos();
+                const float dist = target_dir.length();
+                auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.plane.lock(); });
                 if (dist < 12000.0f) //ToDo
                 {
-                    if (fp == targets_air.end())
-                        targets_air.push_back(p);
-                }
-                else
-                    targets_air.erase(fp);
+                    if (fp == targets.end())
+                        fp = targets.insert(targets.end(), {p});
 
-                auto first_target = targets_air.begin();
-                if (first_target != targets_air.end())
+                    if (special_weapon) //ToDo
+                    {
+                    }
+                    else
+                    {
+                        if (dist > missile.lockon_range)
+                            fp->locked = false;
+                        //else
+                        {
+                            const float c = target_dir * me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0)) / dist;
+                            if (c < missile.lockon_angle_cos)
+                                fp->locked = false;
+                            else if (fp != targets.begin())
+                                fp->locked = false;
+                            else
+                                fp->locked = true;
+                        }
+                    }
+                }
+                else if(fp != targets.end())
+                    targets.erase(fp);
+
+                auto first_target = targets.begin();
+                if (first_target != targets.end())
                 {
-                    if (p == first_target->lock())
+                    if (p == first_target->plane.lock())
                         select = gui::hud::select_current;
-                    else if (++first_target != targets_air.end() && p == first_target->lock())
+                    else if (++first_target != targets.end() && p == first_target->plane.lock())
                         select = gui::hud::select_next;
                 }
+
+                if (fp->locked)
+                    target = gui::hud::target_air_lock;
             }
 
-            h.add_target(p->get_pos(), w.is_ally(me, p) ? gui::hud::target_air_ally : gui::hud::target_air, select);
+            h.add_target(p->get_pos(), target, select);
         }
 
         if (special_weapon)
@@ -460,6 +511,14 @@ void missile::update(int dt, world &w)
 {
     render->mdl.set_pos(phys->pos);
     render->mdl.set_rot(phys->rot);
+
+    if (!target.expired())
+    {
+        const vec3 dir = phys->rot.rotate(vec3(0.0, 0.0, 1.0));
+        const vec3 target_dir = (target.lock()->get_pos() - phys->pos).normalize();
+        if (dir * target_dir > homing_angle_cos)
+            phys->target_dir = target_dir;
+    }
 
     if (time > 0)
         time -= dt;

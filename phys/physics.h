@@ -75,6 +75,8 @@ struct missile: public object
     fvalue rot_max_low;
     fvalue rot_max_hi;
 
+    vec3 target_dir;
+
     void update(int dt);
 };
 
