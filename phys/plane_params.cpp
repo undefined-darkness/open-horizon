@@ -91,6 +91,8 @@ bool plane_params::load(const char *file_name)
     drift.move.speedDecR = params[177];
     drift.move.speedDecMax = params[178];
 
+    misc.maxHp = params[168];
+
     return true;
 }
 

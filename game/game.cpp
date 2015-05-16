@@ -135,6 +135,8 @@ plane_ptr world::add_plane(const char *name, int color, bool player)
     p->phys = m_phys_world.add_plane(name);
     p->render = m_render_world.add_aircraft(name, color, player);
 
+    p->hp = p->max_hp = int(p->phys->params.misc.maxHp);
+
     if (player)
         m_hud.load(name);
 
@@ -214,6 +216,30 @@ bool world::is_ally(const plane_ptr &a, const plane_ptr &b)
 
 //------------------------------------------------------------
 
+void plane::reset_state()
+{
+    hp = max_hp;
+    targets.clear();
+
+    phys->reset_state();
+
+    //render->reset_state(); //ToDo
+
+    special_weapon = false;
+    need_fire_missile = false;
+    rocket_bay_time = 0;
+
+    for (auto &c: missile_cooldown) c = 0;
+    missile_mount_cooldown.clear();
+    missile_mount_idx = 0;
+
+    for (auto &c: special_cooldown) c = 0;
+    special_mount_cooldown.clear();
+    special_mount_idx = 0;
+}
+
+//------------------------------------------------------------
+
 void plane::update(int dt, world &w, gui::hud &h, bool player)
 {
     const int missile_cooldown_time = 3500;
@@ -221,6 +247,9 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
     render->set_pos(phys->pos);
     render->set_rot(phys->rot);
+
+    if (hp < 0)
+        return;
 
     //aircraft animations
 
@@ -421,6 +450,9 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             if (me == p)
                 continue;
 
+            if (p->hp < 0)
+                continue;
+
             auto select = gui::hud::select_not;
             auto target = gui::hud::target_air;
 
@@ -536,8 +568,11 @@ void missile::update(int dt)
         if ((target.lock()->get_pos() - phys->pos).length() < 6.0) //proximity detonation
         {
             time = 0;
-            printf("splash!\n");
+            target.lock()->hp -= 80; //ToDo
         }
+
+        if (target.lock()->hp < 0)
+            target.reset();
     }
 
     if (time > 0)

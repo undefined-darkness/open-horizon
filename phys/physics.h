@@ -55,6 +55,7 @@ struct plane: public object
     plane_params params;
     //col_mesh mesh;
 
+    void reset_state();
     void update(int dt);
 };
 

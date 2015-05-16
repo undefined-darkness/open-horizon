@@ -37,6 +37,7 @@ protected:
     struct tdm_plane
     {
         team t;
+        ivalue respawn_time;
     };
 
     plane_ptr m_player;

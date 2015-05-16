@@ -84,6 +84,9 @@ struct plane: public object
     std::vector<ivalue> special_mount_cooldown;
     ivalue special_mount_idx;
 
+    ivalue max_hp;
+    ivalue hp;
+
     struct target_lock
     {
         w_ptr<plane> plane;
@@ -92,6 +95,7 @@ struct plane: public object
 
     std::list<target_lock> targets;
 
+    void reset_state();
     void set_pos(const vec3 &pos) { if (phys) phys->pos = pos; }
     void set_rot(const quat &rot) { if (phys) phys->rot = rot; }
     const vec3 &get_pos() { if (phys) return phys->pos; static vec3 p; return p; }

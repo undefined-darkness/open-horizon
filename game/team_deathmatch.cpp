@@ -85,6 +85,26 @@ void team_deathmatch::update(int dt, const plane_controls &player_controls)
         m_player->controls = player_controls;
 
     m_world.update(dt);
+
+    for (auto &p: m_planes)
+    {
+        if (p.first->hp < 0)
+        {
+            if (p.second.respawn_time > 0)
+            {
+                p.second.respawn_time -= dt;
+                if (p.second.respawn_time <= 0)
+                {
+                    auto rp = get_respawn_point(p.second.t);
+                    p.first->reset_state();
+                    p.first->set_pos(rp.first);
+                    p.first->set_rot(rp.second);
+                }
+            }
+            else
+                p.second.respawn_time = 2000;
+        }
+    }
 }
 
 //------------------------------------------------------------

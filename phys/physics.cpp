@@ -35,7 +35,7 @@ plane_ptr world::add_plane(const char *name)
 {
     plane_ptr p(new plane());
     p->params.load(("Player/Behavior/param_p_" + std::string(name) + ".bin").c_str());
-    p->vel = vec3(0.0, 0.0, p->params.move.speed.speedCruising * kmph_to_meps);
+    p->reset_state();
     m_planes.push_back(p);
     return p;
 }
@@ -78,6 +78,15 @@ void world::update_missiles(int dt, std::function<void(object_ptr &a, object_ptr
 {
     m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m){ return m.use_count() <= 1; }), m_missiles.end());
     for (auto &m: m_missiles) m->update(dt);
+}
+
+//------------------------------------------------------------
+
+void plane::reset_state()
+{
+    thrust_time = 0.0;
+    rot_speed = vec3();
+    vel = vec3(0.0, 0.0, params.move.speed.speedCruising * kmph_to_meps);
 }
 
 //------------------------------------------------------------

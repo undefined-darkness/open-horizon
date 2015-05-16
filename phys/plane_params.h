@@ -155,21 +155,27 @@ public:
 
     } drift;
 
-/*
     struct
     {
-        fvalue springConstRotX;
-        fvalue springConstRotZ;
-        fvalue damperConstRotX;
-        fvalue damperConstRotZ;
-        fvalue timeMax;
-        fvalue impactRotXMax;
-        fvalue impactRotZMax;
-        fvalue impactDamageMax;
-        fvalue impactDamageMin;
+        fvalue maxHp;
 
-    } stagger;
-*/
+        /*
+        struct
+        {
+            fvalue springConstRotX;
+            fvalue springConstRotZ;
+            fvalue damperConstRotX;
+            fvalue damperConstRotZ;
+            fvalue timeMax;
+            fvalue impactRotXMax;
+            fvalue impactRotZMax;
+            fvalue impactDamageMax;
+            fvalue impactDamageMin;
+
+        } stagger;
+        */
+
+    } misc;
 
 //----------------
 //      functions
