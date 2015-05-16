@@ -90,7 +90,8 @@ public:
     plane_ptr add_plane(const char *name);
     missile_ptr add_missile(const char *name);
 
-    void update(int dt, std::function<void(object_ptr &a, object_ptr &b)> on_hit);
+    void update_planes(int dt, std::function<void(object_ptr &a, object_ptr &b)> on_hit);
+    void update_missiles(int dt, std::function<void(object_ptr &a, object_ptr &b)> on_hit);
 
 private:
     std::vector<plane_ptr> m_planes;

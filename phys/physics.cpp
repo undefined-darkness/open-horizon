@@ -66,11 +66,16 @@ missile_ptr world::add_missile(const char *name)
 
 //------------------------------------------------------------
 
-void world::update(int dt, std::function<void(object_ptr &a, object_ptr &b)> on_hit)
+void world::update_planes(int dt, std::function<void(object_ptr &a, object_ptr &b)> on_hit)
 {
     m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](plane_ptr &p){ return p.use_count() <= 1; }), m_planes.end());
     for (auto &p: m_planes) p->update(dt);
+}
 
+//------------------------------------------------------------
+
+void world::update_missiles(int dt, std::function<void(object_ptr &a, object_ptr &b)> on_hit)
+{
     m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m){ return m.use_count() <= 1; }), m_missiles.end());
     for (auto &m: m_missiles) m->update(dt);
 }
@@ -224,10 +229,18 @@ void missile::update(int dt)
         const float new_pitch=(fabsf(v.y)>eps)? (-atan2(v.y,sqrtf(xz_sqdist))) : 0.0f;
         rot = nya_math::quat(new_pitch, new_yaw, 0.0);
 
-        vel += rot.rotate(vec3(0.0, 0.0, accel * kdt));
-        const float speed = vel.length();
+        vec3 forward = rot.rotate(vec3(0.0, 0.0, 1.0));
+
+        vel += forward * accel * kdt;
+        float speed = vel.length();
         if (speed > max_speed)
+        {
             vel = vel * (max_speed / speed);
+            speed = max_speed;
+        }
+
+        vel = vec3::lerp(vel, forward * speed, nya_math::min(5.0 * kdt, 1.0));
+
     }
 
     pos += vel * kdt;

@@ -186,10 +186,12 @@ void world::update(int dt)
     for (auto &p: m_planes)
         p->phys->controls = p->controls;
 
+    m_phys_world.update_planes(dt, [](phys::object_ptr &a, phys::object_ptr &b) {});
+
     for (auto &m: m_missiles)
         m->update_homing(dt);
 
-    m_phys_world.update(dt, [](phys::object_ptr &a, phys::object_ptr &b) {});
+    m_phys_world.update_missiles(dt, [](phys::object_ptr &a, phys::object_ptr &b) {});
 
     for (auto &p: m_planes)
         p->update(dt, *this, m_hud, p->render == m_render_world.get_player_aircraft());
@@ -516,7 +518,8 @@ void missile::update_homing(int dt)
         return;
 
     const vec3 dir = phys->rot.rotate(vec3(0.0, 0.0, 1.0));
-    const vec3 target_dir = (target.lock()->get_pos() - phys->pos).normalize();
+    auto t = target.lock();
+    const vec3 target_dir = (t->get_pos() - phys->pos + (t->phys->vel - phys->vel) * dt * 0.001f).normalize();
     if (dir * target_dir > homing_angle_cos)
         phys->target_dir = target_dir;
 }
@@ -527,6 +530,15 @@ void missile::update(int dt)
 {
     render->mdl.set_pos(phys->pos);
     render->mdl.set_rot(phys->rot);
+
+    if (!target.expired())
+    {
+        if ((target.lock()->get_pos() - phys->pos).length() < 6.0) //proximity detonation
+        {
+            time = 0;
+            printf("splash!\n");
+        }
+    }
 
     if (time > 0)
         time -= dt;
