@@ -490,7 +490,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                     }
                 }
                 else if(fp != targets.end())
-                    targets.erase(fp);
+                    fp = targets.erase(fp);
 
                 auto first_target = targets.begin();
                 if (first_target != targets.end())
@@ -501,7 +501,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                         select = gui::hud::select_next;
                 }
 
-                if (fp->locked)
+                if (fp != targets.end() && fp->locked)
                     target = gui::hud::target_air_lock;
             }
 
