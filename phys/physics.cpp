@@ -86,7 +86,7 @@ void plane::reset_state()
 {
     thrust_time = 0.0;
     rot_speed = vec3();
-    vel = vec3(0.0, 0.0, params.move.speed.speedCruising * kmph_to_meps);
+    vel = rot.rotate(vec3(0.0, 0.0, 1.0)) * params.move.speed.speedCruising * kmph_to_meps;
 }
 
 //------------------------------------------------------------

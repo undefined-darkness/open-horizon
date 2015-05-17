@@ -249,7 +249,11 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     render->set_rot(phys->rot);
 
     if (hp < 0)
+    {
+        if (player)
+            h.set_hide(true);
         return;
+    }
 
     //aircraft animations
 
@@ -413,26 +417,73 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     if (controls.mgun != last_controls.mgun)
         render->set_mgun_bay(controls.mgun);
 
+    plane_ptr me;
+    for (int i = 0; i < w.get_planes_count(); ++i) //ugly
+    {
+        auto p = w.get_plane(i);
+        if (p.operator->() == this)
+        {
+            me = p;
+            break;
+        }
+    }
+
+    for (int i = 0; i < w.get_planes_count(); ++i)
+    {
+        auto p = w.get_plane(i);
+        if (me == p)
+            continue;
+
+        if (p->hp < 0)
+            continue;
+
+        if (!w.is_ally(me, p))
+        {
+            auto target_dir = p->get_pos() - me->get_pos();
+            const float dist = target_dir.length();
+            auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.plane.lock(); });
+            if (dist < 12000.0f) //ToDo
+            {
+                if (fp == targets.end())
+                    fp = targets.insert(targets.end(), {p});
+
+                if (special_weapon) //ToDo
+                {
+                }
+                else
+                {
+                    if (dist > missile.lockon_range)
+                        fp->locked = false;
+                    else
+                    {
+                        const float c = target_dir * me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0)) / dist;
+                        if (c < missile.lockon_angle_cos)
+                            fp->locked = false;
+                        else if (fp != targets.begin())
+                            fp->locked = false;
+                        else
+                            fp->locked = true;
+                    }
+                }
+            }
+            else if(fp != targets.end())
+                fp = targets.erase(fp);
+        }
+    }
+
     //cockpit animations and hud
 
     if (player)
     {
+        h.set_hide(false);
+
+        render->set_damage(max_hp ? 1.0 - float(hp) / max_hp : 0.0);
+
         render->set_speed(speed);
 
         h.set_project_pos(phys->pos + phys->rot.rotate(nya_math::vec3(0.0, 0.0, 1000.0)));
         h.set_speed(speed);
         h.set_alt(phys->pos.y);
-
-        plane_ptr me;
-        for (int i = 0; i < w.get_planes_count(); ++i) //ugly
-        {
-            auto p = w.get_plane(i);
-            if (p.operator->() == this)
-            {
-                me = p;
-                break;
-            }
-        }
 
         if (controls.change_target && controls.change_target != last_controls.change_target)
         {
@@ -462,36 +513,6 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             }
             else
             {
-                auto target_dir = p->get_pos() - me->get_pos();
-                const float dist = target_dir.length();
-                auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.plane.lock(); });
-                if (dist < 12000.0f) //ToDo
-                {
-                    if (fp == targets.end())
-                        fp = targets.insert(targets.end(), {p});
-
-                    if (special_weapon) //ToDo
-                    {
-                    }
-                    else
-                    {
-                        if (dist > missile.lockon_range)
-                            fp->locked = false;
-                        else
-                        {
-                            const float c = target_dir * me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0)) / dist;
-                            if (c < missile.lockon_angle_cos)
-                                fp->locked = false;
-                            else if (fp != targets.begin())
-                                fp->locked = false;
-                            else
-                                fp->locked = true;
-                        }
-                    }
-                }
-                else if(fp != targets.end())
-                    fp = targets.erase(fp);
-
                 auto first_target = targets.begin();
                 if (first_target != targets.end())
                 {
@@ -501,6 +522,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                         select = gui::hud::select_next;
                 }
 
+                auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.plane.lock(); });
                 if (fp != targets.end() && fp->locked)
                     target = gui::hud::target_air_lock;
             }
@@ -565,10 +587,15 @@ void missile::update(int dt)
 
     if (!target.expired())
     {
-        if ((target.lock()->get_pos() - phys->pos).length() < 6.0) //proximity detonation
+        auto dir = target.lock()->get_pos() - phys->pos;
+        if (dir.length() < 6.0) //proximity detonation
         {
+            int missile_damage = 80; //ToDo
             time = 0;
-            target.lock()->hp -= 80; //ToDo
+            //if (vec3::normalize(target.lock()->phys->vel) * dir.normalize() < -0.5)  //direct shoot
+            //    missile_damage *= 3;
+
+            target.lock()->hp -= missile_damage;
         }
 
         if (target.lock()->hp < 0)

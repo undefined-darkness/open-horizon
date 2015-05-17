@@ -13,7 +13,11 @@ namespace game
 class ai
 {
 public:
-    void update(const world &w, const plane_ptr &plane, int dt, plane_controls &controls);
+    void set_plane(plane_ptr &p) { m_plane = p; }
+    void update(const world &w, int dt);
+
+private:
+    w_ptr<plane> m_plane;
 };
 
 //------------------------------------------------------------

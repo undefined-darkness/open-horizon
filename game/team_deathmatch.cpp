@@ -47,6 +47,7 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
     }
     assert(!planes.empty());
 
+    m_bots.clear();
     for (int t = 0; t < 2; ++t)
     {
         for (int i = 0; i < players_count / 2; ++i)
@@ -57,15 +58,22 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
                 m_player = p = m_world.add_plane(plane, color, is_player);
                 is_player = false;
             }
-            else if(easter_edge)
-            {
-                p = m_world.add_plane("f14d", 3, is_player);
-                easter_edge = false;
-            }
             else
             {
-                const char *plane_name = planes[plane_idx = (plane_idx + 1) % planes.size()].c_str(); //ToDo
-                p = m_world.add_plane(plane_name, 0, is_player);
+                ai b;
+                if(easter_edge)
+                {
+                    p = m_world.add_plane("f14d", 3, is_player);
+                    easter_edge = false;
+                }
+                else
+                {
+                    const char *plane_name = planes[plane_idx = (plane_idx + 1) % planes.size()].c_str(); //ToDo
+                    p = m_world.add_plane(plane_name, 0, is_player);
+                }
+
+                b.set_plane(p);
+                m_bots.push_back(b);
             }
 
             m_planes[p] = {team(t)};
@@ -81,14 +89,17 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
 
 void team_deathmatch::update(int dt, const plane_controls &player_controls)
 {
-    if (m_player)
+    if (m_player && m_player->hp > 0)
         m_player->controls = player_controls;
+
+    for (auto &b: m_bots)
+        b.update(m_world, dt);
 
     m_world.update(dt);
 
     for (auto &p: m_planes)
     {
-        if (p.first->hp < 0)
+        if (p.first->hp <= 0)
         {
             if (p.second.respawn_time > 0)
             {
@@ -96,9 +107,9 @@ void team_deathmatch::update(int dt, const plane_controls &player_controls)
                 if (p.second.respawn_time <= 0)
                 {
                     auto rp = get_respawn_point(p.second.t);
-                    p.first->reset_state();
                     p.first->set_pos(rp.first);
                     p.first->set_rot(rp.second);
+                    p.first->reset_state();
                 }
             }
             else

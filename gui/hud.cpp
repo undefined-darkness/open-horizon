@@ -47,6 +47,9 @@ void hud::load(const char *aircraft_name)
 
 void hud::draw(const render &r)
 {
+    if (m_hide)
+        return;
+
     const auto green = nya_math::vec4(103,223,144,255)/255.0;
     const auto red = nya_math::vec4(200,0,0,255)/255.0;
     const auto blue = nya_math::vec4(100,200,200,255)/255.0;

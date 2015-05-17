@@ -29,6 +29,9 @@ public:
     nya_math::quat get_rot() { return m_rot; }
     nya_math::vec3 get_bone_pos(const char *name);
 
+    void set_damage(float value) { m_damage = value; }
+    float get_damage() const { return m_damage; }
+
     //aircraft animations
     void set_elev(float left, float right); //elevons and tailerons
     void set_rudder(float left, float right, float center);
@@ -91,10 +94,11 @@ private:
         return target;
     }
 
-    renderer::model m_mesh;
+    model m_mesh;
     nya_math::vec3 m_pos;
     nya_math::quat m_rot;
     params::fvalue m_speed;
+    params::fvalue m_damage;
 
     unsigned int m_time;
 
@@ -104,8 +108,8 @@ private:
 
     bool m_half_flaps_flag;
 
-    renderer::model m_missile;
-    renderer::model m_special;
+    model m_missile;
+    model m_special;
 
     struct wpn_mount
     {

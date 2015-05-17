@@ -16,6 +16,7 @@ public:
     void load(const char *aircraft_name);
     void draw(const render &r);
 
+    void set_hide(bool value) { m_hide = value; }
     void set_project_pos(const nya_math::vec3 &pos) { m_project_pos = pos; }
     void set_speed(int value) { m_speed = value; }
     void set_alt(int value) { m_alt = value; }
@@ -39,7 +40,7 @@ public:
     void clear_targets() { m_targets.clear(); }
     void add_target(const nya_math::vec3 &pos, target_type target, select_type select);
 
-    hud(): m_common_loaded(false) {}
+    hud(): m_common_loaded(false), m_hide(false) {}
 
 private:
     nya_math::vec3 m_project_pos;
@@ -59,6 +60,7 @@ private:
 
 private:
     bool m_common_loaded;
+    bool m_hide;
     fonts m_fonts;
     tiles m_common;
     tiles m_aircraft;

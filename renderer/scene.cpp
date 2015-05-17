@@ -122,9 +122,8 @@ void scene::update(int dt)
         camera.set_ignore_delta_pos(!is_camera_third);
         camera.set_pos(m_player_aircraft->get_bone_pos(is_camera_third ? "camp" : "ckpp"));
         camera.set_rot(m_player_aircraft->get_rot());
-/*
-        set_shader_param("damage_frame_color", nya_math::vec4(1.0, 0.0, 0.0235, nya_math::max(1.0 - player_plane.get_hp(), 0.0)));
-*/
+
+        set_shader_param("damage_frame_color", nya_math::vec4(1.0, 0.0, 0.0235, m_player_aircraft->get_damage()));
     }
 
     set_shader_param("lum_adapt_speed", m_luminance_speed * dt / 1000.0f * nya_math::vec4(1.0, 1.0, 1.0, 1.0));

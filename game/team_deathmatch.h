@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "game.h"
+#include "ai.h"
 
 namespace game
 {
@@ -42,6 +42,7 @@ protected:
 
     plane_ptr m_player;
     std::map<plane_ptr, tdm_plane> m_planes;
+    std::vector<ai> m_bots;
 };
 
 //------------------------------------------------------------
