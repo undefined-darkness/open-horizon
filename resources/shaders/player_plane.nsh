@@ -8,6 +8,9 @@
 @predefined camera_pos "nya camera position":local
 @predefined model_rot "nya model rot"
 
+@predefined bones_pos_map "nya bones pos texture"
+@predefined bones_rot_map "nya bones rot texture"
+
 @uniform light_dir "light dir":local_rot
 @uniform specular_param "specular param"=0.675,1.035,0.0,0.225
 @uniform ibl_param "ibl param"=1,1,0,0
@@ -24,20 +27,35 @@ varying vec3 normal_tr;
 
 @vertex
 
+uniform sampler2D bones_pos_map;
+uniform sampler2D bones_rot_map;
+
 uniform vec4 model_rot;
 
 vec3 tr(vec3 v, vec4 q) { return v + cross(q.xyz, cross(q.xyz, v) + v * q.w) * 2.0; }
 
 void main()
 {
-	pos = gl_Vertex.xyz;
-    tc = gl_MultiTexCoord0.xy;
-	normal = gl_Normal.xyz;
+    vec2 btc=vec2(gl_MultiTexCoord0.z,0.0);
+
+    pos = gl_Vertex.xyz;
+    normal = gl_Normal.xyz;
     tangent = gl_MultiTexCoord1.xyz;
     bitangent = gl_MultiTexCoord2.xyz;
-    normal_tr = tr(gl_Normal.xyz, model_rot);
 
-    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+    if (gl_MultiTexCoord0.z > -0.5)
+    {
+        vec4 q=texture2D(bones_rot_map,btc);
+	    pos = texture2D(bones_pos_map,btc).xyz + tr(pos, q);
+        normal = tr(normal, q);
+        tangent = tr(tangent, q);
+        bitangent = tr(bitangent, q);
+    }
+
+    tc = gl_MultiTexCoord0.xy;
+    normal_tr = tr(normal, model_rot);
+
+    gl_Position = gl_ModelViewProjectionMatrix * vec4(pos, 1.0);
 }
 
 @fragment

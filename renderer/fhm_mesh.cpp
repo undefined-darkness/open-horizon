@@ -966,6 +966,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     {
         float pos[3];
         float tc[2];
+        float bone;
         ushort normal[4]; //half float
         ushort tangent[4];
         ushort bitangent[4];
@@ -1026,6 +1027,11 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
             const size_t first_index = verts.size();
             verts.resize(first_index+rgf.header.vcount);
+
+            float bone_fidx = mesh.skeleton.get_bones_count() < 0 || gf.header.bone_idx < 0 ? -1.0:
+                              float(gf.header.bone_idx + 0.5f) / mesh.skeleton.get_bones_count();
+            for (int i = 0; i < rgf.header.vcount; ++i)
+                verts[i + first_index].bone = bone_fidx;
 
             switch(rgf.header.vertex_format)
             {
@@ -1156,10 +1162,10 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     if (indices.empty())
         return false;
 
-    mesh.vbo.set_tc(0, sizeof(verts[0].pos), 2);
-    mesh.vbo.set_normals(sizeof(verts[0].pos) + sizeof(verts[0].tc), nya_render::vbo::float16);
-    mesh.vbo.set_tc(1, sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].normal), 3, nya_render::vbo::float16);
-    mesh.vbo.set_tc(2, sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].normal) * 2, 3, nya_render::vbo::float16);
+    mesh.vbo.set_tc(0, sizeof(verts[0].pos), 3);
+    mesh.vbo.set_normals(sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].bone), nya_render::vbo::float16);
+    mesh.vbo.set_tc(1, sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].bone) + sizeof(verts[0].normal), 3, nya_render::vbo::float16);
+    mesh.vbo.set_tc(2, sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].bone) + sizeof(verts[0].normal) * 2, 3, nya_render::vbo::float16);
 
     mesh.vbo.set_vertex_data(&verts[0], sizeof(verts[0]), uint(verts.size()));
 
@@ -1208,6 +1214,10 @@ void fhm_mesh::draw(int lod_idx)
         return;
 
     lod &l = lods[lod_idx];
+
+    l.mesh.set_pos(m_pos);
+    l.mesh.set_rot(m_rot);
+
     for(int k = 0; k < 2; ++k)
     {
         for (int i = 0; i < l.groups.size(); ++i)
@@ -1218,10 +1228,9 @@ void fhm_mesh::draw(int lod_idx)
 
             if (g.night) //ToDo
                 continue;
-
+/*
             if (g.bone_idx >= 0)
             {
-
                 l.mesh.set_pos(m_pos + m_rot.rotate(l.mesh.get_bone_pos(g.bone_idx, true)));
                 l.mesh.set_rot(m_rot * l.mesh.get_bone_rot(g.bone_idx, true));
             }
@@ -1230,12 +1239,11 @@ void fhm_mesh::draw(int lod_idx)
                 l.mesh.set_pos(m_pos);
                 l.mesh.set_rot(m_rot);
             }
+*/
             l.mesh.draw_group(i);
         }
     }
 
-    l.mesh.set_pos(m_pos);
-    l.mesh.set_rot(m_rot);
 /*
     nya_render::depth_test::disable();
     static nya_render::debug_draw d;
