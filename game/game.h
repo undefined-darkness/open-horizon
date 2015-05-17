@@ -100,6 +100,7 @@ struct plane: public object
     void set_rot(const quat &rot) { if (phys) phys->rot = rot; }
     const vec3 &get_pos() { if (phys) return phys->pos; static vec3 p; return p; }
     const quat &get_rot() { if (phys) return phys->rot; static quat r; return r; }
+    vec3 get_dir() { static vec3 fw(0.0, 0.0, 1.0); return get_rot().rotate(fw); }
 
     void update(int dt, world &w, gui::hud &h, bool player);
 };

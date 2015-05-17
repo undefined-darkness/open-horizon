@@ -471,6 +471,9 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         }
     }
 
+    targets.erase(std::remove_if(targets.begin(), targets.end(), [](target_lock &t){ return t.plane.expired()
+                                 || t.plane.lock()->hp <= 0; }), targets.end());
+
     //cockpit animations and hud
 
     if (player)
@@ -501,14 +504,14 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             if (me == p)
                 continue;
 
-            if (p->hp < 0)
-                continue;
-
             auto select = gui::hud::select_not;
             auto target = gui::hud::target_air;
 
             if (w.is_ally(me, p))
             {
+                if (p->hp <= 0)
+                    continue;
+
                 target = gui::hud::target_air_ally;
             }
             else
@@ -523,7 +526,10 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 }
 
                 auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.plane.lock(); });
-                if (fp != targets.end() && fp->locked)
+                if (fp == targets.end())
+                    continue;
+
+                if (fp->locked)
                     target = gui::hud::target_air_lock;
             }
 
