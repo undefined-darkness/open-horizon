@@ -11,15 +11,21 @@ namespace gui
 
 //------------------------------------------------------------
 
-inline bool get_project_pos(const nya_math::vec3 &pos, nya_math::vec2 &result)
+inline bool get_project_pos(const render &r, const nya_math::vec3 &pos, nya_math::vec2 &result)
 {
     nya_math::vec4 p(pos, 1.0);
     p = nya_scene::get_camera().get_view_matrix() * nya_render::get_projection_matrix() * p;
     if (p.z < 0)
         return false;
 
-    result.x = (p.x / p.w * 0.5 + 0.5);
-    result.y = (p.y / p.w * -0.5 + 0.5);
+    const float aspect = float(r.get_width(true)) / r.get_height(true) / (float(r.get_width()) / r.get_height() );
+    if (aspect > 1.0)
+        p.x *= aspect;
+    else
+        p.y /= aspect;
+
+    result.x = (p.x / p.w * 0.5 + 0.5) * r.get_width();
+    result.y = (p.y / p.w * -0.5 + 0.5) * r.get_height();
     return true;
 }
 
@@ -72,16 +78,16 @@ void hud::draw(const render &r)
     //m_common.draw(r, 214, green);
 
     nya_math::vec2 proj_pos;
-    if (get_project_pos(m_project_pos, proj_pos))
+    if (get_project_pos(r, m_project_pos, proj_pos))
     {
-        //m_common.draw(r, 215, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, green);
-        m_common.draw(r, 2, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, green);
+        //m_common.draw(r, 215, proj_pos.x, proj_pos.y, green);
+        m_common.draw(r, 2, proj_pos.x, proj_pos.y, green);
         //ToDo
     }
 
     for (auto &t: m_targets)
     {
-        if (!get_project_pos(t.pos, proj_pos))
+        if (!get_project_pos(r, t.pos, proj_pos))
             continue;
 
         int icon = 102;
@@ -94,7 +100,7 @@ void hud::draw(const render &r)
         if (t.target == target_air_lock)
         {
             color = red;
-            m_common.draw(r, 100, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, red);
+            m_common.draw(r, 100, proj_pos.x, proj_pos.y, red);
         }
 
         if (t.target == target_air_ally)
@@ -103,11 +109,11 @@ void hud::draw(const render &r)
             color = blue;
         }
 
-        m_common.draw(r, icon, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, color);
-        m_common.draw(r, icon + 1, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, color);
+        m_common.draw(r, icon, proj_pos.x, proj_pos.y, color);
+        m_common.draw(r, icon + 1, proj_pos.x, proj_pos.y, color);
 
         if (t.select != select_not)
-            m_common.draw(r, t.select == select_current ? 117 : 116, r.get_width() * proj_pos.x, r.get_height() * proj_pos.y, color);
+            m_common.draw(r, t.select == select_current ? 117 : 116, proj_pos.x, proj_pos.y, color);
     }
 
     m_common.draw(r, 10, r.get_width()/2 - 150, r.get_height()/2, green);
