@@ -35,6 +35,8 @@ struct object
 
 typedef ptr<object> object_ptr;
 
+typedef std::function<void(const object_ptr &a, const object_ptr &b)> hit_hunction;
+
 //------------------------------------------------------------
 
 struct plane_controls
@@ -91,8 +93,8 @@ public:
     plane_ptr add_plane(const char *name);
     missile_ptr add_missile(const char *name);
 
-    void update_planes(int dt, std::function<void(object_ptr &a, object_ptr &b)> on_hit);
-    void update_missiles(int dt, std::function<void(object_ptr &a, object_ptr &b)> on_hit);
+    void update_planes(int dt, hit_hunction on_hit);
+    void update_missiles(int dt, hit_hunction on_hit);
 
 private:
     std::vector<plane_ptr> m_planes;

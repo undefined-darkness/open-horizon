@@ -188,12 +188,21 @@ void world::update(int dt)
     for (auto &p: m_planes)
         p->phys->controls = p->controls;
 
-    m_phys_world.update_planes(dt, [](phys::object_ptr &a, phys::object_ptr &b) {});
+    m_phys_world.update_planes(dt, [this](const phys::object_ptr &a, const phys::object_ptr &b)
+    {
+        auto p = this->get_plane(a);
+
+        if (!b) //hit ground
+        {
+            p->take_damage(9000);
+            p->render->set_hide(true);
+        }
+    });
 
     for (auto &m: m_missiles)
         m->update_homing(dt);
 
-    m_phys_world.update_missiles(dt, [](phys::object_ptr &a, phys::object_ptr &b) {});
+    m_phys_world.update_missiles(dt, [](const phys::object_ptr &a, const phys::object_ptr &b) {});
 
     for (auto &p: m_planes)
         p->update(dt, *this, m_hud, p->render == m_render_world.get_player_aircraft());
@@ -212,6 +221,19 @@ bool world::is_ally(const plane_ptr &a, const plane_ptr &b)
         return false;
 
     return m_ally_handler(a, b);
+}
+
+//------------------------------------------------------------
+
+plane_ptr world::get_plane(const phys::object_ptr &o)
+{
+    for (auto &p: m_planes)
+    {
+        if (p->phys == o)
+            return p;
+    }
+
+    return plane_ptr();
 }
 
 //------------------------------------------------------------
@@ -248,12 +270,16 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     render->set_pos(phys->pos);
     render->set_rot(phys->rot);
 
-    if (hp < 0)
+    render->set_damage(max_hp ? float(max_hp-hp) / max_hp : 0.0);
+
+    if (hp <= 0)
     {
         if (player)
             h.set_hide(true);
         return;
     }
+
+    render->set_hide(false);
 
     //aircraft animations
 
@@ -434,7 +460,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         if (me == p)
             continue;
 
-        if (p->hp < 0)
+        if (p->hp <= 0)
             continue;
 
         if (!w.is_ally(me, p))
@@ -479,8 +505,6 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     if (player)
     {
         h.set_hide(false);
-
-        render->set_damage(max_hp ? 1.0 - float(hp) / max_hp : 0.0);
 
         render->set_speed(speed);
 
@@ -601,7 +625,7 @@ void missile::update(int dt)
             //if (vec3::normalize(target.lock()->phys->vel) * dir.normalize() < -0.5)  //direct shoot
             //    missile_damage *= 3;
 
-            target.lock()->hp -= missile_damage;
+            target.lock()->take_damage(missile_damage);
         }
 
         if (target.lock()->hp < 0)

@@ -104,7 +104,7 @@ void scene::set_location(const char *name)
     set_shader_param("bloom_param", nya_math::vec4(p.hdr.bloom_threshold, p.hdr.bloom_offset, p.hdr.bloom_scale, 1.0));
     set_shader_param("saturation", nya_math::vec4(p.tone_saturation * 0.01, 0.0, 0.0, 0.0));
     m_luminance_speed = p.hdr.luminance_speed;
-    m_fade_time = 2000;
+    m_fade_time = m_fade_max_time = 2000;
 }
 
 //------------------------------------------------------------
@@ -124,6 +124,11 @@ void scene::update(int dt)
         camera.set_rot(m_player_aircraft->get_rot());
 
         set_shader_param("damage_frame_color", nya_math::vec4(1.0, 0.0, 0.0235, m_player_aircraft->get_damage()));
+        const bool is_dead = m_player_aircraft->get_damage() >= 1.0f;
+        if (m_was_dead && !is_dead)
+            m_fade_time = 1000, m_fade_max_time = m_fade_time * 1.5;
+
+        m_was_dead = is_dead;
     }
 
     set_shader_param("lum_adapt_speed", m_luminance_speed * dt / 1000.0f * nya_math::vec4(1.0, 1.0, 1.0, 1.0));
@@ -134,7 +139,7 @@ void scene::update(int dt)
         if (m_fade_time < 0)
             m_fade_time = 0;
 
-        set_shader_param("fade_color", nya_math::vec4(0.0, 0.0, 0.0, m_fade_time / 2500.0f));
+        set_shader_param("fade_color", nya_math::vec4(0.0, 0.0, 0.0, float(m_fade_time) / m_fade_max_time));
     }
 
     if (m_help_time > 0)

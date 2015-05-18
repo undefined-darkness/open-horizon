@@ -739,6 +739,9 @@ void aircraft::update(int dt)
 
 void aircraft::draw(int lod_idx)
 {
+    if (m_hide)
+        return;
+
     m_mesh.draw(lod_idx);
 
     if (lod_idx == 0)

@@ -22,6 +22,7 @@ public:
     void draw(int lod_idx);
     int get_lods_count() const { return m_mesh.get_lods_count(); }
     void update(int dt);
+    void set_hide(bool value) { m_hide = value; }
 
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; m_mesh.set_pos(pos); }
     void set_rot(const nya_math::quat &rot) { m_rot = rot; m_mesh.set_rot(rot); }
@@ -77,7 +78,7 @@ public:
     //info
     static unsigned int get_colors_count(const char *plane_name);
 
-    aircraft(): m_time(0), m_camera_mode(camera_mode_third), m_half_flaps_flag(false)
+    aircraft(): m_hide(false), m_time(0), m_camera_mode(camera_mode_third), m_half_flaps_flag(false)
     {
         m_adimx_bone_idx = m_adimx2_bone_idx = -1;
         m_adimz_bone_idx = m_adimz2_bone_idx = -1;
@@ -97,6 +98,7 @@ private:
     model m_mesh;
     nya_math::vec3 m_pos;
     nya_math::quat m_rot;
+    bool m_hide;
     params::fvalue m_speed;
     params::fvalue m_damage;
 

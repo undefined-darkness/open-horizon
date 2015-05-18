@@ -32,6 +32,10 @@ template <typename t> using w_ptr = std::weak_ptr<t>;
 
 struct object
 {
+    ivalue max_hp;
+    ivalue hp;
+
+    virtual void take_damage(int damage) { hp = damage < hp ? hp - damage : 0; }
 };
 
 typedef ptr<object> object_ptr;
@@ -83,9 +87,6 @@ struct plane: public object
     ivalue special_cooldown[2];
     std::vector<ivalue> special_mount_cooldown;
     ivalue special_mount_idx;
-
-    ivalue max_hp;
-    ivalue hp;
 
     struct target_lock
     {
@@ -149,6 +150,7 @@ public:
 
 private:
     void update_plane(plane_ptr &p);
+    plane_ptr get_plane(const phys::object_ptr &o);
 
 private:
     std::vector<plane_ptr> m_planes;

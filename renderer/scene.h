@@ -24,12 +24,14 @@ private:
     bool m_paused;
     bool m_loading;
     bool m_fonts_loaded;
+    bool m_was_dead;
 
 private:
     lens_flare m_flare;
     nya_scene::texture_proxy m_curve;
     params::fvalue m_luminance_speed;
     int m_fade_time;
+    int m_fade_max_time;
     int m_help_time;
     nya_math::vec3 m_cam_fp_off;
     nya_scene::shader m_cockpit_black;
@@ -39,8 +41,8 @@ private:
     int m_frame_counter, m_frame_counter_time, m_fps;
 
 public:
-    scene(): m_fade_time(0), m_help_time(3000), m_frame_counter(0), m_frame_counter_time(0), m_fps(0), m_paused(false), m_loading(false),
-    m_fonts_loaded(false) {}
+    scene(): m_fade_time(0), m_fade_max_time(0), m_help_time(3000), m_frame_counter(0), m_frame_counter_time(0), m_fps(0), m_paused(false), m_loading(false),
+    m_fonts_loaded(false), m_was_dead(false) {}
 
 public:
     void switch_camera();
