@@ -18,10 +18,28 @@ void free_flight::start(const char *plane, int color, const char *location)
 
 void free_flight::update(int dt, const plane_controls &player_controls)
 {
-    if (m_player)
-        m_player->controls = player_controls;
+    if (!m_player)
+        return;
+
+    m_player->controls = player_controls;
 
     m_world.update(dt);
+
+    if (m_player->hp <= 0)
+    {
+        if (m_respawn_time > 0)
+        {
+            m_respawn_time -= dt;
+            if (m_respawn_time <= 0)
+            {
+                m_player->set_pos(nya_math::vec3(-300, 50, 2000));
+                m_player->set_rot(nya_math::quat());
+                m_player->reset_state();
+            }
+        }
+        else
+            m_respawn_time = 2000;
+    }
 }
 
 //------------------------------------------------------------

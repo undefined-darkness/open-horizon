@@ -24,6 +24,7 @@ public:
 
 protected:
     plane_ptr m_player;
+    ivalue m_respawn_time;
 };
 
 //------------------------------------------------------------

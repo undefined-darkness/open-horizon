@@ -28,7 +28,7 @@ void main()
         vec2 btc=vec2(gl_MultiTexCoord0.z,0.0);
         vec4 q=texture2D(bones_rot_map,btc);
 
-        vec3 pos = texture2D(bones_pos_map,btc).xyz + tr(pos, q);
+        pos = texture2D(bones_pos_map,btc).xyz + tr(pos, q);
         normal = tr(normal, q);
     }
 

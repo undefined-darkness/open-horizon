@@ -1028,7 +1028,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             const size_t first_index = verts.size();
             verts.resize(first_index+rgf.header.vcount);
 
-            float bone_fidx = mesh.skeleton.get_bones_count() < 0 || gf.header.bone_idx < 0 ? -1.0:
+            float bone_fidx = (mesh.skeleton.get_bones_count() <= 0 || gf.header.bone_idx < 0) ? -1.0:
                               float(gf.header.bone_idx + 0.5f) / mesh.skeleton.get_bones_count();
             for (int i = 0; i < rgf.header.vcount; ++i)
                 verts[i + first_index].bone = bone_fidx;
