@@ -21,6 +21,7 @@ public:
 
 private:
     bool stabilize_course(vec3 dir);
+    void select_best_target();
 
 private:
     w_ptr<plane> m_plane;
