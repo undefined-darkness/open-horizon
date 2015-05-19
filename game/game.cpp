@@ -262,6 +262,20 @@ void plane::reset_state()
 
 //------------------------------------------------------------
 
+void plane::select_target(const object_ptr &o)
+{
+    for (auto &t: targets)
+    {
+        if (std::static_pointer_cast<object>(t.plane.lock()) != o)
+            continue;
+
+        std::swap(t, targets.front());
+        return;
+    }
+}
+
+//------------------------------------------------------------
+
 void plane::update(int dt, world &w, gui::hud &h, bool player)
 {
     const int missile_cooldown_time = 3500;

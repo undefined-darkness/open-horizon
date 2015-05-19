@@ -102,7 +102,7 @@ struct plane: public object
     const vec3 &get_pos() { if (phys) return phys->pos; static vec3 p; return p; }
     const quat &get_rot() { if (phys) return phys->rot; static quat r; return r; }
     vec3 get_dir() { static vec3 fw(0.0, 0.0, 1.0); return get_rot().rotate(fw); }
-
+    void select_target(const object_ptr &o);
     void update(int dt, world &w, gui::hud &h, bool player);
 };
 

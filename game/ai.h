@@ -20,8 +20,9 @@ public:
     ai() { reset_state(); }
 
 private:
-    bool stabilize_course(vec3 dir);
-    void select_best_target();
+    bool stabilize_course(const vec3 &dir);
+    void find_best_target();
+    void go_to(const vec3 &pos, int dt);
 
 private:
     w_ptr<plane> m_plane;
@@ -33,7 +34,6 @@ private:
         state_approach,
         state_pursuit,
         state_follow,
-        state_evade
     };
 
     state m_state;
