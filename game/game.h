@@ -90,7 +90,7 @@ struct plane: public object
 
     struct target_lock
     {
-        w_ptr<plane> plane;
+        w_ptr<plane> target_plane;
         bvalue locked;
     };
 

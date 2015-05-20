@@ -266,7 +266,7 @@ void plane::select_target(const object_ptr &o)
 {
     for (auto &t: targets)
     {
-        if (std::static_pointer_cast<object>(t.plane.lock()) != o)
+        if (std::static_pointer_cast<object>(t.target_plane.lock()) != o)
             continue;
 
         std::swap(t, targets.front());
@@ -417,7 +417,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
             m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0));
             if (!targets.empty() && targets.front().locked)
-                m->target = targets.front().plane;
+                m->target = targets.front().target_plane;
         }
     }
 
@@ -481,7 +481,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         {
             auto target_dir = p->get_pos() - me->get_pos();
             const float dist = target_dir.length();
-            auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.plane.lock(); });
+            auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.target_plane.lock(); });
             if (dist < 12000.0f) //ToDo
             {
                 if (fp == targets.end())
@@ -511,8 +511,8 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         }
     }
 
-    targets.erase(std::remove_if(targets.begin(), targets.end(), [](target_lock &t){ return t.plane.expired()
-                                 || t.plane.lock()->hp <= 0; }), targets.end());
+    targets.erase(std::remove_if(targets.begin(), targets.end(), [](target_lock &t){ return t.target_plane.expired()
+                                 || t.target_plane.lock()->hp <= 0; }), targets.end());
 
     //cockpit animations and hud
 
@@ -557,13 +557,13 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 auto first_target = targets.begin();
                 if (first_target != targets.end())
                 {
-                    if (p == first_target->plane.lock())
+                    if (p == first_target->target_plane.lock())
                         select = gui::hud::select_current;
-                    else if (++first_target != targets.end() && p == first_target->plane.lock())
+                    else if (++first_target != targets.end() && p == first_target->target_plane.lock())
                         select = gui::hud::select_next;
                 }
 
-                auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.plane.lock(); });
+                auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.target_plane.lock(); });
                 if (fp == targets.end())
                     continue;
 

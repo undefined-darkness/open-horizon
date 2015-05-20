@@ -137,14 +137,14 @@ void ai::find_best_target()
         {
             if (t.locked)
             {
-                m_target = t.plane;
+                m_target = t.target_plane;
                 return;
             }
 
-            if (t.plane.expired())
+            if (t.target_plane.expired())
                 continue;
 
-            auto tp = t.plane.lock();
+            auto tp = t.target_plane.lock();
             if (tp->hp <= 0)
                 continue;
 
@@ -158,7 +158,7 @@ void ai::find_best_target()
                 continue;
 
             best_dir = d;
-            m_target = t.plane;
+            m_target = t.target_plane;
             if (m_state == state_follow)
                 continue;
 
