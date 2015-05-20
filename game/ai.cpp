@@ -98,7 +98,7 @@ void ai::go_to(const vec3 &pos, int dt)
     else
         p->controls.rot.x = 0.0f;
 
-    const float minimal_height = 100.0f;
+    const float minimal_height = 200.0f;
     if (p->phys->pos.y + p->phys->vel.y * dt < minimal_height && dir.y < 0.0f)
         p->controls.rot.x = -1.0f;
 

@@ -10,25 +10,36 @@ namespace gui
 {
 //------------------------------------------------------------
 
+struct menu_controls
+{
+    bvalue up;
+    bvalue down;
+    bvalue prev;
+    bvalue next;
+};
+
 class menu
 {
 public:
     void init();
     void draw(const render &r);
-
-    void set_hide(bool value) { m_hide = value; }
+    void update(int dt, const menu_controls &controls);
 
     typedef std::function<void(const std::string &name)> on_action;
     void set_callback(on_action f) { m_on_action = f; }
     std::string get_var(const std::string &name) const;
 
-    menu(): m_hide(false) {}
+private:
+    void set_hide(bool value) { m_hide = value; }
+    void set_screen(const std::string &screen);
 
 private:
-    bool m_hide;
+    bvalue m_hide;
     fonts m_fonts;
     on_action m_on_action;
     std::map<std::string, std::string> m_vars;
+    menu_controls m_prev_controls;
+    std::vector<std::pair<std::string, std::string> > m_entries;
 };
 
 //------------------------------------------------------------

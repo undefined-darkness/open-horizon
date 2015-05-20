@@ -13,6 +13,7 @@ namespace gui
 {
 //------------------------------------------------------------
 
+typedef params::value<bool> bvalue;
 typedef params::value<int> ivalue;
 typedef params::uvalue uvalue;
 

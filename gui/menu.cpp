@@ -14,6 +14,8 @@ void menu::init()
     *this = menu(); //release
 
     //ToDo
+
+    set_screen("main");
 }
 
 //------------------------------------------------------------
@@ -22,6 +24,15 @@ void menu::draw(const render &r)
 {
     if (m_hide)
         return;
+
+    //ToDo
+}
+
+//------------------------------------------------------------
+
+void update(int dt, const menu_controls &controls)
+{
+    //ToDo
 }
 
 //------------------------------------------------------------
@@ -33,6 +44,13 @@ std::string menu::get_var(const std::string &name) const
         return std::string();
 
     return v->second;
+}
+
+//------------------------------------------------------------
+
+void menu::set_screen(const std::string &screen)
+{
+    //ToDo
 }
 
 //------------------------------------------------------------
