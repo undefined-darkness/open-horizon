@@ -15,7 +15,8 @@ namespace shared
 
 namespace
 {
-    std::map<unsigned int,nya_scene::texture> textures;
+    std::map<unsigned int, nya_scene::texture> textures;
+    std::map<std::string, unsigned int> texture_names;
 }
 
 //------------------------------------------------------------
@@ -29,6 +30,13 @@ void add_texture(unsigned int hash_id, const nya_scene::texture &tex)
 
 unsigned int load_texture(const char *name)
 {
+    if (!name)
+        return 0;
+
+    auto it = texture_names.find(name);
+    if (it != texture_names.end())
+        return it->second;
+
     auto *res = nya_resources::get_resources_provider().access(name);
     if (!res)
         return 0;
@@ -38,7 +46,9 @@ unsigned int load_texture(const char *name)
     res->read_all(buf.get_data());
     res->release();
 
-    return load_texture(buf.get_data(), size);
+    unsigned int hash_id = load_texture(buf.get_data(), size);
+    texture_names[name] = hash_id;
+    return hash_id;
 }
 
 //------------------------------------------------------------
@@ -86,6 +96,7 @@ unsigned int load_texture(const void *tex_data, size_t tex_size)
 void clear_textures()
 {
     textures.clear();
+    texture_names.clear();
 }
 
 //------------------------------------------------------------
