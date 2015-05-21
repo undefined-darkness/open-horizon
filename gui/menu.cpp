@@ -13,8 +13,6 @@ void menu::init()
 {
     *this = menu(); //release
 
-    //ToDo
-
     set_screen("main");
     m_prev_screen = "exit";
 }
@@ -25,6 +23,8 @@ void menu::draw(const render &r)
 {
     if (m_hide)
         return;
+
+    nya_render::clear(true, true);
 
     //ToDo
 }

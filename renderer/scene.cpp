@@ -164,7 +164,7 @@ void scene::resize(unsigned int width,unsigned int height)
     if (!m_fonts_loaded)
     {
         m_ui_fonts.load("UI/text/menuCommon.acf");
-        m_ui_render.init();
+        ui_render.init();
         m_fonts_loaded = true;
     }
 
@@ -173,7 +173,7 @@ void scene::resize(unsigned int width,unsigned int height)
     if (height)
         camera.set_aspect(height > 0 ? float(width) / height : 1.0f);
 
-    m_ui_render.resize(width, height);
+    ui_render.resize(width, height);
 }
 
 //------------------------------------------------------------
@@ -204,18 +204,18 @@ void scene::draw()
 
     wchar_t buf[255];
     swprintf(buf, sizeof(buf), L"FPS: %d", m_fps);
-    m_ui_fonts.draw_text(m_ui_render, buf, "NowGE20", m_ui_render.get_width() - 90, 0, white);
+    m_ui_fonts.draw_text(ui_render, buf, "NowGE20", ui_render.get_width() - 90, 0, white);
 
     if(m_loading)
     {
         m_loading = false;
-        m_ui_fonts.draw_text(m_ui_render, L"LOADING", "NowGE24", m_ui_render.get_width() * 0.5 - 50, m_ui_render.get_height() * 0.5, white);
+        m_ui_fonts.draw_text(ui_render, L"LOADING", "NowGE24", ui_render.get_width() * 0.5 - 50, ui_render.get_height() * 0.5, white);
     }
     else
     {
-        hud.draw(m_ui_render);
+        hud.draw(ui_render);
         if(m_paused)
-            m_ui_fonts.draw_text(m_ui_render, L"PAUSED", "NowGE24", m_ui_render.get_width() * 0.5 - 45, m_ui_render.get_height() * 0.5, white);
+            m_ui_fonts.draw_text(ui_render, L"PAUSED", "NowGE24", ui_render.get_width() * 0.5 - 45, ui_render.get_height() * 0.5, white);
     }
 }
 

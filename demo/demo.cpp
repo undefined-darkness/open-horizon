@@ -10,6 +10,7 @@
 #include "game/deathmatch.h"
 #include "game/team_deathmatch.h"
 #include "game/free_flight.h"
+#include "gui/menu.h"
 #include "util/util.h"
 
 #include "resources/file_resources_provider.h"
@@ -209,6 +210,9 @@ int main(void)
     game::game_mode *active_game_mode = &game_mode_ff;
     game::plane_controls controls;
 
+    gui::menu menu;
+    gui::menu_controls menu_controls;
+
     int mx = platform.get_mouse_x(), my = platform.get_mouse_y();
     int screen_width = platform.get_width(), screen_height = platform.get_height();
     scene.resize(screen_width, screen_height);
@@ -275,6 +279,7 @@ int main(void)
     unsigned int current_plane = 0;
     unsigned int current_color = 0;
 
+    menu.init();
     if (active_game_mode == &game_mode_ff)
         game_mode_ff.start(planes[current_plane], current_color, locations[current_location]);
     else if (active_game_mode == &game_mode_tdm)
@@ -298,13 +303,23 @@ int main(void)
             scene.resize(screen_width, screen_height);
         }
 
-        active_game_mode->update(paused ? 0 : (speed10x ? dt * 10 : dt), controls);
-        scene.draw();
+        if (active_game_mode)
+        {
+            active_game_mode->update(paused ? 0 : (speed10x ? dt * 10 : dt), controls);
+            scene.draw();
+        }
+        else
+        {
+            menu.update(dt, menu_controls);
+            menu.draw(scene.ui_render);
+        }
+
         platform.end_frame();
 
         //controls
 
         controls = game::plane_controls();
+        menu_controls = gui::menu_controls();
 
         if (platform.get_mouse_lbtn())
             scene.camera.add_delta_rot((platform.get_mouse_y() - my) * 0.03, (platform.get_mouse_x() - mx) * 0.03);
@@ -358,16 +373,19 @@ int main(void)
         if (platform.get_key(GLFW_KEY_S)) controls.brake = 1.0f;
         if (platform.get_key(GLFW_KEY_A)) controls.rot.y = -1.0f;
         if (platform.get_key(GLFW_KEY_D)) controls.rot.y = 1.0f;
-        if (platform.get_key(GLFW_KEY_UP)) controls.rot.x = 1.0f;
-        if (platform.get_key(GLFW_KEY_DOWN)) controls.rot.x = -1.0f;
+        if (platform.get_key(GLFW_KEY_UP)) controls.rot.x = 1.0f, menu_controls.up = true;
+        if (platform.get_key(GLFW_KEY_DOWN)) controls.rot.x = -1.0f, menu_controls.down = true;
         if (platform.get_key(GLFW_KEY_LEFT)) controls.rot.z = -1.0f;
         if (platform.get_key(GLFW_KEY_RIGHT)) controls.rot.z = 1.0f;
 
         if (platform.get_key(GLFW_KEY_LEFT_CONTROL)) controls.mgun = true;
-        if (platform.get_key(GLFW_KEY_SPACE)) controls.missile = true;
+        if (platform.get_key(GLFW_KEY_SPACE)) controls.missile = true, menu_controls.next = true;
         if (platform.get_key(GLFW_KEY_Q)) controls.change_weapon = true;
         if (platform.get_key(GLFW_KEY_E)) controls.change_target = true;
         if (platform.get_key(GLFW_KEY_V)) controls.change_camera = true;
+
+        if (platform.was_pressed(GLFW_KEY_ESCAPE)) menu_controls.prev = true;
+        if (platform.was_pressed(GLFW_KEY_ENTER)) menu_controls.next = true;
 
         if (platform.was_pressed(GLFW_KEY_P) || platform.was_pressed(GLFW_KEY_ESCAPE))
             scene.pause(paused = !paused);

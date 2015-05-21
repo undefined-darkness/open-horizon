@@ -17,9 +17,10 @@ class scene: private nya_scene::postprocess, public world
 public:
     plane_camera camera;
     gui::hud hud;
+    gui::render ui_render;
+
 
 private:
-    gui::render m_ui_render;
     gui::fonts m_ui_fonts;
     bool m_paused;
     bool m_loading;
