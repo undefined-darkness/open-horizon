@@ -44,6 +44,8 @@ private:
     uvalue m_selected;
     std::string m_screen;
     std::string m_prev_screen;
+
+    tiles m_bkg;
 };
 
 //------------------------------------------------------------

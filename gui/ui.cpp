@@ -357,6 +357,18 @@ bool tiles::load(const char *name)
     {
         auto t = m.get_chunk_type(i);
 
+        if (t == ' RAL')
+            continue;
+
+        if (t == '\0BML') //ToDo
+            continue;
+
+        if (t == '\0TCA')
+            continue;
+
+        if (t == ' MSH')
+            continue;
+
         if (t == '\0FCA')
         {
             skip_fonts_texture = true;
@@ -384,12 +396,6 @@ bool tiles::load(const char *name)
         nya_memory::tmp_buffer_scoped b(m.get_chunk_size(i));
         m.read_chunk_data(i, b.get_data());
         nya_memory::memory_reader reader(b.get_data(),b.get_size());
-
-        if (t == ' MSH')
-        {
-            //ToDo
-            continue;
-        }
 
         if (t == ' DUH')
         {
@@ -529,12 +535,6 @@ bool tiles::load(const char *name)
             continue;
         }
 
-        if (t == '\0TCA')
-        {
-            //ToDo
-            continue;
-        }
-
         if (m.get_chunk_size(i) == 0)
             continue;
 
@@ -657,6 +657,31 @@ void tiles::set_progress(int id, int sub_idx, float value)
         return;
 
     h.type3_progress[sub_idx] = value;
+}
+
+//------------------------------------------------------------
+
+void tiles::draw_tx(const render &r, int uitx_idx, int entry_idx, const rect &rct, const nya_math::vec4 &color)
+{
+    if (uitx_idx < 0 || uitx_idx >= (int)m_uitxs.size())
+        return;
+
+    auto &tx = m_uitxs[uitx_idx];
+
+    if (entry_idx < 0 || entry_idx >= (int)tx.entries.size())
+        return;
+
+    std::vector<rect_pair> rects(1);
+
+    auto &e = tx.entries[entry_idx];
+
+    rects[0].tc.x = e.x;
+    rects[0].tc.y = e.y;
+    rects[0].tc.w = e.w;
+    rects[0].tc.h = e.h;
+    rects[0].r = rct;
+
+    r.draw(rects, m_textures[e.tex_idx]);
 }
 
 //------------------------------------------------------------

@@ -15,6 +15,8 @@ void menu::init()
 
     set_screen("main");
     m_prev_screen = "exit";
+
+    m_bkg.load("UI/comp_simple_bg.lar");
 }
 
 //------------------------------------------------------------
@@ -25,6 +27,17 @@ void menu::draw(const render &r)
         return;
 
     nya_render::clear(true, true);
+
+    rect sr(0, 0, r.get_width(), r.get_height());
+
+    const nya_math::vec4 white(1.0, 1.0, 1.0, 1.0);
+
+    if (m_screen == "main")
+        m_bkg.draw_tx(r, 0, 0, sr, white);
+    else if (m_screen == "ac_select")
+        m_bkg.draw_tx(r, 0, 1, sr, white);
+    else if (m_screen == "map_select")
+        m_bkg.draw_tx(r, 0, 2, sr, white);
 
     //ToDo
 }
