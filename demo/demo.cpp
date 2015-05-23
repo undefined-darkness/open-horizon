@@ -221,6 +221,7 @@ public:
                     case 'pyaw': controls.rot.y = v; break;
                     case 'ppch': controls.rot.x = v; break;
                     case 'prll': controls.rot.z = v; break;
+                    case 'thrt': controls.throttle = v; break;
                     default: break;
                 }
             }
@@ -269,9 +270,13 @@ public:
                 if (fabsf(m_joy_axes[i]) < a.deadzone)
                     continue;
 
+                float v = m_joy_axes[i];
+                if (a.inverted)
+                    v = -v;
+
                 if (a.cmd == 'm_ud')
                 {
-                    if (!a.inverted && m_joy_axes[i] > 0.0f)
+                    if (v > 0.0f)
                         controls.up = true;
                     else
                         controls.down = true;
@@ -283,6 +288,8 @@ public:
         {
             if (!m_joy_btns[i])
                 continue;
+
+            //printf("btn %2d\n",i);
 
             for (auto &b: m_buttons)
             {
