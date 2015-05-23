@@ -10,8 +10,8 @@ varying vec2 tc;
 
 @vertex
 
-uniform vec4 tr[200];
-uniform vec4 tc_tr[200];
+uniform vec4 tr[100];
+uniform vec4 tc_tr[100];
 
 void main()
 {
