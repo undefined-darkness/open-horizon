@@ -184,6 +184,7 @@ int main(void)
             const std::string str(resource_name);
             return m_provider.has(("target/" + str).c_str()) || m_provider.has(("common/" + str).c_str()) || m_provider.has(resource_name);
         }
+
     } trp(qdfp);
 
     nya_resources::set_resources_provider(&trp);
@@ -312,6 +313,23 @@ int main(void)
         {
             menu.update(dt, menu_controls);
             menu.draw(scene.ui_render);
+        }
+
+        const char *ui_ref = 0;
+        //ui_ref = "ui_ref2.tga";
+        if (ui_ref)
+        {
+            static nya_scene::texture ui_ref_texture(ui_ref);
+            static std::vector<gui::rect_pair> ui_ref_rects(1);
+            ui_ref_rects[0].r.w = scene.ui_render.get_width();
+            ui_ref_rects[0].r.y = scene.ui_render.get_height();
+            ui_ref_rects[0].r.h = -scene.ui_render.get_height();
+            ui_ref_rects[0].tc.w = ui_ref_texture.get_width();
+            ui_ref_rects[0].tc.h = ui_ref_texture.get_height();
+            static int alpha_anim = 0;
+            alpha_anim += dt;
+            alpha_anim = alpha_anim % 4000;
+            scene.ui_render.draw(ui_ref_rects, ui_ref_texture, nya_math::vec4(1.0, 1.0, 1.0, fabsf(alpha_anim / 2000.0f - 1.0)));
         }
 
         platform.end_frame();

@@ -182,22 +182,7 @@ void scene::draw()
 {
     nya_scene::postprocess::draw(0);
 
-    /*
-    static nya_scene::texture ui_ref_texture("ui_ref.tga");
-    static std::vector<gui::rect_pair> ui_ref_rects(1);
-    ui_ref_rects[0].r.w = m_ui_render.get_width();
-    ui_ref_rects[0].r.y = m_ui_render.get_height();
-    ui_ref_rects[0].r.h = -m_ui_render.get_height();
-    ui_ref_rects[0].tc.w = ui_ref_texture.get_width();
-    ui_ref_rects[0].tc.h = ui_ref_texture.get_height();
-    m_ui_render.draw(ui_ref_rects, ui_ref_texture, nya_math::vec4(1.0,1.0,1.0,1.0));
-    */
-
     const auto white = nya_math::vec4(1.0, 1.0, 1.0, 1.0);
-
-    //m_ui_fonts.draw_text(m_ui_render, L"ASDFGHJKLasdfghjklQWERTYUIOPqwertyuiopZXCVBNMzxcvbnm\"\'*_-=.,0123456789", "NowGE24", 50, 200, white);
-    //m_ui_fonts.draw_text(m_ui_render, L"This is a test. The quick brown fox jumps over the lazy dog's back 1234567890", "NowGE24", 50, 100, white);
-    //m_ui_fonts.draw_text(m_ui_render, L"テストです。いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし ゑひもせす。", "ShinGo18outline", 50, 150, white);
 
     //if (m_help_time > 0)
     //    m_ui.draw_text(L"Press 1-2 to change location, 3-4 to change plane, 5-6 to change paint", "NowGE24", 50, 100, white);

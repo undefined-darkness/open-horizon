@@ -16,7 +16,9 @@ void menu::init()
     set_screen("main");
     m_prev_screen = "exit";
 
+    m_fonts.load("UI/text/menuCommon.acf");
     m_bkg.load("UI/comp_simple_bg.lar");
+    m_select.load("UI/comp_menu.lar");
 }
 
 //------------------------------------------------------------
@@ -29,8 +31,8 @@ void menu::draw(const render &r)
     nya_render::clear(true, true);
 
     rect sr(0, 0, r.get_width(), r.get_height());
-
     const nya_math::vec4 white(1.0, 1.0, 1.0, 1.0);
+    const nya_math::vec4 font_color(89 / 255.0, 203 / 255.0, 136 / 255.0, 1.0);
 
     if (m_screen == "main")
         m_bkg.draw_tx(r, 0, 0, sr, white);
@@ -39,7 +41,26 @@ void menu::draw(const render &r)
     else if (m_screen == "map_select")
         m_bkg.draw_tx(r, 0, 2, sr, white);
 
-    //ToDo
+    int x = 155, y = 162;
+    m_fonts.draw_text(r, m_title.c_str(), "NowGE24", x, 80, font_color);
+    for (int i = 0; i < (int)m_entries.size(); ++i)
+    {
+        auto &e = m_entries[i];
+        if (m_selected == i)
+        {
+            rect rct;
+            rct.x = x - 20, rct.y = y - 8;
+            rct.w = 550, rct.h = 34;
+            m_select.draw_tx(r, 0, 3, rct, white);
+        }
+
+        m_fonts.draw_text(r, e.first.c_str(), "NowGE24", x, y, font_color);
+        y += 34;
+    }
+
+    //m_fonts.draw_text(r, L"ASDFGHJKLasdfghjklQWERTYUIOPqwertyuiopZXCVBNMzxcvbnm\"\'*_-=.,0123456789", "NowGE24", 50, 200, white);
+    //m_fonts.draw_text(r, L"This is a test. The quick brown fox jumps over the lazy dog's back 1234567890", "NowGE24", 50, 100, white);
+    //m_fonts.draw_text(r, L"テストです。いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし えひもせす。", "ShinGo18outline", 50, 150, white);
 }
 
 //------------------------------------------------------------
@@ -95,10 +116,11 @@ void menu::set_screen(const std::string &screen)
 
     if (screen == "main")
     {
-        m_entries.push_back(std::make_pair("DEATHMATCH", "mode_dm"));
-        m_entries.push_back(std::make_pair("TEAM DEATHMATCH", "mode_tdm"));
-        m_entries.push_back(std::make_pair("FREE FLIGHT", "mode_ff"));
-        m_entries.push_back(std::make_pair("EXIT", "exit"));
+        m_title = L"MAIN MENU";
+        m_entries.push_back(std::make_pair(L"DEATHMATCH", "mode_dm"));
+        m_entries.push_back(std::make_pair(L"TEAM DEATHMATCH", "mode_tdm"));
+        m_entries.push_back(std::make_pair(L"FREE FLIGHT", "mode_ff"));
+        m_entries.push_back(std::make_pair(L"EXIT", "exit"));
     }
     else if (screen == "exit")
         send_event("exit");
