@@ -254,7 +254,7 @@ int main(void)
             if (mode == "dm")
             {
                 active_game_mode = &game_mode_dm;
-                game_mode_dm.start(plane.c_str(), color, 0, location.c_str(), 6);
+                game_mode_dm.start(plane.c_str(), color, 0, location.c_str(), 12);
             }
             else if (mode == "tdm")
             {

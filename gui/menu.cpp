@@ -133,7 +133,7 @@ void menu::set_screen(const std::string &screen)
     if (screen == "main")
     {
         m_title = L"MAIN MENU";
-        //m_entries.push_back(std::make_pair(L"DEATHMATCH", "mode=dm")); //ToDo
+        m_entries.push_back(std::make_pair(L"DEATHMATCH", "mode=dm"));
         m_entries.push_back(std::make_pair(L"TEAM DEATHMATCH", "mode=tdm"));
         m_entries.push_back(std::make_pair(L"FREE FLIGHT", "mode=ff"));
         m_entries.push_back(std::make_pair(L"EXIT", "exit"));
@@ -157,7 +157,7 @@ void menu::set_screen(const std::string &screen)
         m_entries.push_back(std::make_pair(L"F18F", "ac=f18f"));
         m_entries.push_back(std::make_pair(L"F22A", "ac=f22a"));
         m_entries.push_back(std::make_pair(L"MIG29A", "ac=m29a"));
-        m_entries.push_back(std::make_pair(L"PAK FA", "ac=pkra"));
+        m_entries.push_back(std::make_pair(L"PAK FA", "ac=pkfa"));
         m_entries.push_back(std::make_pair(L"SU33", "ac=su33"));
         m_entries.push_back(std::make_pair(L"SU35", "ac=su35"));
         m_entries.push_back(std::make_pair(L"SU37", "ac=su37"));
