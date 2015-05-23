@@ -45,7 +45,9 @@ void menu::draw(const render &r)
 
     int x = 155, y = 162;
     m_fonts.draw_text(r, m_title.c_str(), "NowGE24", x, 80, font_color);
-    for (int i = 0; i < (int)m_entries.size(); ++i)
+    const int count = 15;
+    for (int i = ((m_selected + (m_selected >= (count - 1) ? 1 : 0)) / (count - 1)) * (count - 2), j = 0;
+         i < (int)m_entries.size() && j < count; ++i, ++j)
     {
         auto &e = m_entries[i];
         if (m_selected == i)
@@ -141,7 +143,7 @@ void menu::set_screen(const std::string &screen)
         m_entries.push_back(std::make_pair(L"MIAMI", "map=ms01"));
         m_entries.push_back(std::make_pair(L"DUBAI", "map=ms06"));
         m_entries.push_back(std::make_pair(L"MOSCOW", "map=ms11b"));
-        m_entries.push_back(std::make_pair(L"WASHINGTON", "map=ms14"));
+        //m_entries.push_back(std::make_pair(L"WASHINGTON", "map=ms14"));
         m_entries.push_back(std::make_pair(L"PARIS", "map=ms30"));
         m_entries.push_back(std::make_pair(L"TOKYO", "map=ms50"));
     }
@@ -160,7 +162,7 @@ void menu::set_screen(const std::string &screen)
         m_entries.push_back(std::make_pair(L"SU37", "ac=su37"));
         m_entries.push_back(std::make_pair(L"SU47", "ac=su47"));
         m_entries.push_back(std::make_pair(L"TYPHOON", "ac=typn"));
-/*
+
         if (get_var("mode") == "ff")
         {
             m_entries.push_back(std::make_pair(L"A10A", "ac=a10a"));
@@ -184,7 +186,7 @@ void menu::set_screen(const std::string &screen)
             m_entries.push_back(std::make_pair(L"SU34", "ac=su34"));
             m_entries.push_back(std::make_pair(L"TORNADO GR4", "ac=tnd4"));
         }
-*/
+
         /*
         //no anims
         m_entries.push_back(std::make_pair(L"YF23", "ac=yf23"));
