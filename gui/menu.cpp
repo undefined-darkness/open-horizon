@@ -3,6 +3,7 @@
 //
 
 #include "menu.h"
+#include "renderer/aircraft.h"
 
 namespace gui
 {
@@ -38,10 +39,10 @@ void menu::draw(const render &r)
 
     if (m_screens.back() == "main")
         m_bkg.draw_tx(r, 0, 0, sr, white);
-    else if (m_screens.back() == "ac_select")
-        m_bkg.draw_tx(r, 0, 1, sr, white);
     else if (m_screens.back() == "map_select")
         m_bkg.draw_tx(r, 0, 2, sr, white);
+    else if (m_screens.back() == "ac_select" || m_screens.back() == "color_select")
+        m_bkg.draw_tx(r, 0, 1, sr, white);
 
     int x = 155, y = 162;
     m_fonts.draw_text(r, m_title.c_str(), "NowGE24", x, 80, font_color);
@@ -202,6 +203,19 @@ void menu::set_screen(const std::string &screen)
         m_entries.push_back(std::make_pair(L"A130", "ac=a130")); //b.unknown2 = 1312
         */
     }
+    else if (screen == "color_select")
+    {
+        m_title = L"AIRCRAFT COLOR";
+        const int colors_count = renderer::aircraft::get_colors_count(m_vars["ac"].c_str());
+        for (int i = 0; i < colors_count; ++i)
+        {
+            wchar_t name[255];
+            char action[255];
+            swprintf(name, 255, L"COLOR%02d", i);
+            sprintf(action, "color=%d", i);
+            m_entries.push_back(std::make_pair(name, action));
+        }
+    }
     else
         printf("unknown screen %s\n", screen.c_str());
 
@@ -223,6 +237,8 @@ void menu::send_event(const std::string &event)
         else if (var == "map")
             set_screen("ac_select");
         else if (var == "ac")
+            set_screen("color_select");
+        else if (var == "color")
             send_event("start"); //ToDo: color and special select
         return;
     }

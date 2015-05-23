@@ -240,9 +240,9 @@ int main(void)
     {
         if (event == "start")
         {
-            const int current_color = 0;
-            auto plane = menu.get_var("ac");
             auto location = menu.get_var("map");
+            auto plane = menu.get_var("ac");
+            const int color = atoi(menu.get_var("color").c_str());
 
             scene.loading(true);
             nya_render::clear(true, true);
@@ -254,23 +254,23 @@ int main(void)
             if (mode == "dm")
             {
                 active_game_mode = &game_mode_dm;
-                game_mode_dm.start(plane.c_str(), current_color, 0, location.c_str(), 6);
+                game_mode_dm.start(plane.c_str(), color, 0, location.c_str(), 6);
             }
             else if (mode == "tdm")
             {
                 active_game_mode = &game_mode_tdm;
-                game_mode_tdm.start(plane.c_str(), current_color, 0, location.c_str(), 8);
+                game_mode_tdm.start(plane.c_str(), color, 0, location.c_str(), 8);
             }
             else if (mode == "ff")
             {
                 active_game_mode = &game_mode_ff;
-                game_mode_ff.start(plane.c_str(), current_color, location.c_str());
+                game_mode_ff.start(plane.c_str(), color, location.c_str());
             }
         }
         else if (event == "exit")
             platform.terminate();
         else
-            printf("event: %s\n", event.c_str());
+            printf("unknown event: %s\n", event.c_str());
     };
 
     menu.set_callback(on_menu_action);
