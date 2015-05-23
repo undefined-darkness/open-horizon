@@ -69,7 +69,4 @@ add_custom_command(TARGET open_horizon POST_BUILD COMMAND ${CMAKE_COMMAND} -E co
                    ${CMAKE_SOURCE_DIR}/resources/shaders $<TARGET_FILE_DIR:open_horizon>/shaders)
 
 add_custom_command(TARGET open_horizon POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-                   ${CMAKE_SOURCE_DIR}/resources/postprocess.txt $<TARGET_FILE_DIR:open_horizon>)
-
-add_custom_command(TARGET open_horizon POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-                   ${CMAKE_SOURCE_DIR}/resources/DATA.PAC.xml $<TARGET_FILE_DIR:open_horizon>)
+                   ${CMAKE_SOURCE_DIR}/resources/*.* $<TARGET_FILE_DIR:open_horizon>)
