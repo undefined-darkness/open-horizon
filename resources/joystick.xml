@@ -9,7 +9,7 @@
         <axis1 control="pitch" dead="0.1"/>
         <axis1 control="pitch" invert="true" os="linux" dead="0.1"/>
         <axis1 control="menu_up_down" os="osx" dead="0.5"/>
-        <axis1 control="menu_up_down" invert="true" os="linux" dead="0.5"/>
+        <axis1 control="menu_up_down" os="linux" invert="true" dead="0.5"/>
         <btn1/>
 
         <!--right stick-->
@@ -47,8 +47,10 @@
     <joystick name="Logitech Extreme 3D">
         <axis0 control="roll" dead="0.01"/>
         <axis1 control="pitch" dead="0.01"/>
+        <axis1 control="pitch" os="linux" invert="true" dead="0.01"/>
         <axis2 control="yaw" dead="0.01"/>
-        <axis3 control="throttle" dead="0.01"/>
+        <axis3 control="throttle" os="osx" dead="0.01"/>
+        <axis3 control="throttle" os="linux" invert="true" dead="0.01"/>
         <btn0 control="mgun"/>
         <btn1 control="missile"/>
         <btn2 control="brake"/>
@@ -61,7 +63,8 @@
         <btn10 control="pause"/>
         <btn11 control="pause"/>
 
-        <axis1 control="menu_up_down" dead="0.5"/>
+        <axis1 control="menu_up_down" os="osx" dead="0.5"/>
+        <axis1 control="menu_up_down" os="linux" invert="true" dead="0.5"/>
         <btn12 control="menu_up"/>
         <btn14 control="menu_down"/>
         <btn15 control="menu_prev"/>
