@@ -12,6 +12,7 @@
 		F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52519048E5000C3590A /* OpenGL.framework */; };
 		F503E52919048E7300C3590A /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52819048E7300C3590A /* IOKit.framework */; };
 		F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53304C61B09DEC300D8C3C7 /* menu.cpp */; };
+		F5696AAA1B1136B100C7BFC9 /* joystick.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5696AA11B10E3F800C7BFC9 /* joystick.xml */; };
 		F578323E1AFBE859005FE829 /* ui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F578323C1AFBE859005FE829 /* ui.cpp */; };
 		F57832401AFC20B7005FE829 /* weapons.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F578323F1AFC20B1005FE829 /* weapons.xml */; };
 		F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E51F19048D4A00C3590A /* libnya_engine.a */; };
@@ -71,6 +72,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				F5696AAA1B1136B100C7BFC9 /* joystick.xml in CopyFiles */,
 				F57832401AFC20B7005FE829 /* weapons.xml in CopyFiles */,
 				F5C6D39E1AF96A18006FB7E6 /* DATA.PAC.xml in CopyFiles */,
 				F5C6D39F1AF96A18006FB7E6 /* postprocess.txt in CopyFiles */,
@@ -95,6 +97,7 @@
 		F53304C61B09DEC300D8C3C7 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = menu.cpp; path = ../gui/menu.cpp; sourceTree = "<group>"; };
 		F53304C71B09DEC300D8C3C7 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = menu.h; path = ../gui/menu.h; sourceTree = "<group>"; };
 		F561C5FA1AFD24E900D8DD14 /* half.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = half.h; path = ../util/half.h; sourceTree = "<group>"; };
+		F5696AA11B10E3F800C7BFC9 /* joystick.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = joystick.xml; path = ../resources/joystick.xml; sourceTree = "<group>"; };
 		F578323C1AFBE859005FE829 /* ui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ui.cpp; path = ../gui/ui.cpp; sourceTree = "<group>"; };
 		F578323D1AFBE859005FE829 /* ui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui.h; path = ../gui/ui.h; sourceTree = "<group>"; };
 		F578323F1AFC20B1005FE829 /* weapons.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = weapons.xml; path = ../resources/weapons.xml; sourceTree = "<group>"; };
@@ -380,6 +383,7 @@
 			isa = PBXGroup;
 			children = (
 				F5C6D39B1AF96A08006FB7E6 /* DATA.PAC.xml */,
+				F5696AA11B10E3F800C7BFC9 /* joystick.xml */,
 				F5C6D39C1AF96A08006FB7E6 /* postprocess.txt */,
 				F578323F1AFC20B1005FE829 /* weapons.xml */,
 				F5C6D39D1AF96A08006FB7E6 /* shaders */,

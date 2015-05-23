@@ -1,0 +1,45 @@
+<!--os: windows osx linux-->
+
+<joysticks>
+
+    <joystick name="PLAYSTATION(R)3 Controller"> <!--part of the name, ignoring case-->
+
+        <!--left stick-->
+        <axis0 control="roll" dead="0.1"/>
+        <axis1 control="pitch" dead="0.1"/>
+        <axis1 control="pitch" invert="true" os="linux" dead="0.1"/>
+        <axis1 control="menu_up_down" os="osx" dead="0.5"/>
+        <axis1 control="menu_up_down" invert="true" os="linux" dead="0.5"/>
+        <btn1/>
+
+        <!--right stick-->
+        <axis2 control="camera_yaw" invert="true" dead="0.1"/>
+        <axis3 control="camera_pitch" dead="0.1"/>
+        <btn2 control="change_camera"/>
+
+        <!--select-->
+        <btn0 control="change_weapon"/>
+
+        <!--start-->
+        <btn3 control="pause"/>
+
+        <!--dpad-->
+        <btn4 control="menu_up"/>
+        <btn6 control="menu_down"/>
+
+        <!--triggers-->
+        <btn8 control="-yaw"/>
+        <btn9 control="+yaw"/>
+        <btn10 control="brake"/>
+        <btn11 control="throttle"/>
+
+        <!--buttons-->
+        <btn12 control="change_target"/>
+        <btn13 control="missile"/>
+        <btn14 control="mgun"/>
+        <btn13 control="menu_next"/>
+        <btn14 control="menu_prev"/>
+
+    </joystick>
+
+</joysticks>

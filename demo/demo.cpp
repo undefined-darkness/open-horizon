@@ -12,6 +12,7 @@
 #include "game/free_flight.h"
 #include "gui/menu.h"
 #include "util/util.h"
+#include "util/xml.h"
 
 #include "resources/file_resources_provider.h"
 #include "resources/composite_resources_provider.h"
@@ -130,6 +131,230 @@ std::map<int, bool> platform::m_buttons;
 
 //------------------------------------------------------------
 
+class joystick_config
+{
+public:
+    void init(const char *name)
+    {
+        pugi::xml_document doc;
+        if (!name || !load_xml("joystick.xml", doc))
+            return;
+
+        std::string name_str(name);
+        std::transform(name_str.begin(), name_str.end(), name_str.begin(), ::tolower);
+
+#ifdef _WIN32
+        const std::string os("windows");
+#elif defined __APPLE__
+        const std::string os("osx");
+#else
+        const std::string os("linux");
+#endif
+
+        pugi::xml_node root = doc.first_child();
+        for (pugi::xml_node j = root.child("joystick"); j; j = j.next_sibling("joystick"))
+        {
+            std::string name_part = j.attribute("name").as_string("");
+            std::transform(name_part.begin(), name_part.end(), name_part.begin(), ::tolower);
+
+            if (name_str.find(name_part) == std::string::npos)
+                continue;
+
+            for (pugi::xml_node c = j.first_child(); c; c = c.next_sibling())
+            {
+                auto aos = c.attribute("os");
+                if (aos && os != aos.as_string())
+                    continue;
+
+                std::string name(c.name());
+                std::string type; int idx = 0;
+                for (auto &n: name)
+                {
+                    if (!isalpha(n))
+                    {
+                        idx = atoi(&n);
+                        break;
+                    }
+
+                    type.push_back(n);
+                }
+
+                auto cmd = convert_cmd(c.attribute("control").as_string(""));
+
+                if (type == "axis")
+                    m_axes.push_back({idx, c.attribute("dead").as_float(), c.attribute("invert").as_bool(), cmd});
+                else if (type == "btn")
+                    m_buttons.push_back({idx,cmd});
+            }
+        }
+    }
+
+    void update(const float *axes, int axes_count, const unsigned char *btns, int btns_count)
+    {
+        m_joy_axes.resize(axes_count);
+        for (int i = 0; i < axes_count; ++i)
+            m_joy_axes[i] = axes[i];
+
+        m_joy_btns.resize(btns_count);
+        for (int i = 0; i < btns_count; ++i)
+            m_joy_btns[i] = btns[i] > 0;
+    }
+
+    void apply_controls(game::plane_controls &controls, bool &pause)
+    {
+        for (int i = 0; i < (int)m_joy_axes.size(); ++i)
+        {
+            for (auto &a: m_axes)
+            {
+                if (a.idx != i)
+                    continue;
+
+                float v = m_joy_axes[i];
+                if (fabsf(v) < a.deadzone)
+                    continue;
+
+                if (a.inverted)
+                    v = -v;
+
+                switch (a.cmd)
+                {
+                    case 'pyaw': controls.rot.y = v; break;
+                    case 'ppch': controls.rot.x = v; break;
+                    case 'prll': controls.rot.z = v; break;
+                    default: break;
+                }
+            }
+        }
+
+        for (int i = 0; i < (int)m_joy_btns.size(); ++i)
+        {
+            if (!m_joy_btns[i])
+                continue;
+
+            for (auto &b: m_buttons)
+            {
+                if (b.idx != i)
+                    continue;
+
+                switch (b.cmd)
+                {
+                    case '+pyw': controls.rot.y = 1.0; break;
+                    case '-pyw': controls.rot.y = -1.0; break;
+                    case 'cchg': controls.change_camera = true; break;
+                    case 'wchg': controls.change_weapon = true; break;
+                    case 'tchn': controls.change_target = true; break;
+                    case 'msle': controls.missile = true; break;
+                    case 'mgun': controls.mgun = true; break;
+                    case 'brke': controls.brake = true; break;
+                    case 'thrt': controls.throttle = true; break;
+                    case 'paus': pause = true; break;
+                    default: break;
+                }
+            }
+        }
+
+        //if (fabsf(axis[2]) > joy_dead_zone) scene.camera.add_delta_rot(0.0f, -axis[2] * 0.05f);
+        //if (fabsf(axis[3]) > joy_dead_zone) scene.camera.add_delta_rot(axis[3] * 0.05f, 0.0f);
+    }
+
+    void apply_controls(gui::menu_controls &controls)
+    {
+        for (int i = 0; i < (int)m_joy_axes.size(); ++i)
+        {
+            for (auto &a: m_axes)
+            {
+                if (a.idx != i)
+                    continue;
+
+                if (fabsf(m_joy_axes[i]) < a.deadzone)
+                    continue;
+
+                if (a.cmd == 'm_ud')
+                {
+                    if (!a.inverted && m_joy_axes[i] > 0.0f)
+                        controls.up = true;
+                    else
+                        controls.down = true;
+                }
+            }
+        }
+
+        for (int i = 0; i < (int)m_joy_btns.size(); ++i)
+        {
+            if (!m_joy_btns[i])
+                continue;
+
+            for (auto &b: m_buttons)
+            {
+                if (b.idx != i)
+                    continue;
+
+                switch (b.cmd)
+                {
+                    case 'm_up': controls.up = true; break;
+                    case 'm_dn': controls.down = true; break;
+                    case 'm_pr': controls.prev = true; break;
+                    case 'm_nx': controls.next = true; break;
+                    default: break;
+                }
+            }
+        }
+    }
+
+private:
+    static unsigned int convert_cmd(const std::string &cmd)
+    {
+        if (cmd == "yaw") return 'pyaw';
+        if (cmd == "+yaw") return '+pyw';
+        if (cmd == "-yaw") return '-pyw';
+        if (cmd == "pitch") return 'ppch';
+        if (cmd == "roll") return 'prll';
+        if (cmd == "camera_yaw") return 'cyaw';
+        if (cmd == "camera_pitch") return 'cpch';
+        if (cmd == "change_camera") return 'cchg';
+        if (cmd == "change_weapon") return 'wchg';
+        if (cmd == "pause") return 'paus';
+        if (cmd == "brake") return 'brke';
+        if (cmd == "throttle") return 'thrt';
+        if (cmd == "change_target") return 'tchn';
+        if (cmd == "missile") return 'msle';
+        if (cmd == "mgun") return 'mgun';
+
+        if (cmd == "menu_up_down") return 'm_ud';
+        if (cmd == "menu_up") return 'm_up';
+        if (cmd == "menu_down") return 'm_dn';
+        if (cmd == "menu_prev") return 'm_pr';
+        if (cmd == "menu_next") return 'm_nx';
+
+        return 0;
+    }
+
+private:
+    struct axis
+    {
+        int idx;
+        float deadzone;
+        bool inverted;
+        unsigned int cmd;
+    };
+
+    std::vector<axis> m_axes;
+
+    struct btn
+    {
+        int idx;
+        unsigned int cmd;
+    };
+
+    std::vector<btn> m_buttons;
+
+private:
+    std::vector<float> m_joy_axes;
+    std::vector<bool> m_joy_btns;
+};
+
+//------------------------------------------------------------
+
 int main(void)
 {
 #ifndef _WIN32
@@ -201,9 +426,15 @@ int main(void)
     if (!platform.init(1000, 562, "Open Horizon 3rd demo"))
         return -1;
 
+    std::vector<joystick_config> joysticks;
+
     for (int i = 0; glfwJoystickPresent(i); ++i)
     {
         const char *name = glfwGetJoystickName(i);
+
+        joystick_config j;
+        j.init(name);
+        joysticks.push_back(j);
 
         int axis_count = 0, buttons_count = 0;
         glfwGetJoystickAxes(i, &axis_count);
@@ -285,7 +516,7 @@ int main(void)
 
         app_time = time;
 
-        static bool speed10x = false, paused = false;
+        static bool speed10x = false, last_pause = false, paused = false;
 
         if (platform.get_width() != screen_width || platform.get_height() != screen_height)
         {
@@ -336,44 +567,15 @@ int main(void)
 
         mx = platform.get_mouse_x(), my = platform.get_mouse_y();
 
-        int axis_count = 0, buttons_count = 0;
-        const float *axis = glfwGetJoystickAxes(0, &axis_count);
-        const unsigned char *buttons = glfwGetJoystickButtons(0, &buttons_count);
-        const float joy_dead_zone = 0.1f;
-        if (axis_count > 1)
+        bool pause = false;
+        for (int i = 0; i < (int)joysticks.size(); ++i)
         {
-            if (fabsf(axis[0]) > joy_dead_zone) controls.rot.z = axis[0];
-            if (fabsf(axis[1]) > joy_dead_zone) controls.rot.x = axis[1];
-        }
-
-        if (axis_count > 3)
-        {
-            if (fabsf(axis[2]) > joy_dead_zone) scene.camera.add_delta_rot(0.0f, -axis[2] * 0.05f);
-            if (fabsf(axis[3]) > joy_dead_zone) scene.camera.add_delta_rot(axis[3] * 0.05f, 0.0f);
-        }
-
-        if (buttons_count > 11)
-        {
-            if (buttons[8]) controls.rot.y = -1.0f;
-            if (buttons[9]) controls.rot.y = 1.0f;
-            if (buttons[10]) controls.brake = 1.0f;
-            if (buttons[11]) controls.throttle = 1.0f;
-
-            if (buttons[2]) scene.camera.reset_delta_rot();
-/*
-            static bool last_btn3 = false;
-            if (buttons[3] !=0 && !last_btn3)
-                scene.pause();
-
-            last_btn3 = buttons[3] != 0;
-*/
-        }
-
-        if (buttons_count > 14)
-        {
-            if(buttons[13]) controls.missile = true;
-            if(buttons[14]) controls.mgun = true;
-            if(buttons[0]) controls.change_weapon = true;
+            int axes_count = 0, buttons_count = 0;
+            const float *axes = glfwGetJoystickAxes(i, &axes_count);
+            const unsigned char *buttons = glfwGetJoystickButtons(i, &buttons_count);
+            joysticks[i].update(axes, axes_count, buttons, buttons_count);
+            joysticks[i].apply_controls(controls, pause);
+            joysticks[i].apply_controls(menu_controls);
         }
 
         if (platform.get_key(GLFW_KEY_W)) controls.throttle = 1.0f;
@@ -396,8 +598,9 @@ int main(void)
 
         if (active_game_mode)
         {
-            if (platform.was_pressed(GLFW_KEY_P) || platform.was_pressed(GLFW_KEY_ESCAPE))
+            if ((pause && pause != last_pause) || platform.was_pressed(GLFW_KEY_P) || platform.was_pressed(GLFW_KEY_ESCAPE))
                 scene.pause(paused = !paused);
+            last_pause = pause;
         }
 
         speed10x = platform.get_key(GLFW_KEY_RIGHT_SHIFT);
