@@ -40,11 +40,10 @@ private:
     on_action m_on_action;
     std::map<std::string, std::string> m_vars;
     menu_controls m_prev_controls;
+    std::wstring m_title;
     std::vector<std::pair<std::wstring, std::string> > m_entries;
     uvalue m_selected;
-    std::string m_screen;
-    std::string m_prev_screen;
-    std::wstring m_title;
+    std::list<std::string> m_screens;
 
     tiles m_bkg;
     tiles m_select;

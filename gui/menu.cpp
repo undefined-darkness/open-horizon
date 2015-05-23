@@ -14,7 +14,6 @@ void menu::init()
     *this = menu(); //release
 
     set_screen("main");
-    m_prev_screen = "exit";
 
     m_fonts.load("UI/text/menuCommon.acf");
     m_bkg.load("UI/comp_simple_bg.lar");
@@ -30,15 +29,18 @@ void menu::draw(const render &r)
 
     nya_render::clear(true, true);
 
+    if (m_screens.empty())
+        return;
+
     rect sr(0, 0, r.get_width(), r.get_height());
     const nya_math::vec4 white(1.0, 1.0, 1.0, 1.0);
     const nya_math::vec4 font_color(89 / 255.0, 203 / 255.0, 136 / 255.0, 1.0);
 
-    if (m_screen == "main")
+    if (m_screens.back() == "main")
         m_bkg.draw_tx(r, 0, 0, sr, white);
-    else if (m_screen == "ac_select")
+    else if (m_screens.back() == "ac_select")
         m_bkg.draw_tx(r, 0, 1, sr, white);
-    else if (m_screen == "map_select")
+    else if (m_screens.back() == "map_select")
         m_bkg.draw_tx(r, 0, 2, sr, white);
 
     int x = 155, y = 162;
@@ -84,7 +86,18 @@ void menu::update(int dt, const menu_controls &controls)
 
     if (controls.prev && controls.prev != m_prev_controls.prev)
     {
-        set_screen(m_prev_screen);
+        if (!m_screens.empty())
+        {
+            m_screens.pop_back();
+            if (m_screens.empty())
+                send_event("exit");
+            else
+            {
+                auto last = m_screens.back();
+                m_screens.pop_back();
+                set_screen(last);
+            }
+        }
     }
 
     if (controls.next && controls.next != m_prev_controls.next)
@@ -117,28 +130,103 @@ void menu::set_screen(const std::string &screen)
     if (screen == "main")
     {
         m_title = L"MAIN MENU";
-        m_entries.push_back(std::make_pair(L"DEATHMATCH", "mode_dm"));
-        m_entries.push_back(std::make_pair(L"TEAM DEATHMATCH", "mode_tdm"));
-        m_entries.push_back(std::make_pair(L"FREE FLIGHT", "mode_ff"));
+        //m_entries.push_back(std::make_pair(L"DEATHMATCH", "mode=dm")); //ToDo
+        m_entries.push_back(std::make_pair(L"TEAM DEATHMATCH", "mode=tdm"));
+        m_entries.push_back(std::make_pair(L"FREE FLIGHT", "mode=ff"));
         m_entries.push_back(std::make_pair(L"EXIT", "exit"));
     }
-    else if (screen == "exit")
-        send_event("exit");
+    else if (screen == "map_select")
+    {
+        m_title = L"LOCATION";
+        m_entries.push_back(std::make_pair(L"MIAMI", "map=ms01"));
+        m_entries.push_back(std::make_pair(L"DUBAI", "map=ms06"));
+        m_entries.push_back(std::make_pair(L"MOSCOW", "map=ms11b"));
+        m_entries.push_back(std::make_pair(L"WASHINGTON", "map=ms14"));
+        m_entries.push_back(std::make_pair(L"PARIS", "map=ms30"));
+        m_entries.push_back(std::make_pair(L"TOKYO", "map=ms50"));
+    }
+    else if (screen == "ac_select")
+    {
+        m_title = L"AIRCRAFT";
+        m_entries.push_back(std::make_pair(L"F14D", "ac=f14d"));
+        m_entries.push_back(std::make_pair(L"F15C", "ac=f15c"));
+        m_entries.push_back(std::make_pair(L"F16C", "ac=f16c"));
+        m_entries.push_back(std::make_pair(L"F18F", "ac=f18f"));
+        m_entries.push_back(std::make_pair(L"F22A", "ac=f22a"));
+        m_entries.push_back(std::make_pair(L"MIG29A", "ac=m29a"));
+        m_entries.push_back(std::make_pair(L"PAK FA", "ac=pkra"));
+        m_entries.push_back(std::make_pair(L"SU33", "ac=su33"));
+        m_entries.push_back(std::make_pair(L"SU35", "ac=su35"));
+        m_entries.push_back(std::make_pair(L"SU37", "ac=su37"));
+        m_entries.push_back(std::make_pair(L"SU47", "ac=su47"));
+        m_entries.push_back(std::make_pair(L"TYPHOON", "ac=typn"));
+/*
+        if (get_var("mode") == "ff")
+        {
+            m_entries.push_back(std::make_pair(L"A10A", "ac=a10a"));
+            m_entries.push_back(std::make_pair(L"AV8B", "ac=ab8b"));
+            m_entries.push_back(std::make_pair(L"ASF X", "ac=kwmr"));
+            m_entries.push_back(std::make_pair(L"B01B", "ac=b01b"));
+            m_entries.push_back(std::make_pair(L"B02A", "ac=b02a"));
+            m_entries.push_back(std::make_pair(L"F2A", "ac=f02a"));
+            m_entries.push_back(std::make_pair(L"F4E", "ac=f04e"));
+            m_entries.push_back(std::make_pair(L"F15M", "ac=f15m"));
+            m_entries.push_back(std::make_pair(L"F15E", "ac=f15e"));
+            m_entries.push_back(std::make_pair(L"F16F", "ac=f16f"));
+            m_entries.push_back(std::make_pair(L"F35B", "ac=f35b"));
+            m_entries.push_back(std::make_pair(L"F117A", "ac=f17a"));
+            m_entries.push_back(std::make_pair(L"JAS39C", "ac=j39c"));
+            m_entries.push_back(std::make_pair(L"M21BIS", "ac=m21b"));
+            m_entries.push_back(std::make_pair(L"MIRAGE2000", "ac=mr2k"));
+            m_entries.push_back(std::make_pair(L"RAFALE M", "ac=rflm"));
+            m_entries.push_back(std::make_pair(L"SU24MP", "ac=su24"));
+            m_entries.push_back(std::make_pair(L"SU25", "ac=su25"));
+            m_entries.push_back(std::make_pair(L"SU34", "ac=su34"));
+            m_entries.push_back(std::make_pair(L"TORNADO GR4", "ac=tnd4"));
+        }
+*/
+        /*
+        //no anims
+        m_entries.push_back(std::make_pair(L"YF23", "ac=yf23"));
+        m_entries.push_back(std::make_pair(L"FA44", "ac=fa44"));
+
+        //helicopters are not yet supported
+        m_entries.push_back(std::make_pair(L"AH64", "ac=ah64"));
+        m_entries.push_back(std::make_pair(L"MI24", "ac=mi24"));
+        m_entries.push_back(std::make_pair(L"KA50", "ac=ka50"));
+        m_entries.push_back(std::make_pair(L"MH60", "ac=mh60"));
+
+        //not yet supported
+        m_entries.push_back(std::make_pair(L"A130", "ac=a130")); //b.unknown2 = 1312
+        */
+    }
     else
         printf("unknown screen %s\n", screen.c_str());
 
-    m_prev_screen = screen;
-    m_screen = screen;
+    m_screens.push_back(screen);
 }
 
 //------------------------------------------------------------
 
 void menu::send_event(const std::string &event)
 {
+    auto eq = event.find("=");
+    if (eq != std::string::npos)
+    {
+        auto var = event.substr(0, eq);
+        m_vars[var] = event.substr(eq + 1);
+
+        if (var == "mode")
+            set_screen("map_select");
+        else if (var == "map")
+            set_screen("ac_select");
+        else if (var == "ac")
+            send_event("start"); //ToDo: color and special select
+        return;
+    }
+
     if (m_on_action)
         m_on_action(event);
-
-    //ToDo
 }
 
 //------------------------------------------------------------

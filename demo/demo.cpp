@@ -59,16 +59,24 @@ public:
 
     void terminate()
     {
+        if (!m_window)
+            return;
+
+        glfwDestroyWindow(m_window);
         glfwTerminate();
+        m_window = 0;
     }
 
     bool should_terminate()
     {
-        return glfwWindowShouldClose(m_window);
+        return m_window ? glfwWindowShouldClose(m_window) : true;
     }
 
     void end_frame()
     {
+        if (!m_window)
+            return;
+
         glfwSwapBuffers(m_window);
         m_last_buttons = m_buttons;
         glfwPollEvents();
@@ -90,8 +98,8 @@ public:
     }
 
     bool get_key(int key) { auto k = m_buttons.find(key); return k == m_buttons.end() ? false : k->second; }
-    bool get_mouse_lbtn() { return glfwGetMouseButton(m_window, 0); }
-    bool get_mouse_rbtn() { return glfwGetMouseButton(m_window, 1); }
+    bool get_mouse_lbtn() { return m_window ? glfwGetMouseButton(m_window, 0) : false; }
+    bool get_mouse_rbtn() { return m_window ? glfwGetMouseButton(m_window, 1) : false; }
     int get_mouse_x() { return m_mouse_x; }
     int get_mouse_y() { return m_mouse_y; }
     int get_width() { return m_screen_w; }
@@ -208,7 +216,7 @@ int main(void)
     game::free_flight game_mode_ff(world);
     game::deathmatch game_mode_dm(world);
     game::team_deathmatch game_mode_tdm(world);
-    game::game_mode *active_game_mode = &game_mode_ff;
+    game::game_mode *active_game_mode = 0;
     game::plane_controls controls;
 
     gui::menu menu;
@@ -222,69 +230,50 @@ int main(void)
     scene.draw();
     platform.end_frame();
 
-    const char *locations[] = {
-        "ms06", //dubai
-        "ms01", //miami
-        "ms30", //paris
-        "ms50", //tokyo
-        //"ms11b", //moscow
-        //"ms14" //washington
-    };
-
-    const char *planes[] = {
-        "su33",
-        "f22a",
-        "su24",
-        "f18f",
-        "m29a",
-        "f02a",
-        "su25",
-        "b01b",
-        "f16c",
-        "su37",
-        "kwmr",
-        "su34",
-        "pkfa", //bay anim offset
-        "av8b",
-        "f35b",
-        "f15m",
-        "f15c",
-        "f15e",
-        "j39c",
-        "mr2k",
-        "rflm",
-        "su47",
-        "tnd4",
-        "typn",
-        "f04e", //some anims fail
-        "su35",
-        "b02a", //bay anim offset
-        "f14d",
-        "m21b", //no cockpit
-        "f16f",
-        "a10a",
-        "f17a",
-        //no anims
-        //"yf23",
-        //"fa44",
-        //helicopters are not yet supported
-        //"ah64",
-        //"mi24",
-        //"ka50",
-        //"mh60",
-        //not yet supported
-        //"a130", //b.unknown2 = 1312
-    };
-
-    unsigned int current_location = 0;
-    unsigned int current_plane = 0;
-    unsigned int current_color = 0;
-
     menu.init();
-    if (active_game_mode == &game_mode_ff)
-        game_mode_ff.start(planes[current_plane], current_color, locations[current_location]);
-    else if (active_game_mode == &game_mode_tdm)
-        game_mode_tdm.start(planes[current_plane], current_color, 0, locations[current_location], 8);
+
+    gui::menu::on_action on_menu_action = [&menu, &scene, &platform,
+                                           &active_game_mode,
+                                           &game_mode_dm,
+                                           &game_mode_tdm,
+                                           &game_mode_ff](const std::string &event) mutable
+    {
+        if (event == "start")
+        {
+            const int current_color = 0;
+            auto plane = menu.get_var("ac");
+            auto location = menu.get_var("map");
+
+            scene.loading(true);
+            nya_render::clear(true, true);
+            scene.draw();
+            platform.end_frame();
+            scene.loading(false);
+
+            auto mode = menu.get_var("mode");
+            if (mode == "dm")
+            {
+                active_game_mode = &game_mode_dm;
+                game_mode_dm.start(plane.c_str(), current_color, 0, location.c_str(), 6);
+            }
+            else if (mode == "tdm")
+            {
+                active_game_mode = &game_mode_tdm;
+                game_mode_tdm.start(plane.c_str(), current_color, 0, location.c_str(), 8);
+            }
+            else if (mode == "ff")
+            {
+                active_game_mode = &game_mode_ff;
+                game_mode_ff.start(plane.c_str(), current_color, location.c_str());
+            }
+        }
+        else if (event == "exit")
+            platform.terminate();
+        else
+            printf("event: %s\n", event.c_str());
+    };
+
+    menu.set_callback(on_menu_action);
 
     unsigned long app_time = nya_system::get_time();
     while (!platform.should_terminate())
@@ -304,16 +293,16 @@ int main(void)
             scene.resize(screen_width, screen_height);
         }
 
+        if (!active_game_mode)
+            menu.update(dt, menu_controls);
+
         if (active_game_mode)
         {
             active_game_mode->update(paused ? 0 : (speed10x ? dt * 10 : dt), controls);
             scene.draw();
         }
         else
-        {
-            menu.update(dt, menu_controls);
             menu.draw(scene.ui_render);
-        }
 
         const char *ui_ref = 0;
         //ui_ref = "ui_ref2.tga";
@@ -417,73 +406,6 @@ int main(void)
             debug_variable::set(debug_variable::get() - 1);
         if (platform.was_pressed(GLFW_KEY_PERIOD))
             debug_variable::set(debug_variable::get() + 1);
-
-        //demo purpose
-
-        if (active_game_mode != &game_mode_ff)
-            continue;
-
-        const unsigned int locations_count = sizeof(locations) / sizeof(locations[0]);
-
-        if (platform.was_pressed(GLFW_KEY_1))
-        {
-            scene.loading(true);
-            scene.draw();
-            platform.end_frame();
-
-            game_mode_ff.set_location(locations[current_location = (current_location + 1) % locations_count]);
-            scene.loading(false);
-        }
-
-        if (platform.was_pressed(GLFW_KEY_2))
-        {
-            scene.loading(true);
-            scene.draw();
-            platform.end_frame();
-
-            game_mode_ff.set_location(locations[current_location = (current_location + locations_count - 1) % locations_count]);
-            scene.loading(false);
-        }
-
-        const unsigned int planes_count = sizeof(planes) / sizeof(planes[0]);
-
-        if (platform.was_pressed(GLFW_KEY_3))
-        {
-            scene.loading(true);
-            scene.draw();
-            platform.end_frame();
-
-            current_color = 0;
-            current_plane = (current_plane + 1) % planes_count;
-            game_mode_ff.set_plane(planes[current_plane], current_color);
-            scene.loading(false);
-        }
-
-        if (platform.was_pressed(GLFW_KEY_4))
-        {
-            scene.loading(true);
-            scene.draw();
-            platform.end_frame();
-
-            current_color = 0;
-            current_plane = (current_plane + planes_count - 1) % planes_count;
-            game_mode_ff.set_plane(planes[current_plane], current_color);
-            scene.loading(false);
-        }
-
-        if (platform.was_pressed(GLFW_KEY_6))
-        {
-            auto colors_count = renderer::aircraft::get_colors_count(planes[current_plane]);
-            current_color = (current_color + 1) % colors_count;
-            game_mode_ff.set_plane(planes[current_plane], current_color);
-        }
-
-        if (platform.was_pressed(GLFW_KEY_5))
-        {
-            auto colors_count = renderer::aircraft::get_colors_count(planes[current_plane]);
-            current_color = (current_color + colors_count - 1) % colors_count;
-            game_mode_ff.set_plane(planes[current_plane], current_color);
-        }
     }
 
     platform.terminate();
