@@ -394,8 +394,11 @@ int main(void)
         if (platform.was_pressed(GLFW_KEY_ESCAPE)) menu_controls.prev = true;
         if (platform.was_pressed(GLFW_KEY_ENTER)) menu_controls.next = true;
 
-        if (platform.was_pressed(GLFW_KEY_P) || platform.was_pressed(GLFW_KEY_ESCAPE))
-            scene.pause(paused = !paused);
+        if (active_game_mode)
+        {
+            if (platform.was_pressed(GLFW_KEY_P) || platform.was_pressed(GLFW_KEY_ESCAPE))
+                scene.pause(paused = !paused);
+        }
 
         speed10x = platform.get_key(GLFW_KEY_RIGHT_SHIFT);
 
