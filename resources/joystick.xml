@@ -53,7 +53,7 @@
         <axis3 control="throttle" os="linux" invert="true" dead="0.01"/>
         <btn0 control="mgun"/>
         <btn1 control="missile"/>
-        <btn2 control="brake"/>
+        <btn2 control="missile"/>
         <btn4 control="change_target"/>
         <btn5 control="change_weapon"/>
         <btn6 control="brake"/>
