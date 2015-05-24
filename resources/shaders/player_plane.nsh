@@ -4,6 +4,7 @@
 @sampler spec_map "specular"
 @sampler env_map "reflection"
 @sampler ibl_map "ibl"
+@sampler params_map "params"
 
 @predefined camera_pos "nya camera position":local
 @predefined model_rot "nya model rot"
@@ -12,9 +13,6 @@
 @predefined bones_rot_map "nya bones rot texture"
 
 @uniform light_dir "light dir":local_rot
-@uniform specular_param "specular param"=0.675,1.035,0.0,0.225
-@uniform ibl_param "ibl param"=1,1,0,0
-@uniform rim_light_mtr "rim light mtr"=0.9,2.0,0.345,0.0
 
 @all
 
@@ -25,10 +23,15 @@ varying vec3 bitangent;
 varying vec3 pos;
 varying vec3 normal_tr;
 
+varying vec4 specular_param; //0.675,1.035,0.0,0.225
+varying vec4 ibl_param; //1,1,0,0
+varying vec4 rim_light_mtr; //0.9,2.0,0.345,0.0
+
 @vertex
 
 uniform sampler2D bones_pos_map;
 uniform sampler2D bones_rot_map;
+uniform sampler2D params_map;
 
 uniform vec4 model_rot;
 
@@ -42,6 +45,12 @@ void main()
     normal = gl_Normal.xyz;
     tangent = gl_MultiTexCoord1.xyz;
     bitangent = gl_MultiTexCoord2.xyz;
+
+    float ptc = gl_MultiTexCoord3.x;
+
+    specular_param = texture2D(params_map,vec2(ptc, (0.5 + 0.0) / 3.0));
+    ibl_param = texture2D(params_map,vec2(ptc, (0.5 + 1.0) / 3.0));
+    rim_light_mtr = texture2D(params_map,vec2(ptc, (0.5 + 2.0) / 3.0));
 
     if (gl_MultiTexCoord0.z > -0.5)
     {
@@ -69,10 +78,6 @@ uniform samplerCube ibl_map;
 
 uniform vec4 camera_pos;
 uniform vec4 light_dir;
-
-uniform vec4 specular_param;
-uniform vec4 ibl_param;
-uniform vec4 rim_light_mtr;
 
 void main()
 {

@@ -192,7 +192,6 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
         //printf("MATE %d %d\n", header.groups_count, header.render_groups_count); continue;
 
         assert(!lods.empty());
-        assert(lods[lod_idx].mesh.get_groups_count() == header.render_groups_count);
 
         material.resize(header.mat_count);
         r.seek(header.offset_to_mat_offsets);
@@ -281,6 +280,14 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
 
         int idx = 0;
         r.seek(header.offset_to_groups);
+
+        auto &params_tex = lods[lod_idx].params_tex;
+        assert(params_tex.is_valid());
+        assert(params_tex->get_width() == header.render_groups_count);
+        std::vector<nya_math::vec4> params_buf(params_tex->get_width() * params_tex->get_height());
+        assert(params_tex->get_height() == 3); //ToDo: change if add per material param ;
+
+        unsigned int rg_idx = 0;
         for (uint16_t j = 0; j < header.groups_count; ++j)
         {
             struct bind
@@ -294,11 +301,10 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
             assert(b.render_groups_count + b.render_groups_offset <= render_groups.size());
             assume(b.zero == 0);
 
-            for (int k = 0; k < b.render_groups_count; ++k)
+            for (int k = 0; k < b.render_groups_count; ++k, ++rg_idx)
             {
                 auto &m = lods[lod_idx].mesh.modify_material(idx++);
                 m.get_default_pass().set_shader(nya_scene::shader(shader));
-                m.set_param(m.get_param_idx("light dir"), light_dir.x, light_dir.y, light_dir.z, 0.0f);
 
                 auto r = render_groups[b.render_groups_offset + k];
 
@@ -313,14 +319,16 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
                         continue;
 
                     if (p.first == "NU_ACE_vSpecularParam")
-                        m.set_param(m.get_param_idx("specular param"), p.second);
+                        params_buf[rg_idx] = p.second;
                     else if(p.first == "NU_ACE_vIBLParam")
-                        m.set_param(m.get_param_idx("ibl param"), p.second);
+                        params_buf[rg_idx + header.render_groups_count] = p.second;
                     else if(p.first == "NU_ACE_vRimLightMtr")
-                        m.set_param(m.get_param_idx("rim light mtr"), p.second);
+                        params_buf[rg_idx + header.render_groups_count * 2] = p.second;
                 }
             }
         }
+
+        params_tex->build(&params_buf[0], params_tex->get_width(), params_tex->get_height(), nya_render::texture::color_rgba32f);
 
         ++mat_idx;
     }
@@ -970,6 +978,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
         ushort normal[4]; //half float
         ushort tangent[4];
         ushort bitangent[4];
+        float param_tc;
     };
 
     std::vector<vert> verts;
@@ -977,12 +986,24 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
     //for(auto g:groups) printf("%s\n", g.name.c_str()); printf("\n");
 
+    unsigned int total_rgf_count = 0;
+    for (auto &gf: groups)
+        total_rgf_count += (unsigned int)gf.render_groups.size();
+
+    const int params_per_group = 3;
+    std::vector<float> params_buf(total_rgf_count * params_per_group * 4, 0.0f);
+    assert(!params_buf.empty());
+    l.params_tex.create();
+    l.params_tex->build(&params_buf, total_rgf_count, params_per_group, nya_render::texture::color_rgba32f);
+    mat.set_texture("params", l.params_tex);
+
+    unsigned int total_rgf_idx = 0;
     uint add_vertex_offset = 0; //ToDo
     for (int i = 0; i < header.groups_count; ++i)
     {
         group &gf = groups[i];
 
-        for (int j = 0; j < gf.render_groups.size(); ++j)
+        for (int j = 0; j < gf.render_groups.size(); ++j, ++total_rgf_idx)
         {
             render_group &rgf = gf.render_groups[j];
 
@@ -1028,10 +1049,14 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             const size_t first_index = verts.size();
             verts.resize(first_index+rgf.header.vcount);
 
-            float bone_fidx = (mesh.skeleton.get_bones_count() <= 0 || gf.header.bone_idx < 0) ? -1.0:
-                              float(gf.header.bone_idx + 0.5f) / mesh.skeleton.get_bones_count();
+            const float ptc = (total_rgf_idx + 0.5f) / total_rgf_count;
+            const float bone_fidx = (mesh.skeleton.get_bones_count() <= 0 || gf.header.bone_idx < 0) ? -1.0:
+                                     float(gf.header.bone_idx + 0.5f) / mesh.skeleton.get_bones_count();
             for (int i = 0; i < rgf.header.vcount; ++i)
+            {
                 verts[i + first_index].bone = bone_fidx;
+                verts[i + first_index].param_tc = ptc;
+            }
 
             switch(rgf.header.vertex_format)
             {
@@ -1166,6 +1191,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     mesh.vbo.set_normals(sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].bone), nya_render::vbo::float16);
     mesh.vbo.set_tc(1, sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].bone) + sizeof(verts[0].normal), 3, nya_render::vbo::float16);
     mesh.vbo.set_tc(2, sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].bone) + sizeof(verts[0].normal) * 2, 3, nya_render::vbo::float16);
+    mesh.vbo.set_tc(3, sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].bone) + sizeof(verts[0].normal) * 3, 1, nya_render::vbo::float32);
 
     mesh.vbo.set_vertex_data(&verts[0], sizeof(verts[0]), uint(verts.size()));
 

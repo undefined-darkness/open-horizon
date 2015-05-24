@@ -64,6 +64,8 @@ protected:
         nya_scene::mesh mesh;
         std::vector<group> groups;
 
+        nya_scene::texture_proxy params_tex;
+
         struct anim
         {
             float duration;
