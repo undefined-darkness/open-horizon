@@ -12,6 +12,7 @@ void free_flight::start(const char *plane, int color, const char *location)
 {
     set_plane(plane, color);
     set_location(location);
+    m_respawn_time = 0;
 }
 
 //------------------------------------------------------------

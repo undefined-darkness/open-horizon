@@ -1254,18 +1254,18 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                 if (!same)
                     continue;
 
-                auto ioff = (unsigned int)regroup_indices.size();
+                auto ioff1 = (unsigned int)regroup_indices.size();
 
                 if(!regroup_indices.empty())
                     regroup_indices.push_back(regroup_indices.back());
                 regroup_indices.push_back(indices[mesh.groups[k].offset]);
-                if ( (regroup_indices.size() - mesh.groups[j].offset) % 2 )
+                if ( (ioff1 - g.offset) % 2 )
                     regroup_indices.push_back(regroup_indices.back());
 
                 auto ioff2 = (unsigned int)regroup_indices.size();
                 regroup_indices.resize(ioff2 + mesh.groups[k].count);
                 memcpy(&regroup_indices[ioff2], &indices[mesh.groups[k].offset], mesh.groups[k].count * 2);
-                g.count += (unsigned int)regroup_indices.size() - ioff;
+                g.count += (unsigned int)regroup_indices.size() - ioff1;
 
                 used_groups[k] = true;
             }
