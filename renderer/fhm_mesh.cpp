@@ -1221,28 +1221,63 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             if (tmp_groups[j].night) //ToDo: day/night
                 continue;
 
-            nya_scene::shared_mesh::group g;
+            used_groups[j] = true;
 
+            nya_scene::shared_mesh::group g;
             g.offset = (unsigned int)regroup_indices.size();
             regroup_indices.resize(g.offset + mesh.groups[j].count);
             memcpy(&regroup_indices[g.offset], &indices[mesh.groups[j].offset], mesh.groups[j].count * 2);
-            used_groups[j] = true;
             g.count = mesh.groups[j].count;
-            g.elem_type = nya_render::vbo::triangle_strip;
-            g.material_idx = (unsigned int)regroup_materials.size();
-            regroup_materials.push_back(mesh.materials[mesh.groups[j].material_idx]);
-/*
+
+            if (i == 0) //ToDo
             for (unsigned int k = 0; k < total_rgf_count; ++k)
             {
                 if (used_groups[k] || tmp_groups[k].order != i)
                     continue;
+
+                if (tmp_groups[k].night) //ToDo: day/night
+                    continue;
+
+                if (tmp_groups[j].rgf.tex_infos.size() != tmp_groups[k].rgf.tex_infos.size())
+                    continue;
+
+                bool same = true;
+                for (size_t l = 0; l < tmp_groups[j].rgf.tex_infos.size(); ++l)
+                {
+                    if (tmp_groups[j].rgf.tex_infos[l].texture_hash_id == tmp_groups[k].rgf.tex_infos[l].texture_hash_id)
+                        continue;
+
+                    same = false;
+                    break;
+                }
+
+                if (!same)
+                    continue;
+
+                auto ioff = (unsigned int)regroup_indices.size();
+
+                if(!regroup_indices.empty())
+                    regroup_indices.push_back(regroup_indices.back());
+                regroup_indices.push_back(indices[mesh.groups[k].offset]);
+                if ( (regroup_indices.size() - mesh.groups[j].offset) % 2 )
+                    regroup_indices.push_back(regroup_indices.back());
+
+                auto ioff2 = (unsigned int)regroup_indices.size();
+                regroup_indices.resize(ioff2 + mesh.groups[k].count);
+                memcpy(&regroup_indices[ioff2], &indices[mesh.groups[k].offset], mesh.groups[k].count * 2);
+                g.count += (unsigned int)regroup_indices.size() - ioff;
+
+                used_groups[k] = true;
             }
-*/
+
+            g.elem_type = nya_render::vbo::triangle_strip;
+            g.material_idx = (unsigned int)regroup_materials.size();
+            regroup_materials.push_back(mesh.materials[mesh.groups[j].material_idx]);
             regroup_groups.push_back(g);
         }
     }
 
-    //ToDo: magic
+    //printf("groups before %ld after %ld\n", mesh.groups.size(), regroup_groups.size());
 
     indices = regroup_indices;
     mesh.groups = regroup_groups;
