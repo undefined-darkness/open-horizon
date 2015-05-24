@@ -65,6 +65,31 @@ protected:
         std::vector<group> groups;
 
         nya_scene::texture_proxy params_tex;
+        std::vector<nya_math::vec4> params_buf;
+
+        enum param_type
+        {
+            specular_param,
+            ibl_param,
+            rim_light_mtr,
+            alpha_clip,
+            diff_k,
+            params_count
+        };
+
+        void set_param(param_type t, int idx, const nya_math::vec4 &p)
+        {
+            assert(params_tex.is_valid());
+            size_t pidx = params_tex->get_width() * t + idx;
+            assert(pidx < params_buf.size());
+            params_buf[pidx] = p;
+        }
+
+        void update_params_tex()
+        {
+            assert(params_tex.is_valid() && !params_buf.empty());
+            params_tex->build(&params_buf[0], params_tex->get_width(), params_tex->get_height(), params_tex->get_format());
+        }
 
         struct anim
         {

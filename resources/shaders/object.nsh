@@ -1,7 +1,7 @@
 @sampler base_map "diffuse"
+@sampler params_map "params"
+
 @uniform light_dir "light dir":local_rot
-@uniform alpha_clip "alpha clip"=-1.0
-@uniform diff_k "diff k"=0.6,0.4
 
 @predefined bones_pos_map "nya bones pos texture"
 @predefined bones_rot_map "nya bones rot texture"
@@ -10,11 +10,14 @@
 
 varying vec2 tc;
 varying vec3 normal;
+varying vec4 alpha_clip; //-1.0
+varying vec4 diff_k; //0.6,0.4
 
 @vertex
 
 uniform sampler2D bones_pos_map;
 uniform sampler2D bones_rot_map;
+uniform sampler2D params_map;
 
 vec3 tr(vec3 v, vec4 q) { return v + cross(q.xyz, cross(q.xyz, v) + v * q.w) * 2.0; }
 
@@ -22,6 +25,10 @@ void main()
 {
 	vec3 pos = gl_Vertex.xyz;
     normal = gl_Normal.xyz;
+
+    float ptc = gl_MultiTexCoord3.x;
+    alpha_clip = texture2D(params_map,vec2(ptc, (0.5 + 3.0) / 5.0));
+    diff_k = texture2D(params_map,vec2(ptc, (0.5 + 4.0) / 5.0));
 
     if (gl_MultiTexCoord0.z > -0.5)
     {
@@ -40,8 +47,6 @@ void main()
 
 uniform sampler2D base_map;
 uniform vec4 light_dir;
-uniform vec4 alpha_clip;
-uniform vec4 diff_k;
 
 void main()
 {

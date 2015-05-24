@@ -26,6 +26,7 @@ varying vec3 normal_tr;
 varying vec4 specular_param; //0.675,1.035,0.0,0.225
 varying vec4 ibl_param; //1,1,0,0
 varying vec4 rim_light_mtr; //0.9,2.0,0.345,0.0
+varying vec4 alpha_clip;
 
 @vertex
 
@@ -47,10 +48,10 @@ void main()
     bitangent = gl_MultiTexCoord2.xyz;
 
     float ptc = gl_MultiTexCoord3.x;
-
-    specular_param = texture2D(params_map,vec2(ptc, (0.5 + 0.0) / 3.0));
-    ibl_param = texture2D(params_map,vec2(ptc, (0.5 + 1.0) / 3.0));
-    rim_light_mtr = texture2D(params_map,vec2(ptc, (0.5 + 2.0) / 3.0));
+    specular_param = texture2D(params_map,vec2(ptc, (0.5 + 0.0) / 5.0));
+    ibl_param = texture2D(params_map,vec2(ptc, (0.5 + 1.0) / 5.0));
+    rim_light_mtr = texture2D(params_map,vec2(ptc, (0.5 + 2.0) / 5.0));
+    alpha_clip = texture2D(params_map,vec2(ptc, (0.5 + 3.0) / 5.0));
 
     if (gl_MultiTexCoord0.z > -0.5)
     {
@@ -81,10 +82,12 @@ uniform vec4 light_dir;
 
 void main()
 {
+    vec4 base=texture2D(base_map, tc);
+    if(base.a < alpha_clip.x) discard;
+
     float shadow = 0.0; //ToDo
 
     vec4 amb=texture2D(amb_map, tc);
-    vec4 base=texture2D(base_map, tc);
     vec4 spec_mask=texture2D(spec_map, tc);
 
 	vec3 v=normalize(camera_pos.xyz-pos);

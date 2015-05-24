@@ -281,11 +281,10 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
         int idx = 0;
         r.seek(header.offset_to_groups);
 
-        auto &params_tex = lods[lod_idx].params_tex;
-        assert(params_tex.is_valid());
-        assert(params_tex->get_width() == header.render_groups_count);
-        std::vector<nya_math::vec4> params_buf(params_tex->get_width() * params_tex->get_height());
-        assert(params_tex->get_height() == 3); //ToDo: change if add per material param ;
+        auto &l = lods[lod_idx];
+
+        assert(l.params_tex.is_valid());
+        assert(l.params_tex->get_width() == header.render_groups_count);
 
         unsigned int rg_idx = 0;
         for (uint16_t j = 0; j < header.groups_count; ++j)
@@ -303,7 +302,7 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
 
             for (int k = 0; k < b.render_groups_count; ++k, ++rg_idx)
             {
-                auto &m = lods[lod_idx].mesh.modify_material(idx++);
+                auto &m = l.mesh.modify_material(idx++);
                 m.get_default_pass().set_shader(nya_scene::shader(shader));
 
                 auto r = render_groups[b.render_groups_offset + k];
@@ -319,17 +318,16 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
                         continue;
 
                     if (p.first == "NU_ACE_vSpecularParam")
-                        params_buf[rg_idx] = p.second;
+                        l.set_param(lod::specular_param, rg_idx, p.second);
                     else if(p.first == "NU_ACE_vIBLParam")
-                        params_buf[rg_idx + header.render_groups_count] = p.second;
+                        l.set_param(lod::ibl_param, rg_idx, p.second);
                     else if(p.first == "NU_ACE_vRimLightMtr")
-                        params_buf[rg_idx + header.render_groups_count * 2] = p.second;
+                        l.set_param(lod::rim_light_mtr, rg_idx, p.second);
                 }
             }
         }
 
-        params_tex->build(&params_buf[0], params_tex->get_width(), params_tex->get_height(), nya_render::texture::color_rgba32f);
-
+        l.update_params_tex();
         ++mat_idx;
     }
 
@@ -990,11 +988,9 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     for (auto &gf: groups)
         total_rgf_count += (unsigned int)gf.render_groups.size();
 
-    const int params_per_group = 3;
-    std::vector<float> params_buf(total_rgf_count * params_per_group * 4, 0.0f);
-    assert(!params_buf.empty());
+    l.params_buf.resize(total_rgf_count * lod::params_count);
     l.params_tex.create();
-    l.params_tex->build(&params_buf, total_rgf_count, params_per_group, nya_render::texture::color_rgba32f);
+    l.params_tex->build(&l.params_buf[0], total_rgf_count, lod::params_count, nya_render::texture::color_rgba32f);
     mat.set_texture("params", l.params_tex);
 
     unsigned int total_rgf_idx = 0;
@@ -1029,14 +1025,18 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             l.groups.back().night = gf.name.find("nigt_") != std::string::npos;
 
             if (gf.name.find("_SHR") == std::string::npos && gf.name.find("_shl") == std::string::npos && gf.name.find("_l") == std::string::npos)
-                mesh.materials.back().set_param(mesh.materials.back().get_param_idx("diff k"), 1.0, 0.0, 0.0, 0.0);
+                l.set_param(lod::diff_k, total_rgf_idx, nya_math::vec4(1.0, 0.0, 0.0, 0.0));
+            else
+                l.set_param(lod::diff_k, total_rgf_idx, nya_math::vec4(0.6, 0.4, 0.0, 0.0));
 
             const bool as_opaque = gf.name.find("_AS_OPAQUE") != std::string::npos;
             if (as_opaque || l.groups.back().day || l.groups.back().night)
                 l.groups.back().opaque = true;
 
             if (gf.name.find("alpha") != std::string::npos)
-                mesh.materials.back().set_param(mesh.materials.back().get_param_idx("alpha clip"), 8/255.0, 0.0, 0.0, 0.0);
+                l.set_param(lod::alpha_clip, total_rgf_idx, nya_math::vec4(8/255.0, 0.0, 0.0, 0.0));
+            else
+                l.set_param(lod::alpha_clip, total_rgf_idx, nya_math::vec4(-1.0, 0.0, 0.0, 0.0));
 
             if (!l.groups.back().opaque || as_opaque)
                 mesh.materials.back().get_default_pass().get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
@@ -1179,6 +1179,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             g.name = gf.name;
         }
     }
+
+    l.update_params_tex();
 
     //ToDo: regroup groups with the same textures and blend modes, material params and bones via uniforms
 
