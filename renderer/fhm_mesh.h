@@ -80,7 +80,11 @@ protected:
         void update_params_tex()
         {
             assert(params_tex.is_valid() && !params_buf.empty());
+            nya_render::texture::filter f[3];
+            nya_render::texture::get_default_filter(f[0],f[1],f[2]);
+            nya_render::texture::set_default_filter(nya_render::texture::filter_nearest,nya_render::texture::filter_nearest,nya_render::texture::filter_nearest);
             params_tex->build(&params_buf[0], params_tex->get_width(), params_tex->get_height(), params_tex->get_format());
+            nya_render::texture::set_default_filter(f[0],f[1],f[2]);
         }
 
         struct anim

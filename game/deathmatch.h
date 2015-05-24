@@ -16,7 +16,7 @@ class deathmatch: public game_mode
 public:
     virtual void start(const char *plane, int color, int special, const char *location, int players_count);
     virtual void update(int dt, const plane_controls &player_controls) override;
-    virtual void end();
+    virtual void end() override;
 
     deathmatch(world &w): game_mode(w) {}
 

@@ -168,6 +168,7 @@ class game_mode
 {
 public:
     virtual void update(int dt, const plane_controls &player_controls) {}
+    virtual void end() {}
 
     game_mode(world &w): m_world(w) {}
 

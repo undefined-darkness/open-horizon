@@ -41,6 +41,18 @@ missile_ptr world::add_missile(const char *name)
 
 void world::set_location(const char *name)
 {
+    if (!name)
+    {
+        m_location_name.clear();
+        m_location = location();
+        m_clouds = effect_clouds();
+        shared::clear_textures();
+        return;
+    }
+
+    if (m_location_name == name)
+        return;
+
     m_location_name.assign(name);
     m_location = location();
     m_clouds = effect_clouds();
