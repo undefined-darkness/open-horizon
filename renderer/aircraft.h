@@ -24,10 +24,10 @@ public:
     void update(int dt);
     void set_hide(bool value) { m_hide = value; }
 
-    void set_pos(const nya_math::vec3 &pos) { m_pos = pos; m_mesh.set_pos(pos); }
-    void set_rot(const nya_math::quat &rot) { m_rot = rot; m_mesh.set_rot(rot); }
-    const nya_math::vec3 &get_pos() { return m_pos; }
-    nya_math::quat get_rot() { return m_rot; }
+    void set_pos(const nya_math::vec3 &pos) { m_mesh.set_pos(pos); }
+    void set_rot(const nya_math::quat &rot) { m_mesh.set_rot(rot); }
+    const nya_math::vec3 &get_pos() { return m_mesh.get_pos(); }
+    nya_math::quat get_rot() { return m_mesh.get_rot(); }
     nya_math::vec3 get_bone_pos(const char *name);
 
     void set_damage(float value) { m_damage = value; }
@@ -96,8 +96,6 @@ private:
     }
 
     model m_mesh;
-    nya_math::vec3 m_pos;
-    nya_math::quat m_rot;
     bool m_hide;
     params::fvalue m_speed;
     params::fvalue m_damage;

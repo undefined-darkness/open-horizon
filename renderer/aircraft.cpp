@@ -673,7 +673,7 @@ void aircraft::set_special_visible(int idx, bool visible)
 void aircraft::update(int dt)
 {
     //cockpit animations
-    auto pyr = m_rot.get_euler();
+    auto pyr = m_mesh.get_rot().get_euler();
 
     //attitude indicator
     const nya_math::quat atti_x(pyr.x, 0.0, 0.0);
@@ -705,12 +705,14 @@ void aircraft::update(int dt)
     m_mesh.set_relative_anim_time(1, 'ackh', ((seconds / 60 / 60) % 12 / (12.0)));
     m_time += dt;
 
+    auto h = m_mesh.get_pos().y;
+
     //barometric altimeter
-    m_mesh.set_relative_anim_time(1, 'altk', m_pos.y / 10000.0f); //ToDo: adjust max height
-    m_mesh.set_relative_anim_time(1, 'altm', m_pos.y / 10000.0f); //ToDo: adjust max height
+    m_mesh.set_relative_anim_time(1, 'altk', h / 10000.0f); //ToDo: adjust max height
+    m_mesh.set_relative_anim_time(1, 'altm', h / 10000.0f); //ToDo: adjust max height
     //radio altimeter
-    m_mesh.set_relative_anim_time(1, 'altr', m_pos.y / 10000.0f); //ToDo: adjust max height, trace
-    m_mesh.set_relative_anim_time(1, 'alts', m_pos.y / 10000.0f); //ToDo: adjust max height, trace
+    m_mesh.set_relative_anim_time(1, 'altr', h / 10000.0f); //ToDo: adjust max height, trace
+    m_mesh.set_relative_anim_time(1, 'alts', h / 10000.0f); //ToDo: adjust max height, trace
 
     //ToDo
     /*
