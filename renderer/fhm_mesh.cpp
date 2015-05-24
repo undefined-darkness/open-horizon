@@ -993,6 +993,17 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     l.params_tex->build(&l.params_buf[0], total_rgf_count, lod::params_count, nya_render::texture::color_rgba32f);
     mat.set_texture("params", l.params_tex);
 
+    struct tmp_group
+    {
+        bool opaque;
+        bool day, night;
+        bool blend;
+        int order;
+        render_group rgf;
+    };
+
+    std::vector<tmp_group> tmp_groups(total_rgf_count);
+
     unsigned int total_rgf_idx = 0;
     uint add_vertex_offset = 0; //ToDo
     for (int i = 0; i < header.groups_count; ++i)
@@ -1007,7 +1018,6 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                 continue;
 
             mesh.groups.resize(mesh.groups.size() + 1);
-            l.groups.resize(mesh.groups.size());
 
             auto &g = mesh.groups.back();
             g.material_idx = (int)mesh.materials.size();
@@ -1018,11 +1028,12 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
             //ToDo: specular, ambient, etc
 
-            l.groups.back().bone_idx = gf.header.bone_idx;
-            l.groups.back().opaque = gf.name.find("OBJ_O") != std::string::npos; //really?
+            auto &t = tmp_groups[total_rgf_idx];
 
-            l.groups.back().day = gf.name.find("dayt_") != std::string::npos;
-            l.groups.back().night = gf.name.find("nigt_") != std::string::npos;
+            t.opaque = gf.name.find("OBJ_O") != std::string::npos; //really?
+
+            t.day = gf.name.find("dayt_") != std::string::npos;
+            t.night = gf.name.find("nigt_") != std::string::npos;
 
             if (gf.name.find("_SHR") == std::string::npos && gf.name.find("_shl") == std::string::npos && gf.name.find("_l") == std::string::npos)
                 l.set_param(lod::diff_k, total_rgf_idx, nya_math::vec4(1.0, 0.0, 0.0, 0.0));
@@ -1030,16 +1041,22 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                 l.set_param(lod::diff_k, total_rgf_idx, nya_math::vec4(0.6, 0.4, 0.0, 0.0));
 
             const bool as_opaque = gf.name.find("_AS_OPAQUE") != std::string::npos;
-            if (as_opaque || l.groups.back().day || l.groups.back().night)
-                l.groups.back().opaque = true;
+            if (as_opaque || t.day || t.night)
+                t.opaque = true;
 
             if (gf.name.find("alpha") != std::string::npos)
                 l.set_param(lod::alpha_clip, total_rgf_idx, nya_math::vec4(8/255.0, 0.0, 0.0, 0.0));
             else
                 l.set_param(lod::alpha_clip, total_rgf_idx, nya_math::vec4(-1.0, 0.0, 0.0, 0.0));
 
-            if (!l.groups.back().opaque || as_opaque)
+            if (!t.opaque || as_opaque)
+            {
                 mesh.materials.back().get_default_pass().get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
+                t.blend = true;
+            }
+
+            t.order = t.opaque ? (t.blend ? 1 : 0) : 2;
+            t.rgf = rgf;
 
             g.offset = uint(indices.size());
             reader.seek(header.offset_to_indices + 48 + header.indices_buffer_size + rgf.header.vbuf_offset);
@@ -1158,7 +1175,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
             reader.seek(header.offset_to_indices + 48 + rgf.header.ibuf_offset); //rgf.header.icount
             const ushort *ndxr_indices = (ushort *)reader.get_data();
-
+/*
             if (j > 0)
             {
                 if(!indices.empty())
@@ -1167,7 +1184,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                 if ( (indices.size() - g.offset) % 2 )
                     indices.push_back(indices.back());
             }
-
+*/
             const uint ind_offset = uint(indices.size());
             const uint ind_size = rgf.header.icount;
             indices.resize(ind_offset + ind_size);
@@ -1182,12 +1199,55 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
     l.update_params_tex();
 
-    //ToDo: regroup groups with the same textures and blend modes, material params and bones via uniforms
-
     assert(verts.size() < 65535);
 
     if (indices.empty())
         return false;
+
+        //regroup groups with the same textures and blend modes
+#if true
+    std::vector<unsigned short> regroup_indices;
+    std::vector<nya_scene::shared_mesh::group> regroup_groups;
+    std::vector<nya_scene::material> regroup_materials;
+
+    std::vector<bool> used_groups(total_rgf_count, false);
+    for (int i = 0; i < 3; ++i)
+    {
+        for (unsigned int j = 0; j < total_rgf_count; ++j)
+        {
+            if (used_groups[j] || tmp_groups[j].order != i)
+                continue;
+
+            if (tmp_groups[j].night) //ToDo: day/night
+                continue;
+
+            nya_scene::shared_mesh::group g;
+
+            g.offset = (unsigned int)regroup_indices.size();
+            regroup_indices.resize(g.offset + mesh.groups[j].count);
+            memcpy(&regroup_indices[g.offset], &indices[mesh.groups[j].offset], mesh.groups[j].count * 2);
+            used_groups[j] = true;
+            g.count = mesh.groups[j].count;
+            g.elem_type = nya_render::vbo::triangle_strip;
+            g.material_idx = (unsigned int)regroup_materials.size();
+            regroup_materials.push_back(mesh.materials[mesh.groups[j].material_idx]);
+/*
+            for (unsigned int k = 0; k < total_rgf_count; ++k)
+            {
+                if (used_groups[k] || tmp_groups[k].order != i)
+                    continue;
+            }
+*/
+            regroup_groups.push_back(g);
+        }
+    }
+
+    //ToDo: magic
+
+    indices = regroup_indices;
+    mesh.groups = regroup_groups;
+    mesh.materials = regroup_materials;
+#endif
 
     mesh.vbo.set_tc(0, sizeof(verts[0].pos), 3);
     mesh.vbo.set_normals(sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].bone), nya_render::vbo::float16);
@@ -1245,32 +1305,7 @@ void fhm_mesh::draw(int lod_idx)
 
     l.mesh.set_pos(m_pos);
     l.mesh.set_rot(m_rot);
-
-    for(int k = 0; k < 2; ++k)
-    {
-        for (int i = 0; i < l.groups.size(); ++i)
-        {
-            lod::group &g = l.groups[i];
-            if ((k == 0 && !g.opaque) || (k == 1 && g.opaque))
-                continue;
-
-            if (g.night) //ToDo
-                continue;
-/*
-            if (g.bone_idx >= 0)
-            {
-                l.mesh.set_pos(m_pos + m_rot.rotate(l.mesh.get_bone_pos(g.bone_idx, true)));
-                l.mesh.set_rot(m_rot * l.mesh.get_bone_rot(g.bone_idx, true));
-            }
-            else
-            {
-                l.mesh.set_pos(m_pos);
-                l.mesh.set_rot(m_rot);
-            }
-*/
-            l.mesh.draw_group(i);
-        }
-    }
+    l.mesh.draw();
 
 /*
     nya_render::depth_test::disable();

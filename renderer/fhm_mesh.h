@@ -54,15 +54,7 @@ protected:
 
     struct lod
     {
-        struct group
-        {
-            bool opaque;
-            bool day, night;
-            short bone_idx;
-        };
-
         nya_scene::mesh mesh;
-        std::vector<group> groups;
 
         nya_scene::texture_proxy params_tex;
         std::vector<nya_math::vec4> params_buf;
