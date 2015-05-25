@@ -1206,7 +1206,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
         return false;
 
         //regroup groups with the same textures and blend modes
-#if true
+#if 1
     std::vector<unsigned short> regroup_indices;
     std::vector<nya_scene::shared_mesh::group> regroup_groups;
     std::vector<nya_scene::material> regroup_materials;

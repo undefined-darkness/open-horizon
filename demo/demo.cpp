@@ -470,11 +470,7 @@ int main(void)
 
     menu.init();
 
-    gui::menu::on_action on_menu_action = [&menu, &scene, &platform,
-                                           &active_game_mode,
-                                           &game_mode_dm,
-                                           &game_mode_tdm,
-                                           &game_mode_ff](const std::string &event) mutable
+    gui::menu::on_action on_menu_action = [&](const std::string &event)
     {
         if (event == "start")
         {

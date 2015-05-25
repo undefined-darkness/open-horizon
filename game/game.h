@@ -25,8 +25,13 @@ class world;
 
 //------------------------------------------------------------
 
-template <typename t> using ptr = std::shared_ptr<t>;
-template <typename t> using w_ptr = std::weak_ptr<t>;
+#ifdef _MSC_VER
+    #define ptr std::shared_ptr
+    #define w_ptr std::weak_ptr
+#else
+    template <typename t> using ptr = std::shared_ptr<t>;
+    template <typename t> using w_ptr = std::weak_ptr<t>;
+#endif
 
 //------------------------------------------------------------
 

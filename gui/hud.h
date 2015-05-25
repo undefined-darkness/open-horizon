@@ -52,8 +52,8 @@ private:
     struct target
     {
         nya_math::vec3 pos;
-        target_type target;
-        select_type select;
+        target_type t;
+        select_type s;
     };
 
     std::vector<target> m_targets;

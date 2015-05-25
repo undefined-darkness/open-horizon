@@ -97,13 +97,13 @@ void hud::draw(const render &r)
         if (far)
             icon = 121;
 
-        if (t.target == target_air_lock)
+        if (t.t == target_air_lock)
         {
             color = red;
             m_common.draw(r, 100, proj_pos.x, proj_pos.y, red);
         }
 
-        if (t.target == target_air_ally)
+        if (t.t == target_air_ally)
         {
             icon = 106;
             color = blue;
@@ -112,8 +112,8 @@ void hud::draw(const render &r)
         m_common.draw(r, icon, proj_pos.x, proj_pos.y, color);
         m_common.draw(r, icon + 1, proj_pos.x, proj_pos.y, color);
 
-        if (t.select != select_not)
-            m_common.draw(r, t.select == select_current ? 117 : 116, proj_pos.x, proj_pos.y, color);
+        if (t.s != select_not)
+            m_common.draw(r, t.s == select_current ? 117 : 116, proj_pos.x, proj_pos.y, color);
     }
 
     m_common.draw(r, 10, r.get_width()/2 - 150, r.get_height()/2, green);
