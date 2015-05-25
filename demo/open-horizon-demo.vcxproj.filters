@@ -15,121 +15,187 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="open_horizon.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="plane_params.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="shared.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\qdf.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="aircraft.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="fhm_location.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="fhm_mesh.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\deps\pugixml-1.4\src\pugixml.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\fhm.cpp">
+    <ClCompile Include="../containers/dpl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\dpl.cpp">
+    <ClCompile Include="../containers/fhm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="clouds.cpp">
+    <ClCompile Include="../containers/qdf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="location.cpp">
+    <ClCompile Include="demo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="location_params.cpp">
+    <ClCompile Include="../game/game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ui.cpp">
+    <ClCompile Include="../gui/ui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="model.cpp">
+    <ClCompile Include="../phys/physics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="../phys/plane_params.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="../renderer/aircraft.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="../renderer/clouds.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="../renderer/fhm_location.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="../renderer/fhm_mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="../renderer/lens_flare.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="../renderer/location.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="../renderer/location_params.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="../renderer/model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="../renderer/plane_camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="../renderer/scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="../renderer/shared.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="../renderer/world.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\game\ai.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\game\deathmatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\game\free_flight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\game\team_deathmatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gui\hud.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\gui\menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\renderer\missile_trail.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="fhm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plane_params.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="qdf_provider.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shared.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\qdf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="aircraft.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="xml.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="screen_quad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="fhm_location.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="fhm_mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\deps\pugixml-1.4\src\pugiconfig.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\deps\pugixml-1.4\src\pugixml.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\fhm.h">
+    <ClInclude Include="../containers/dpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\dpl.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="../containers/dpl_keys.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\dpl_keys.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="../containers/fhm.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="clouds.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="../containers/qdf.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="debug.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="../game/game.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dpl_provider.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="../gui/ui.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="location.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="../phys/physics.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="location_params.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="../phys/plane_params.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="params.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="../renderer/aircraft.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ui.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="../renderer/clouds.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="model.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="../renderer/fhm_location.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../renderer/fhm_mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../renderer/lens_flare.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../renderer/location.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../renderer/location_params.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../renderer/model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../renderer/plane_camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../renderer/scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../renderer/shared.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../renderer/world.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../util/params.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../util/util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../util/xml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\ai.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\deathmatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\free_flight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\team_deathmatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gui\hud.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\gui\menu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\renderer\missile_trail.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

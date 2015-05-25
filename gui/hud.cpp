@@ -93,8 +93,8 @@ void hud::draw(const render &r)
         int icon = 102;
         auto color = green;
 
-        const bool far = (nya_scene::get_camera().get_pos() - t.pos).length() > 10000.0;
-        if (far)
+        const bool is_far = (nya_scene::get_camera().get_pos() - t.pos).length() > 10000.0;
+        if (is_far)
             icon = 121;
 
         if (t.t == target_air_lock)

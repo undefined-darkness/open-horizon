@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,13 +19,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110_xp</PlatformToolset>
+    <PlatformToolset>v120_xp</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v110_xp</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -61,7 +61,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>../deps/nya-engine/bin/win_vs2012_debug/nya_engine.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2013_debug/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(SolutionDir)../resources" "$(TargetDir)*" /e
@@ -84,7 +84,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>../deps/nya-engine/bin/win_vs2012_release/nya_engine.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2013_release/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(SolutionDir)../resources" "$(TargetDir)*" /e
@@ -96,6 +96,13 @@
     <ClCompile Include="../containers/dpl.cpp" />
     <ClCompile Include="../containers/fhm.cpp" />
     <ClCompile Include="../containers/qdf.cpp" />
+    <ClCompile Include="..\game\ai.cpp" />
+    <ClCompile Include="..\game\deathmatch.cpp" />
+    <ClCompile Include="..\game\free_flight.cpp" />
+    <ClCompile Include="..\game\team_deathmatch.cpp" />
+    <ClCompile Include="..\gui\hud.cpp" />
+    <ClCompile Include="..\gui\menu.cpp" />
+    <ClCompile Include="..\renderer\missile_trail.cpp" />
     <ClCompile Include="demo.cpp" />
     <ClCompile Include="../game/game.cpp" />
     <ClCompile Include="../gui/ui.cpp" />
@@ -140,6 +147,13 @@
     <ClInclude Include="../util/params.h" />
     <ClInclude Include="../util/util.h" />
     <ClInclude Include="../util/xml.h" />
+    <ClInclude Include="..\game\ai.h" />
+    <ClInclude Include="..\game\deathmatch.h" />
+    <ClInclude Include="..\game\free_flight.h" />
+    <ClInclude Include="..\game\team_deathmatch.h" />
+    <ClInclude Include="..\gui\hud.h" />
+    <ClInclude Include="..\gui\menu.h" />
+    <ClInclude Include="..\renderer\missile_trail.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
