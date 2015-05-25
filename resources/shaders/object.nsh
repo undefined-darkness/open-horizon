@@ -3,8 +3,8 @@
 
 @uniform light_dir "light dir":local_rot
 
-@predefined bones_pos_map "nya bones pos texture"
-@predefined bones_rot_map "nya bones rot texture"
+@predefined bones_pos_map "nya bones pos texture"=1024
+@predefined bones_rot_map "nya bones rot texture"=1024
 
 @all
 
