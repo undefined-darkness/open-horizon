@@ -167,7 +167,7 @@ void menu::set_screen(const std::string &screen)
         if (get_var("mode") == "ff")
         {
             m_entries.push_back(std::make_pair(L"A10A", "ac=a10a"));
-            m_entries.push_back(std::make_pair(L"AV8B", "ac=ab8b"));
+            m_entries.push_back(std::make_pair(L"AV8B", "ac=av8b"));
             m_entries.push_back(std::make_pair(L"ASF X", "ac=kwmr"));
             m_entries.push_back(std::make_pair(L"B01B", "ac=b01b"));
             m_entries.push_back(std::make_pair(L"B02A", "ac=b02a"));

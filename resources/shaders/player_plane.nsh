@@ -9,8 +9,8 @@
 @predefined camera_pos "nya camera position":local
 @predefined model_rot "nya model rot"
 
-@predefined bones_pos_map "nya bones pos texture"=1024
-@predefined bones_rot_map "nya bones rot texture"=1024
+@predefined bones_pos "nya bones pos"
+@predefined bones_rot "nya bones rot"
 
 @uniform light_dir "light dir":local_rot
 
@@ -30,8 +30,11 @@ varying vec4 alpha_clip;
 
 @vertex
 
-uniform sampler2D bones_pos_map;
-uniform sampler2D bones_rot_map;
+uniform vec3 bones_pos[250];
+uniform vec4 bones_rot[250];
+
+//uniform sampler2D bones_pos_map;
+//uniform sampler2D bones_rot_map;
 uniform sampler2D params_map;
 
 uniform vec4 model_rot;
@@ -40,7 +43,7 @@ vec3 tr(vec3 v, vec4 q) { return v + cross(q.xyz, cross(q.xyz, v) + v * q.w) * 2
 
 void main()
 {
-    vec2 btc=vec2(gl_MultiTexCoord0.z,0.0);
+    //vec2 btc=vec2(gl_MultiTexCoord0.z,0.0);
 
     pos = gl_Vertex.xyz;
     normal = gl_Normal.xyz;
@@ -55,8 +58,13 @@ void main()
 
     if (gl_MultiTexCoord0.z > -0.5)
     {
-        vec4 q=texture2D(bones_rot_map,btc);
-	    pos = texture2D(bones_pos_map,btc).xyz + tr(pos, q);
+        int bidx = int(gl_MultiTexCoord0.z);
+
+        //vec4 q = texture2D(bones_rot_map, btc);
+	    //pos = texture2D(bones_pos_map,btc).xyz + tr(pos, q);
+        vec4 q = bones_rot[bidx];
+	    pos = bones_pos[bidx] + tr(pos, q);
+
         normal = tr(normal, q);
         tangent = tr(tangent, q);
         bitangent = tr(bitangent, q);
