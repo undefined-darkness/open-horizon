@@ -19,6 +19,9 @@
 #include "render/render.h"
 #include "system/system.h"
 
+#include <thread>
+#include <chrono>
+
 #include <math.h>
 #include <vector>
 #include <stdio.h>
@@ -44,6 +47,16 @@ public:
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         }
 
+		glfwSwapInterval(1);
+/*
+#ifdef _WIN32
+        typedef BOOL (WINAPI *PFNWGLSWAPINTERVALEXTPROC)(int interval);
+        PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = NULL;
+        wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
+        if(wglSwapIntervalEXT)
+            wglSwapIntervalEXT(1);
+#endif
+*/
         m_window = glfwCreateWindow(width, height, title, NULL, NULL);
         if (!m_window)
         {
@@ -622,6 +635,13 @@ int main(void)
             debug_variable::set(debug_variable::get() - 1);
         if (platform.was_pressed(GLFW_KEY_PERIOD))
             debug_variable::set(debug_variable::get() + 1);
+
+        if (!active_game_mode) //force limit 60 fps in menu
+        {
+            int sleep_time = 1000/60 - int(nya_system::get_time() - time);
+            if (sleep_time > 0)
+                std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
+        }
     }
 
     platform.terminate();
