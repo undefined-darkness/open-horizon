@@ -144,9 +144,9 @@ void menu::set_screen(const std::string &screen)
         m_entries.push_back(std::make_pair(L"MIAMI", "map=ms01"));
         m_entries.push_back(std::make_pair(L"DUBAI", "map=ms06"));
         m_entries.push_back(std::make_pair(L"MOSCOW", "map=ms11b"));
-        //m_entries.push_back(std::make_pair(L"WASHINGTON", "map=ms14"));
         m_entries.push_back(std::make_pair(L"PARIS", "map=ms30"));
         m_entries.push_back(std::make_pair(L"TOKYO", "map=ms50"));
+        m_entries.push_back(std::make_pair(L"HONOLULU", "map=ms51"));
     }
     else if (screen == "ac_select")
     {

@@ -51,9 +51,11 @@ public:
 
 struct fhm_location_load_data
 {
-    std::vector<unsigned char> tex_indices_data;
+    unsigned char height_patches[location_size * location_size];
+    std::vector<float> heights;
 
     unsigned char patches[location_size * location_size];
+    std::vector<unsigned char> tex_indices_data;
 
     std::vector<unsigned int> textures;
 };
@@ -70,7 +72,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     class vbo_data
     {
     public:
-        void add_patch(float x, float y, int tc_idx)
+        void add_patch(float x, float y, int tc_idx, float h0, float h1, float h2, float h3)
         {
             int ty = tc_idx / 7;
             int tx = tc_idx - ty * 7;
@@ -89,21 +91,24 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             tc.w /= m_tex_height;
 
             vert v;
-            v.pos.y=-0.2f;
+            //const float hoff=-0.2f;
 
             v.pos.x = x;
+            v.pos.y = h0;
             v.pos.z = y;
             v.tc.x = tc.x;
             v.tc.y = tc.y;
             m_verts.push_back(v);
 
             v.pos.x = x;
+            v.pos.y = h2;
             v.pos.z = y + m_patch_size;
             v.tc.x = tc.x;
             v.tc.y = tc.w;
             m_verts.push_back(v);
 
             v.pos.x = x + m_patch_size;
+            v.pos.y = h3;
             v.pos.z = y + m_patch_size;
             v.tc.x = tc.z;
             v.tc.y = tc.w;
@@ -113,16 +118,11 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             m_verts.push_back(m_verts[m_verts.size() - 2]);
 
             v.pos.x = x + m_patch_size;
+            v.pos.y = h1;
             v.pos.z = y;
             v.tc.x = tc.z;
             v.tc.y = tc.y;
             m_verts.push_back(v);
-        }
-
-        void update_heights(landscape &l)
-        {
-            for(auto &v: m_verts)
-                v.pos.y = l.get_height(v.pos.x, v.pos.z) - 0.05f;
         }
 
         void *get_data() { return m_verts.empty() ? 0 : &m_verts[0]; }
@@ -153,22 +153,26 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
     vbo_data vdata(patch_size); //ToDo
 
-    int tc_idx = 64 * 4;
-
     //int py = 0;
     for (int py = 0; py < location_size; ++py)
     for (int px = 0; px < location_size; ++px)
     {
-        int idx = py * location_size + px;
+        const int idx = py * location_size + px;
 
         landscape::patch &p = m_landscape.patches[idx] ;
 
-        tc_idx = load_data.patches[idx] * quads_per_patch * quads_per_patch;
+        int tc_idx = load_data.patches[idx] * quads_per_patch * quads_per_patch;
         if (tc_idx < 0)
             continue;
 
-        float base_x = patch_size * quads_per_patch * (px - location_size/2);
-        float base_y = patch_size * quads_per_patch * (py - location_size/2);
+        const float base_x = patch_size * quads_per_patch * (px - location_size/2);
+        const float base_y = patch_size * quads_per_patch * (py - location_size/2);
+
+        const int hpw = 65;
+        int h_idx = load_data.height_patches[idx] * hpw * hpw;
+        assert(h_idx>=0);
+
+        assert(h_idx + hpw * hpw <= load_data.heights.size());
 
         int last_tex_idx = -1;
         for (int y = 0; y < quads_per_patch; ++y)
@@ -193,14 +197,17 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 last_tex_idx = tex_idx;
             }
 
-            vdata.add_patch(base_x + patch_size * x, base_y + patch_size * y, load_data.tex_indices_data[tc_idx * 2]); //15 //25
+            float *h = &load_data.heights[h_idx];
+            const int hpp = (hpw-1)/quads_per_patch;
+            vdata.add_patch(base_x + patch_size * x, base_y + patch_size * y, load_data.tex_indices_data[tc_idx * 2],
+                            h[(x + y * hpw) * hpp],       h[(x + 1 + y * hpw) * hpp],
+                            h[(x + (y + 1) * hpw) * hpp], h[(x + 1 + (y + 1) * hpw) * hpp]);
             ++tc_idx;
         }
 
-        p.groups.back().count = vdata.get_count() - p.groups.back().offset;
+        if(!p.groups.empty())
+            p.groups.back().count = vdata.get_count() - p.groups.back().offset;
     }
-
-    vdata.update_heights(m_landscape);
 
     m_landscape.vbo.set_vertex_data(vdata.get_data(), 5 * 4, vdata.get_count());
     m_landscape.vbo.set_tc(0, 3 * 4, 2);
@@ -299,23 +306,18 @@ bool fhm_location::load(const char *fileName, const location_params &params)
         }
         else if( is_location )
         {
-            if (j == 5)
+            //char fname[255]; sprintf(fname, "chunk%d.txt", j); print_data(reader, 0, 2000000, 0, fname);
+
+            if (j == 4)
             {
-                /*
-                int count = int(reader.get_remained()/4);
-                int h = (int)sqrtf(count);
-                assert(h);
-                int w = count / h;
-
-                //std::swap(w,h);
-
+                assert(reader.get_remained() == location_size*location_size);
+                memcpy(&location_load_data.height_patches[0], reader.get_data(), reader.get_remained());
+            }
+            else if (j == 5)
+            {
                 assert(reader.get_remained());
-                m_landscape.heights.resize(w*h);
-                m_landscape.heights_width=w;
-                m_landscape.heights_height=h;
-
-                memcpy(&m_landscape.heights[0], reader.get_data(), reader.get_remained());
-                */
+                location_load_data.heights.resize(reader.get_remained()/4);
+                memcpy(&location_load_data.heights[0], reader.get_data(), reader.get_remained());
             }
             else if (j == 8)
             {
@@ -647,6 +649,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
 
 bool fhm_location::read_colh(memory_reader &reader)
 {
+    return true;
     //printf("\n\nCOLH\n\n");
     //print_data(reader);
 
