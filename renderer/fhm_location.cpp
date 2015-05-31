@@ -91,24 +91,24 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             tc.w /= m_tex_height;
 
             vert v;
-            //const float hoff=-0.2f;
+            const float hoff=-0.2f;
 
             v.pos.x = x;
-            v.pos.y = h0;
+            v.pos.y = h0 + hoff;
             v.pos.z = y;
             v.tc.x = tc.x;
             v.tc.y = tc.y;
             m_verts.push_back(v);
 
             v.pos.x = x;
-            v.pos.y = h2;
+            v.pos.y = h2 + hoff;
             v.pos.z = y + m_patch_size;
             v.tc.x = tc.x;
             v.tc.y = tc.w;
             m_verts.push_back(v);
 
             v.pos.x = x + m_patch_size;
-            v.pos.y = h3;
+            v.pos.y = h3 + hoff;
             v.pos.z = y + m_patch_size;
             v.tc.x = tc.z;
             v.tc.y = tc.w;
@@ -118,7 +118,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             m_verts.push_back(m_verts[m_verts.size() - 2]);
 
             v.pos.x = x + m_patch_size;
-            v.pos.y = h1;
+            v.pos.y = h1 + hoff;
             v.pos.z = y;
             v.tc.x = tc.z;
             v.tc.y = tc.y;
