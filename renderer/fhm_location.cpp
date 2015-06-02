@@ -72,8 +72,11 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     class vbo_data
     {
     public:
-        void add_patch(float x, float y, int tc_idx, float h0, float h1, float h2, float h3)
+        void add_patch(float x, float y, int tc_idx, float *h)
         {
+            //ToDo: lods, indices, strips
+            //ToDo: figure out, what to do with sudden -9999.0 height (interpolate neighbours?)
+
             int ty = tc_idx / 7;
             int tx = tc_idx - ty * 7;
 
@@ -93,23 +96,28 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             vert v;
             const float hoff=-0.2f;
 
+            const int hpw = 65;
+            const int hpp = (hpw-1)/quads_per_patch;
+
+            //lowpoly
+
             v.pos.x = x;
-            v.pos.y = h0 + hoff;
+            v.pos.y = h[0] + hoff;
             v.pos.z = y;
             v.tc.x = tc.x;
             v.tc.y = tc.y;
             m_verts.push_back(v);
 
             v.pos.x = x;
-            v.pos.y = h2 + hoff;
-            v.pos.z = y + m_patch_size;
+            v.pos.y = h[hpw * hpp] + hoff;
+            v.pos.z = y + patch_size;
             v.tc.x = tc.x;
             v.tc.y = tc.w;
             m_verts.push_back(v);
 
-            v.pos.x = x + m_patch_size;
-            v.pos.y = h3 + hoff;
-            v.pos.z = y + m_patch_size;
+            v.pos.x = x + patch_size;
+            v.pos.y = h[(hpw + 1) * hpp] + hoff;
+            v.pos.z = y + patch_size;
             v.tc.x = tc.z;
             v.tc.y = tc.w;
             m_verts.push_back(v);
@@ -117,12 +125,51 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             m_verts.push_back(m_verts[m_verts.size() - 3]);
             m_verts.push_back(m_verts[m_verts.size() - 2]);
 
-            v.pos.x = x + m_patch_size;
-            v.pos.y = h1 + hoff;
+            v.pos.x = x + patch_size;
+            v.pos.y = h[hpp] + hoff;
             v.pos.z = y;
             v.tc.x = tc.z;
             v.tc.y = tc.y;
             m_verts.push_back(v);
+/*
+            tc.zw() -= tc.xy();
+            tc.zw() /= float(quads_per_patch);
+            const float hpatch_size = patch_size/hpp;
+            for(int hy=0;hy<hpp;++hy)
+            for(int hx=0;hx<hpp;++hx)
+            {
+                v.pos.x = x + hx * hpatch_size;
+                v.pos.y = hoff + h[hx + hy * hpw];
+                v.pos.z = y + hy * hpatch_size;
+                v.tc.x = tc.x + tc.z * hx;
+                v.tc.y = tc.y + tc.w * hy;
+                m_verts.push_back(v);
+
+                v.pos.x = x + hx * hpatch_size;
+                v.pos.y = hoff + h[hx + (hy + 1) * hpw];
+                v.pos.z = y + (hy + 1) * hpatch_size;
+                v.tc.x = tc.x + tc.z * hx;
+                v.tc.y = tc.y + tc.w * (hy + 1);
+                m_verts.push_back(v);
+
+                v.pos.x = x + (hx + 1) * hpatch_size;
+                v.pos.y = hoff + h[hx + 1 + (hy + 1) * hpw];
+                v.pos.z = y + (hy + 1) * hpatch_size;
+                v.tc.x = tc.x + tc.z * (hx + 1);
+                v.tc.y = tc.y + tc.w * (hy + 1);
+                m_verts.push_back(v);
+
+                m_verts.push_back(m_verts[m_verts.size() - 3]);
+                m_verts.push_back(m_verts[m_verts.size() - 2]);
+
+                v.pos.x = x + (hx + 1) * hpatch_size;
+                v.pos.y = hoff + h[hx + 1 + hy * hpw] + hoff;
+                v.pos.z = y + hy * hpatch_size;
+                v.tc.x = tc.x + tc.z * (hx + 1);
+                v.tc.y = tc.y + tc.w * hy;
+                m_verts.push_back(v);
+            }
+*/
         }
 
         void *get_data() { return m_verts.empty() ? 0 : &m_verts[0]; }
@@ -130,12 +177,9 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
         void set_tex_size(int width, int height) { m_tex_width = width; m_tex_height = height; }
 
-        vbo_data(int patch_size):m_patch_size(patch_size) {}
-
     private:
         float m_tex_width;
         float m_tex_height;
-        float m_patch_size;
 
         struct vert
         {
@@ -151,7 +195,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
     assert(!load_data.textures.empty());
 
-    vbo_data vdata(patch_size); //ToDo
+    vbo_data vdata; //ToDo
 
     //int py = 0;
     for (int py = 0; py < location_size; ++py)
@@ -197,11 +241,14 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 last_tex_idx = tex_idx;
             }
 
-            float *h = &load_data.heights[h_idx];
             const int hpp = (hpw-1)/quads_per_patch;
-            vdata.add_patch(base_x + patch_size * x, base_y + patch_size * y, load_data.tex_indices_data[tc_idx * 2],
-                            h[(x + y * hpw) * hpp],       h[(x + 1 + y * hpw) * hpp],
-                            h[(x + (y + 1) * hpw) * hpp], h[(x + 1 + (y + 1) * hpw) * hpp]);
+            float *h = &load_data.heights[h_idx+(x + y * hpw)*hpp];
+
+            const float pos_x = base_x + patch_size * x;
+            const float pos_y = base_y + patch_size * y;
+
+            vdata.add_patch(pos_x, pos_y, load_data.tex_indices_data[tc_idx * 2], h);
+
             ++tc_idx;
         }
 
@@ -306,7 +353,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
         }
         else if( is_location )
         {
-            //char fname[255]; sprintf(fname, "chunk%d.txt", j); print_data(reader, 0, 2000000, 0, fname);
+            char fname[255]; sprintf(fname, "chunk%d.txt", j); print_data(reader, 0, reader.get_remained(), 0, fname);
 
             if (j == 4)
             {
