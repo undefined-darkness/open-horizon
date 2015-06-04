@@ -143,7 +143,7 @@ void sun_mesh::draw() const
 {
     auto dir = nya_scene::get_camera().get_dir();
     dir.z = -dir.z;
-    if(dir * m_dir.xyz() < 0.0)
+    if(dir.dot(m_dir.xyz()) < 0.0)
         return;
 
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());

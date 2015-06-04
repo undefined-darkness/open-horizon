@@ -29,8 +29,7 @@ void missile_trail::update(const nya_math::vec3 &pos, int dt)
     }
 
     const float part_len = 30.0;
-    auto diff = pos - m_prev_point;
-    if (diff * diff < part_len * part_len)
+    if ((pos - m_prev_point).length_sq() < part_len*part_len)
         return;
 
     m_debug.add_line(pos, m_prev_point, nya_math::vec4(1.0, 1.0, 1.0, 0.3));

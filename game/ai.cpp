@@ -149,7 +149,7 @@ void ai::find_best_target()
                 continue;
 
             auto tdir = tp->phys->pos;
-            const bool in_front = tdir * dir < 0.0;
+            const bool in_front = tdir.dot(dir) < 0.0;
             if ((i == 0) == in_front)
                 return;
 
@@ -163,7 +163,7 @@ void ai::find_best_target()
                 continue;
 
             m_state = state_approach;
-            if (i == 0 && p->phys->vel * tp->phys->vel >=0)
+            if (i == 0 && p->phys->vel.dot(tp->phys->vel) >=0)
                 m_state = state_pursuit;
         }
     }

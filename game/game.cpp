@@ -496,7 +496,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                         fp->locked = false;
                     else
                     {
-                        const float c = target_dir * me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0)) / dist;
+                        const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
                         if (c < missile.lockon_angle_cos)
                             fp->locked = false;
                         else if (fp != targets.begin())
@@ -618,7 +618,7 @@ void missile::update_homing(int dt)
     const vec3 dir = phys->rot.rotate(vec3(0.0, 0.0, 1.0));
     auto t = target.lock();
     const vec3 target_dir = (t->get_pos() - phys->pos + (t->phys->vel - phys->vel) * dt * 0.001f).normalize();
-    if (dir * target_dir > homing_angle_cos)
+    if (dir.dot(target_dir) > homing_angle_cos)
         phys->target_dir = target_dir;
 }
 

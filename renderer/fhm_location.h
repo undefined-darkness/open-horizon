@@ -68,17 +68,20 @@ protected:
     {
         struct group
         {
+            uint tex_id;
+            nya_math::aabb box;
+
             uint hi_offset;
             uint hi_count;
             uint mid_offset;
             uint mid_count;
             uint low_offset;
             uint low_count;
-            uint tex_id;
         };
 
         struct patch
         {
+            nya_math::aabb box;
             std::vector<group> groups;
         };
 

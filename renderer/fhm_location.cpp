@@ -14,6 +14,8 @@
 #include "scene/shader.h"
 #include "math/scalar.h"
 
+//#include "render/platform_specific_gl.h"
+
 #include <math.h>
 #include <stdint.h>
 
@@ -75,8 +77,9 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     public:
         void add_patch(float x, float y, int tc_idx, float *h)
         {
-            //ToDo: lods, indices, strips
-            //ToDo: figure out, what to do with sudden -9999.0 height (interpolate neighbours?)
+            //ToDo: strips
+            //ToDo: exclude patches with -9999.0 height
+            //ToDo: lod seams
 
             int ty = tc_idx / 7;
             int tx = tc_idx - ty * 7;
@@ -99,84 +102,80 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
             const uint hpw = 65;
             const uint hpp = (hpw-1)/quads_per_patch;
+            const uint w = hpp + 1;
 
-            //lowpoly
-
-            v.pos.x = x;
-            v.pos.y = h[0] + hoff;
-            v.pos.z = y;
-            v.tc.x = tc.x;
-            v.tc.y = tc.y;
-            m_curr_indices_low.push_back((uint)m_verts.size());
-            m_verts.push_back(v);
-
-            v.pos.x = x;
-            v.pos.y = h[hpw * hpp] + hoff;
-            v.pos.z = y + patch_size;
-            v.tc.x = tc.x;
-            v.tc.y = tc.w;
-            m_curr_indices_low.push_back((uint)m_verts.size());
-            m_verts.push_back(v);
-
-            v.pos.x = x + patch_size;
-            v.pos.y = h[(hpw + 1) * hpp] + hoff;
-            v.pos.z = y + patch_size;
-            v.tc.x = tc.z;
-            v.tc.y = tc.w;
-            m_curr_indices_low.push_back((uint)m_verts.size());
-            m_verts.push_back(v);
-
-            m_curr_indices_low.push_back((uint)m_verts.size() - 3);
-            m_curr_indices_low.push_back((uint)m_verts.size() - 1);
-
-            v.pos.x = x + patch_size;
-            v.pos.y = h[hpp] + hoff;
-            v.pos.z = y;
-            v.tc.x = tc.z;
-            v.tc.y = tc.y;
-            m_curr_indices_low.push_back((uint)m_verts.size());
-            m_verts.push_back(v);
+            uint voff = (uint)m_verts.size();
 
             tc.zw() -= tc.xy();
             tc.zw() /= float(quads_per_patch);
             const float hpatch_size = patch_size/hpp;
-            for(int hy=0;hy<hpp;++hy)
-            for(int hx=0;hx<hpp;++hx)
+            for (int hy=0; hy < w; ++hy)
+            for (int hx=0; hx < w; ++hx)
             {
                 v.pos.x = x + hx * hpatch_size;
                 v.pos.y = hoff + h[hx + hy * hpw];
                 v.pos.z = y + hy * hpatch_size;
                 v.tc.x = tc.x + tc.z * hx;
                 v.tc.y = tc.y + tc.w * hy;
-                m_curr_indices_hi.push_back((uint)m_verts.size());
                 m_verts.push_back(v);
 
-                v.pos.x = x + hx * hpatch_size;
-                v.pos.y = hoff + h[hx + (hy + 1) * hpw];
-                v.pos.z = y + (hy + 1) * hpatch_size;
-                v.tc.x = tc.x + tc.z * hx;
-                v.tc.y = tc.y + tc.w * (hy + 1);
-                m_curr_indices_hi.push_back((uint)m_verts.size());
-                m_verts.push_back(v);
+                m_min = nya_math::vec3::min(v.pos, m_min);
+                m_max = nya_math::vec3::max(v.pos, m_max);
+            }
 
-                v.pos.x = x + (hx + 1) * hpatch_size;
-                v.pos.y = hoff + h[hx + 1 + (hy + 1) * hpw];
-                v.pos.z = y + (hy + 1) * hpatch_size;
-                v.tc.x = tc.x + tc.z * (hx + 1);
-                v.tc.y = tc.y + tc.w * (hy + 1);
-                m_curr_indices_hi.push_back((uint)m_verts.size());
-                m_verts.push_back(v);
+            static std::vector<uint> low;
+            low.clear();
+            low.push_back(voff);
+            low.push_back(voff + w * w - 1);
+            low.push_back(voff + w - 1);
+            low.push_back((uint)low[0]);
+            low.push_back(voff + w * w - w);
+            low.push_back((uint)low[1]);
 
-                m_curr_indices_hi.push_back((uint)m_verts.size() - 3);
-                m_curr_indices_hi.push_back((uint)m_verts.size() - 1);
+            m_curr_indices_low.insert(m_curr_indices_low.end(), low.begin(), low.end());
 
-                v.pos.x = x + (hx + 1) * hpatch_size;
-                v.pos.y = hoff + h[hx + 1 + hy * hpw] + hoff;
-                v.pos.z = y + hy * hpatch_size;
-                v.tc.x = tc.x + tc.z * (hx + 1);
-                v.tc.y = tc.y + tc.w * hy;
-                m_curr_indices_hi.push_back((uint)m_verts.size());
-                m_verts.push_back(v);
+            float same_height = m_verts[voff].pos.y;
+            bool all_same_height = true;
+            for (int i = 1; i < w * w; ++i)
+            {
+                if (fabsf(m_verts[voff + i].pos.y - same_height) > 0.01f)
+                {
+                    all_same_height = false;
+                    break;
+                }
+            }
+
+            if (all_same_height)
+            {
+                m_curr_indices_hi.insert(m_curr_indices_hi.end(), low.begin(), low.end());
+                m_curr_indices_mid.insert(m_curr_indices_mid.end(), low.begin(), low.end());
+                return;
+            }
+
+            for (int hy=0; hy < hpp; ++hy)
+            for (int hx=0; hx < hpp; ++hx)
+            {
+                int i = voff + hx + hy * w;
+
+                m_curr_indices_hi.push_back(i);
+                m_curr_indices_hi.push_back(i + 1 + hpp);
+                m_curr_indices_hi.push_back(i + 1);
+                m_curr_indices_hi.push_back(i + 1);
+                m_curr_indices_hi.push_back(i + 1 + hpp);
+                m_curr_indices_hi.push_back(i + 1 + hpp + 1);
+            }
+
+            for (int hy=0; hy < hpp; hy += 2)
+            for (int hx=0; hx < hpp; hx += 2)
+            {
+                int i = voff + hx + hy * w;
+
+                m_curr_indices_mid.push_back(i);
+                m_curr_indices_mid.push_back(i + 2 * (1 + hpp));
+                m_curr_indices_mid.push_back(i + 2);
+                m_curr_indices_mid.push_back(i + 2);
+                m_curr_indices_mid.push_back(i + 2 * (1 + hpp));
+                m_curr_indices_mid.push_back(i + 2 * (1 + hpp + 1));
             }
         }
 
@@ -189,6 +188,8 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         uint get_group_low_offset() { return (uint)(m_indices.size() + m_curr_indices_hi.size() + m_curr_indices_mid.size()); }
         uint get_group_low_count() { return (uint)m_curr_indices_low.size(); }
 
+        nya_math::aabb get_aabb() { return nya_math::aabb(m_min, m_max); }
+
         void end_group()
         {
             m_indices.insert(m_indices.end(), m_curr_indices_hi.begin(), m_curr_indices_hi.end());
@@ -198,6 +199,9 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             m_curr_indices_hi.clear();
             m_curr_indices_mid.clear();
             m_curr_indices_low.clear();
+
+            m_min = nya_math::vec3(1.0, 1.0, 1.0) * 1000000.0f;
+            m_max = -m_min;
         }
 
         void *get_vdata() { return m_verts.empty() ? 0 : &m_verts[0]; }
@@ -223,6 +227,9 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         std::vector<uint> m_curr_indices_hi;
         std::vector<uint> m_curr_indices_mid;
         std::vector<uint> m_curr_indices_low;
+
+        nya_math::vec3 m_min;
+        nya_math::vec3 m_max;
     };
 
     m_landscape.patches.clear();
@@ -231,6 +238,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     assert(!load_data.textures.empty());
 
     vbo_data vdata; //ToDo
+    vdata.end_group();
 
     //int py = 0;
     for (int py = 0; py < location_size; ++py)
@@ -266,6 +274,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 if (last_tex_idx >= 0)
                 {
                     auto &g = p.groups.back();
+                    g.box = vdata.get_aabb();
                     g.hi_count = vdata.get_group_hi_count();
                     g.hi_offset = vdata.get_group_hi_offset();
                     g.mid_count = vdata.get_group_mid_count();
@@ -298,6 +307,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         if(!p.groups.empty())
         {
             auto &g = p.groups.back();
+            g.box = vdata.get_aabb();
             g.hi_count = vdata.get_group_hi_count();
             g.hi_offset = vdata.get_group_hi_offset();
             g.mid_count = vdata.get_group_mid_count();
@@ -305,6 +315,20 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             g.low_count = vdata.get_group_low_count();
             g.low_offset = vdata.get_group_low_offset();
             vdata.end_group();
+        }
+
+        if (!p.groups.empty())
+        {
+            nya_math::vec3 box_min = nya_math::vec3(1.0, 1.0, 1.0) * 1000000.0f;
+            nya_math::vec3 box_max = -box_min;
+
+            for(auto &g: p.groups)
+            {
+                box_min = nya_math::vec3::min(g.box.origin - g.box.delta, box_min);
+                box_max = nya_math::vec3::max(g.box.origin + g.box.delta, box_max);
+            }
+
+            p.box = nya_math::aabb(box_min, box_max);
         }
     }
 
@@ -538,9 +562,7 @@ void fhm_location::draw_mptx()
         {
             const auto &instance = mesh.instances[i];
 
-            const nya_math::vec3 delta = instance.pos - cp;
-            const float dist_sq = delta * delta;
-            if (dist_sq>mesh.draw_dist)
+            if ((instance.pos - cp).length_sq() > mesh.draw_dist)
                 continue;
 
             if (!f.test_intersect(instance.bbox))
@@ -608,16 +630,38 @@ void fhm_location::draw_landscape()
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
     m_land_material.internal().set(nya_scene::material::default_pass);
 
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
+    auto &c = nya_scene::get_camera();
+
     m_landscape.vbo.bind();
     for (const auto &p: m_landscape.patches)
     {
+        if (!c.get_frustum().test_intersect(p.box))
+            continue;
+
         for (const auto &g: p.groups)
         {
+            if (!c.get_frustum().test_intersect(g.box))
+                continue;
+
+            const float sq = g.box.sq_dist(c.get_pos());
             shared::get_texture(g.tex_id).internal().set();
-            m_landscape.vbo.draw(g.low_offset, g.low_count);
+
+            const float hi_dist = 10000.0f;
+            const float mid_dist = 15000.0f;
+            if (sq < hi_dist * hi_dist)
+                m_landscape.vbo.draw(g.hi_offset, g.hi_count);
+            else if (sq < mid_dist * mid_dist)
+                m_landscape.vbo.draw(g.mid_offset, g.mid_count);
+            else
+                m_landscape.vbo.draw(g.low_offset, g.low_count);
+
             shared::get_texture(g.tex_id).internal().unset();
         }
     }
+
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
     m_landscape.vbo.unbind();
     m_land_material.internal().unset();

@@ -179,7 +179,7 @@ void effect_clouds::draw_obj()
     {
         auto cp = nya_scene::get_camera().get_pos();
         auto d = m_clouds.obj_clouds[i].second - nya_math::vec2(cp.x,cp.z);
-        m_dist_sort[i].first = d * d;
+        m_dist_sort[i].first = d.length_sq();
         m_dist_sort[i].second = i;
     }
 
