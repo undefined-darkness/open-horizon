@@ -68,8 +68,12 @@ protected:
     {
         struct group
         {
-            uint offset;
-            uint count;
+            uint hi_offset;
+            uint hi_count;
+            uint mid_offset;
+            uint mid_count;
+            uint low_offset;
+            uint low_count;
             uint tex_id;
         };
 

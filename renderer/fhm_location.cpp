@@ -68,6 +68,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
     auto &p=m_land_material.get_pass(m_land_material.add_pass(nya_scene::material::default_pass));
     p.set_shader(nya_scene::shader("shaders/land.nsh"));
+    p.get_state().set_cull_face(true);
 
     class vbo_data
     {
@@ -96,8 +97,8 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             vert v;
             const float hoff=-0.2f;
 
-            const int hpw = 65;
-            const int hpp = (hpw-1)/quads_per_patch;
+            const uint hpw = 65;
+            const uint hpp = (hpw-1)/quads_per_patch;
 
             //lowpoly
 
@@ -106,6 +107,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             v.pos.z = y;
             v.tc.x = tc.x;
             v.tc.y = tc.y;
+            m_curr_indices_low.push_back((uint)m_verts.size());
             m_verts.push_back(v);
 
             v.pos.x = x;
@@ -113,6 +115,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             v.pos.z = y + patch_size;
             v.tc.x = tc.x;
             v.tc.y = tc.w;
+            m_curr_indices_low.push_back((uint)m_verts.size());
             m_verts.push_back(v);
 
             v.pos.x = x + patch_size;
@@ -120,18 +123,20 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             v.pos.z = y + patch_size;
             v.tc.x = tc.z;
             v.tc.y = tc.w;
+            m_curr_indices_low.push_back((uint)m_verts.size());
             m_verts.push_back(v);
 
-            m_verts.push_back(m_verts[m_verts.size() - 3]);
-            m_verts.push_back(m_verts[m_verts.size() - 2]);
+            m_curr_indices_low.push_back((uint)m_verts.size() - 3);
+            m_curr_indices_low.push_back((uint)m_verts.size() - 1);
 
             v.pos.x = x + patch_size;
             v.pos.y = h[hpp] + hoff;
             v.pos.z = y;
             v.tc.x = tc.z;
             v.tc.y = tc.y;
+            m_curr_indices_low.push_back((uint)m_verts.size());
             m_verts.push_back(v);
-/*
+
             tc.zw() -= tc.xy();
             tc.zw() /= float(quads_per_patch);
             const float hpatch_size = patch_size/hpp;
@@ -143,6 +148,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 v.pos.z = y + hy * hpatch_size;
                 v.tc.x = tc.x + tc.z * hx;
                 v.tc.y = tc.y + tc.w * hy;
+                m_curr_indices_hi.push_back((uint)m_verts.size());
                 m_verts.push_back(v);
 
                 v.pos.x = x + hx * hpatch_size;
@@ -150,6 +156,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 v.pos.z = y + (hy + 1) * hpatch_size;
                 v.tc.x = tc.x + tc.z * hx;
                 v.tc.y = tc.y + tc.w * (hy + 1);
+                m_curr_indices_hi.push_back((uint)m_verts.size());
                 m_verts.push_back(v);
 
                 v.pos.x = x + (hx + 1) * hpatch_size;
@@ -157,23 +164,46 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 v.pos.z = y + (hy + 1) * hpatch_size;
                 v.tc.x = tc.x + tc.z * (hx + 1);
                 v.tc.y = tc.y + tc.w * (hy + 1);
+                m_curr_indices_hi.push_back((uint)m_verts.size());
                 m_verts.push_back(v);
 
-                m_verts.push_back(m_verts[m_verts.size() - 3]);
-                m_verts.push_back(m_verts[m_verts.size() - 2]);
+                m_curr_indices_hi.push_back((uint)m_verts.size() - 3);
+                m_curr_indices_hi.push_back((uint)m_verts.size() - 1);
 
                 v.pos.x = x + (hx + 1) * hpatch_size;
                 v.pos.y = hoff + h[hx + 1 + hy * hpw] + hoff;
                 v.pos.z = y + hy * hpatch_size;
                 v.tc.x = tc.x + tc.z * (hx + 1);
                 v.tc.y = tc.y + tc.w * hy;
+                m_curr_indices_hi.push_back((uint)m_verts.size());
                 m_verts.push_back(v);
             }
-*/
         }
 
-        void *get_data() { return m_verts.empty() ? 0 : &m_verts[0]; }
-        unsigned int get_count() { return (unsigned int)m_verts.size(); }
+        typedef unsigned int uint;
+
+        uint get_group_hi_offset() { return (uint)m_indices.size(); }
+        uint get_group_hi_count() { return (uint)m_curr_indices_hi.size(); }
+        uint get_group_mid_offset() { return (uint)(m_indices.size() + m_curr_indices_hi.size()); }
+        uint get_group_mid_count() { return (uint)m_curr_indices_mid.size(); }
+        uint get_group_low_offset() { return (uint)(m_indices.size() + m_curr_indices_hi.size() + m_curr_indices_mid.size()); }
+        uint get_group_low_count() { return (uint)m_curr_indices_low.size(); }
+
+        void end_group()
+        {
+            m_indices.insert(m_indices.end(), m_curr_indices_hi.begin(), m_curr_indices_hi.end());
+            m_indices.insert(m_indices.end(), m_curr_indices_mid.begin(), m_curr_indices_mid.end());
+            m_indices.insert(m_indices.end(), m_curr_indices_low.begin(), m_curr_indices_low.end());
+
+            m_curr_indices_hi.clear();
+            m_curr_indices_mid.clear();
+            m_curr_indices_low.clear();
+        }
+
+        void *get_vdata() { return m_verts.empty() ? 0 : &m_verts[0]; }
+        uint get_vcount() { return (uint)m_verts.size(); }
+        void *get_idata() { return m_indices.empty() ? 0 : &m_indices[0]; }
+        uint get_icount() { return (uint)m_indices.size(); }
 
         void set_tex_size(int width, int height) { m_tex_width = width; m_tex_height = height; }
 
@@ -188,6 +218,11 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         };
 
         std::vector<vert> m_verts;
+        std::vector<uint> m_indices;
+
+        std::vector<uint> m_curr_indices_hi;
+        std::vector<uint> m_curr_indices_mid;
+        std::vector<uint> m_curr_indices_low;
     };
 
     m_landscape.patches.clear();
@@ -229,11 +264,19 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             if (tex_idx != last_tex_idx)
             {
                 if (last_tex_idx >= 0)
-                    p.groups.back().count = vdata.get_count() - p.groups.back().offset;
+                {
+                    auto &g = p.groups.back();
+                    g.hi_count = vdata.get_group_hi_count();
+                    g.hi_offset = vdata.get_group_hi_offset();
+                    g.mid_count = vdata.get_group_mid_count();
+                    g.mid_offset = vdata.get_group_mid_offset();
+                    g.low_count = vdata.get_group_low_count();
+                    g.low_offset = vdata.get_group_low_offset();
+                    vdata.end_group();
+                }
 
                 p.groups.resize(p.groups.size() + 1);
                 auto &g = p.groups.back();
-                g.offset = vdata.get_count();
                 g.tex_id = load_data.textures[tex_idx];
                 auto &t = shared::get_texture(g.tex_id);
                 vdata.set_tex_size(t.get_width(), t.get_height());
@@ -253,10 +296,20 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         }
 
         if(!p.groups.empty())
-            p.groups.back().count = vdata.get_count() - p.groups.back().offset;
+        {
+            auto &g = p.groups.back();
+            g.hi_count = vdata.get_group_hi_count();
+            g.hi_offset = vdata.get_group_hi_offset();
+            g.mid_count = vdata.get_group_mid_count();
+            g.mid_offset = vdata.get_group_mid_offset();
+            g.low_count = vdata.get_group_low_count();
+            g.low_offset = vdata.get_group_low_offset();
+            vdata.end_group();
+        }
     }
 
-    m_landscape.vbo.set_vertex_data(vdata.get_data(), 5 * 4, vdata.get_count());
+    m_landscape.vbo.set_vertex_data(vdata.get_vdata(), 5 * 4, vdata.get_vcount());
+    m_landscape.vbo.set_index_data(vdata.get_idata(), nya_render::vbo::index4b, vdata.get_icount());
     m_landscape.vbo.set_tc(0, 3 * 4, 2);
 
     return true;
@@ -561,7 +614,7 @@ void fhm_location::draw_landscape()
         for (const auto &g: p.groups)
         {
             shared::get_texture(g.tex_id).internal().set();
-            m_landscape.vbo.draw(g.offset, g.count);
+            m_landscape.vbo.draw(g.low_offset, g.low_count);
             shared::get_texture(g.tex_id).internal().unset();
         }
     }
