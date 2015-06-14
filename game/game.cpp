@@ -13,6 +13,10 @@ namespace game
 {
 //------------------------------------------------------------
 
+namespace { const static params::text_params &get_arms_param() { static params::text_params ap("Arms/ArmsParam.txt"); return ap; } }
+
+//------------------------------------------------------------
+
 class weapon_information
 {
 public:
@@ -89,12 +93,13 @@ private:
 
 wpn_missile_params::wpn_missile_params(std::string id, std::string model)
 {
-    static params::text_params param("Arms/ArmsParam.txt");
 
     const std::string lockon = "." + id + ".lockon.";
 
     this->id = id;
     this->model = model;
+
+    auto &param = get_arms_param();
 
     lockon_range = param.get_float(lockon + "range");
     lockon_angle_cos = cosf(param.get_float(lockon + "angle") * nya_math::constants::pi / 180.0f);
@@ -115,7 +120,8 @@ missile_ptr world::add_missile(const char *id, const char *model)
     m->phys = m_phys_world.add_missile(id);
     m->render = m_render_world.add_missile(model);
 
-    static params::text_params param("Arms/ArmsParam.txt");
+    auto &param = get_arms_param();
+
     const std::string pref = "." + std::string(id) + ".action.";
     m->time = param.get_float(pref + "endTime") * 1000;
     m->homing_angle_cos = cosf(param.get_float(".MISSILE.action.hormingAng"));
@@ -158,6 +164,7 @@ plane_ptr world::add_plane(const char *name, int color, bool player)
     }
 
     m_planes.push_back(p);
+    get_arms_param(); //cache
     return p;
 }
 

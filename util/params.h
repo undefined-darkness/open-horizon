@@ -115,13 +115,13 @@ public:
         }
     }
 
-    float get_float(const std::string &name, float default_value = 0.0f)
+    float get_float(const std::string &name, float default_value = 0.0f) const
     {
         auto p = m_float_params.find(name);
         return p == m_float_params.end() ? default_value : p->second;
     }
 
-    int get_int(const std::string &name, int default_value = 0)
+    int get_int(const std::string &name, int default_value = 0) const
     {
         auto p = m_int_params.find(name);
         return p == m_int_params.end() ? default_value : p->second;

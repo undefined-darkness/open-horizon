@@ -127,11 +127,11 @@ inline void print_data(const nya_memory::memory_reader &reader)
 
 //------------------------------------------------------------
 
-inline void print_data(const char *name)
+inline void print_data(const char *name, const char *file_name = 0)
 {
     nya_memory::tmp_buffer_scoped r(load_resource(name));
     nya_memory::memory_reader reader(r.get_data(),r.get_size());
-    print_data(reader, reader.get_offset(), reader.get_remained());
+    print_data(reader, reader.get_offset(), reader.get_remained(), 0, file_name);
 }
 
 //------------------------------------------------------------

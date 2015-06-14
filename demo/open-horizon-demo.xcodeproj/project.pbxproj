@@ -35,6 +35,7 @@
 		F5A2A2E51B05466C009765C1 /* deathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E11B05466C009765C1 /* deathmatch.cpp */; };
 		F5A2A2E61B05466C009765C1 /* free_flight.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E21B05466C009765C1 /* free_flight.cpp */; };
 		F5A2A2E71B05466C009765C1 /* team_deathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E31B05466C009765C1 /* team_deathmatch.cpp */; };
+		F5C3B6FE1B2C809000479524 /* particles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A334691B23688F00F3C9FC /* particles.cpp */; };
 		F5C6D3861AF9694D006FB7E6 /* demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D3851AF9694D006FB7E6 /* demo.cpp */; };
 		F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D3881AF969A5006FB7E6 /* dpl.cpp */; };
 		F5C6D3921AF969A5006FB7E6 /* fhm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D38C1AF969A5006FB7E6 /* fhm.cpp */; };
@@ -139,6 +140,8 @@
 		F5A2A2E21B05466C009765C1 /* free_flight.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = free_flight.cpp; path = ../game/free_flight.cpp; sourceTree = "<group>"; };
 		F5A2A2E31B05466C009765C1 /* team_deathmatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = team_deathmatch.cpp; path = ../game/team_deathmatch.cpp; sourceTree = "<group>"; };
 		F5A2A2E81B0546EF009765C1 /* deathmatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = deathmatch.h; path = ../game/deathmatch.h; sourceTree = "<group>"; };
+		F5A334691B23688F00F3C9FC /* particles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particles.cpp; path = ../renderer/particles.cpp; sourceTree = "<group>"; };
+		F5A3346A1B23688F00F3C9FC /* particles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particles.h; path = ../renderer/particles.h; sourceTree = "<group>"; };
 		F5C6D37C1AF968E7006FB7E6 /* params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = params.h; path = ../util/params.h; sourceTree = "<group>"; };
 		F5C6D37D1AF968E7006FB7E6 /* xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xml.h; path = ../util/xml.h; sourceTree = "<group>"; };
 		F5C6D3851AF9694D006FB7E6 /* demo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = demo.cpp; sourceTree = SOURCE_ROOT; };
@@ -308,6 +311,8 @@
 				F5A2A2D51AFE3258009765C1 /* missile_trail.h */,
 				F59AB59D1AFA4F1800137527 /* model.cpp */,
 				F59AB5A11AFA4F1800137527 /* model.h */,
+				F5A334691B23688F00F3C9FC /* particles.cpp */,
+				F5A3346A1B23688F00F3C9FC /* particles.h */,
 				F59AB5B51AFA7D1600137527 /* plane_camera.cpp */,
 				F59AB5B61AFA7D1600137527 /* plane_camera.h */,
 				F59AB5981AFA4F1800137527 /* scene.cpp */,
@@ -491,6 +496,7 @@
 				F5A2A2E71B05466C009765C1 /* team_deathmatch.cpp in Sources */,
 				F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */,
 				F59AB5921AFA389500137527 /* game.cpp in Sources */,
+				F5C3B6FE1B2C809000479524 /* particles.cpp in Sources */,
 				F59AB5B11AFA4FEC00137527 /* world.cpp in Sources */,
 				F59AB5A71AFA4F1800137527 /* scene.cpp in Sources */,
 			);

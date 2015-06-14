@@ -11,6 +11,10 @@ namespace phys
 {
 //------------------------------------------------------------
 
+namespace { const static params::text_params &get_arms_param() { static params::text_params ap("Arms/ArmsParam.txt"); return ap; } }
+
+//------------------------------------------------------------
+
 static const float meps_to_kmph = 3.6f;
 static const float kmph_to_meps = 1.0 / meps_to_kmph;
 static const float ang_to_rad = nya_math::constants::pi / 180.0;
@@ -37,6 +41,7 @@ plane_ptr world::add_plane(const char *name)
     p->params.load(("Player/Behavior/param_p_" + std::string(name) + ".bin").c_str());
     p->reset_state();
     m_planes.push_back(p);
+    get_arms_param();  //cache
     return p;
 }
 
@@ -46,9 +51,9 @@ missile_ptr world::add_missile(const char *name)
 {
     missile_ptr m(new missile());
 
-    static params::text_params param("Arms/ArmsParam.txt");
-
     const std::string pref = "." + std::string(name) + ".action.";
+
+    auto &param = get_arms_param();
 
     m->no_accel_time = param.get_float(pref + "noAcceleTime") * 1000;
     m->accel = param.get_float(pref + "accele") * kmph_to_meps;

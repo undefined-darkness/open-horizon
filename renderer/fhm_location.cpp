@@ -430,7 +430,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
         }
         else if( is_location )
         {
-            char fname[255]; sprintf(fname, "chunk%d.txt", j); print_data(reader, 0, reader.get_remained(), 0, fname);
+            //char fname[255]; sprintf(fname, "chunk%d.txt", j); print_data(reader, 0, reader.get_remained(), 0, fname);
 
             if (j == 4)
             {
@@ -697,6 +697,25 @@ bool fhm_location::read_mptx(memory_reader &reader)
     m_map_parts_material.set_texture("specular", m_map_parts_specular_texture);
     m_map_parts_tr.create();
     m_map_parts_material.set_param_array(m_map_parts_material.get_param_idx("transform"), m_map_parts_tr);
+
+/*
+    reader.seek(52);
+
+    union
+    {
+        unsigned int uint_value;
+        unsigned char uchar_value[4];
+    } sh;
+
+    sh.uint_value = reader.read<uint>();
+
+    printf("sh %d | %d %d %d %d\n", sh.uint_value, sh.uchar_value[0], sh.uchar_value[1], sh.uchar_value[2], sh.uchar_value[3]);
+
+    //if (sh.uchar_value[0] == 0 && sh.uchar_value[1] == 0)
+    //    return true;
+
+    //print_data(reader, 0, 128);
+*/
 
     m_mptx_meshes.resize(m_mptx_meshes.size() + 1);
     mptx_mesh &mesh = m_mptx_meshes.back();
