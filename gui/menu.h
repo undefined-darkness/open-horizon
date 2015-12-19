@@ -6,6 +6,7 @@
 
 #include "ui.h"
 #include <functional>
+#include <list>
 
 namespace gui
 {

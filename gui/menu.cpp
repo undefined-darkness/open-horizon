@@ -44,8 +44,8 @@ void menu::draw(const render &r)
     else if (m_screens.back() == "ac_select" || m_screens.back() == "color_select")
         m_bkg.draw_tx(r, 0, 1, sr, white);
 
-    int x = 155, y = 162;
-    m_fonts.draw_text(r, m_title.c_str(), "NowGE24", x, 80, font_color);
+    int x = 155, y = 155;
+    m_fonts.draw_text(r, m_title.c_str(), "ZurichBD_M", x, 80, font_color);
     const int count = 15;
     for (int i = ((m_selected + (m_selected >= (count - 1) ? 1 : 0)) / (count - 1)) * (count - 2), j = 0;
          i < (int)m_entries.size() && j < count; ++i, ++j)
@@ -54,12 +54,12 @@ void menu::draw(const render &r)
         if (m_selected == i)
         {
             rect rct;
-            rct.x = x - 20, rct.y = y - 8;
+            rct.x = x - 20, rct.y = y;
             rct.w = 550, rct.h = 34;
             m_select.draw_tx(r, 0, 3, rct, white);
         }
 
-        m_fonts.draw_text(r, e.first.c_str(), "NowGE24", x, y, font_color);
+        m_fonts.draw_text(r, e.first.c_str(), "ZurichBD_M", x, y, font_color);
         y += 34;
     }
 
@@ -133,59 +133,76 @@ void menu::set_screen(const std::string &screen)
     if (screen == "main")
     {
         m_title = L"MAIN MENU";
-        m_entries.push_back(std::make_pair(L"DEATHMATCH", "mode=dm"));
-        m_entries.push_back(std::make_pair(L"TEAM DEATHMATCH", "mode=tdm"));
-        m_entries.push_back(std::make_pair(L"FREE FLIGHT", "mode=ff"));
-        m_entries.push_back(std::make_pair(L"EXIT", "exit"));
+        m_entries.push_back(std::make_pair(L"Deathmatch", "mode=dm"));
+        m_entries.push_back(std::make_pair(L"Team deathmatch", "mode=tdm"));
+        m_entries.push_back(std::make_pair(L"Free flight", "mode=ff"));
+        m_entries.push_back(std::make_pair(L"Exit", "exit"));
     }
     else if (screen == "map_select")
     {
         m_title = L"LOCATION";
-        m_entries.push_back(std::make_pair(L"MIAMI", "map=ms01"));
-        m_entries.push_back(std::make_pair(L"DUBAI", "map=ms06"));
-        m_entries.push_back(std::make_pair(L"MOSCOW", "map=ms11b"));
-        m_entries.push_back(std::make_pair(L"PARIS", "map=ms30"));
-        m_entries.push_back(std::make_pair(L"TOKYO", "map=ms50"));
-        m_entries.push_back(std::make_pair(L"HONOLULU", "map=ms51"));
+        m_entries.push_back(std::make_pair(L"Miami", "map=ms01"));
+        m_entries.push_back(std::make_pair(L"Dubai", "map=ms06"));
+        m_entries.push_back(std::make_pair(L"Moscow", "map=ms11b"));
+        m_entries.push_back(std::make_pair(L"Paris", "map=ms30"));
+        m_entries.push_back(std::make_pair(L"Tokyo", "map=ms50"));
+        m_entries.push_back(std::make_pair(L"Honolulu", "map=ms51"));
+/*
+        m_entries.push_back(std::make_pair(L"Test_02", "map=ms02")); //oil day //inferno
+        //m_entries.push_back(std::make_pair(L"TEST_03", "map=ms03")); //tex indices idx < size assert //Eastern Africa //red moon
+        //m_entries.push_back(std::make_pair(L"TEST_04", "map=ms04")); //tex indices idx < size assert //Mogadiyu //spooky
+        m_entries.push_back(std::make_pair(L"Test_05", "map=ms05")); //oil night //blue on blue
+        //m_entries.push_back(std::make_pair(L"TEST_07", "map=ms07")); //tex indices idx < size assert //Suez Canal, Egypt //lock n load
+        m_entries.push_back(std::make_pair(L"Test_08", "map=ms08")); //Derbent, Russia //pipeline
+        m_entries.push_back(std::make_pair(L"Test_08X", "map=ms08x")); //Belyi Base, Russia //siege
+        m_entries.push_back(std::make_pair(L"Test_09", "map=ms09")); //Black Sea //hostile fleet
+        m_entries.push_back(std::make_pair(L"Test_10", "map=ms10")); //Caucasus Region, Russia //launch
+        //m_entries.push_back(std::make_pair(L"TEST_11A", "map=ms11a")); //tex indices idx < size assert //Moscow, Russia //motherland
+        //m_entries.push_back(std::make_pair(L"TEST_12", "map=ms12")); //type 8 chunk assert //Miami, Florida //homefront
+        m_entries.push_back(std::make_pair(L"Test_12T", "map=ms12t"));
+        m_entries.push_back(std::make_pair(L"Test_13", "map=ms13")); //Florida Coast //hurricane
+        m_entries.push_back(std::make_pair(L"Washington", "map=ms14"));
+        //m_entries.push_back(std::make_pair(L"TEST_OP", "map=msop")); //tex indices idx < size assert
+*/
     }
     else if (screen == "ac_select")
     {
         m_title = L"AIRCRAFT";
-        m_entries.push_back(std::make_pair(L"F14D", "ac=f14d"));
-        m_entries.push_back(std::make_pair(L"F15C", "ac=f15c"));
-        m_entries.push_back(std::make_pair(L"F16C", "ac=f16c"));
-        m_entries.push_back(std::make_pair(L"F18F", "ac=f18f"));
-        m_entries.push_back(std::make_pair(L"F22A", "ac=f22a"));
-        m_entries.push_back(std::make_pair(L"MIG29A", "ac=m29a"));
+        m_entries.push_back(std::make_pair(L"F-14D", "ac=f14d"));
+        m_entries.push_back(std::make_pair(L"F-15C", "ac=f15c"));
+        m_entries.push_back(std::make_pair(L"F-16C", "ac=f16c"));
+        m_entries.push_back(std::make_pair(L"F-18F", "ac=f18f"));
+        m_entries.push_back(std::make_pair(L"F-22A", "ac=f22a"));
+        m_entries.push_back(std::make_pair(L"Mig-29A", "ac=m29a"));
         m_entries.push_back(std::make_pair(L"PAK FA", "ac=pkfa"));
-        m_entries.push_back(std::make_pair(L"SU33", "ac=su33"));
-        m_entries.push_back(std::make_pair(L"SU35", "ac=su35"));
-        m_entries.push_back(std::make_pair(L"SU37", "ac=su37"));
-        m_entries.push_back(std::make_pair(L"SU47", "ac=su47"));
-        m_entries.push_back(std::make_pair(L"TYPHOON", "ac=typn"));
+        m_entries.push_back(std::make_pair(L"Su-33", "ac=su33"));
+        m_entries.push_back(std::make_pair(L"Su-35", "ac=su35"));
+        m_entries.push_back(std::make_pair(L"Su-37", "ac=su37"));
+        m_entries.push_back(std::make_pair(L"Su-47", "ac=su47"));
+        m_entries.push_back(std::make_pair(L"Typhoon", "ac=typn"));
 
         if (get_var("mode") == "ff")
         {
-            m_entries.push_back(std::make_pair(L"A10A", "ac=a10a"));
-            m_entries.push_back(std::make_pair(L"AV8B", "ac=av8b"));
+            m_entries.push_back(std::make_pair(L"A-10A", "ac=a10a"));
+            m_entries.push_back(std::make_pair(L"AV-8B", "ac=av8b"));
             m_entries.push_back(std::make_pair(L"ASF X", "ac=kwmr"));
-            m_entries.push_back(std::make_pair(L"B01B", "ac=b01b"));
-            m_entries.push_back(std::make_pair(L"B02A", "ac=b02a"));
-            m_entries.push_back(std::make_pair(L"F2A", "ac=f02a"));
-            m_entries.push_back(std::make_pair(L"F4E", "ac=f04e"));
-            m_entries.push_back(std::make_pair(L"F15M", "ac=f15m"));
-            m_entries.push_back(std::make_pair(L"F15E", "ac=f15e"));
-            m_entries.push_back(std::make_pair(L"F16F", "ac=f16f"));
-            m_entries.push_back(std::make_pair(L"F35B", "ac=f35b"));
-            m_entries.push_back(std::make_pair(L"F117A", "ac=f17a"));
+            m_entries.push_back(std::make_pair(L"B-01B", "ac=b01b"));
+            m_entries.push_back(std::make_pair(L"B-02A", "ac=b02a"));
+            m_entries.push_back(std::make_pair(L"F-2A", "ac=f02a"));
+            m_entries.push_back(std::make_pair(L"F-4E", "ac=f04e"));
+            m_entries.push_back(std::make_pair(L"F-15M", "ac=f15m"));
+            m_entries.push_back(std::make_pair(L"F-15E", "ac=f15e"));
+            m_entries.push_back(std::make_pair(L"F-16F", "ac=f16f"));
+            m_entries.push_back(std::make_pair(L"F-35B", "ac=f35b"));
+            m_entries.push_back(std::make_pair(L"F-117A", "ac=f17a"));
             m_entries.push_back(std::make_pair(L"JAS39C", "ac=j39c"));
-            m_entries.push_back(std::make_pair(L"M21BIS", "ac=m21b"));
-            m_entries.push_back(std::make_pair(L"MIRAGE2000", "ac=mr2k"));
-            m_entries.push_back(std::make_pair(L"RAFALE M", "ac=rflm"));
-            m_entries.push_back(std::make_pair(L"SU24MP", "ac=su24"));
-            m_entries.push_back(std::make_pair(L"SU25", "ac=su25"));
-            m_entries.push_back(std::make_pair(L"SU34", "ac=su34"));
-            m_entries.push_back(std::make_pair(L"TORNADO GR4", "ac=tnd4"));
+            m_entries.push_back(std::make_pair(L"Mig-21Bis", "ac=m21b"));
+            m_entries.push_back(std::make_pair(L"Mirage 2000", "ac=mr2k"));
+            m_entries.push_back(std::make_pair(L"Rafale M", "ac=rflm"));
+            m_entries.push_back(std::make_pair(L"Su-24MP", "ac=su24"));
+            m_entries.push_back(std::make_pair(L"Su-25", "ac=su25"));
+            m_entries.push_back(std::make_pair(L"Su-34", "ac=su34"));
+            m_entries.push_back(std::make_pair(L"Tornado GR4", "ac=tnd4"));
         }
 
         /*
@@ -211,7 +228,7 @@ void menu::set_screen(const std::string &screen)
         {
             wchar_t name[255];
             char action[255];
-            swprintf(name, 255, L"COLOR%02d", i);
+            swprintf(name, 255, L"Color%02d", i);
             sprintf(action, "color=%d", i);
             m_entries.push_back(std::make_pair(name, action));
         }

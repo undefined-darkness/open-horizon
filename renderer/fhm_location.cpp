@@ -21,9 +21,6 @@
 
 #include "shared.h"
 
-#include "render/debug_draw.h"
-extern nya_render::debug_draw test;
-
 namespace renderer
 {
 //------------------------------------------------------------
@@ -387,7 +384,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
         {
             //test.add_line(nya_math::vec3(8192.0, 0.0, 0.0), nya_math::vec3(0.0, 0.0, 0.0), nya_math::vec4(1.0, 0.0, 0.0, 1.0));
 
-            /*
+/*
             reader.seek(4128);
             for (int i = 0; i < 11; ++i)
             {
@@ -398,15 +395,16 @@ bool fhm_location::load(const char *fileName, const location_params &params)
                 };
 
                 unknown u = reader.read<unknown>();
-                test.add_point(u.pos1, nya_math::vec4(1.0, 0.0, 0.0, 1.0));
-                test.add_line(u.pos1, u.pos1+nya_math::vec3(0.0, 1000.0, 0.0), nya_math::vec4(1.0, 0.0, 0.0, 1.0));
+                get_debug_draw().add_point(u.pos1, nya_math::vec4(1.0, 0.0, 0.0, 1.0));
+                get_debug_draw().add_line(u.pos1, u.pos1+nya_math::vec3(0.0, 1000.0, 0.0), nya_math::vec4(1.0, 0.0, 0.0, 1.0));
             }
-          */
+*/
             //printf("chunk%d offset %d\n", j, ch.offset+48);
 
         }
         else if (sign == '2TBS')//SBT2
-        {/*
+        {
+            /*
             reader.seek(44);
             uint off = reader.read<uint>();
             reader.seek(off);
@@ -423,15 +421,14 @@ bool fhm_location::load(const char *fileName, const location_params &params)
                 };
 
                 unknown u = reader.read<unknown>();
-                test.add_point(u.pos1, nya_math::vec4(1.0, 0.0, 0.0, 1.0));
-                test.add_point(u.pos2, nya_math::vec4(0.0, 0.0, 1.0, 1.0));
+                get_debug_draw().add_point(u.pos1, nya_math::vec4(1.0, 0.0, 0.0, 1.0));
+                get_debug_draw().add_point(u.pos2, nya_math::vec4(0.0, 0.0, 1.0, 1.0));
+                get_debug_draw().add_line(u.pos1, u.pos2);
             }
-          */
+            */
         }
         else if( is_location )
         {
-            //char fname[255]; sprintf(fname, "chunk%d.txt", j); print_data(reader, 0, reader.get_remained(), 0, fname);
-
             if (j == 4)
             {
                 assert(reader.get_remained() == location_size*location_size);
@@ -453,6 +450,10 @@ bool fhm_location::load(const char *fileName, const location_params &params)
                 assert(reader.get_remained());
                 location_load_data.tex_indices_data.resize(reader.get_remained());
                 memcpy(&location_load_data.tex_indices_data[0], reader.get_data(), reader.get_remained());
+            }
+            else
+            {
+                //char fname[255]; sprintf(fname, "out/chunk%d.txt", j); print_data(reader, 0, reader.get_remained(), 0, fname);
             }
         }
         else

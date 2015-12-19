@@ -22,6 +22,7 @@ public:
     void set_alt(int value) { m_alt = value; }
     void set_missiles(const char *id, int icon);
     void set_missile_reload(int idx, float value);
+    void set_pos(const nya_math::vec3 &pos) { m_pos = pos; }
 
     enum target_type
     {
@@ -44,6 +45,7 @@ public:
 
 private:
     nya_math::vec3 m_project_pos;
+    nya_math::vec3 m_pos;
     ivalue m_speed;
     ivalue m_alt;
     ivalue m_missiles_icon;

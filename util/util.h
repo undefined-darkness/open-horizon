@@ -7,6 +7,7 @@
 #include "memory/tmp_buffer.h"
 #include "memory/memory_reader.h"
 #include "resources/resources.h"
+#include "render/debug_draw.h"
 #include <assert.h>
 #include <math.h>
 #include <vector>
@@ -15,6 +16,9 @@
 #define assume(expr) assert(expr) //like assert, but not critical
 
 //------------------------------------------------------------
+
+inline uint32_t swap_bytes(uint32_t v) { return (v >> 24) | ((v<<8) & 0x00FF0000) | ((v>>8) & 0x0000FF00) | (v << 24); }
+inline uint16_t swap_bytes(uint16_t v) { return ((v & 0xff) << 8) | ((v & 0xff00) >> 8); }
 
 inline nya_memory::tmp_buffer_ref load_resource(const char *name)
 {
@@ -273,5 +277,9 @@ struct debug_variable
 private:
     static int *value() { static int *value = new int(0); return value; }
 };
+
+//------------------------------------------------------------
+
+inline nya_render::debug_draw &get_debug_draw() { static nya_render::debug_draw dd; return dd; }
 
 //------------------------------------------------------------

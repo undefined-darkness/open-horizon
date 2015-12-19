@@ -61,11 +61,14 @@ void hud::draw(const render &r)
 
     wchar_t buf[255];
     swprintf(buf, sizeof(buf), L"%d", m_speed);
-    m_fonts.draw_text(r, L"SPEED", "NowGE20", r.get_width()/2 - 210, r.get_height()/2 - 30, green);
-    m_fonts.draw_text(r, buf, "NowGE20", r.get_width()/2 - 210, r.get_height()/2 - 7, green);
+    m_fonts.draw_text(r, L"SPEED", "NowGE20", r.get_width()/2 - 210, r.get_height()/2 - 33, green);
+    m_fonts.draw_text(r, buf, "NowGE20", r.get_width()/2 - 210, r.get_height()/2 - 10, green);
     swprintf(buf, sizeof(buf), L"%d", m_alt);
-    m_fonts.draw_text(r, L"ALT", "NowGE20", r.get_width()/2 + 170, r.get_height()/2 - 30, green);
-    m_fonts.draw_text(r, buf, "NowGE20", r.get_width()/2 + 170, r.get_height()/2 - 7, green);
+    m_fonts.draw_text(r, L"ALT", "NowGE20", r.get_width()/2 + 170, r.get_height()/2 - 33, green);
+    m_fonts.draw_text(r, buf, "NowGE20", r.get_width()/2 + 170, r.get_height()/2 - 10, green);
+
+    swprintf(buf, sizeof(buf), L"pos   %ld   %ld   %ld", long(m_pos.x),long(m_pos.y),long(m_pos.z));
+    m_fonts.draw_text(r, buf, "NowGE20", 20, 20, green);
 
     //m_common.debug_draw_tx(r);
     //m_aircraft.debug_draw_tx(r);

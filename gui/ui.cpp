@@ -5,6 +5,9 @@
 #include "ui.h"
 #include "containers/fhm.h"
 #include "renderer/shared.h"
+#include <algorithm>
+#include "util/half.h"
+#include "render/platform_specific_gl.h"
 
 namespace gui
 {
@@ -95,8 +98,6 @@ void render::draw(const std::vector<rect_pair> &elements, const nya_scene::textu
     if (elements.empty())
         return;
 
-    assert(elements.size()<elements_per_batch); //ToDo: draw multiple times
-
     m_color->set(color);
     m_tex.set(tex);
 
@@ -106,42 +107,46 @@ void render::draw(const std::vector<rect_pair> &elements, const nya_scene::textu
     const float itwidth = 1.0f / tex.get_width();
     const float itheight = 1.0f / tex.get_height();
 
-    for (int i = 0; i < (int)elements.size(); ++i)
+    for (int b = 0; b < (int)elements.size();b+=elements_per_batch)
     {
-        auto &e = elements[i];
-        m_tr->set_count(i + 1);
-        m_tc_tr->set_count(i + 1);
-
-        nya_math::vec4 pos;
-        pos.z = float(e.r.w) * iwidth;
-        pos.w = float(e.r.h) * iheight;
-        pos.x = pos.z - 1.0 + 2.0 * e.r.x * iwidth;
-        pos.y = -pos.w + 1.0 - 2.0 * e.r.y * iheight;
-        if (aspect > 1.0)
+        const int count=std::min((int)elements.size()-b,elements_per_batch);
+        for (int i = 0; i < count; ++i)
         {
-            pos.x /= aspect;
-            pos.z /= aspect;
-        }
-        else
-        {
-            pos.y *= aspect;
-            pos.w *= aspect;
-        }
-        m_tr->set(i, pos);
+            auto &e = elements[i+b];
+            m_tr->set_count(i + 1);
+            m_tc_tr->set_count(i + 1);
 
-        nya_math::vec4 tc;
-        tc.z = float(e.tc.w) * itwidth;
-        tc.w = -float(e.tc.h) * itheight;
-        tc.x = float(e.tc.x) * itwidth;
-        tc.y = float(e.tc.y) * itheight - tc.w;
-        m_tc_tr->set(i, tc);
+            nya_math::vec4 pos;
+            pos.z = float(e.r.w) * iwidth;
+            pos.w = float(e.r.h) * iheight;
+            pos.x = pos.z - 1.0 + 2.0 * e.r.x * iwidth;
+            pos.y = -pos.w + 1.0 - 2.0 * e.r.y * iheight;
+            if (aspect > 1.0)
+            {
+                pos.x /= aspect;
+                pos.z /= aspect;
+            }
+            else
+            {
+                pos.y *= aspect;
+                pos.w *= aspect;
+            }
+            m_tr->set(i, pos);
+
+            nya_math::vec4 tc;
+            tc.z = float(e.tc.w) * itwidth;
+            tc.w = -float(e.tc.h) * itheight;
+            tc.x = float(e.tc.x) * itwidth;
+            tc.y = float(e.tc.y) * itheight - tc.w;
+            m_tc_tr->set(i, tc);
+        }
+
+        m_material.internal().set(nya_scene::material::default_pass);
+        m_quads_mesh.bind();
+        m_quads_mesh.draw((unsigned int)count * 6);
+        m_quads_mesh.unbind();
+        m_material.internal().unset();
     }
-
-    m_material.internal().set(nya_scene::material::default_pass);
-    m_quads_mesh.bind();
-    m_quads_mesh.draw((unsigned int)elements.size() * 6);
-    m_quads_mesh.unbind();
-    m_material.internal().unset();
 
     static nya_scene::texture empty;
     m_tex.set(empty);
@@ -157,8 +162,6 @@ void render::draw(const std::vector<nya_math::vec2> &elements, const nya_math::v
     if (elements.empty())
         return;
 
-    assert(elements.size()<elements_per_batch); //ToDo: draw multiple times
-
     m_tex.set(shared::get_white_texture());
     m_color.set(color);
 
@@ -166,32 +169,40 @@ void render::draw(const std::vector<nya_math::vec2> &elements, const nya_math::v
     const float iwidth = 1.0f / get_width();
     const float iheight = 1.0f / get_height();
 
-    for (int i = 0; i < (int)elements.size(); ++i)
-    {
-        auto &e = elements[i];
-        m_tr->set_count(i + 1);
-        m_tc_tr->set_count(i + 1);
-
-        nya_math::vec4 pos;
-        pos.x = -1.0 + 2.0 * e.x * iwidth;
-        pos.y = 1.0 - 2.0 * e.y * iheight;
-        if (aspect > 1.0)
-            pos.x /= aspect;
-        else
-            pos.y *= aspect;
-        m_tr->set(i, pos);
-    }
-
-    m_material.internal().set(nya_scene::material::default_pass);
-    m_lines_mesh.bind();
     glLineWidth(1.0);
-    m_lines_mesh.draw((unsigned int)elements.size());
-    m_lines_mesh.unbind();
-    m_material.internal().unset();
+    for (int b = 0; b < (int)elements.size();b+=elements_per_batch)
+    {
+        const int count=std::min((int)elements.size()-b,elements_per_batch);
+        for (int i = 0; i < count; ++i)
+        {
+            auto &e = elements[i];
+            m_tr->set_count(i + 1);
+            m_tc_tr->set_count(i + 1);
+
+            nya_math::vec4 pos;
+            pos.x = -1.0 + 2.0 * e.x * iwidth;
+            pos.y = 1.0 - 2.0 * e.y * iheight;
+            if (aspect > 1.0)
+                pos.x /= aspect;
+            else
+                pos.y *= aspect;
+            m_tr->set(i, pos);
+        }
+
+        m_material.internal().set(nya_scene::material::default_pass);
+        m_lines_mesh.bind();
+        m_lines_mesh.draw((unsigned int)count);
+        m_lines_mesh.unbind();
+        m_material.internal().unset();
+    }
 
     static nya_scene::texture empty;
     m_tex.set(empty);
 }
+
+//------------------------------------------------------------
+
+inline float fixed_to_float(uint16_t half) { return (((int8_t *)&half)[1] + ((uint8_t *)&half)[0] / 256.0f) * 4.0f; }
 
 //------------------------------------------------------------
 
@@ -253,25 +264,39 @@ bool fonts::load(const char *name)
                 f.name.assign((char *)r.get_data());
                 r.seek(32);
 
-                //print_data(r, r.get_offset(), sizeof(acf_font_header));
-
                 auto header = r.read<acf_font_header>();
                 r.skip(1024);
 
-                f.t = header;
+                f.height=fixed_to_float(header.height);
+
+                f.unknown[0]=fixed_to_float(header.unknown[0]);
+                f.unknown[1]=fixed_to_float(header.unknown[1]);
+                f.unknown[2]=fixed_to_float(header.unknown[2]);
+                f.unknown[3]=fixed_to_float(header.unknown2[0]);
+                f.unknown[4]=fixed_to_float(header.unknown2[1]);
+                f.unknown[5]=fixed_to_float(header.unknown2[2]);
+                f.unknown[6]=fixed_to_float(header.unknown2[3]);
 
                 for (uint32_t j = 0; j < header.char_count; ++j)
                 {
-                    //print_data(r, r.get_offset(), sizeof(acf_char));
+                    const auto c = r.read<acf_char>();
 
-                    auto c = r.read<acf_char>();
-
-                    wchar_t char_code = ((c.char_code & 0xff) << 8) | ((c.char_code & 0xff00) >> 8);
+                    wchar_t char_code = swap_bytes(c.char_code);
                     auto &fc = f.chars[char_code];
                     fc.x = c.x, fc.y = c.y;
                     fc.w = c.width, fc.h = c.height;
+                    fc.yoffset = fixed_to_float(c.yoffset);
+                    fc.xadvance = fixed_to_float(c.xadvance);
+                    fc.unknown = fixed_to_float(c.unknown3[0]);
+                    fc.unknown2 = fixed_to_float(c.unknown3[1]);
+                }
 
-                    fc.t = c;
+                for (uint32_t j = 0; j < header.kern_count; ++j)
+                {
+                    kern_key k;
+                    k.c[0] = swap_bytes(r.read<uint16_t>());
+                    k.c[1] = swap_bytes(r.read<uint16_t>());
+                    f.kerning[k.key] = fixed_to_float(r.read<uint16_t>());
                 }
             }
 
@@ -315,27 +340,21 @@ int fonts::draw_text(const render &r, const wchar_t *text, const char *font_name
         e.r.w = fc->second.w;
         e.r.h = fc->second.h;
         e.r.x = x + width;
-        e.r.y = y;
-
-        //ToDo
-
-        //e.r.y -= fc->second.h;
-        //e.r.y -= fc->second.t.unknown3[1] * 4;
-
-        //e.r.y -= fc->second.h/2;
-        //e.r.y -= fc->second.t.unknown3[1] * 2;
-
-        //e.r.y -= fc->second.h * fc->second.t.unknown3[0] / 128;
-        //e.r.y -= fc->second.t.unknown5 * fc->second.t.unknown3[0] / 128;
-
-        //+ fc->second.t.unknown5;
+        e.r.y = y - fc->second.yoffset + f->height;
 
         e.tc.w = fc->second.w;
         e.tc.h = fc->second.h;
         e.tc.x = fc->second.x;
         e.tc.y = fc->second.y;
 
-        width += fc->second.w + fc->second.t.unknown3[3];
+        width += fc->second.xadvance;
+
+        kern_key kk;
+        kk.c[0] = *c;
+        kk.c[1] = *(c+1);
+        auto k = f->kerning.find(kk.key);
+        if (k != f->kerning.end())
+            width += k->second;
 
         elements.push_back(e);
     }

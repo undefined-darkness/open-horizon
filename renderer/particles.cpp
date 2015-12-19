@@ -44,57 +44,30 @@ bool particles_bcf::load(const char *name)
     {
         reader.seek(o);
 
-        struct unknown_header
-        {
-            uint32_t unknown; //hash id?
-            uint32_t count;
-            uint32_t sub_count;
-            float unknown2; //usually 0.1, 0.01 or 0.05
-            uint32_t zero_or_one;
-            uint32_t zero[2];
-        } uh;
-
+        unknown_structs.push_back({});
+        auto &uh = unknown_structs.back().header;
         uh = reader.read<unknown_header>();
         assume(uh.zero_or_one == 0 || uh.zero_or_one == 1);
         assume(uh.zero[0] == 0 && uh.zero[1] == 0);
 
-        std::vector<uint32_t> offsets(uh.count);
-        for (auto &o: offsets)
+        std::vector<uint32_t> sub_offsets(uh.count);
+        for (auto &o: sub_offsets)
             o = reader.read<uint32_t>();
 
         auto base_offset = reader.get_offset();
 
-        for (auto &o: offsets)
+        for (auto &so: sub_offsets)
         {
-            reader.seek(base_offset + o);
+            reader.seek(base_offset + so);
 
-            struct unknown_sub_header
-            {
-                uint32_t unknown; //usually 2 or 3
-                uint32_t unknown2;
-                float unknown3; //usually 1.0
-                uint32_t zero;
-                float unknown4;
-                uint32_t zero2;
-                uint32_t unknown5;
-                uint32_t unknown6;
-                uint32_t unknown7;
-            } ush;
-
+            unknown_structs.back().sub_structs.push_back({});
+            auto &us = unknown_structs.back().sub_structs.back();
+            auto &ush = us.header;
             ush = reader.read<unknown_sub_header>();
             assume(ush.zero == 0 && ush.zero2 == 0);
 
-            struct unknown_sub_data
-            {
-                float pos[3];
-                uint8_t color[4];
-            };
-
             for(int i = 0; i < uh.sub_count; ++i)
-            {
-                unknown_sub_data d = reader.read<unknown_sub_data>();
-                d = d;
-            }
+                us.sub_data.push_back(reader.read<unknown_sub_data>());
         }
     }
 
@@ -128,15 +101,7 @@ bool particles_bfx::load(const char *name)
     assert(memcmp(header.sign, "BFX ", 4) == 0);
     assume(header.unknown_zero == 0 && header.unknown_zero2 == 0);
 
-    struct unknown_struct
-    {
-        uint32_t unknown;
-        uint16_t unknwon2[2]; //offset and count?
-        uint16_t unknwon3[2];
-        uint32_t zero;
-    };
-
-    std::vector<unknown_struct> unknown_structs(header.count);
+    unknown_structs.resize(header.count);
     assert(reader.get_remained() >= unknown_structs.size() * sizeof(unknown_struct));
 
     for (auto &u: unknown_structs)
@@ -145,33 +110,7 @@ bool particles_bfx::load(const char *name)
         assume(u.zero == 0);
     }
 
-    struct unknown_struct2
-    {
-        uint32_t unknown;
-        uint32_t unknown2;
-        uint32_t unknown3;
-        float unknown4[5];
-        uint16_t tc[4];
-        uint16_t tc2[4];
-
-        uint32_t unknown5[5]; //ToDo
-        uint32_t unknown6[5]; //colors?
-
-        uint32_t unknown7[13];
-
-        uint32_t unknown8[33]; //ToDo
-
-        uint32_t unknown9;
-        float unknown10;
-        float unknown11;
-        uint32_t unknown12;
-        float unknown13;
-        uint32_t unknown14;
-
-        uint32_t zero[14];
-    };
-
-    std::vector<unknown_struct2> unknown_structs2(header.count2);
+    unknown_structs2.resize(header.count2);
     assert(reader.get_remained() >= unknown_structs2.size() * sizeof(unknown_struct2));
 
     for (auto &u: unknown_structs2)
@@ -181,15 +120,7 @@ bool particles_bfx::load(const char *name)
             assume(z == 0);
     }
 
-    struct unknown_struct3
-    {
-        float unknown;
-        uint16_t unknown2;
-        uint8_t unknown3;
-        uint8_t unknown4;
-    };
-
-    std::vector<unknown_struct3> unknown_structs3(header.count3);
+    unknown_structs3.resize(header.count3);
     assert(reader.get_remained() >= unknown_structs3.size() * sizeof(unknown_struct3));
 
     for (auto &u: unknown_structs3)

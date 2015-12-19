@@ -194,13 +194,13 @@ void scene::draw()
     if(m_loading)
     {
         m_loading = false;
-        m_ui_fonts.draw_text(ui_render, L"LOADING", "NowGE24", ui_render.get_width() * 0.5 - 50, ui_render.get_height() * 0.5, white);
+        m_ui_fonts.draw_text(ui_render, L"LOADING", "ZurichBD20outline", ui_render.get_width() * 0.5 - 50, ui_render.get_height() * 0.5, white);
     }
     else
     {
         hud.draw(ui_render);
         if(m_paused)
-            m_ui_fonts.draw_text(ui_render, L"PAUSED", "NowGE24", ui_render.get_width() * 0.5 - 45, ui_render.get_height() * 0.5, white);
+            m_ui_fonts.draw_text(ui_render, L"PAUSED", "ZurichBD20outline", ui_render.get_width() * 0.5 - 45, ui_render.get_height() * 0.5, white);
     }
 }
 

@@ -71,40 +71,50 @@ public:
 private:
     struct acf_font_header
     {
-        uint8_t unknown[4];
-        uint8_t unknown2[4];
+        uint16_t height;
+        uint16_t unknown[3];
         uint16_t char_count;
-        uint16_t unknown3;
-        uint8_t unknown4[4];
-        uint8_t unknown5[4];
+        uint16_t kern_count;
+        uint16_t unknown2[4];
     };
 
     struct acf_char
     {
         uint16_t unknown, x;
         uint16_t y, unknown2;
-        uint8_t unknown3[4];
+        uint16_t yoffset, xadvance;
         uint8_t width, height;
         uint16_t char_code;
-        uint8_t unknown4[4];
+        uint16_t unknown3[2];
         uint32_t unknown5;
     };
 
 private:
     struct chr
     {
-        acf_char t; //temp
-
         uint16_t x,y;
         uint8_t w,h;
+        float yoffset;
+        float xadvance;
+        float unknown;
+        float unknown2;
+        uint32_t unknown3;
+    };
+
+    union kern_key
+    {
+        uint32_t key;
+        uint16_t c[2];
     };
 
     struct font
     {
-        acf_font_header t; //temp
+        float height;
+        float unknown[7];
 
         std::string name;
         std::map<wchar_t, chr> chars;
+        std::map<uint32_t, float> kerning;
     };
 
     std::vector<font> m_fonts;

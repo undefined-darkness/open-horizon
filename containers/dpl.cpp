@@ -10,10 +10,9 @@
 #include <assert.h>
 #include <zlib.h>
 #include <stdint.h>
+#include "util/util.h"
 
 //------------------------------------------------------------
-
-inline unsigned int swap_bytes(unsigned int &ui) { return ui = (ui >> 24) | ((ui<<8) & 0x00FF0000) | ((ui>>8) & 0x0000FF00) | (ui << 24); }
 
 bool dpl_file::open(const char *name)
 {
@@ -42,15 +41,15 @@ bool dpl_file::open(const char *name)
     m_byte_order = header.byte_order_20101010 != 20101010;
     if (m_byte_order)
     {
-        swap_bytes(header.byte_order_20101010);
-        swap_bytes(header.flags);
-        swap_bytes(header.infos_count);
-        swap_bytes(header.infos_size);
+        header.byte_order_20101010 = swap_bytes(header.byte_order_20101010);
+        header.flags = swap_bytes(header.flags);
+        header.infos_count = swap_bytes(header.infos_count);
+        header.infos_size = swap_bytes(header.infos_size);
     }
 
     assert(header.byte_order_20101010 == 20101010);
 
-    m_archieved = header.flags == 2011101108 || header.flags == 2011080301;
+    m_archieved = header.flags == 2011101108 || header.flags == 2011080301 || header.flags == 2013091901;
     if (!m_archieved && header.flags != 2011082201)
         return false;
 
@@ -102,7 +101,7 @@ bool dpl_file::open(const char *name)
         if (byte_order)
         {
             for (uint32_t j = 1; j < sizeof(e) / 4; ++j)
-                swap_bytes(((uint32_t *)&e)[j]);
+                ((uint32_t *)&e)[j] = swap_bytes(((uint32_t *)&e)[j]);
 
             std::swap(((uint32_t *)&e.offset)[0], ((uint32_t *)&e.offset)[1]);
         }
@@ -119,7 +118,7 @@ bool dpl_file::open(const char *name)
             if (byte_order)
             {
                 for (uint32_t j = 0; j < sizeof(s) / 4; ++j)
-                    swap_bytes(((uint32_t *)&s)[j]);
+                    ((uint32_t *)&s)[j] = swap_bytes(((uint32_t *)&s)[j]);
             }
 
             assert(s.idx <= e.unknown_struct_count);
@@ -216,7 +215,7 @@ bool dpl_file::read_file_data(int idx, void *data) const
         if (m_byte_order)
         {
             for (uint32_t j = 1; j < sizeof(header) / 4; ++j)
-                swap_bytes(((uint32_t *)&header)[j]);
+                ((uint32_t *)&header)[j] = swap_bytes(((uint32_t *)&header)[j]);
         }
 
         uint8_t *buf_from = (uint8_t *)r.get_data();
