@@ -145,6 +145,8 @@ void scene::update(int dt)
     if (m_help_time > 0)
         m_help_time -= dt;
 
+    hud.update(dt);
+
     m_frame_counter_time += dt;
     ++m_frame_counter;
     if (m_frame_counter_time > 1000)

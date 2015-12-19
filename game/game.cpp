@@ -533,6 +533,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         h.set_project_pos(phys->pos + phys->rot.rotate(nya_math::vec3(0.0, 0.0, 1000.0)));
         h.set_speed(speed);
         h.set_alt(phys->pos.y);
+        h.set_missile_alert(is_on_target);
 
         if (controls.change_target && controls.change_target != last_controls.change_target)
         {
@@ -614,6 +615,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     }
 
     last_controls = controls;
+    is_on_target = false;
 }
 
 //------------------------------------------------------------
@@ -627,7 +629,10 @@ void missile::update_homing(int dt)
     auto t = target.lock();
     const vec3 target_dir = (t->get_pos() - phys->pos + (t->phys->vel - phys->vel) * dt * 0.001f).normalize();
     if (dir.dot(target_dir) > homing_angle_cos)
+    {
         phys->target_dir = target_dir;
+        t->is_on_target = true;
+    }
 }
 
 //------------------------------------------------------------

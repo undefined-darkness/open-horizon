@@ -15,6 +15,7 @@ class hud
 public:
     void load(const char *aircraft_name);
     void draw(const render &r);
+    void update(int dt);
 
     void set_hide(bool value) { m_hide = value; }
     void set_project_pos(const nya_math::vec3 &pos) { m_project_pos = pos; }
@@ -22,6 +23,7 @@ public:
     void set_alt(int value) { m_alt = value; }
     void set_missiles(const char *id, int icon);
     void set_missile_reload(int idx, float value);
+    void set_missile_alert(bool value) { m_missile_alert = value; }
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; }
 
     enum target_type
@@ -50,6 +52,7 @@ private:
     ivalue m_alt;
     ivalue m_missiles_icon;
     ivalue m_missiles_cross;
+    bvalue m_missile_alert;
 
     struct target
     {
@@ -59,6 +62,8 @@ private:
     };
 
     std::vector<target> m_targets;
+
+    ivalue m_anim_time;
 
 private:
     bool m_common_loaded;

@@ -88,6 +88,8 @@ struct plane: public object
     std::vector<ivalue> special_mount_cooldown;
     ivalue special_mount_idx;
 
+    bvalue is_on_target;
+
     struct target_lock
     {
         w_ptr<plane> target_plane;
