@@ -39,15 +39,23 @@ class render
 public:
     void init();
     void resize(int width, int height) { m_width = width, m_height = height; }
+
+public:
+    struct transform { fvalue x, y, yaw, sx, sy; transform() { sx = sy = 1.0f; } };
+
     void draw(const std::vector<rect_pair> &elements, const nya_scene::texture &tex,
-              const nya_math::vec4 &color = nya_math::vec4(1.0, 1.0, 1.0, 1.0)) const;
-    void draw(const std::vector<nya_math::vec2> &elements, const nya_math::vec4 &color = nya_math::vec4(1.0, 1.0, 1.0, 1.0)) const;
+              const nya_math::vec4 &color = nya_math::vec4(1.0, 1.0, 1.0, 1.0), const transform &t = transform()) const;
+    void draw(const std::vector<nya_math::vec2> &elements,
+              const nya_math::vec4 &color = nya_math::vec4(1.0, 1.0, 1.0, 1.0), const transform &t = transform()) const;
+public:
     int get_width(bool real = false) const { return real ? m_width : 1366; }
     int get_height(bool real = false) const { return real ? m_height : 768; }
 //1366	×	768
     render(): m_width(0), m_height(0) {}
 
 private:
+    bool set_transform(const transform &t) const;
+
     int m_width, m_height;
     nya_render::vbo m_quads_mesh;
     nya_render::vbo m_lines_mesh;
@@ -55,6 +63,8 @@ private:
     mutable nya_scene::material::param_proxy m_color;
     mutable nya_scene::material::param_array_proxy m_tr;
     mutable nya_scene::material::param_array_proxy m_tc_tr;
+    mutable nya_scene::material::param_proxy m_urot;
+    mutable nya_scene::material::param_proxy m_utr;
     mutable nya_scene::texture_proxy m_tex;
 };
 
@@ -128,7 +138,7 @@ class tiles
 {
 public:
     bool load(const char *name);
-    void draw(const render &r, int id, int x, int y, const nya_math::vec4 &color);
+    void draw(const render &r, int id, int x, int y, const nya_math::vec4 &color, float yaw = 0.0f);
     int get_count() { return (int)m_hud.size(); }
     int get_id(int idx);
     void set_progress(int id, int sub_idx, float value);

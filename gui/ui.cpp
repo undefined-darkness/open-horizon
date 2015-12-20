@@ -26,6 +26,8 @@ void render::init()
     m_color.create();
     m_tr.create();
     m_tc_tr.create();
+    m_urot.create();
+    m_utr.create();
 
     struct vert { float x,y,s,t,i; } verts[elements_per_batch][4];
 
@@ -36,7 +38,7 @@ void render::init()
         auto &v = verts[i];
         for(int j=0;j<4;++j)
         {
-            v[j].x=j>1?-1.0f:1.0f,v[j].y=j%2?1.0f:-1.0f;
+            v[j].x=j>1?0.0f:1.0f,v[j].y=j%2?1.0f:0.0f;
             v[j].s=j>1? 0.0f:1.0f,v[j].t=j%2?1.0f:0.0f;
             if (nya_render::get_render_api() == nya_render::render_api_directx11)
                 v[j].t=1.0f-v[j].t;
@@ -80,32 +82,28 @@ void render::init()
     m_material.set_param(m_material.get_param_idx("color"), m_color);
     m_material.set_param_array(m_material.get_param_idx("transform"), m_tr);
     m_material.set_param_array(m_material.get_param_idx("tc transform"), m_tc_tr);
+    m_material.set_param(m_material.get_param_idx("uniform rotate"), m_urot);
+    m_material.set_param(m_material.get_param_idx("uniform transform"), m_utr);
 }
 
 //------------------------------------------------------------
 
-void render::draw(const std::vector<rect_pair> &elements, const nya_scene::texture &tex, const nya_math::vec4 &color) const
+void render::draw(const std::vector<rect_pair> &elements, const nya_scene::texture &tex, const nya_math::vec4 &color, const transform &t) const
 {
-    if (!m_tex.is_valid()) //not initialised
-        return;
-
-    if (!m_width || !m_height)
+    if (elements.empty())
         return;
 
     if (!tex.get_width() || !tex.get_height())
         return;
 
-    if (elements.empty())
+    if (!set_transform(t))
         return;
+
+    const float itwidth = 1.0f / tex.get_width();
+    const float itheight = 1.0f / tex.get_height();
 
     m_color->set(color);
     m_tex.set(tex);
-
-    const float aspect = float(m_width) / m_height / (float(get_width()) / get_height() );
-    const float iwidth = 1.0f / get_width();
-    const float iheight = 1.0f / get_height();
-    const float itwidth = 1.0f / tex.get_width();
-    const float itheight = 1.0f / tex.get_height();
 
     for (int b = 0; b < (int)elements.size();b+=elements_per_batch)
     {
@@ -117,27 +115,17 @@ void render::draw(const std::vector<rect_pair> &elements, const nya_scene::textu
             m_tc_tr->set_count(i + 1);
 
             nya_math::vec4 pos;
-            pos.z = float(e.r.w) * iwidth;
-            pos.w = float(e.r.h) * iheight;
-            pos.x = pos.z - 1.0 + 2.0 * e.r.x * iwidth;
-            pos.y = -pos.w + 1.0 - 2.0 * e.r.y * iheight;
-            if (aspect > 1.0)
-            {
-                pos.x /= aspect;
-                pos.z /= aspect;
-            }
-            else
-            {
-                pos.y *= aspect;
-                pos.w *= aspect;
-            }
+            pos.z = float(e.r.w);
+            pos.w = float(e.r.h);
+            pos.x = e.r.x;
+            pos.y = e.r.y;
             m_tr->set(i, pos);
 
             nya_math::vec4 tc;
             tc.z = float(e.tc.w) * itwidth;
-            tc.w = -float(e.tc.h) * itheight;
+            tc.w = float(e.tc.h) * itheight;
             tc.x = float(e.tc.x) * itwidth;
-            tc.y = float(e.tc.y) * itheight - tc.w;
+            tc.y = float(e.tc.y) * itheight;
             m_tc_tr->set(i, tc);
         }
 
@@ -154,20 +142,16 @@ void render::draw(const std::vector<rect_pair> &elements, const nya_scene::textu
 
 //------------------------------------------------------------
 
-void render::draw(const std::vector<nya_math::vec2> &elements, const nya_math::vec4 &color) const
+void render::draw(const std::vector<nya_math::vec2> &elements, const nya_math::vec4 &color, const transform &t) const
 {
-    if (!m_width || !m_height)
+    if (elements.empty())
         return;
 
-    if (elements.empty())
+    if (!set_transform(t))
         return;
 
     m_tex.set(shared::get_white_texture());
     m_color.set(color);
-
-    const float aspect = float(m_width) / m_height / (float(get_width()) / get_height() );
-    const float iwidth = 1.0f / get_width();
-    const float iheight = 1.0f / get_height();
 
     glLineWidth(1.0);
     for (int b = 0; b < (int)elements.size();b+=elements_per_batch)
@@ -180,12 +164,8 @@ void render::draw(const std::vector<nya_math::vec2> &elements, const nya_math::v
             m_tc_tr->set_count(i + 1);
 
             nya_math::vec4 pos;
-            pos.x = -1.0 + 2.0 * e.x * iwidth;
-            pos.y = 1.0 - 2.0 * e.y * iheight;
-            if (aspect > 1.0)
-                pos.x /= aspect;
-            else
-                pos.y *= aspect;
+            pos.x = e.x;
+            pos.y = e.y;
             m_tr->set(i, pos);
         }
 
@@ -198,6 +178,38 @@ void render::draw(const std::vector<nya_math::vec2> &elements, const nya_math::v
 
     static nya_scene::texture empty;
     m_tex.set(empty);
+}
+
+//------------------------------------------------------------
+
+bool render::set_transform(const transform &t) const
+{
+    if (!m_width || !m_height)
+        return false;
+
+    if (!m_urot.is_valid()) //not initialised
+        return false;
+
+    m_urot->set(cosf(t.yaw), -sinf(t.yaw), sinf(t.yaw), cosf(t.yaw));
+
+    const float aspect = float(m_width) / m_height / (float(get_width()) / get_height() );
+    const float iwidth = 1.0f / get_width();
+    const float iheight = 1.0f / get_height();
+
+    nya_math::vec4 utr(t.x * iwidth, t.y * iheight, t.sx * iwidth, t.sy * iheight);
+    if (aspect > 1.0)
+    {
+        utr.x = (utr.x - 0.5f) / aspect + 0.5f;
+        utr.z /= aspect;
+    }
+    else
+    {
+        utr.y = (utr.y - 0.5f) * aspect + 0.5f;
+        utr.w *= aspect;
+    }
+    m_utr->set(utr);
+
+    return true;
 }
 
 //------------------------------------------------------------
@@ -579,8 +591,12 @@ int tiles::get_id(int idx)
 
 //------------------------------------------------------------
 
-void tiles::draw(const render &r, int id, int x, int y, const nya_math::vec4 &color)
+void tiles::draw(const render &r, int id, int x, int y, const nya_math::vec4 &color, float yaw)
 {
+    render::transform t;
+    t.x = float(x), t.y = float(y);
+    t.yaw = yaw;
+
     auto it = m_hud_map.find(id);
     if (it == m_hud_map.end())
         return;
@@ -589,15 +605,7 @@ void tiles::draw(const render &r, int id, int x, int y, const nya_math::vec4 &co
     for (auto &t1: h.type1)
     {
         for (auto &l: t1.line_loops)
-        {
-            auto loop = l;
-            for (auto &l: loop)
-            {
-                l.x += x;
-                l.y += y;
-            }
-            r.draw(loop, color);
-        }
+            r.draw(l, color, t);
     }
 
     std::vector<rect_pair> rects;
@@ -612,8 +620,8 @@ void tiles::draw(const render &r, int id, int x, int y, const nya_math::vec4 &co
         rp.tc.y = e.y;
         rp.tc.w = e.w;
         rp.tc.h = e.h * h.type3_progress[i];
-        rp.r.x = t3.x + x;
-        rp.r.y = t3.y + y;
+        rp.r.x = t3.x;
+        rp.r.y = t3.y;
         rp.r.w = t3.w * t3.ws;
         rp.r.h = t3.h * t3.hs * h.type3_progress[i];
 
@@ -660,7 +668,7 @@ void tiles::draw(const render &r, int id, int x, int y, const nya_math::vec4 &co
     */
 
     if (tex_idx >= 0)
-        r.draw(rects, m_textures[tex_idx], color);
+        r.draw(rects, m_textures[tex_idx], color, t);
 }
 
 //------------------------------------------------------------

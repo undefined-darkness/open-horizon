@@ -581,7 +581,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                     target = gui::hud::target_air_lock;
             }
 
-            h.add_target(p->get_pos(), target, select);
+            h.add_target(p->get_pos(), p->get_rot().get_euler().y, target, select);
         }
 
         if (special_weapon)

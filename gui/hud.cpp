@@ -191,15 +191,21 @@ void hud::draw(const render &r)
         if (len > 0.01f)
             d *= float(radar_radius) / radar_range;
 
+        int icon = 181;
+        auto color = white;
+
         if (t.t == target_air_ally)
-            m_common.draw(r, 181, radar_center_x + d.x, radar_center_y + d.y, blue);
+            color = blue;
         else
-        {
-            auto color = red;
-            if (t.s == select_current)
-                color.w = anim;
-            m_common.draw(r, 185, radar_center_x + d.x, radar_center_y + d.y, color);
-        }
+            color = red;
+
+        //if (t.t == target_air_lock)
+        //    icon = 185;
+
+        if (t.s == select_current)
+            color.w = anim;
+
+        m_common.draw(r, icon, radar_center_x + d.x, radar_center_y + d.y, color, m_yaw - t.yaw);
     }
 
     //m_common.draw(r, 185, radar_center_x, radar_center_y+radar_radius, green);
@@ -220,6 +226,8 @@ void hud::draw(const render &r)
         malert_quad[4] = malert_quad[0];
         r.draw(malert_quad, alert_color);
         m_fonts.draw_text(r, L"MISSILE ALERT", "Zurich20", r.get_width()/2-60, 235, alert_color);
+
+        //m_common.draw(r, 170, r.get_width()/2, r.get_height()/2, red, anim*2.0*3.1415); //ToDo
     }
 
     //Zurich12 -23 14 -111 20 -105 30 -96 BD30Outline -113 BD20Outline -26 BD22Outline -18 OCRB15 -33
@@ -242,9 +250,9 @@ void hud::set_missile_reload(int idx, float value)
 
 //------------------------------------------------------------
 
-void hud::add_target(const nya_math::vec3 &pos, target_type target, select_type select)
+void hud::add_target(const nya_math::vec3 &pos, float yaw, target_type target, select_type select)
 {
-    m_targets.push_back({pos, target, select});
+    m_targets.push_back({pos, yaw, target, select});
 }
 
 //------------------------------------------------------------

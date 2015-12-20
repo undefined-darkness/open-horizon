@@ -42,7 +42,7 @@ public:
     };
 
     void clear_targets() { m_targets.clear(); }
-    void add_target(const nya_math::vec3 &pos, target_type target, select_type select);
+    void add_target(const nya_math::vec3 &pos, float yaw, target_type target, select_type select);
 
     hud(): m_common_loaded(false), m_hide(false) {}
 
@@ -59,6 +59,7 @@ private:
     struct target
     {
         nya_math::vec3 pos;
+        float yaw;
         target_type t;
         select_type s;
     };
