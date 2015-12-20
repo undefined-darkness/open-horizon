@@ -180,6 +180,16 @@ plane_ptr world::get_plane(int idx)
 
 //------------------------------------------------------------
 
+missile_ptr world::get_missile(int idx)
+{
+    if (idx < 0 || idx >= (int)m_planes.size())
+        return missile_ptr();
+
+    return m_missiles[idx];
+}
+
+//------------------------------------------------------------
+
 void world::set_location(const char *name)
 {
     m_render_world.set_location(name);
@@ -546,6 +556,14 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         }
 
         h.clear_targets();
+
+        for (int i = 0; i < w.get_missiles_count(); ++i)
+        {
+            auto m = w.get_missile(i);
+            if (m)
+                h.add_target(m->phys->pos, m->phys->rot.get_euler().y, gui::hud::target_missile, gui::hud::select_not);
+        }
+
         for (int i = 0; i < w.get_planes_count(); ++i)
         {
             auto p = w.get_plane(i);

@@ -31,7 +31,8 @@ public:
     {
         target_air,
         target_air_lock,
-        target_air_ally
+        target_air_ally,
+        target_missile
     };
 
     enum select_type

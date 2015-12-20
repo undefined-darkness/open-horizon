@@ -137,8 +137,11 @@ public:
     plane_ptr add_plane(const char *name, int color, bool player);
     missile_ptr add_missile(const char *id, const char *model);
 
-    int get_planes_count() { return (int)m_planes.size(); }
+    int get_planes_count() const { return (int)m_planes.size(); }
     plane_ptr get_plane(int idx);
+
+    int get_missiles_count() const { return (int)m_missiles.size(); }
+    missile_ptr get_missile(int idx);
 
     bool is_ally(const plane_ptr &a, const plane_ptr &b);
     typedef std::function<bool(const plane_ptr &a, const plane_ptr &b)> is_ally_handler;

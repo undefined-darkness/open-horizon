@@ -115,6 +115,9 @@ void hud::draw(const render &r)
         if (t.t != target_air_ally && range < min_enemy_range)
             min_enemy_range = range;
 
+        if (t.t == target_missile)
+            continue;
+
         if (!get_project_pos(r, t.pos, proj_pos))
             continue;
 
@@ -196,6 +199,8 @@ void hud::draw(const render &r)
 
         if (t.t == target_air_ally)
             color = blue;
+        else if (t.t == target_missile)
+            color = white, icon = 209;
         else
             color = red;
 
