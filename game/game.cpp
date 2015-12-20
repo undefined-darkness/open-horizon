@@ -529,8 +529,9 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
         render->set_speed(speed);
 
-        h.set_pos(phys->pos);
         h.set_project_pos(phys->pos + phys->rot.rotate(nya_math::vec3(0.0, 0.0, 1000.0)));
+        h.set_pos(phys->pos);
+        h.set_yaw(phys->rot.get_euler().y);
         h.set_speed(speed);
         h.set_alt(phys->pos.y);
         h.set_missile_alert(is_on_target);

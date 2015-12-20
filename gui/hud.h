@@ -19,12 +19,13 @@ public:
 
     void set_hide(bool value) { m_hide = value; }
     void set_project_pos(const nya_math::vec3 &pos) { m_project_pos = pos; }
+    void set_pos(const nya_math::vec3 &pos) { m_pos = pos; }
+    void set_yaw(float yaw) { m_yaw = yaw; }
     void set_speed(int value) { m_speed = value; }
     void set_alt(int value) { m_alt = value; }
     void set_missiles(const char *id, int icon);
     void set_missile_reload(int idx, float value);
     void set_missile_alert(bool value) { m_missile_alert = value; }
-    void set_pos(const nya_math::vec3 &pos) { m_pos = pos; }
 
     enum target_type
     {
@@ -49,6 +50,7 @@ private:
     nya_math::vec3 m_project_pos;
     nya_math::vec3 m_pos;
     ivalue m_speed;
+    fvalue m_yaw;
     ivalue m_alt;
     ivalue m_missiles_icon;
     ivalue m_missiles_cross;
