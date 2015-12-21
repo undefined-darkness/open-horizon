@@ -921,42 +921,4 @@ bool fhm_location::read_colh(memory_reader &reader)
 }
 
 //------------------------------------------------------------
-
-float fhm_location::landscape::get_height(float x,float y) const
-{
-    if (heights.empty())
-        return 0.0f;
-
-    float scale = location_size * patch_size * quads_per_patch;
-
-    float tc_x = x / scale + 0.5;
-    float tc_y = y / scale + 0.5;
-
-    float fx_idx = tc_x * heights_width;
-    float fy_idx = tc_y * heights_height;
-
-    int x_idx = int(fx_idx);
-    int y_idx = int(fy_idx);
-
-    if (x_idx < 0 || y_idx < 0)
-        return 0.0f;
-
-    if (x_idx + 1 >= heights_width || y_idx + 1>= heights_height)
-        return 0.0f;
-
-    float h00 = heights[y_idx * heights_width + x_idx];
-    float h10 = heights[y_idx * heights_width + x_idx + 1];
-    float h01 = heights[(y_idx + 1) * heights_width + x_idx];
-    float h11 = heights[(y_idx + 1) * heights_width + x_idx + 1];
-
-    float kx = fx_idx - x_idx;
-    float ky = fy_idx - y_idx;
-
-    float h00_10 = nya_math::lerp(h00, h10, kx);
-    float h01_11 = nya_math::lerp(h01, h11, kx);
-
-    return nya_math::lerp(h00_10, h01_11, ky);
-}
-
-//------------------------------------------------------------
 }

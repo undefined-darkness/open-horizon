@@ -89,8 +89,6 @@ protected:
         nya_render::vbo vbo;
 
     public:
-        float get_height(float x,float y) const;
-
         std::vector<float> heights;
         unsigned int heights_width;
         unsigned int heights_height;

@@ -35,6 +35,13 @@ inline float tend(float value, float target, float speed)
 
 //------------------------------------------------------------
 
+void world::set_location(const char *name)
+{
+    //ToDo
+}
+
+//------------------------------------------------------------
+
 plane_ptr world::add_plane(const char *name)
 {
     plane_ptr p(new plane());

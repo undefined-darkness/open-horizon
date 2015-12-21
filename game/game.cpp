@@ -193,6 +193,7 @@ missile_ptr world::get_missile(int idx)
 void world::set_location(const char *name)
 {
     m_render_world.set_location(name);
+    m_phys_world.set_location(name);
 }
 
 //------------------------------------------------------------
@@ -539,12 +540,17 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
         render->set_speed(speed);
 
-        h.set_project_pos(phys->pos + phys->rot.rotate(nya_math::vec3(0.0, 0.0, 1000.0)));
+        auto proj_dir = phys->rot.rotate(nya_math::vec3(0.0, 0.0, 1000.0));
+        h.set_project_pos(phys->pos + proj_dir);
         h.set_pos(phys->pos);
         h.set_yaw(phys->rot.get_euler().y);
         h.set_speed(speed);
         h.set_alt(phys->pos.y);
-        h.set_missile_alert(is_on_target);
+
+        proj_dir.y = 0.0f;
+        h.clear_alerts();
+        for(auto &a: alert_dirs)
+            h.add_alert(-proj_dir.angle(nya_math::vec3(a.x, 0.0, a.z)));
 
         if (controls.change_target && controls.change_target != last_controls.change_target)
         {
@@ -634,7 +640,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     }
 
     last_controls = controls;
-    is_on_target = false;
+    alert_dirs.clear();
 }
 
 //------------------------------------------------------------
@@ -646,11 +652,12 @@ void missile::update_homing(int dt)
 
     const vec3 dir = phys->rot.rotate(vec3(0.0, 0.0, 1.0));
     auto t = target.lock();
-    const vec3 target_dir = (t->get_pos() - phys->pos + (t->phys->vel - phys->vel) * dt * 0.001f).normalize();
+    auto diff = t->get_pos() - phys->pos;
+    const vec3 target_dir = (diff + (t->phys->vel - phys->vel) * dt * 0.001f).normalize();
     if (dir.dot(target_dir) > homing_angle_cos)
     {
         phys->target_dir = target_dir;
-        t->is_on_target = true;
+        t->alert_dirs.push_back(diff);
     }
 }
 

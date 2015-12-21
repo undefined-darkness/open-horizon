@@ -88,7 +88,7 @@ struct plane: public object
     std::vector<ivalue> special_mount_cooldown;
     ivalue special_mount_idx;
 
-    bvalue is_on_target;
+    std::vector<nya_math::vec3> alert_dirs;
 
     struct target_lock
     {

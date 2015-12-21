@@ -25,7 +25,9 @@ public:
     void set_alt(int value) { m_alt = value; }
     void set_missiles(const char *id, int icon);
     void set_missile_reload(int idx, float value);
-    void set_missile_alert(bool value) { m_missile_alert = value; }
+
+    void clear_alerts() { m_alerts.clear(); }
+    void add_alert(float v) { m_alerts.push_back(v); }
 
     enum target_type
     {
@@ -55,7 +57,7 @@ private:
     ivalue m_alt;
     ivalue m_missiles_icon;
     ivalue m_missiles_cross;
-    bvalue m_missile_alert;
+    std::vector<float> m_alerts;
 
     struct target
     {

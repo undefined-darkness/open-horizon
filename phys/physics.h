@@ -90,6 +90,8 @@ typedef ptr<missile> missile_ptr;
 class world
 {
 public:
+    void set_location(const char *name);
+
     plane_ptr add_plane(const char *name);
     missile_ptr add_missile(const char *name);
 

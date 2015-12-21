@@ -71,7 +71,7 @@ void hud::draw(const render &r)
     const auto blue = nya_math::vec4(100,200,200,255)/255.0;
 
     auto alert_color = green;
-    if (m_missile_alert)
+    if (!m_alerts.empty())
         alert_color = red;
 
     wchar_t buf[255];
@@ -220,7 +220,7 @@ void hud::draw(const render &r)
     m_aircraft.draw(r, m_missiles_icon + 401, r.get_width() - 110, r.get_height() - 60, green);
     m_aircraft.draw(r, m_missiles_icon + 406, r.get_width() - 110, r.get_height() - 60, green);
 
-    if (m_missile_alert)
+    if (!m_alerts.empty())
     {
         alert_color.w = anim;
         static std::vector<nya_math::vec2> malert_quad(5);
@@ -232,7 +232,10 @@ void hud::draw(const render &r)
         r.draw(malert_quad, alert_color);
         m_fonts.draw_text(r, L"MISSILE ALERT", "Zurich20", r.get_width()/2-60, 235, alert_color);
 
-        //m_common.draw(r, 170, r.get_width()/2, r.get_height()/2, red, anim*2.0*3.1415); //ToDo
+        const float camera_rot = m_yaw + nya_scene::get_camera().get_rot().get_euler().y + nya_math::constants::pi;
+        const float ar = 0.77f - camera_rot;
+        for (auto &a: m_alerts)
+            m_common.draw(r, 170, r.get_width()/2, r.get_height()/2, red, ar + a);
     }
 
     //Zurich12 -23 14 -111 20 -105 30 -96 BD30Outline -113 BD20Outline -26 BD22Outline -18 OCRB15 -33
