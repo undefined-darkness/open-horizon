@@ -17,6 +17,7 @@
 #include "resources/file_resources_provider.h"
 #include "resources/composite_resources_provider.h"
 #include "render/render.h"
+#include "scene/camera.h"
 #include "system/system.h"
 
 #include <thread>
@@ -257,7 +258,9 @@ public:
                     case 'cchg': controls.change_camera = true; break;
                     case 'wchg': controls.change_weapon = true; break;
                     case 'tchn': controls.change_target = true; break;
+                    case 'rchn': controls.change_radar = true; break;
                     case 'msle': controls.missile = true; break;
+                    case 'flrs': controls.flares = true; break;
                     case 'mgun': controls.mgun = true; break;
                     case 'brke': controls.brake = true; break;
                     case 'thrt': controls.throttle = true; break;
@@ -333,11 +336,13 @@ private:
         if (cmd == "camera_pitch") return 'cpch';
         if (cmd == "change_camera") return 'cchg';
         if (cmd == "change_weapon") return 'wchg';
+        if (cmd == "change_radar") return 'rchg';
         if (cmd == "pause") return 'paus';
         if (cmd == "brake") return 'brke';
         if (cmd == "throttle") return 'thrt';
         if (cmd == "change_target") return 'tchn';
         if (cmd == "missile") return 'msle';
+        if (cmd == "flares") return 'flrs';
         if (cmd == "mgun") return 'mgun';
 
         if (cmd == "menu_up_down") return 'm_ud';
@@ -443,7 +448,7 @@ int main(void)
     nya_resources::set_resources_provider(&trp);
 
     platform platform;
-    if (!platform.init(1000, 562, "Open Horizon 3rd demo"))
+    if (!platform.init(1000, 562, "Open Horizon 4th demo"))
         return -1;
 
     std::vector<joystick_config> joysticks;
@@ -547,12 +552,20 @@ int main(void)
         {
             active_game_mode->update(paused ? 0 : (speed10x ? dt * 10 : dt), controls);
             scene.draw();
+
+            //util debug draw
+            nya_render::clear(false, true);
+            nya_render::set_state(nya_render::state());
+            nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
+            get_debug_draw().set_line_width(2.0f);
+            get_debug_draw().set_point_size(3.0f);
+            get_debug_draw().draw();
         }
         else
             menu.draw(scene.ui_render);
 
         const char *ui_ref = 0;
-        //ui_ref = "ui_ref2.tga";
+        //ui_ref = "ui_ref4.tga";
         if (ui_ref)
         {
             static nya_scene::texture ui_ref_texture(ui_ref);
@@ -565,6 +578,7 @@ int main(void)
             static int alpha_anim = 0;
             alpha_anim += dt;
             alpha_anim = alpha_anim % 4000;
+            //alpha_anim = 1000;
             scene.ui_render.draw(ui_ref_rects, ui_ref_texture, nya_math::vec4(1.0, 1.0, 1.0, fabsf(alpha_anim / 2000.0f - 1.0)));
         }
 
@@ -605,8 +619,10 @@ int main(void)
 
         if (platform.get_key(GLFW_KEY_LEFT_CONTROL)) controls.mgun = true;
         if (platform.get_key(GLFW_KEY_SPACE)) controls.missile = true, menu_controls.next = true;
+        if (platform.get_key(GLFW_KEY_F)) controls.flares = true;
         if (platform.get_key(GLFW_KEY_Q)) controls.change_weapon = true;
         if (platform.get_key(GLFW_KEY_E)) controls.change_target = true;
+        if (platform.get_key(GLFW_KEY_R)) controls.change_radar = true;
         if (platform.get_key(GLFW_KEY_V)) controls.change_camera = true;
 
         if (platform.was_pressed(GLFW_KEY_ESCAPE)) menu_controls.prev = true;
