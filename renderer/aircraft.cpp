@@ -29,7 +29,7 @@ public:
         if (!m_colors.get_count())
         {
             m_colors.set_count(6);
-            //for(int i=0;i<m_colors.get_count();++i) m_colors.set(i,nya_math::vec3(1.0,1.0,1.0));
+            //for (int i=0;i<m_colors.get_count();++i) m_colors.set(i,nya_math::vec3(1.0,1.0,1.0));
         }
 
         m_colors.set(idx,color);
@@ -38,7 +38,7 @@ public:
     nya_scene::texture bake()
     {
         auto tp=m_mat.get_texture("base");
-        if(!tp.is_valid())
+        if (!tp.is_valid())
             return nya_scene::texture();
 
         nya_render::fbo fbo;
@@ -161,7 +161,7 @@ public:
                 std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
 
                 auto info = get_info(plane_name.c_str());
-                if(!info)
+                if (!info)
                 {
                     m_infos.resize(m_infos.size() + 1);
                     m_infos.back().name = plane_name;
@@ -267,7 +267,7 @@ public:
 
         dp.close();
 
-        for(auto &info: m_infos)
+        for (auto &info: m_infos)
         {
             auto &in = ints[info.name];
 
@@ -499,7 +499,7 @@ void aircraft::set_aileron(float left, float right)
 void aircraft::set_rudder(float left, float right, float center)
 {
     bool has_air_brake = m_mesh.has_anim(0,'abkn');
-    if(!has_air_brake)
+    if (!has_air_brake)
         has_air_brake = m_mesh.has_anim(0,'spll') || m_mesh.has_anim(0,'splr');
 
     const float anim_speed_k = 5.0f;
@@ -748,7 +748,7 @@ void aircraft::draw(int lod_idx)
 
     if (lod_idx == 0)
     {
-        for(int i = 0; i < 2; ++i)
+        for (int i = 0; i < 2; ++i)
         {
             for (auto &m: i == 0 ? m_msls_mount : m_special_mount)
             {

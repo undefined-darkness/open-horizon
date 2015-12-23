@@ -18,7 +18,7 @@ struct lst
     lst(const std::string &name)
     {
         nya_memory::tmp_buffer_scoped res(load_resource(name.c_str()));
-        if(!res.get_data())
+        if (!res.get_data())
             return;
 
         std::string s;
@@ -29,7 +29,7 @@ struct lst
             auto c = buf[i];
             if (c == 9)
             {
-                if(!skip)
+                if (!skip)
                 {
                     strings.push_back(s);
                     s.clear();
@@ -48,7 +48,7 @@ struct lst
 
 bool model::load(const char *name, const location_params &params)
 {
-    if(!name || strlen(name)<3)
+    if (!name || strlen(name)<3)
         return false;
 
     std::string folder;

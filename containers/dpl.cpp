@@ -148,7 +148,7 @@ void dpl_file::close()
 
 uint32_t dpl_file::get_file_size(int idx) const
 {
-    if(idx < 0 || idx >= (int)m_infos.size())
+    if (idx < 0 || idx >= (int)m_infos.size())
         return 0;
 
     return m_infos[idx].unpacked_size;
@@ -184,7 +184,7 @@ static bool unzip(const void *from, size_t from_size, void *to, size_t to_size)
 
 bool dpl_file::read_file_data(int idx, void *data) const
 {
-    if(!data || idx < 0 || idx >= (int)m_infos.size())
+    if (!data || idx < 0 || idx >= (int)m_infos.size())
         return false;
 
     const auto &e = m_infos[idx];
@@ -229,7 +229,7 @@ bool dpl_file::read_file_data(int idx, void *data) const
         const bool success=unzip(buf_from, header.packed_size, buf_out, header.unpacked_size);
         if (!success)
         {
-            if(header.packed_size != header.unpacked_size)
+            if (header.packed_size != header.unpacked_size)
                 return false;
 
             memcpy(buf_out, buf_from, header.packed_size);
@@ -253,7 +253,7 @@ void dpl_entry::read_entries(uint32_t offset)
     nya_memory::memory_reader reader((char *)m_data + offset, m_size - offset);
 
     uint32_t count = reader.read<uint32_t>();
-    for(uint32_t i = 0; i < count; ++i)
+    for (uint32_t i = 0; i < count; ++i)
     {
         reader.seek(4 + 8 * i);
 

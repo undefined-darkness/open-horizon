@@ -148,22 +148,23 @@ void menu::set_screen(const std::string &screen)
         m_entries.push_back(std::make_pair(L"Tokyo", "map=ms50"));
         m_entries.push_back(std::make_pair(L"Honolulu", "map=ms51"));
 /*
-        m_entries.push_back(std::make_pair(L"Test_02", "map=ms02")); //oil day //inferno
-        //m_entries.push_back(std::make_pair(L"TEST_03", "map=ms03")); //tex indices idx < size assert //Eastern Africa //red moon
-        //m_entries.push_back(std::make_pair(L"TEST_04", "map=ms04")); //tex indices idx < size assert //Mogadiyu //spooky
-        m_entries.push_back(std::make_pair(L"Test_05", "map=ms05")); //oil night //blue on blue
-        //m_entries.push_back(std::make_pair(L"TEST_07", "map=ms07")); //tex indices idx < size assert //Suez Canal, Egypt //lock n load
-        m_entries.push_back(std::make_pair(L"Test_08", "map=ms08")); //Derbent, Russia //pipeline
-        m_entries.push_back(std::make_pair(L"Test_08X", "map=ms08x")); //Belyi Base, Russia //siege
-        m_entries.push_back(std::make_pair(L"Test_09", "map=ms09")); //Black Sea //hostile fleet
-        m_entries.push_back(std::make_pair(L"Test_10", "map=ms10")); //Caucasus Region, Russia //launch
-        //m_entries.push_back(std::make_pair(L"TEST_11A", "map=ms11a")); //tex indices idx < size assert //Moscow, Russia //motherland
-        //m_entries.push_back(std::make_pair(L"TEST_12", "map=ms12")); //type 8 chunk assert //Miami, Florida //homefront
-        m_entries.push_back(std::make_pair(L"Test_12T", "map=ms12t"));
-        m_entries.push_back(std::make_pair(L"Test_13", "map=ms13")); //Florida Coast //hurricane
+        m_entries.push_back(std::make_pair(L"02", "map=ms02")); //inferno //oil day
+        //m_entries.push_back(std::make_pair(L"03 Eastern Africa", "map=ms03")); //red moon //tex indices idx < size assert
+        //m_entries.push_back(std::make_pair(L"04 Mogadiyu", "map=ms04")); //spooky //tex indices idx < size assert
+        m_entries.push_back(std::make_pair(L"05", "map=ms05")); //oil night - blue on blue
+        //m_entries.push_back(std::make_pair(L"07 Suez Canal", "map=ms07")); //lock n load //tex indices idx < size assert
+        m_entries.push_back(std::make_pair(L"08 Derbent", "map=ms08")); //pipeline
+        m_entries.push_back(std::make_pair(L"08X Belyi Base", "map=ms08x")); //siege
+        m_entries.push_back(std::make_pair(L"09 Black Sea", "map=ms09")); //hostile fleet
+        m_entries.push_back(std::make_pair(L"10 Caucasus Region", "map=ms10")); //launch
+        //m_entries.push_back(std::make_pair(L"11A Moscow", "map=ms11a")); //motherland //tex indices idx < size assert
+        //m_entries.push_back(std::make_pair(L"12 Miami", "map=ms12")); //homefront //type 8 chunk assert, kinda small
+        m_entries.push_back(std::make_pair(L"12T", "map=ms12t"));
+        m_entries.push_back(std::make_pair(L"13 Florida Coast", "map=ms13")); //hurricane
         m_entries.push_back(std::make_pair(L"Washington", "map=ms14"));
-        //m_entries.push_back(std::make_pair(L"TEST_OP", "map=msop")); //tex indices idx < size assert
+        //m_entries.push_back(std::make_pair(L"OP", "map=msop")); //tex indices idx < size assert
 */
+
     }
     else if (screen == "ac_select")
     {

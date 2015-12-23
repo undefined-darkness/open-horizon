@@ -13,10 +13,11 @@ namespace gui
 class hud
 {
 public:
-    void load(const char *aircraft_name);
+    void load(const char *aircraft_name, const char *location_name);
     void draw(const render &r);
     void update(int dt);
 
+    void set_location(const char *location_name);
     void set_hide(bool value) { m_hide = value; }
     void set_project_pos(const nya_math::vec3 &pos) { m_project_pos = pos; }
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; }
@@ -25,6 +26,7 @@ public:
     void set_alt(int value) { m_alt = value; }
     void set_missiles(const char *id, int icon);
     void set_missile_reload(int idx, float value);
+    void change_radar() { m_show_map = !m_show_map; }
 
     void clear_alerts() { m_alerts.clear(); }
     void add_alert(float v) { m_alerts.push_back(v); }
@@ -57,6 +59,7 @@ private:
     ivalue m_alt;
     ivalue m_missiles_icon;
     ivalue m_missiles_cross;
+    bvalue m_show_map;
     std::vector<float> m_alerts;
 
     struct target
@@ -77,6 +80,7 @@ private:
     fonts m_fonts;
     tiles m_common;
     tiles m_aircraft;
+    tiles m_location;
 };
 
 //------------------------------------------------------------

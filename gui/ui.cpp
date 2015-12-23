@@ -36,7 +36,7 @@ void render::init()
     for (int i = 0; i < elements_per_batch; ++i)
     {
         auto &v = verts[i];
-        for(int j=0;j<4;++j)
+        for (int j=0;j<4;++j)
         {
             v[j].x=j>1?0.0f:1.0f,v[j].y=j%2?1.0f:0.0f;
             v[j].s=j>1? 0.0f:1.0f,v[j].t=j%2?1.0f:0.0f;

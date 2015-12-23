@@ -23,7 +23,7 @@ struct solid_sphere
 
         vertices.resize(rings * sectors * 3);
         auto v = vertices.begin();
-        for(int r = 0; r < rings; r++) for(int s = 0; s < sectors; s++)
+        for (int r = 0; r < rings; r++) for (int s = 0; s < sectors; s++)
         {
             float sr = radius * sin( nya_math::constants::pi * r * ir );
             v->x = cos(2*nya_math::constants::pi * s * is) * sr;
@@ -34,7 +34,7 @@ struct solid_sphere
 
         indices.resize(vertices.size()*2);
         auto i = indices.begin();
-        for(int r = 0; r < rings-1; r++) for(int s = 0; s < sectors-1; s++)
+        for (int r = 0; r < rings-1; r++) for (int s = 0; s < sectors-1; s++)
         {
             *i++ = r * sectors + s;
             *i++ = r * sectors + (s+1);
@@ -92,7 +92,7 @@ bool sun_mesh::init()
 {
     auto texture = shared::get_texture(shared::load_texture("Map/sun.nut"));
     auto tex_data = texture.internal().get_shared_data();
-    if(!tex_data.is_valid())
+    if (!tex_data.is_valid())
         return false;
 
     nya_render::texture tex = tex_data->tex;
@@ -143,7 +143,7 @@ void sun_mesh::draw() const
 {
     auto dir = nya_scene::get_camera().get_dir();
     dir.z = -dir.z;
-    if(dir.dot(m_dir.xyz()) < 0.0)
+    if (dir.dot(m_dir.xyz()) < 0.0)
         return;
 
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());

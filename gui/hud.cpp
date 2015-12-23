@@ -31,12 +31,9 @@ inline bool get_project_pos(const render &r, const nya_math::vec3 &pos, nya_math
 
 //------------------------------------------------------------
 
-void hud::load(const char *aircraft_name)
+void hud::load(const char *aircraft_name, const char *location_name)
 {
     *this = hud(); //release
-
-    if (!aircraft_name)
-        return;
 
     if (!m_common_loaded)
     {
@@ -45,7 +42,21 @@ void hud::load(const char *aircraft_name)
         m_common_loaded = true;
     }
 
-    m_aircraft.load(("Hud/aircraft/hudAircraft_" + std::string(aircraft_name) + ".fhm").c_str());
+    if (aircraft_name && aircraft_name[0])
+        m_aircraft.load(("Hud/aircraft/hudAircraft_" + std::string(aircraft_name) + ".fhm").c_str());
+
+    if (location_name && location_name[0])
+        m_location.load(("Hud/mission/hudMission_" + std::string(location_name) + ".fhm").c_str());
+}
+
+//------------------------------------------------------------
+
+void hud::set_location(const char *location_name)
+{
+    m_location = tiles();
+
+    if (location_name && location_name[0])
+        m_location.load(("Hud/mission/hudMission_" + std::string(location_name) + ".fhm").c_str());
 }
 
 //------------------------------------------------------------
@@ -153,67 +164,77 @@ void hud::draw(const render &r)
         }
     }
 
-    //radar
-
-    const int radar_range = min_enemy_range < 1000 ? 1000 : ( min_enemy_range < 5000 ? 5000 : 15000);
-    const int radar_center_x = 185, radar_center_y = r.get_height()-140, radar_radius = 75;
-
-    m_common.draw(r, 214, radar_center_x, radar_center_y, green); //circle
-    if (radar_range>5000)
+    if (m_show_map)
     {
-        m_common.draw(r, 211, radar_center_x, radar_center_y, green);
-        m_common.draw(r, 212, radar_center_x, radar_center_y, green);
+        const int map_center_x = 250, map_center_y = r.get_height()-250;
+        float s = 1.0/150.0f;
+
+        m_location.draw(r, 350, map_center_x, map_center_y, white);
+
+        m_common.draw(r, 181, map_center_x + m_pos.x * s, map_center_y + m_pos.z * s, green, nya_math::constants::pi - m_yaw);
     }
-    else if (radar_range>1000)
-        m_common.draw(r, 213, radar_center_x, radar_center_y, green);
-    m_common.draw(r, 183, radar_center_x, radar_center_y, green); //my aircraft
-
-    auto north_vec = -nya_math::vec2::rotate(nya_math::vec2(0.0f, radar_radius - 5.0f), m_yaw);
-    m_fonts.draw_text(r, L"N", "Zurich14", radar_center_x + north_vec.x - 4, radar_center_y + north_vec.y - 8, green);
-    m_fonts.draw_text(r, L"S", "Zurich14", radar_center_x - north_vec.x - 3, radar_center_y - north_vec.y - 8, green);
-    m_fonts.draw_text(r, L"E", "Zurich14", radar_center_x - north_vec.y - 3, radar_center_y + north_vec.x - 8, green);
-    m_fonts.draw_text(r, L"W", "Zurich14", radar_center_x + north_vec.y - 5, radar_center_y - north_vec.x - 8, green);
-
-    static std::vector<nya_math::vec2> radar_ang(3);
-    for (auto &r: radar_ang)
-        r.x = radar_center_x, r.y = radar_center_y;
-
-    auto radar_ang_vec = -nya_math::vec2::rotate(nya_math::vec2(0.0f, radar_radius + 5.0f), (60.0f*0.5f) * nya_math::constants::pi/180.0f);
-    radar_ang[0].x -= radar_ang_vec.x, radar_ang[0].y += radar_ang_vec.y,
-    radar_ang[2].x += radar_ang_vec.x, radar_ang[2].y += radar_ang_vec.y,
-
-    r.draw(radar_ang, green);
-
-    for (auto &t: m_targets)
+    else
     {
-        auto d = nya_math::vec2::rotate(nya_math::vec2(m_pos.x - t.pos.x, m_pos.z - t.pos.z), m_yaw);
-        const float len = d.length();
-        if (len > radar_range)
-            continue;
+        //radar
 
-        if (len > 0.01f)
-            d *= float(radar_radius) / radar_range;
+        const int radar_range = min_enemy_range < 1000 ? 1000 : ( min_enemy_range < 5000 ? 5000 : 15000);
+        const int radar_center_x = 185, radar_center_y = r.get_height()-140, radar_radius = 75;
 
-        int icon = 181;
-        auto color = white;
+        m_common.draw(r, 214, radar_center_x, radar_center_y, green); //circle
+        if (radar_range>5000)
+        {
+            m_common.draw(r, 211, radar_center_x, radar_center_y, green);
+            m_common.draw(r, 212, radar_center_x, radar_center_y, green);
+        }
+        else if (radar_range>1000)
+            m_common.draw(r, 213, radar_center_x, radar_center_y, green);
+        m_common.draw(r, 183, radar_center_x, radar_center_y, green); //my aircraft
 
-        if (t.t == target_air_ally)
-            color = blue;
-        else if (t.t == target_missile)
-            color = white, icon = 209;
-        else
-            color = red;
+        auto north_vec = -nya_math::vec2::rotate(nya_math::vec2(0.0f, radar_radius - 5.0f), m_yaw);
+        m_fonts.draw_text(r, L"N", "Zurich14", radar_center_x + north_vec.x - 4, radar_center_y + north_vec.y - 8, green);
+        m_fonts.draw_text(r, L"S", "Zurich14", radar_center_x - north_vec.x - 3, radar_center_y - north_vec.y - 8, green);
+        m_fonts.draw_text(r, L"E", "Zurich14", radar_center_x - north_vec.y - 3, radar_center_y + north_vec.x - 8, green);
+        m_fonts.draw_text(r, L"W", "Zurich14", radar_center_x + north_vec.y - 5, radar_center_y - north_vec.x - 8, green);
 
-        //if (t.t == target_air_lock)
-        //    icon = 185;
+        static std::vector<nya_math::vec2> radar_ang(3);
+        for (auto &r: radar_ang)
+            r.x = radar_center_x, r.y = radar_center_y;
 
-        if (t.s == select_current)
-            color.w = anim;
+        auto radar_ang_vec = -nya_math::vec2::rotate(nya_math::vec2(0.0f, radar_radius + 5.0f), (60.0f*0.5f) * nya_math::constants::pi/180.0f);
+        radar_ang[0].x -= radar_ang_vec.x, radar_ang[0].y += radar_ang_vec.y,
+        radar_ang[2].x += radar_ang_vec.x, radar_ang[2].y += radar_ang_vec.y,
 
-        m_common.draw(r, icon, radar_center_x + d.x, radar_center_y + d.y, color, m_yaw - t.yaw);
+        r.draw(radar_ang, green);
+
+        for (auto &t: m_targets)
+        {
+            auto d = nya_math::vec2::rotate(nya_math::vec2(m_pos.x - t.pos.x, m_pos.z - t.pos.z), m_yaw);
+            const float len = d.length();
+            if (len > radar_range)
+                continue;
+
+            if (len > 0.01f)
+                d *= float(radar_radius) / radar_range;
+
+            int icon = 181;
+            auto color = white;
+
+            if (t.t == target_air_ally)
+                color = blue;
+            else if (t.t == target_missile)
+                color = white, icon = 209;
+            else
+                color = red;
+
+            //if (t.t == target_air_lock)
+            //    icon = 185;
+
+            if (t.s == select_current)
+                color.w = anim;
+
+            m_common.draw(r, icon, radar_center_x + d.x, radar_center_y + d.y, color, m_yaw - t.yaw);
+        }
     }
-
-    //m_common.draw(r, 185, radar_center_x, radar_center_y+radar_radius, green);
 
     //missiles
 

@@ -33,8 +33,8 @@ public:
     public: T get(float arg) const
         {
             const int idx = int(floorf(arg * 10));
-            if(idx < 0) return values[0];
-            if(idx >= 9) return values[9];
+            if (idx < 0) return values[0];
+            if (idx >= 9) return values[9];
             const float k = (arg * 10.0f - idx);
             return values[idx] * (1.0f - k) + values[idx + 1] * k;
         }

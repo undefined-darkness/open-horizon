@@ -78,8 +78,8 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             //ToDo: exclude patches with -9999.0 height
             //ToDo: lod seams
 
-            int ty = tc_idx / 7;
-            int tx = tc_idx - ty * 7;
+            int ty = tc_idx / (quads_per_patch-1);
+            int tx = tc_idx - ty * (quads_per_patch-1);
 
             nya_math::vec4 tc(8, 8, 512, 512);
 
@@ -97,7 +97,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             vert v;
             const float hoff=-0.2f;
 
-            const uint hpw = 65;
+            const uint hpw = quads_per_patch*quads_per_patch+1;
             const uint hpp = (hpw-1)/quads_per_patch;
             const uint w = hpp + 1;
 
@@ -252,7 +252,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         const float base_x = patch_size * quads_per_patch * (px - location_size/2);
         const float base_y = patch_size * quads_per_patch * (py - location_size/2);
 
-        const int hpw = 65;
+        const int hpw = quads_per_patch*quads_per_patch+1;
         int h_idx = load_data.height_patches[idx] * hpw * hpw;
         assert(h_idx>=0);
 
@@ -301,7 +301,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             ++tc_idx;
         }
 
-        if(!p.groups.empty())
+        if (!p.groups.empty())
         {
             auto &g = p.groups.back();
             g.box = vdata.get_aabb();
@@ -319,7 +319,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             nya_math::vec3 box_min = nya_math::vec3(1.0, 1.0, 1.0) * 1000000.0f;
             nya_math::vec3 box_max = -box_min;
 
-            for(auto &g: p.groups)
+            for (auto &g: p.groups)
             {
                 box_min = nya_math::vec3::min(g.box.origin - g.box.delta, box_min);
                 box_max = nya_math::vec3::max(g.box.origin + g.box.delta, box_max);
@@ -427,7 +427,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
             }
             */
         }
-        else if( is_location )
+        else if ( is_location )
         {
             if (j == 4)
             {
@@ -469,7 +469,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
         }
     }
 
-    if(is_location)
+    if (is_location)
         finish_load_location(location_load_data);
 
     auto &s = params.sky.mapspecular;
@@ -486,7 +486,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
     nya_scene::material::param map_param_ps(s.parts_scale, s.parts_fog_power, s.parts_fresnel_max, s.parts_fresnel);
     nya_scene::material::param map_param2_ps(d.mesh_range, d.mesh_power, d.mesh_repeat, s.parts_reflection_power);
 
-    if(has_mptx)
+    if (has_mptx)
     {
         auto &m = m_map_parts_material;
 
@@ -504,7 +504,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
     m.set_param(m.get_param_idx("fog color"), fog_color);
     m.set_param(m.get_param_idx("fog height"), fog_height);
 /*
-    if(m_cols.size() == m_mptx_meshes.size())
+    if (m_cols.size() == m_mptx_meshes.size())
     {
         m_debug_draw.clear();
         for (size_t i = 0; i < m_mptx_meshes.size(); ++i)
@@ -549,11 +549,9 @@ void fhm_location::draw_mptx()
 
     nya_scene::transform::set(nya_scene::transform());
 
-
     bool mat_unset = false;
     for (auto &mesh: m_mptx_meshes)
     {
-
         m_map_parts_color_texture.set(mesh.color);
         m_map_parts_diffuse_texture.set(mesh.textures.size() > 0 ? shared::get_texture(mesh.textures[0]) : shared::get_black_texture());
         m_map_parts_specular_texture.set(mesh.textures.size() > 1 ? shared::get_texture(mesh.textures[1]) : shared::get_black_texture());
@@ -610,10 +608,10 @@ void fhm_location::update(int dt)
     const int anim_time_interval[]={51731,73164,62695,84235};
     static int anim_time[]={124,6363,36262,47392};
     float t[4];
-    for(int i=0;i<4;++i)
+    for (int i=0;i<4;++i)
     {
         anim_time[i]+=dt;
-        if(anim_time[i]>anim_time_interval[i])
+        if (anim_time[i]>anim_time_interval[i])
             anim_time[i]=0;
 
         t[i]=float(anim_time[i])/anim_time_interval[i];
@@ -626,8 +624,6 @@ void fhm_location::update(int dt)
 
 void fhm_location::draw_landscape()
 {
-    //ToDo: draw visible only
-
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
     m_land_material.internal().set(nya_scene::material::default_pass);
 
@@ -686,9 +682,10 @@ bool fhm_location::read_ntxr(memory_reader &reader, fhm_location_load_data &load
 
 bool fhm_location::read_mptx(memory_reader &reader)
 {
-    auto &p = m_map_parts_material.get_pass(m_map_parts_material.add_pass(nya_scene::material::default_pass));
+    auto &p = m_map_parts_material.get_default_pass();
     p.set_shader("shaders/map_parts.nsh");
     p.get_state().set_cull_face(true);
+    //p.get_state().set_blend(true,nya_render::blend::src_alpha,nya_render::blend::inv_src_alpha); //ToDo
 
     m_map_parts_color_texture.create();
     m_map_parts_material.set_texture("color", m_map_parts_color_texture);
@@ -799,7 +796,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
     res.tex.set_wrap(nya_render::texture::wrap_clamp, nya_render::texture::wrap_clamp);
     mesh.color.create(res);
 
-    //if(reader.get_remained() > 0)
+    //if (reader.get_remained() > 0)
     //    printf("%ld\n", reader.get_remained());
 
     mesh.vbo.set_vertex_data(&verts[0], sizeof(mptx_vert), vcount);

@@ -256,7 +256,7 @@ inline void find_data(nya_resources::resources_provider &rp, float *f, size_t co
                 found = false;
 
             }
-            if(found)
+            if (found)
                 ++found_count;
         }
 

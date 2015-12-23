@@ -173,7 +173,7 @@ bool qdf_archive::read_file_data(int idx, void *data, uint64_t size, uint64_t of
 
     const qdf_file_info &info=m_fis[idx];
 
-    if(size + offset > info.size)
+    if (size + offset > info.size)
         return false;
 
     offset += info.offset;

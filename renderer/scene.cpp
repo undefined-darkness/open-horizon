@@ -80,7 +80,7 @@ void scene::set_location(const char *name)
 {
     nya_render::texture::set_default_aniso(2);
 
-    if(!m_curve.is_valid())
+    if (!m_curve.is_valid())
     {
         m_curve.create();
         load("postprocess.txt");
@@ -193,7 +193,7 @@ void scene::draw()
     swprintf(buf, sizeof(buf), L"FPS: %d", m_fps);
     m_ui_fonts.draw_text(ui_render, buf, "NowGE20", ui_render.get_width() - 90, 0, white);
 
-    if(m_loading)
+    if (m_loading)
     {
         m_loading = false;
         m_ui_fonts.draw_text(ui_render, L"LOADING", "ZurichBD20outline", ui_render.get_width() * 0.5 - 50, ui_render.get_height() * 0.5, white);
@@ -201,7 +201,7 @@ void scene::draw()
     else
     {
         hud.draw(ui_render);
-        if(m_paused)
+        if (m_paused)
             m_ui_fonts.draw_text(ui_render, L"PAUSED", "ZurichBD20outline", ui_render.get_width() * 0.5 - 45, ui_render.get_height() * 0.5, white);
     }
 }

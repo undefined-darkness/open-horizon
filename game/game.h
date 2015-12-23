@@ -50,6 +50,7 @@ struct plane_controls: public phys::plane_controls
     bvalue change_weapon;
     bvalue change_target;
     bvalue change_camera;
+    bvalue change_radar;
 };
 
 //------------------------------------------------------------

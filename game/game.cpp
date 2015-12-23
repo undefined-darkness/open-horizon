@@ -144,7 +144,7 @@ plane_ptr world::add_plane(const char *name, int color, bool player)
     p->hp = p->max_hp = int(p->phys->params.misc.maxHp);
 
     if (player)
-        m_hud.load(name);
+        m_hud.load(name, m_render_world.get_location_name());
 
     time_t now = time(NULL);
     struct tm *tm_now = localtime(&now);
@@ -194,6 +194,8 @@ void world::set_location(const char *name)
 {
     m_render_world.set_location(name);
     m_phys_world.set_location(name);
+
+    m_hud.set_location(name);
 }
 
 //------------------------------------------------------------
@@ -637,6 +639,9 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 case renderer::aircraft::camera_mode_first: render->set_camera_mode(renderer::aircraft::camera_mode_third); break;
             }
         }
+
+        if (controls.change_radar && controls.change_radar != last_controls.change_radar)
+            h.change_radar();
     }
 
     last_controls = controls;

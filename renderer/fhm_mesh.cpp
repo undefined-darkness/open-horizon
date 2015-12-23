@@ -319,9 +319,9 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
 
                     if (p.first == "NU_ACE_vSpecularParam")
                         l.set_param(lod::specular_param, rg_idx, p.second);
-                    else if(p.first == "NU_ACE_vIBLParam")
+                    else if (p.first == "NU_ACE_vIBLParam")
                         l.set_param(lod::ibl_param, rg_idx, p.second);
-                    else if(p.first == "NU_ACE_vRimLightMtr")
+                    else if (p.first == "NU_ACE_vRimLightMtr")
                         l.set_param(lod::rim_light_mtr, rg_idx, p.second);
                 }
             }
@@ -560,7 +560,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
     {
         reader.seek(kfm1_infos[i].offset_to_name);
         kfm1_structs[i].name = reader.read_string();
-        if(kfm1_structs[i].name == "basepose")
+        if (kfm1_structs[i].name == "basepose")
             basepos_idx = i;
     }
 
@@ -576,7 +576,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
         reader.seek(kfm1_infos[i].offset_to_data);
         memory_reader kfm1_reader(reader.get_data(), kfm1_infos[i].size);
 
-        if(kfm1_structs[i].name == "swp1" || kfm1_structs[i].name == "swp2" ) //ToDo
+        if (kfm1_structs[i].name == "swp1" || kfm1_structs[i].name == "swp2" ) //ToDo
             continue;
 
         //print_data(kfm1_reader, 0, kfm1_reader.get_remained());
@@ -649,11 +649,11 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
                 b.frames_offset = sequence_reader.read<ushort>();
                 b.offset = sequence_reader.read<ushort>();
 
-                if(b.offset < first_offset)
+                if (b.offset < first_offset)
                     first_offset = b.offset;
             }
 
-            if(!f.bones.empty())
+            if (!f.bones.empty())
             {
                 auto header_remained = f.bones.front().offset - first_offset;
                 assume(header_remained == 0);
@@ -715,7 +715,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data)
 
             sequence_reader.seek(last_offset);
 /*
-            if(sequence_reader.get_remained())
+            if (sequence_reader.get_remained())
                 print_data(sequence_reader);
             //printf("sequence remained %ld\n", sequence_reader.get_remained());
 */
@@ -982,7 +982,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     std::vector<vert> verts;
     std::vector<ushort> indices;
 
-    //for(auto g:groups) printf("%s\n", g.name.c_str()); printf("\n");
+    //for (auto g:groups) printf("%s\n", g.name.c_str()); printf("\n");
 
     unsigned int total_rgf_count = 0;
     for (auto &gf: groups)
@@ -1023,7 +1023,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             g.material_idx = (int)mesh.materials.size();
             mesh.materials.push_back(mat);
 
-            if(rgf.tex_infos.size()>0)
+            if (rgf.tex_infos.size()>0)
                 mesh.materials.back().set_texture("diffuse", shared::get_texture(rgf.tex_infos[0].texture_hash_id));
 
             //ToDo: specular, ambient, etc
@@ -1184,7 +1184,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 /*
             if (j > 0)
             {
-                if(!indices.empty())
+                if (!indices.empty())
                     indices.push_back(indices.back());
                 indices.push_back(first_index + ndxr_indices[0]);
                 if ( (indices.size() - g.offset) % 2 )
@@ -1268,7 +1268,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
                 auto ioff1 = (unsigned int)regroup_indices.size();
 
-                if(!regroup_indices.empty())
+                if (!regroup_indices.empty())
                     regroup_indices.push_back(regroup_indices.back());
                 regroup_indices.push_back(indices[mesh.groups[k].offset]);
                 if ( (ioff1 - g.offset) % 2 )

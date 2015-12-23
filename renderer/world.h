@@ -65,6 +65,7 @@ class world
 public:
     virtual void set_location(const char *name);
     const location_params &get_location_params() { return m_location.get_params(); }
+    const char *get_location_name() { return m_location_name.c_str(); }
     virtual aircraft_ptr add_aircraft(const char *name, int color, bool player);
     missile_ptr add_missile(const char *name);
     virtual void update(int dt);

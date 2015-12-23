@@ -66,7 +66,7 @@ bool particles_bcf::load(const char *name)
             ush = reader.read<unknown_sub_header>();
             assume(ush.zero == 0 && ush.zero2 == 0);
 
-            for(int i = 0; i < uh.sub_count; ++i)
+            for (int i = 0; i < uh.sub_count; ++i)
                 us.sub_data.push_back(reader.read<unknown_sub_data>());
         }
     }
@@ -116,7 +116,7 @@ bool particles_bfx::load(const char *name)
     for (auto &u: unknown_structs2)
     {
         u = reader.read<unknown_struct2>();
-        for(auto &z: u.zero)
+        for (auto &z: u.zero)
             assume(z == 0);
     }
 

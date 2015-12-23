@@ -68,7 +68,7 @@ unsigned int load_texture(const void *tex_data, size_t tex_size)
     if (reader.get_remained() < 128) //normal for ntxr
         return hash_id;
 /*
-    if(hash_id > 1000000000) //ToDo
+    if (hash_id > 1000000000) //ToDo
     {
         unsigned int *mip_count = (unsigned int *)reader.get_data()+7;
         assert(*mip_count > 10);
@@ -81,7 +81,7 @@ unsigned int load_texture(const void *tex_data, size_t tex_size)
     nya_scene::texture::load_dds(st, data, "");
     data.free();
 
-    if(hash_id > 1000000000) //ToDo
+    if (hash_id > 1000000000) //ToDo
         st.tex.set_aniso(16);
 
     nya_scene::texture tex;
@@ -117,7 +117,7 @@ const nya_scene::texture &get_white_texture()
 {
     static nya_scene::texture white;
     static bool initialised=false;
-    if(!initialised)
+    if (!initialised)
     {
         const unsigned char data[4]={255,255,255,255};
         nya_scene::shared_texture res;
@@ -135,7 +135,7 @@ const nya_scene::texture &get_black_texture()
 {
     static nya_scene::texture black;
     static bool initialised=false;
-    if(!initialised)
+    if (!initialised)
     {
         const unsigned char data[4]={0,0,0,0};
         nya_scene::shared_texture res;
@@ -153,7 +153,7 @@ const nya_scene::texture &get_normal_texture()
 {
     static nya_scene::texture normal;
     static bool initialised=false;
-    if(!initialised)
+    if (!initialised)
     {
         const unsigned char data[4]={0,128,0,128};
         nya_scene::shared_texture res;

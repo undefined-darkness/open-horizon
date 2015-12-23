@@ -14,18 +14,18 @@ namespace renderer
 
 bool effect_clouds::load(const char *location_name, const location_params &params)
 {
-    if(!location_name)
+    if (!location_name)
         return false;
 
     const bool result = read_bdd((std::string("Effect/") + location_name + "/cloud_" + location_name + ".BDD").c_str(), m_clouds);
-    if(!result)
+    if (!result)
         return false;
 
     std::vector<vert> verts;
 
     for (int i = 1; i <= 4; ++i)
     {
-        if(i!=2) continue; //ToDo
+        if (i!=2) continue; //ToDo
 
         for (char j = 'A'; j <= 'E'; ++j)
         {
@@ -58,7 +58,7 @@ bool effect_clouds::load(const char *location_name, const location_params &param
                 v[4].dir = nya_math::vec2(  1.0f,  1.0f );
                 v[5].dir = nya_math::vec2(  1.0f, -1.0f );
 
-                for(int t = 0; t < 6; ++t)
+                for (int t = 0; t < 6; ++t)
                 {
                     v[t].pos = e.pos;
                     v[t].size.x = e.size;// * 2.0f;
@@ -96,7 +96,7 @@ bool effect_clouds::load(const char *location_name, const location_params &param
         v[4].dir = nya_math::vec2(  1.0f,  1.0f );
         v[5].dir = nya_math::vec2(  1.0f, -1.0f );
 
-        for(int t = 0; t < 6; ++t)
+        for (int t = 0; t < 6; ++t)
         {
             v[t].pos.x = p.x;
             v[t].pos.z = p.y;
@@ -175,7 +175,7 @@ void effect_clouds::draw_obj()
     m_shader_obj.internal().set();
     m_obj_tex.internal().set();
 
-    for(uint32_t i = 0; i < m_dist_sort.size(); ++i)
+    for (uint32_t i = 0; i < m_dist_sort.size(); ++i)
     {
         auto cp = nya_scene::get_camera().get_pos();
         auto d = m_clouds.obj_clouds[i].second - nya_math::vec2(cp.x,cp.z);
@@ -188,9 +188,9 @@ void effect_clouds::draw_obj()
     const float fade_far = 25000; //ToDo: map params
     const float height = 1500; //ToDo: map params
 
-    for(const auto &d: m_dist_sort)
+    for (const auto &d: m_dist_sort)
     {
-        if(d.first > fade_far * fade_far)
+        if (d.first > fade_far * fade_far)
             continue;
 
         const auto &o = m_clouds.obj_clouds[d.second];
@@ -209,7 +209,7 @@ void effect_clouds::draw_obj()
 bool effect_clouds::read_bdd(const char *name, bdd &bdd_res)
 {
     nya_memory::tmp_buffer_ref res = load_resource(name);
-    if(!res.get_size())
+    if (!res.get_size())
         return false;
 
     nya_memory::memory_reader reader(res.get_data(), res.get_size());
@@ -220,26 +220,26 @@ bool effect_clouds::read_bdd(const char *name, bdd &bdd_res)
     assume(header.zero == 0);
 
     bdd_res.hiflat_clouds.resize(header.hiflat_clouds_count);
-    for(auto &p: bdd_res.hiflat_clouds)
+    for (auto &p: bdd_res.hiflat_clouds)
         p.x = reader.read<float>(), p.y = reader.read<float>();
 
     bdd_res.type2_pos.resize(header.type2_count);
-    for(auto &p: bdd_res.type2_pos)
+    for (auto &p: bdd_res.type2_pos)
         p.x = reader.read<float>(), p.y = reader.read<float>();
 
     bdd_res.type3_pos.resize(header.type3_count);
-    for(auto &p: bdd_res.type3_pos)
+    for (auto &p: bdd_res.type3_pos)
         p.x = reader.read<float>(), p.y = reader.read<float>();
 
     bdd_res.type4_pos.resize(header.type4_count);
-    for(auto &p: bdd_res.type4_pos)
+    for (auto &p: bdd_res.type4_pos)
         p.x = reader.read<float>(), p.y = reader.read<float>();
 
     bdd_res.obj_clouds.resize(header.obj_clouds_count);
-    for(auto &p: bdd_res.obj_clouds)
+    for (auto &p: bdd_res.obj_clouds)
         p.first = reader.read<int>(), p.second.x = reader.read<float>(), p.second.y = reader.read<float>();
 
-    assume(reader.get_remained()==0);
+    assume(reader.get_remained() == 0);
 
     bdd_res.header=header; //ToDo
 

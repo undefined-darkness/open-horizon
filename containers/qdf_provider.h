@@ -15,7 +15,7 @@ class qdf_resources_provider: public nya_resources::resources_provider
 public:
     nya_resources::resource_data *access(const char *resource_name)
     {
-        if(!resource_name)
+        if (!resource_name)
             return 0;
 
         auto e = m_files.find(resource_name);

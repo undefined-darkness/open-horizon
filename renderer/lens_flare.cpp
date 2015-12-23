@@ -44,7 +44,7 @@ bool lens_flare::init(const nya_scene::texture_proxy &color, const nya_scene::te
 
     auto texture = shared::get_texture(shared::load_texture("PostProcess/lens.nut"));
     auto tex_data = texture.internal().get_shared_data();
-    if(!tex_data.is_valid())
+    if (!tex_data.is_valid())
         return false;
 
     nya_render::texture tex = tex_data->tex;
@@ -82,9 +82,9 @@ bool lens_flare::init(const nya_scene::texture_proxy &color, const nya_scene::te
         v[4].pos = nya_math::vec2(  1.0f,  1.0f );
         v[5].pos = nya_math::vec2(  1.0f, -1.0f );
 
-        for(int t = 0; t < 6; ++t)
+        for (int t = 0; t < 6; ++t)
         {
-            if(i>0)
+            if (i>0)
             {
                 auto &l = lens[i-1];
                 v[t].dist = l.position;
@@ -138,7 +138,7 @@ void lens_flare::draw() const
     float c = dir.dot(da.xyz());
     /*
      float a = acosf(c) * 180.0 / 3.1415;
-     if(a>f_max)
+     if (a>f_max)
      return;
 
      a - f_min;
@@ -148,7 +148,7 @@ void lens_flare::draw() const
         return;
 
     c -= 0.9;
-    //if(c < 0.0)
+    //if (c < 0.0)
     //    return;
 
     da.w = c * m_brightness;
