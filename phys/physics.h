@@ -98,9 +98,15 @@ public:
     void update_planes(int dt, hit_hunction on_hit);
     void update_missiles(int dt, hit_hunction on_hit);
 
+    float get_height(float x, float z) const;
+
 private:
     std::vector<plane_ptr> m_planes;
     std::vector<missile_ptr> m_missiles;
+
+    const static unsigned int location_size = 16;
+    unsigned char m_height_patches[location_size * location_size];
+    std::vector<float> m_heights;
 };
 
 //------------------------------------------------------------

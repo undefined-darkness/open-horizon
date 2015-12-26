@@ -27,7 +27,7 @@ namespace renderer
 
 static const int location_size = 16;
 static const float patch_size = 1024.0;
-static const unsigned int quads_per_patch = 8;
+static const unsigned int quads_per_patch = 8, subquads_per_quad = 8;
 
 //------------------------------------------------------------
 
@@ -78,8 +78,8 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             //ToDo: exclude patches with -9999.0 height
             //ToDo: lod seams
 
-            int ty = tc_idx / (quads_per_patch-1);
-            int tx = tc_idx - ty * (quads_per_patch-1);
+            int ty = tc_idx / (subquads_per_quad-1);
+            int tx = tc_idx - ty * (subquads_per_quad-1);
 
             nya_math::vec4 tc(8, 8, 512, 512);
 
@@ -97,15 +97,14 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             vert v;
             const float hoff=-0.2f;
 
-            const uint hpw = quads_per_patch*quads_per_patch+1;
-            const uint hpp = (hpw-1)/quads_per_patch;
-            const uint w = hpp + 1;
+            const uint hpw = subquads_per_quad*subquads_per_quad+1;
+            const uint w = subquads_per_quad + 1;
 
             uint voff = (uint)m_verts.size();
 
             tc.zw() -= tc.xy();
-            tc.zw() /= float(quads_per_patch);
-            const float hpatch_size = patch_size/hpp;
+            tc.zw() /= float(subquads_per_quad);
+            const float hpatch_size = patch_size/subquads_per_quad;
             for (int hy=0; hy < w; ++hy)
             for (int hx=0; hx < w; ++hx)
             {
@@ -149,30 +148,30 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 return;
             }
 
-            for (int hy=0; hy < hpp; ++hy)
-            for (int hx=0; hx < hpp; ++hx)
+            for (int hy=0; hy < subquads_per_quad; ++hy)
+            for (int hx=0; hx < subquads_per_quad; ++hx)
             {
                 int i = voff + hx + hy * w;
 
                 m_curr_indices_hi.push_back(i);
-                m_curr_indices_hi.push_back(i + 1 + hpp);
+                m_curr_indices_hi.push_back(i + 1 + subquads_per_quad);
                 m_curr_indices_hi.push_back(i + 1);
                 m_curr_indices_hi.push_back(i + 1);
-                m_curr_indices_hi.push_back(i + 1 + hpp);
-                m_curr_indices_hi.push_back(i + 1 + hpp + 1);
+                m_curr_indices_hi.push_back(i + 1 + subquads_per_quad);
+                m_curr_indices_hi.push_back(i + 1 + subquads_per_quad + 1);
             }
 
-            for (int hy=0; hy < hpp; hy += 2)
-            for (int hx=0; hx < hpp; hx += 2)
+            for (int hy=0; hy < subquads_per_quad; hy += 2)
+            for (int hx=0; hx < subquads_per_quad; hx += 2)
             {
                 int i = voff + hx + hy * w;
 
                 m_curr_indices_mid.push_back(i);
-                m_curr_indices_mid.push_back(i + 2 * (1 + hpp));
+                m_curr_indices_mid.push_back(i + 2 * (1 + subquads_per_quad));
                 m_curr_indices_mid.push_back(i + 2);
                 m_curr_indices_mid.push_back(i + 2);
-                m_curr_indices_mid.push_back(i + 2 * (1 + hpp));
-                m_curr_indices_mid.push_back(i + 2 * (1 + hpp + 1));
+                m_curr_indices_mid.push_back(i + 2 * (1 + subquads_per_quad));
+                m_curr_indices_mid.push_back(i + 2 * (1 + subquads_per_quad + 1));
             }
         }
 
@@ -432,7 +431,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
             if (j == 4)
             {
                 assert(reader.get_remained() == location_size*location_size);
-                memcpy(&location_load_data.height_patches[0], reader.get_data(), reader.get_remained());
+                memcpy(location_load_data.height_patches, reader.get_data(), reader.get_remained());
             }
             else if (j == 5)
             {
@@ -443,7 +442,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
             else if (j == 8)
             {
                 assert(reader.get_remained() == location_size*location_size);
-                memcpy(&location_load_data.patches[0], reader.get_data(), reader.get_remained());
+                memcpy(location_load_data.patches, reader.get_data(), reader.get_remained());
             }
             else if (j == 9)
             {

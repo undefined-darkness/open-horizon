@@ -93,7 +93,6 @@ private:
 
 wpn_missile_params::wpn_missile_params(std::string id, std::string model)
 {
-
     const std::string lockon = "." + id + ".lockon.";
 
     this->id = id;

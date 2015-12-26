@@ -5,6 +5,7 @@
 #include "physics.h"
 #include "math/constants.h"
 #include "math/scalar.h"
+#include "containers/fhm.h"
 #include <algorithm>
 
 namespace phys
@@ -37,7 +38,18 @@ inline float tend(float value, float target, float speed)
 
 void world::set_location(const char *name)
 {
-    //ToDo
+    fhm_file fhm;
+    if (!fhm.open((std::string("Map/") + name + ".fhm").c_str()))
+        return;
+
+    assert(fhm.get_chunk_size(4) == location_size*location_size);
+    fhm.read_chunk_data(4, m_height_patches);
+
+    m_heights.resize(fhm.get_chunk_size(5)/4);
+    assert(!m_heights.empty());
+    fhm.read_chunk_data(5, &m_heights[0]);
+
+    //ToDo: collision meshes
 }
 
 //------------------------------------------------------------
@@ -85,7 +97,7 @@ void world::update_planes(int dt, hit_hunction on_hit)
     {
         p->update(dt);
 
-        if (p->pos.y < 5.0f)
+        if (p->pos.y < get_height(p->pos.x, p->pos.z) + 5.0f)
         {
             p->pos.y = 5.0f;
             //p->rot = quat(-0.5, p->rot.get_euler().y, 0.0);
@@ -103,6 +115,63 @@ void world::update_missiles(int dt, hit_hunction on_hit)
 {
     m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m){ return m.use_count() <= 1; }), m_missiles.end());
     for (auto &m: m_missiles) m->update(dt);
+}
+
+//------------------------------------------------------------
+
+float world::get_height(float x, float z) const
+{
+    if(m_heights.empty())
+        return 0.0f;
+
+    const int patch_size = 1024;
+    const unsigned int quads_per_patch = 8, hquads_per_quad = 8;
+
+    const int hpatch_size = patch_size / hquads_per_quad;
+
+    const int base = location_size/2 * patch_size * quads_per_patch;
+
+    const int idx_x = int(x + base) / hpatch_size;
+    const int idx_z = int(z + base) / hpatch_size;
+
+    if (idx_x < 0 || idx_x + 1 >= location_size * quads_per_patch * hquads_per_quad)
+        return 0.0f;
+
+    if (idx_z < 0 || idx_z + 1 >= location_size * quads_per_patch * hquads_per_quad)
+        return 0.0f;
+
+    const int tmp_idx_x = idx_x / hquads_per_quad;
+    const int tmp_idx_z = idx_z / hquads_per_quad;
+
+    const int pidx_x = tmp_idx_x / quads_per_patch;
+    const int pidx_z = tmp_idx_z / quads_per_patch;
+
+    const int qidx_x = tmp_idx_x - pidx_x * hquads_per_quad;
+    const int qidx_z = tmp_idx_z - pidx_z * hquads_per_quad;
+
+    const int hpw = quads_per_patch*quads_per_patch+1;
+    const int h_idx = m_height_patches[pidx_z * location_size + pidx_x] * hpw * hpw;
+
+    const int hpp = (hpw-1)/quads_per_patch;
+    const float *h = &m_heights[h_idx+(qidx_x + qidx_z * hpw)*hpp];
+
+    const uint hhpw = hquads_per_quad*hquads_per_quad+1;
+
+    const int hidx_x = idx_x - tmp_idx_x * hquads_per_quad;
+    const int hidx_z = idx_z - tmp_idx_z * hquads_per_quad;
+
+    const float kx = (x + base) / hpatch_size - idx_x;
+    const float kz = (z + base) / hpatch_size - idx_z;
+
+    const float h00 = h[hidx_x + hidx_z * hhpw];
+    const float h10 = h[hidx_x + 1 + hidx_z * hhpw];
+    const float h01 = h[hidx_x + (hidx_z + 1) * hhpw];
+    const float h11 = h[hidx_x + 1 + (hidx_z + 1) * hhpw];
+
+    const float h00_h10 = nya_math::lerp(h00, h10, kx);
+    const float h01_h11 = nya_math::lerp(h01, h11, kx);
+
+    return nya_math::lerp(h00_h10, h01_h11, kz);
 }
 
 //------------------------------------------------------------
