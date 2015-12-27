@@ -330,20 +330,19 @@ void menu::set_screen(const std::string &screen)
         add_sub_entry(L"F-14D", "f14d");
         add_sub_entry(L"Su-33", "su33");
         add_sub_entry(L"B-01B", "b01b");
-        add_sub_entry(L"KA-50", "ka50");
-        add_sub_entry(L"MH-60", "mh60");
+        add_sub_entry(L"AH-64", "ah64");
+        add_sub_entry(L"Mi-24", "mi24");
+        //add_sub_entry(L"MH-60", "mh60");
         //add_sub_entry(L"AC-130", "a130");
         //ToDo
 
-        auto ae = m_entries.back();
-
         add_entry(L"Color: ", {""}, "color", {"viewer_update_color"});
-        send_sub_events(ae);
 
+        send_sub_events(*(m_entries.end() - 2));
         send_sub_events(m_entries.back());
 
         if (get_var("mode") != "none")
-            add_entry(L"Next: ", {"start"});
+            add_entry(L"Next", {"start"});
     }
     else
         printf("unknown screen: %s\n", screen.c_str());
@@ -382,7 +381,7 @@ void menu::send_event(const std::string &event)
                 wchar_t name[255];
                 char action[255];
                 swprintf(name, 255, L"Color%02d", i);
-                sprintf(action, "color=%d", i);
+                sprintf(action, "%d", i);
                 e.sub_select.push_back({name, action});
             }
             break;

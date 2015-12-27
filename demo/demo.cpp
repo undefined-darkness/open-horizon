@@ -10,6 +10,7 @@
 #include "game/deathmatch.h"
 #include "game/team_deathmatch.h"
 #include "game/free_flight.h"
+#include "game/hangar.h"
 #include "gui/menu.h"
 #include "util/util.h"
 #include "util/xml.h"
@@ -483,6 +484,7 @@ int main(void)
     game::free_flight game_mode_ff(world);
     game::deathmatch game_mode_dm(world);
     game::team_deathmatch game_mode_tdm(world);
+    game::hangar hangar(scene);
     game::game_mode *active_game_mode = 0;
     game::plane_controls controls;
 
@@ -498,6 +500,7 @@ int main(void)
     platform.end_frame();
 
     menu.init();
+    bool viewer_mode = false;
 
     gui::menu::on_action on_menu_action = [&](const std::string &event)
     {
@@ -529,6 +532,33 @@ int main(void)
                 active_game_mode = &game_mode_ff;
                 game_mode_ff.start(plane.c_str(), color, location.c_str());
             }
+        }
+        else if (event == "viewer_start")
+        {
+            viewer_mode = true;
+            scene.camera.add_delta_rot(0.2f, 2.5f);
+        }
+        else if (event == "viewer_update_bg")
+        {
+            hangar.set_bkg(menu.get_var("bkg").c_str());
+        }
+        else if (event == "viewer_update_ac")
+        {
+            const auto dr = scene.camera.get_delta_rot();
+            hangar.set_plane(menu.get_var("ac").c_str());
+            scene.camera.add_delta_rot(dr.x, dr.y - 3.14f);
+        }
+        else if (event == "viewer_update_color")
+        {
+            const auto dr = scene.camera.get_delta_rot();
+            const int color = atoi(menu.get_var("color").c_str());
+            hangar.set_plane_color(color);
+            scene.camera.add_delta_rot(dr.x, dr.y - 3.14f);
+        }
+        else if (event == "viewer_end")
+        {
+            viewer_mode = false;
+            hangar.end();
         }
         else if (event == "exit")
             platform.terminate();
@@ -576,7 +606,11 @@ int main(void)
         {
             nya_render::clear(true, true);
 
-            //ToDo: draw viewer
+            if (viewer_mode)
+            {
+                hangar.update(dt);
+                scene.draw();
+            }
 
             menu.draw(scene.ui_render);
         }

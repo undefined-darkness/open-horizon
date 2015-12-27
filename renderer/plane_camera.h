@@ -14,9 +14,10 @@ class plane_camera
 {
 public:
     void add_delta_rot(float dx, float dy);
-    void reset_delta_rot() { m_drot.x = 0.0f; m_drot.y = 3.14f; }
+    const nya_math::vec2 &get_delta_rot() { return m_drot.xy(); }
+    void reset_delta_rot() { m_drot.x = 0.0f; m_drot.y = 3.14f; update(); }
     void add_delta_pos(float dx, float dy, float dz);
-    void reset_delta_pos() { if (m_ignore_dpos) return; m_dpos = nya_math::vec3(); }//0.0f, 2.0f, -10.0f); }
+    void reset_delta_pos() { if (m_ignore_dpos) return; m_dpos = nya_math::vec3(); update(); }//0.0f, 2.0f, -10.0f); }
     void set_ignore_delta_pos(bool ignore) { m_ignore_dpos = ignore; }
 
     void set_aspect(float aspect);

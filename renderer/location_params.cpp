@@ -15,6 +15,9 @@ bool location_params::load(const char *file_name)
 {
     *this = location_params(); //reset if was loaded already
 
+    if (!file_name || !file_name[0])
+        return false;
+
     nya_memory::tmp_buffer_scoped fi_data(load_resource(file_name));
     params::memory_reader reader(fi_data.get_data(), fi_data.get_size());
 

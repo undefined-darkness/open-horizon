@@ -16,6 +16,7 @@ class sky_mesh
 public:
     bool load(const char *name, const location_params &params);
     void draw();
+    void release();
 
 private:
     nya_render::vbo m_mesh;

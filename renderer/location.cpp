@@ -88,6 +88,14 @@ void sky_mesh::draw()
 
 //------------------------------------------------------------
 
+void sky_mesh::release()
+{
+    m_mesh.release();
+    m_material.unload();
+}
+
+//------------------------------------------------------------
+
 bool sun_mesh::init()
 {
     auto texture = shared::get_texture(shared::load_texture("Map/sun.nut"));
@@ -158,13 +166,33 @@ void sun_mesh::draw() const
 
 bool location::load(const char *name)
 {
-    m_params.load((std::string("Map/mapset_") + name + ".bin").c_str());
+    if (!name || !name[0])
+    {
+        m_params = location_params();
+        m_location.m_map_parts_material.set_texture("reflection", nya_scene::texture_proxy());
+        m_location.m_map_parts_material.set_texture("detail", nya_scene::texture_proxy());
+        m_location.m_map_parts_material.set_texture("ocean", nya_scene::texture_proxy());
+        m_location.m_map_parts_material.set_texture("normal", nya_scene::texture_proxy());
+        m_sky.release();
+        return false;
+    }
+    else if (strcmp(name, "def") == 0)
+    {
+        m_params = location_params();
 
-    m_location.load((std::string("Map/") + name + ".fhm").c_str(), m_params);
-    m_location.load((std::string("Map/") + name + "_mpt.fhm").c_str(), m_params);
+        auto e = shared::get_texture(shared::load_texture("Map/envmap_def.nut"));
+        m_location.m_map_parts_material.set_texture("reflection", e);
+    }
+    else
+    {
+        m_params.load((std::string("Map/mapset_") + name + ".bin").c_str());
 
-    auto e = shared::get_texture(shared::load_texture((std::string("Map/envmap_mapparts_") + name + ".nut").c_str()));
-    m_location.m_map_parts_material.set_texture("reflection", e);
+        m_location.load((std::string("Map/") + name + ".fhm").c_str(), m_params);
+        m_location.load((std::string("Map/") + name + "_mpt.fhm").c_str(), m_params);
+
+        auto e = shared::get_texture(shared::load_texture((std::string("Map/envmap_mapparts_") + name + ".nut").c_str()));
+        m_location.m_map_parts_material.set_texture("reflection", e);
+    }
 
     auto t = shared::get_texture(shared::load_texture((std::string("Map/detail_") + name + ".nut").c_str()));
     m_location.m_land_material.set_texture("detail", t);

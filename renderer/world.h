@@ -2,6 +2,8 @@
 // open horizon -- undefined_darkness@outlook.com
 //
 
+#pragma once
+
 #include "aircraft.h"
 #include "util/params.h"
 #include "memory/shared_ptr.h"

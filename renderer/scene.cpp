@@ -100,7 +100,10 @@ void scene::set_location(const char *name)
     m_flare.apply_location(m_location.get_params());
 
     auto &p = m_location.get_params();
-    m_curve.set(load_tonecurve((std::string("Map/tonecurve_") + name + ".tcb").c_str()));
+    if (m_location_name == "def" || m_location_name.empty())
+        m_curve.set(load_tonecurve("Map/tonecurve_default.tcb"));
+    else
+        m_curve.set(load_tonecurve(("Map/tonecurve_" + m_location_name + ".tcb").c_str()));
     set_shader_param("bloom_param", nya_math::vec4(p.hdr.bloom_threshold, p.hdr.bloom_offset, p.hdr.bloom_scale, 1.0));
     set_shader_param("saturation", nya_math::vec4(p.tone_saturation * 0.01, 0.0, 0.0, 0.0));
     m_luminance_speed = p.hdr.luminance_speed;
@@ -234,6 +237,8 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
             if (m_player_aircraft->get_camera_mode() == aircraft::camera_mode_third)
             {
                 m_player_aircraft->draw(0);
+
+                m_player_aircraft->draw(debug_variable::get());
 
                 const int lods = m_player_aircraft->get_lods_count();
                 if (lods == 11)

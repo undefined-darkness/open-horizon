@@ -139,6 +139,9 @@ struct location_params
     //ToDo
 
 public:
+    location_params() { sky.sun_dir.y = -1.0f; }
+
+public:
     bool load(const char *file_name);
 };
 

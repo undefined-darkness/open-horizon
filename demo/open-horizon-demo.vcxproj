@@ -105,6 +105,7 @@
     <ClCompile Include="..\renderer\missile_trail.cpp" />
     <ClCompile Include="demo.cpp" />
     <ClCompile Include="../game/game.cpp" />
+    <ClCompile Include="../game/hangar.cpp" />
     <ClCompile Include="../gui/ui.cpp" />
     <ClCompile Include="../phys/physics.cpp" />
     <ClCompile Include="../phys/plane_params.cpp" />
@@ -129,6 +130,7 @@
     <ClInclude Include="../containers/fhm.h" />
     <ClInclude Include="../containers/qdf.h" />
     <ClInclude Include="../game/game.h" />
+    <ClInclude Include="../game/hangar.h" />
     <ClInclude Include="../gui/ui.h" />
     <ClInclude Include="../phys/physics.h" />
     <ClInclude Include="../phys/plane_params.h" />

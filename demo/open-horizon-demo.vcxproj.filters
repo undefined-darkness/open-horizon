@@ -33,6 +33,9 @@
     <ClCompile Include="../game/game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="../game/hangar.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="../gui/ui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -121,6 +124,9 @@
     </ClInclude>
     <ClInclude Include="../game/game.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../game/hangar.h">
+        <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../gui/ui.h">
       <Filter>Header Files</Filter>
