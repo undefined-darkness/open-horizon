@@ -25,7 +25,7 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
 
             const int game_area_size = 8096;
             p.first.x = 0.25 * (-game_area_size/2 + (game_area_size / int(m_respawn_points[t].size())) * i);
-            p.first.y = 400;
+            p.first.y = m_world.get_height(p.first.x, p.first.z) + 400.0f;
             p.first.z = game_area_size/2 * (t == team_ally ? 1 : -1);
 
             p.second = quat(0.0, t == team_ally ? nya_math::constants::pi : 0.0, 0.0);

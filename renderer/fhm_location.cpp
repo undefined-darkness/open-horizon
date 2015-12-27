@@ -356,12 +356,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
         memory_reader reader(buf.get_data(), fhm.get_chunk_size(j));
         const uint sign = fhm.get_chunk_type(j);
 
-        if (sign == 'ETAM') //MATE material?
-        {
-            //read_mate(reader);
-            //read_unknown(reader);
-        }
-        else if (sign == 'HLOC') //COLH collision mesh?
+        if (sign == 'HLOC') //COLH collision mesh?
         {
             read_colh(reader);
             //static int counter = 0; printf("colh %d\n", ++counter);

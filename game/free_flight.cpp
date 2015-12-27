@@ -13,6 +13,9 @@ void free_flight::start(const char *plane, int color, const char *location)
     set_plane(plane, color);
     set_location(location);
     m_respawn_time = 0;
+
+    m_spawn_pos.x = -300.0f, m_spawn_pos.z = 2000.0f;
+    m_spawn_pos.y = m_world.get_height(m_spawn_pos.x, m_spawn_pos.z) + 50.0f;
 }
 
 //------------------------------------------------------------
@@ -33,7 +36,7 @@ void free_flight::update(int dt, const plane_controls &player_controls)
             m_respawn_time -= dt;
             if (m_respawn_time <= 0)
             {
-                m_player->set_pos(nya_math::vec3(-300, 50, 2000));
+                m_player->set_pos(m_spawn_pos);
                 m_player->set_rot(nya_math::quat());
                 m_player->reset_state();
             }
@@ -61,7 +64,10 @@ void free_flight::set_location(const char *location)
     if (!m_player)
         return;
 
-    m_player->set_pos(nya_math::vec3(-300, 50, 2000));
+    m_spawn_pos.x = -300.0f, m_spawn_pos.z = 2000.0f;
+    m_spawn_pos.y = m_world.get_height(m_spawn_pos.x, m_spawn_pos.z) + 50.0f;
+
+    m_player->set_pos(m_spawn_pos);
     m_player->set_rot(nya_math::quat());
 }
 

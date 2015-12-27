@@ -25,6 +25,7 @@ public:
 protected:
     plane_ptr m_player;
     ivalue m_respawn_time;
+    nya_math::vec3 m_spawn_pos;
 };
 
 //------------------------------------------------------------

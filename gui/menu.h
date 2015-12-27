@@ -16,6 +16,8 @@ struct menu_controls
 {
     bvalue up;
     bvalue down;
+    bvalue left;
+    bvalue right;
     bvalue prev;
     bvalue next;
 };
@@ -43,9 +45,28 @@ private:
     std::map<std::string, std::string> m_vars;
     menu_controls m_prev_controls;
     std::wstring m_title;
-    std::vector<std::pair<std::wstring, std::string> > m_entries;
+
+    struct entry
+    {
+        std::wstring name;
+        std::vector<std::string> events;
+
+        std::vector<std::pair<std::wstring, std::string> > sub_select;
+        std::string sub_event;
+        std::vector<std::string> sub_events;
+        uvalue sub_selected;
+    };
+
+    void send_sub_events(const entry &e);
+
+    void add_entry(const std::wstring &name, const std::vector<std::string> &events,
+                   const std::string &sub_event = "", const std::vector<std::string> &sub_events = {});
+    void add_sub_entry(const std::wstring &name, const std::string &value);
+
+    std::vector<entry> m_entries;
     uvalue m_selected;
     std::list<std::string> m_screens;
+    std::vector<std::string> m_back_events;
 
     tiles m_bkg;
     tiles m_select;

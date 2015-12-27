@@ -297,6 +297,13 @@ public:
                     else
                         controls.down = true;
                 }
+                else if (a.cmd == 'm_lr')
+                {
+                    if (v > 0.0f)
+                        controls.right = true;
+                    else
+                        controls.left = true;
+                }
             }
         }
 
@@ -316,6 +323,8 @@ public:
                 {
                     case 'm_up': controls.up = true; break;
                     case 'm_dn': controls.down = true; break;
+                    case 'm_lf': controls.left = true; break;
+                    case 'm_rt': controls.right = true; break;
                     case 'm_pr': controls.prev = true; break;
                     case 'm_nx': controls.next = true; break;
                     default: break;
@@ -348,6 +357,8 @@ private:
         if (cmd == "menu_up_down") return 'm_ud';
         if (cmd == "menu_up") return 'm_up';
         if (cmd == "menu_down") return 'm_dn';
+        if (cmd == "menu_left") return 'm_lf';
+        if (cmd == "menu_right") return 'm_rt';
         if (cmd == "menu_prev") return 'm_pr';
         if (cmd == "menu_next") return 'm_nx';
 
@@ -562,7 +573,13 @@ int main(void)
             get_debug_draw().draw();
         }
         else
+        {
+            nya_render::clear(true, true);
+
+            //ToDo: draw viewer
+
             menu.draw(scene.ui_render);
+        }
 
         const char *ui_ref = 0;
         //ui_ref = "ui_ref4.tga";
@@ -614,8 +631,8 @@ int main(void)
         if (platform.get_key(GLFW_KEY_D)) controls.rot.y = 1.0f;
         if (platform.get_key(GLFW_KEY_UP)) controls.rot.x = 1.0f, menu_controls.up = true;
         if (platform.get_key(GLFW_KEY_DOWN)) controls.rot.x = -1.0f, menu_controls.down = true;
-        if (platform.get_key(GLFW_KEY_LEFT)) controls.rot.z = -1.0f;
-        if (platform.get_key(GLFW_KEY_RIGHT)) controls.rot.z = 1.0f;
+        if (platform.get_key(GLFW_KEY_LEFT)) controls.rot.z = -1.0f, menu_controls.left = true;
+        if (platform.get_key(GLFW_KEY_RIGHT)) controls.rot.z = 1.0f, menu_controls.right = true;
 
         if (platform.get_key(GLFW_KEY_LEFT_CONTROL)) controls.mgun = true;
         if (platform.get_key(GLFW_KEY_SPACE)) controls.missile = true, menu_controls.next = true;

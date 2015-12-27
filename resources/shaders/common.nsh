@@ -39,7 +39,7 @@ float get_fog(float fogf, float fogh, vec3 eye)
 	float f = 1.0 - fog_hf;
 
 	float f2 = -max(eye.y, 0.0);
-	f2 -= 1.0 - fog_height.x;
+	f2 -= fog_height.x;
 	f += f2;
 	if(f2 < 0.0) f = 0.0;
 	f += fog_hf;

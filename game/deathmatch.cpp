@@ -26,7 +26,7 @@ void deathmatch::start(const char *plane, int color, int special, const char *lo
         const int game_area_size = 8096;
 
         p.first = -r.rotate(nya_math::vec3(0.0, 0.0, game_area_size/2));
-        p.first.y = 400;
+        p.first.y = m_world.get_height(p.first.x, p.first.z) + 400.0f;
         p.second = r;
     }
 
