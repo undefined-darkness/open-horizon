@@ -64,13 +64,20 @@ bool model::load(const char *name, const location_params &params)
     {
         if (strncmp("cc", name, 2) == 0) folder = "model_id/demo/char/";
         if (strncmp("bg", name, 2) == 0) folder = "model_id/demo/evbg/";
-        if (strncmp("ig", name, 2) == 0) folder = "model_id/demo/itec/";
+        if (strncmp("ic", name, 2) == 0) folder = "model_id/demo/itec/";
         if (strncmp("ig", name, 2) == 0) folder = "model_id/demo/iteg/";
     }
     //else
       //  folder = "model_id/mapo/" + loc_name + "/mapobj_" + loc_name + "_" + name + "/"
 
-    load_tdp(folder + name + "/" + name +"_t01.tdp");
+    auto tdp_name = folder + name + "/" + name + "_t01.tdp";
+    if (nya_resources::get_resources_provider().has(tdp_name.c_str()))
+        load_tdp(tdp_name.c_str());
+    else
+    {
+        tdp_name[tdp_name.size()-5] = '0';
+        load_tdp(tdp_name.c_str());
+    }
 
     lst main_list(folder + name + "/" + name +"_com.lst");
     for (auto &s: main_list.strings)

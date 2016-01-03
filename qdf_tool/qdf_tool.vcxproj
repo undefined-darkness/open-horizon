@@ -11,11 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\qdf.cpp" />
+    <ClCompile Include="..\containers\qdf.cpp" />
     <ClCompile Include="qdf_tool.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\qdf.h" />
+    <ClInclude Include="..\containers\qdf.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{520B1BF3-3AE8-4CF2-8AA6-BF3095276A0A}</ProjectGuid>

@@ -13,6 +13,16 @@ namespace renderer
 {
 //------------------------------------------------------------
 
+object_ptr world::add_object(const char *name)
+{
+    object_ptr o(true);
+    o->mdl.load(name, m_location.get_params());
+    m_objects.push_back(o);
+    return o;
+}
+
+//------------------------------------------------------------
+
 aircraft_ptr world::add_aircraft(const char *name, int color, bool player)
 {
     aircraft_ptr a(true);
@@ -66,6 +76,11 @@ void world::update(int dt)
 
     if (m_player_aircraft.get_ref_count() == 2)
         m_player_aircraft.free();
+
+    for (auto &o: m_objects) o->mdl.update(dt);
+
+    m_objects.erase(std::remove_if(m_objects.begin(), m_objects.end(), [](object_ptr &o)
+                                    { return o.get_ref_count() <= 1; }), m_objects.end());
 
     m_aircrafts.erase(std::remove_if(m_aircrafts.begin(), m_aircrafts.end(), [](aircraft_ptr &a){ return a.get_ref_count() <= 1; }), m_aircrafts.end());
     for (auto &a: m_aircrafts) a->update(dt);

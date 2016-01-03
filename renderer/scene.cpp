@@ -217,7 +217,13 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
 
     if (t.has("location"))
         m_location.draw();
-    else if (t.has("aircrafts"))
+
+    if (t.has("objects"))
+    {
+        for (auto &o:m_objects)
+            o->mdl.draw(0);
+    }
+    if (t.has("aircrafts"))
     {
         for (auto &a:m_aircrafts)
         {
@@ -230,15 +236,13 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
         for (auto &m:m_missiles)
             m->mdl.draw(0);
     }
-    else if (t.has("player"))
+    if (t.has("player"))
     {
         if (m_player_aircraft.is_valid())
         {
             if (m_player_aircraft->get_camera_mode() == aircraft::camera_mode_third)
             {
                 m_player_aircraft->draw(0);
-
-                m_player_aircraft->draw(debug_variable::get());
 
                 const int lods = m_player_aircraft->get_lods_count();
                 if (lods == 11)
@@ -248,12 +252,12 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
             }
         }
     }
-    else if (t.has("particles"))
+    if (t.has("particles"))
     {
         for (auto &m:m_missiles)
             m->trail.draw();
     }
-    else if (t.has("cockpit"))
+    if (t.has("cockpit"))
     {
         if (m_player_aircraft.is_valid() && m_player_aircraft->get_camera_mode() == aircraft::camera_mode_cockpit)
         {
@@ -279,11 +283,11 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
              camera.set_pos(cam_pos);
         }
     }
-    else if (t.has("clouds_flat"))
+    if (t.has("clouds_flat"))
         m_clouds.draw_flat();
-    else if (t.has("clouds_obj"))
+    if (t.has("clouds_obj"))
         m_clouds.draw_obj();
-    else if (t.has("flare"))
+    if (t.has("flare"))
         m_flare.draw();
 }
 

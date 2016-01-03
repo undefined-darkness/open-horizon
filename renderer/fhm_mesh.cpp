@@ -1105,6 +1105,72 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                     }
                     break;
 
+                case 8454:
+                    for (int i = 0; i < rgf.header.vcount; ++i)
+                    {
+                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 9], sizeof(verts[0].pos));
+                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 9 + 5], sizeof(verts[0].tc));
+                        //ToDo
+                    }
+                    break;
+
+                case 8455:
+                    for (int i = 0; i < rgf.header.vcount; ++i)
+                    {
+                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 13], sizeof(verts[0].pos));
+                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 13 + 9], sizeof(verts[0].tc));
+                        //ToDo
+                    }
+                    break;
+
+                case 4870:
+                    for (int i = 0; i < rgf.header.vcount; ++i)
+                    {
+                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 8], sizeof(verts[0].pos));
+                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 8 + 6], sizeof(verts[0].tc));
+                        //ToDo
+                    }
+                    break;
+
+                case 4871:
+                    for (int i = 0; i < rgf.header.vcount; ++i)
+                    {
+                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 12], sizeof(verts[0].pos));
+                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 12 + 10], sizeof(verts[0].tc));
+                        //ToDo
+                    }
+                    break;
+
+                case 8967:
+                    for (int i = 0; i < rgf.header.vcount; ++i)
+                    {
+                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 14], sizeof(verts[0].pos));
+                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 14 + 10], sizeof(verts[0].tc));
+                        //ToDo
+                    }
+                    break;
+
+                case 8966:
+                    for (int i = 0; i < rgf.header.vcount; ++i)
+                    {
+                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 10], sizeof(verts[0].pos));
+                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 10 + 6], sizeof(verts[0].tc));
+                        //ToDo
+                    }
+                    break;
+
+                    /*
+                case 8710:
+                    for (int i = 0; i < rgf.header.vcount; ++i)
+                    {
+                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 8], sizeof(verts[0].pos));
+                        //ToDo: + 3 (2)
+                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 8 + debug_variable::get()], sizeof(verts[0].tc));
+                        //ToDo: + 7 (2)
+                    }
+                    break;
+                     */
+
                 case 4112:
                 case 4369:
                 case 4371:
@@ -1204,6 +1270,9 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     }
 
     l.update_params_tex();
+
+    if (verts.size() >= 65535) //ToDo
+        return false;
 
     assert(verts.size() < 65535);
 

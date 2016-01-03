@@ -75,9 +75,9 @@ bool write_to_arch(uint64_t offset, const t& value, t&old_value)
         printf("unable ot open arch %s", names[idx]);
         return false;
     }
-    fseek(arch,offset, SEEK_SET);
+    fseek(arch, (size_t)offset, SEEK_SET);
     fread(&old_value, sizeof(t), 1, arch);
-    fseek(arch,offset, SEEK_SET);
+    fseek(arch, (size_t)offset, SEEK_SET);
     fwrite(&value, sizeof(t), 1, arch);
     fclose(arch);
 
@@ -94,12 +94,14 @@ int main(int argc, const char* argv[])
     {
         printf("qdf_tool list_files\n");
         printf("\n");
-        printf("qdf_tool extract_file\n");
-        printf("qdf_tool extract_file output_path\n");
+        printf("qdf_tool extract filename\n");
+        printf("qdf_tool extract filename output_path\n");
         printf("\n");
         printf("qdf_tool extract_all\n");
         printf("qdf_tool extract_all output_path\n");
         printf("\n");
+		printf("qdf_tool replace filename srcfilename\n");
+		printf("\n");
         printf("qdf_tool write_float filename offset value\n");
         printf("qdf_tool write_float filename offset value count\n");
         printf("\n");
@@ -143,18 +145,18 @@ int main(int argc, const char* argv[])
     }
 
     //extract file from archive
-    if (strcmp(argv[1], "extract_file") == 0)
+    if (strcmp(argv[1], "extract") == 0)
     {
         if (argc <= 2)
         {
-            printf("qdf_tool extract_file\n");
-            printf("qdf_tool extract_file output_path\n");
+            printf("qdf_tool extract filename\n");
+            printf("qdf_tool extract filename output_path\n");
             return -1;
         }
 
         //even part of the file's name acceptable
-        const int idx = qdf.get_file_idx(argv[2]);
-        if (!idx)
+		const int idx = qdf.find_file_idx(argv[2]);
+        if (idx < 0)
         {
             printf("file not found in arch: %s\n", argv[2]);
             return -1;
@@ -174,8 +176,8 @@ int main(int argc, const char* argv[])
             if(fname[fname.size() - 1] != '/')
                 fname.push_back('/');
 
-            create_path(fname.c_str());
             fname += name;
+			create_path(fname.c_str());
             write_file(fname.c_str(), &buf[0], buf.size());
         }
         else
@@ -220,8 +222,83 @@ int main(int argc, const char* argv[])
         return 0;
     }
 
+	//replace file in the archive
+	if (strcmp(argv[1], "replace") == 0)
+	{
+		if (argc <= 3)
+		{
+			printf("qdf_tool replace filename srcfilename\n");
+			return -1;
+		}
+
+		//even part of the file's name acceptable
+		const int idx = qdf.find_file_idx(argv[2]);
+		if (idx < 0)
+		{
+			printf("file not found in arch: %s\n", argv[2]);
+			return -1;
+		}
+
+		auto info_offset = qdf.get_file_info_offset(idx);
+		auto part_size = qdf.get_part_size();
+		qdf.close(); //so it could be overwritten
+
+		auto last_idx = sizeof(names) / sizeof(names[0]) - 1;
+		auto aname = names[last_idx];
+
+		//get last part size
+		FILE *f = fopen(aname, "rb");
+		if (!f)
+		{
+			printf("file not found: %s\n", aname);
+			return -1;
+		}
+
+		fseek(f, 0, SEEK_END);
+		const uint32_t last_size = (uint32_t)ftell(f);
+		fclose(f);
+
+		//read src file
+		f = fopen(argv[3], "rb");
+		if (!f)
+		{
+			printf("file not found: %s\n", argv[3]);
+			return -1;
+		}
+
+		fseek(f, 0, SEEK_END);
+		const uint64_t size = ftell(f);
+		std::vector<char> buf(size);
+		fseek(f, 0, SEEK_SET);
+		fread(buf.data(), 1, size, f);
+		fclose(f);
+
+		//append data
+		f = fopen(aname, "ab");
+		if (!f)
+		{
+			printf("file not found: %s\n", aname);
+			return -1;
+		}
+
+		fwrite(buf.data(), 1, size, f);
+		fclose(f);
+
+		//write info
+		const uint64_t offset = part_size * last_idx + last_size;
+
+		uint32_t old_value;
+		auto off = info_offset + 4;
+		write_to_arch<uint32_t>(off, ((uint32_t *)&offset)[0], old_value); if (backup.find(off) == backup.end()) backup[off] = old_value; off += 4;
+		write_to_arch<uint32_t>(off, ((uint32_t *)&offset)[1], old_value); if (backup.find(off) == backup.end()) backup[off] = old_value; off += 4;
+		write_to_arch<uint32_t>(off, ((uint32_t *)&size)[0], old_value); if (backup.find(off) == backup.end()) backup[off] = old_value; off += 4;
+		write_to_arch<uint32_t>(off, ((uint32_t *)&size)[1], old_value); if (backup.find(off) == backup.end()) backup[off] = old_value; off += 4;
+
+		//ToDo: backup last part size
+	}
+
     //override value in archive, e.g. to test how does it affect the game
-    if (strcmp(argv[1], "write_float") == 0 || strcmp(argv[1], "write_uint") == 0)
+    if (strncmp(argv[1], "write_", 6) == 0)
     {
         if (argc <= 4)
         {
@@ -234,9 +311,9 @@ int main(int argc, const char* argv[])
 
         int count = argc <= 5 ? 1 : atoi(argv[5]); //write count is optional
 
-        const int idx = qdf.get_file_idx(argv[2]);
-        if (!idx)
-        {
+		const int idx = qdf.find_file_idx(argv[2]);
+		if (idx < 0)
+		{
             printf("file not found in arch: %s\n", argv[2]);
             return -1;
         }

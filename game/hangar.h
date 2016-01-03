@@ -27,6 +27,7 @@ public:
 private:
     renderer::world &m_render_world;
     renderer::aircraft_ptr m_plane;
+    renderer::object_ptr m_object;
     std::string m_plane_name;
 };
 

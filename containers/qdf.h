@@ -27,6 +27,7 @@ public:
     const char *get_file_name(int idx) const;
     uint64_t get_file_size(int idx) const;
     uint64_t get_file_offset(int idx) const;
+	uint64_t get_file_info_offset(int idx) const;
     int get_file_idx(const char *name) const;
     int find_file_idx(const char *name_part) const;
 
@@ -43,6 +44,8 @@ private:
         std::string name;
         uint64_t offset;
         uint64_t size;
+
+		uint64_t offset_to_info;
     };
 
     std::string m_arch_name;

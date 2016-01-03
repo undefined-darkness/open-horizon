@@ -64,6 +64,7 @@ bool qdf_archive::open(const char *name)
     for (int i = 0, offset = 0; i < header.file_info_count; ++i)
     {
         qdf_file_info &info = m_fis[i];
+		info.offset_to_info = offset + sizeof(header);
         offset += sizeof(uint32_t); //unknown
         info.offset = *((uint64_t*)&fi_buf[offset]);
         offset += sizeof(uint64_t);
@@ -126,6 +127,16 @@ uint64_t qdf_archive::get_file_offset(int idx) const
         return 0;
 
     return m_fis[idx].offset;
+}
+
+//------------------------------------------------------------
+
+uint64_t qdf_archive::get_file_info_offset(int idx) const
+{
+    if (idx < 0 || idx >= int(m_fis.size()))
+        return 0;
+
+    return m_fis[idx].offset_to_info;
 }
 
 //------------------------------------------------------------

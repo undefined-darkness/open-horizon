@@ -18,12 +18,12 @@
     <ClCompile Include="qdf_tool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\qdf.cpp">
+    <ClCompile Include="..\containers\qdf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\qdf.h">
+    <ClInclude Include="..\containers\qdf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

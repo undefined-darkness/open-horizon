@@ -68,12 +68,18 @@ public:
     virtual void set_location(const char *name);
     const location_params &get_location_params() { return m_location.get_params(); }
     const char *get_location_name() { return m_location_name.c_str(); }
+
+    object_ptr add_object(const char *name);
+
     virtual aircraft_ptr add_aircraft(const char *name, int color, bool player);
-    missile_ptr add_missile(const char *name);
-    virtual void update(int dt);
     aircraft_ptr get_player_aircraft() { return m_player_aircraft; }
 
+    missile_ptr add_missile(const char *name);
+
+    virtual void update(int dt);
+
 protected:
+    std::vector<object_ptr> m_objects;
     std::vector<aircraft_ptr> m_aircrafts;
     std::vector<missile_ptr> m_missiles;
 
