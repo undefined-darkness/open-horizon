@@ -980,7 +980,9 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     };
 
     std::vector<vert> verts;
-    std::vector<ushort> indices;
+    std::vector<ushort> indices2b;
+    std::vector<uint> indices4b;
+    bool use_indices4b = false;
 
     //for (auto g:groups) printf("%s\n", g.name.c_str()); printf("\n");
 
@@ -1058,12 +1060,12 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             t.order = t.opaque ? (t.blend ? 1 : 0) : 2;
             t.rgf = rgf;
 
-            g.offset = uint(indices.size());
+            g.offset = uint(use_indices4b ? indices4b.size() : indices2b.size());
             reader.seek(header.offset_to_indices + 48 + header.indices_buffer_size + rgf.header.vbuf_offset);
 
             const float *ndxr_verts = (float *)reader.get_data();
 
-            const size_t first_index = verts.size();
+            const uint first_index = uint(verts.size());
             verts.resize(first_index+rgf.header.vcount);
 
             const float ptc = (total_rgf_idx + 0.5f) / total_rgf_count;
@@ -1104,7 +1106,16 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                         memcpy(verts[i + first_index].bitangent, &ndxr_verts[i * 11 + 5], sizeof(verts[0].bitangent));
                     }
                     break;
-
+/*
+                case 4102:
+                    for (int i = 0; i < rgf.header.vcount; ++i)
+                    {
+                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 6], sizeof(verts[0].pos));
+                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 6 + debug_variable::get()], sizeof(verts[0].tc));
+                        //ToDo
+                    }
+                    break;
+*/
                 case 8454:
                     for (int i = 0; i < rgf.header.vcount; ++i)
                     {
@@ -1159,7 +1170,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                     }
                     break;
 
-                    /*
+                /*
                 case 8710:
                     for (int i = 0; i < rgf.header.vcount; ++i)
                     {
@@ -1169,7 +1180,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                         //ToDo: + 7 (2)
                     }
                     break;
-                     */
+                */
 
                 case 4112:
                 case 4369:
@@ -1257,13 +1268,36 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                     indices.push_back(indices.back());
             }
 */
-            const uint ind_offset = uint(indices.size());
-            const uint ind_size = rgf.header.icount;
-            indices.resize(ind_offset + ind_size);
-            for (int i = 0; i < ind_size; ++i)
-                indices[i + ind_offset] = first_index + ndxr_indices[i];
+            if (!use_indices4b && verts.size() > 65535)
+            {
+                indices4b.resize(indices2b.size());
+                for (size_t i = 0; i < indices2b.size(); ++i)
+                    indices4b[i] = indices2b[i];
 
-            g.count = uint(indices.size()) - g.offset;
+                use_indices4b = true;
+            }
+
+            if (use_indices4b)
+            {
+                const uint ind_offset = uint(indices4b.size());
+                const uint ind_size = rgf.header.icount;
+                indices4b.resize(ind_offset + ind_size);
+                for (uint i = 0; i < ind_size; ++i)
+                    indices4b[i + ind_offset] = first_index + ndxr_indices[i];
+
+                g.count = uint(indices4b.size()) - g.offset;
+            }
+            else
+            {
+                const uint ind_offset = uint(indices2b.size());
+                const uint ind_size = rgf.header.icount;
+                indices2b.resize(ind_offset + ind_size);
+                for (uint i = 0; i < ind_size; ++i)
+                    indices2b[i + ind_offset] = first_index + ndxr_indices[i];
+
+                g.count = uint(indices2b.size()) - g.offset;
+            }
+
             g.elem_type = nya_render::vbo::triangle_strip;
             g.name = gf.name;
         }
@@ -1271,12 +1305,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
     l.update_params_tex();
 
-    if (verts.size() >= 65535) //ToDo
-        return false;
-
-    assert(verts.size() < 65535);
-
-    if (indices.empty())
+    if (indices2b.empty() && indices4b.empty())
         return false;
 
     if (mesh.skeleton.get_bones_count()>=250)
@@ -1286,15 +1315,16 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
     }
 
         //regroup groups with the same textures and blend modes
-#if 1
-    std::vector<unsigned short> regroup_indices;
+//#if 1
+    std::vector<unsigned short> regroup_indices2b;
+    std::vector<uint> regroup_indices4b;
     std::vector<nya_scene::shared_mesh::group> regroup_groups;
     std::vector<nya_scene::material> regroup_materials;
 
     std::vector<bool> used_groups(total_rgf_count, false);
     for (int i = 0; i < 3; ++i)
     {
-        for (unsigned int j = 0; j < total_rgf_count; ++j)
+        for (uint j = 0; j < total_rgf_count; ++j)
         {
             if (used_groups[j] || tmp_groups[j].order != i)
                 continue;
@@ -1305,13 +1335,23 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             used_groups[j] = true;
 
             nya_scene::shared_mesh::group g;
-            g.offset = (unsigned int)regroup_indices.size();
-            regroup_indices.resize(g.offset + mesh.groups[j].count);
-            memcpy(&regroup_indices[g.offset], &indices[mesh.groups[j].offset], mesh.groups[j].count * 2);
+            if (use_indices4b)
+            {
+                g.offset = (unsigned int)regroup_indices4b.size();
+                regroup_indices4b.resize(g.offset + mesh.groups[j].count);
+                memcpy(&regroup_indices4b[g.offset], &indices4b[mesh.groups[j].offset], mesh.groups[j].count * 4);
+            }
+            else
+            {
+                g.offset = (unsigned int)regroup_indices2b.size();
+                regroup_indices2b.resize(g.offset + mesh.groups[j].count);
+                memcpy(&regroup_indices2b[g.offset], &indices2b[mesh.groups[j].offset], mesh.groups[j].count * 2);
+            }
+
             g.count = mesh.groups[j].count;
 
             if (i == 0) //ToDo
-            for (unsigned int k = 0; k < total_rgf_count; ++k)
+            for (uint k = 0; k < total_rgf_count; ++k)
             {
                 if (used_groups[k] || tmp_groups[k].order != i)
                     continue;
@@ -1335,18 +1375,36 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                 if (!same)
                     continue;
 
-                auto ioff1 = (unsigned int)regroup_indices.size();
+                if (use_indices4b)
+                {
+                    auto ioff1 = (unsigned int)regroup_indices4b.size();
 
-                if (!regroup_indices.empty())
-                    regroup_indices.push_back(regroup_indices.back());
-                regroup_indices.push_back(indices[mesh.groups[k].offset]);
-                if ( (ioff1 - g.offset) % 2 )
-                    regroup_indices.push_back(regroup_indices.back());
+                    if (!regroup_indices4b.empty())
+                        regroup_indices4b.push_back(regroup_indices4b.back());
+                    regroup_indices4b.push_back(indices4b[mesh.groups[k].offset]);
+                    if ( (ioff1 - g.offset) % 2 )
+                        regroup_indices4b.push_back(regroup_indices4b.back());
 
-                auto ioff2 = (unsigned int)regroup_indices.size();
-                regroup_indices.resize(ioff2 + mesh.groups[k].count);
-                memcpy(&regroup_indices[ioff2], &indices[mesh.groups[k].offset], mesh.groups[k].count * 2);
-                g.count += (unsigned int)regroup_indices.size() - ioff1;
+                    auto ioff2 = (unsigned int)regroup_indices4b.size();
+                    regroup_indices4b.resize(ioff2 + mesh.groups[k].count);
+                    memcpy(&regroup_indices4b[ioff2], &indices4b[mesh.groups[k].offset], mesh.groups[k].count * 2);
+                    g.count += (unsigned int)regroup_indices4b.size() - ioff1;
+                }
+                else
+                {
+                    auto ioff1 = (unsigned int)regroup_indices2b.size();
+
+                    if (!regroup_indices2b.empty())
+                        regroup_indices2b.push_back(regroup_indices2b.back());
+                    regroup_indices2b.push_back(indices2b[mesh.groups[k].offset]);
+                    if ( (ioff1 - g.offset) % 2 )
+                        regroup_indices2b.push_back(regroup_indices2b.back());
+
+                    auto ioff2 = (unsigned int)regroup_indices2b.size();
+                    regroup_indices2b.resize(ioff2 + mesh.groups[k].count);
+                    memcpy(&regroup_indices2b[ioff2], &indices2b[mesh.groups[k].offset], mesh.groups[k].count * 2);
+                    g.count += (unsigned int)regroup_indices2b.size() - ioff1;
+                }
 
                 used_groups[k] = true;
             }
@@ -1360,10 +1418,9 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
     //printf("groups before %ld after %ld\n", mesh.groups.size(), regroup_groups.size());
 
-    indices = regroup_indices;
     mesh.groups = regroup_groups;
     mesh.materials = regroup_materials;
-#endif
+//#endif
 
     mesh.vbo.set_tc(0, sizeof(verts[0].pos), 3);
     mesh.vbo.set_normals(sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].bone), nya_render::vbo::float16);
@@ -1373,7 +1430,10 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
 
     mesh.vbo.set_vertex_data(&verts[0], sizeof(verts[0]), uint(verts.size()));
 
-    mesh.vbo.set_index_data(&indices[0], nya_render::vbo::index2b, uint(indices.size()));
+    if(use_indices4b)
+        mesh.vbo.set_index_data(&regroup_indices4b[0], nya_render::vbo::index4b, uint(indices4b.size()));
+    else
+        mesh.vbo.set_index_data(&regroup_indices2b[0], nya_render::vbo::index2b, uint(indices2b.size()));
 
     l.mesh.create(mesh);
 

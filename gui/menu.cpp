@@ -318,7 +318,7 @@ void menu::set_screen(const std::string &screen)
         m_back_events = {"viewer_end"};
 
         add_entry(L"Background: ", {""}, "bkg", {"viewer_update_bg"});
-        //add_sub_entry(L"Hangar01", "hg01");
+        add_sub_entry(L"Hangar01", "hg01");
         add_sub_entry(L"Hangar02", "hg02");
         add_sub_entry(L"Hangar03", "hg03");
         add_sub_entry(L"Hangar04", "hg04");
