@@ -25,6 +25,7 @@ public:
     bool load(const char *file_name, const location_params &params);
     void update(int dt);
     void draw_mptx();
+    void draw_mptx_transparent();
     void draw_landscape();
     void draw_cols() { m_debug_draw.draw(); }
 
@@ -59,7 +60,10 @@ protected:
         mptx_mesh(): draw_dist(0.0f) {}
     };
 
+    void draw(const std::vector<mptx_mesh> &meshes);
+
     std::vector<mptx_mesh> m_mptx_meshes;
+    std::vector<mptx_mesh> m_mptx_transparent_meshes;
 
     struct col_mesh { nya_math::aabb box; };
     std::vector<col_mesh> m_cols;

@@ -224,6 +224,7 @@ void location::draw()
 
     m_location.draw_mptx();
     m_location.draw_landscape();
+    m_location.draw_mptx_transparent();
     m_sky.draw();
     m_sun.draw();
 

@@ -14,7 +14,7 @@
 #include "scene/shader.h"
 #include "math/scalar.h"
 
-//#include "render/platform_specific_gl.h"
+#include "render/platform_specific_gl.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -95,7 +95,6 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             tc.w /= m_tex_height;
 
             vert v;
-            const float hoff=-0.2f;
 
             const uint hpw = subquads_per_quad*subquads_per_quad+1;
             const uint w = subquads_per_quad + 1;
@@ -109,7 +108,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             for (int hx=0; hx < w; ++hx)
             {
                 v.pos.x = x + hx * hpatch_size;
-                v.pos.y = hoff + h[hx + hy * hpw];
+                v.pos.y = h[hx + hy * hpw];
                 v.pos.z = y + hy * hpatch_size;
                 v.tc.x = tc.x + tc.z * hx;
                 v.tc.y = tc.y + tc.w * hy;
@@ -536,7 +535,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
 
 //------------------------------------------------------------
 
-void fhm_location::draw_mptx()
+void fhm_location::draw(const std::vector<mptx_mesh> &meshes)
 {
     const nya_math::frustum &f = nya_scene::get_camera().get_frustum();
     const nya_math::vec3 &cp = nya_scene::get_camera().get_pos();
@@ -544,7 +543,7 @@ void fhm_location::draw_mptx()
     nya_scene::transform::set(nya_scene::transform());
 
     bool mat_unset = false;
-    for (auto &mesh: m_mptx_meshes)
+    for (auto &mesh: meshes)
     {
         m_map_parts_color_texture.set(mesh.color);
         m_map_parts_diffuse_texture.set(mesh.textures.size() > 0 ? shared::get_texture(mesh.textures[0]) : shared::get_black_texture());
@@ -616,6 +615,31 @@ void fhm_location::update(int dt)
 
 //------------------------------------------------------------
 
+void fhm_location::draw_mptx()
+{
+    auto &p = m_map_parts_material.get_default_pass();
+    p.get_state().set_blend(false);
+    p.get_state().zwrite = true;
+    draw(m_mptx_meshes);
+}
+
+//------------------------------------------------------------
+
+void fhm_location::draw_mptx_transparent()
+{
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(-1,-1);
+
+    auto &p = m_map_parts_material.get_default_pass();
+    p.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha); //ToDo: different blend modes
+    p.get_state().zwrite = false;
+    draw(m_mptx_transparent_meshes);
+
+    glDisable(GL_POLYGON_OFFSET_FILL);
+}
+
+//------------------------------------------------------------
+
 void fhm_location::draw_landscape()
 {
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
@@ -679,7 +703,6 @@ bool fhm_location::read_mptx(memory_reader &reader)
     auto &p = m_map_parts_material.get_default_pass();
     p.set_shader("shaders/map_parts.nsh");
     p.get_state().set_cull_face(true);
-    //p.get_state().set_blend(true,nya_render::blend::src_alpha,nya_render::blend::inv_src_alpha); //ToDo
 
     m_map_parts_color_texture.create();
     m_map_parts_material.set_texture("color", m_map_parts_color_texture);
@@ -690,64 +713,86 @@ bool fhm_location::read_mptx(memory_reader &reader)
     m_map_parts_tr.create();
     m_map_parts_material.set_param_array(m_map_parts_material.get_param_idx("transform"), m_map_parts_tr);
 
-/*
-    reader.seek(52);
-
-    union
+    struct tex_header
     {
-        unsigned int uint_value;
-        unsigned char uchar_value[4];
-    } sh;
+        uint id;
+        uint unknown_zero[2];
+        uint unknown;
+        uint unknown2;
+        uint unknown_zero2;
+    };
 
-    sh.uint_value = reader.read<uint>();
-
-    printf("sh %d | %d %d %d %d\n", sh.uint_value, sh.uchar_value[0], sh.uchar_value[1], sh.uchar_value[2], sh.uchar_value[3]);
-
-    //if (sh.uchar_value[0] == 0 && sh.uchar_value[1] == 0)
-    //    return true;
-
-    //print_data(reader, 0, 128);
-*/
-
-    m_mptx_meshes.resize(m_mptx_meshes.size() + 1);
-    mptx_mesh &mesh = m_mptx_meshes.back();
-
-    reader.seek(18);
-    uint tex_count = reader.read<ushort>();
-    mesh.textures.resize(tex_count);
-    if (tex_count>0)
+    struct mptx_header
     {
-        reader.seek(40);
-        mesh.textures[0] = reader.read<uint>();
+        char sign[4]; //"mptx"
+        char version[4];
+        ushort unknown[2];
+        uint zero;
+
+        ushort zero2;
+        ushort tex_count;
+
+        ushort zero3;
+        ushort unknown2[3];
+        uint zero4[3];
+
+        tex_header tex0;
+        tex_header tex1;
+
+        uint unknown3[2];
+        uint zero5;
+        uint unknown4[2];
+        uint zero6;
+
+        char material_params[8];
+
+        uint vert_count;
+        uint vert_format;
+        uint instances_count;
+
+        nya_math::vec3 bbox_origin;
+        float bbox_size;
+
+    } header = reader.read<mptx_header>();
+
+    //print_data(reader, 0, sizeof(header));
+
+    assume(header.zero == 0);
+    assume(header.zero2 == 0);
+    assume(header.zero3 == 0);
+    assume(header.zero4[0] == 0 && header.zero4[1] == 0 && header.zero4[2] == 0);
+    assume(header.zero5 == 0);
+    assume(header.zero6 == 0);
+
+    const bool transparent = header.material_params[1] > 0;
+
+    if (transparent)
+    {
+        m_mptx_transparent_meshes.resize(m_mptx_transparent_meshes.size() + 1);
     }
+    else
+        m_mptx_meshes.resize(m_mptx_meshes.size() + 1);
 
-    if (tex_count>1)
-    {
-        reader.seek(64);
-        mesh.textures[1] = reader.read<uint>();
-    }
+    mptx_mesh &mesh = transparent ? m_mptx_transparent_meshes.back() : m_mptx_meshes.back();
 
-    assume(tex_count < 3);
+    mesh.textures.resize(header.tex_count);
+    if (header.tex_count>0)
+        mesh.textures[0] = header.tex0.id;
+    if (header.tex_count>1)
+        mesh.textures[1] = header.tex1.id;
 
-    reader.seek(120);
-    unsigned int vcount = reader.read<unsigned int>();
+    assume(header.tex_count < 3);
 
-    reader.seek(128);
-    unsigned int instances_count = reader.read<unsigned int>();
-
-    reader.seek(132);
-    nya_math::vec3 bbox_origin = reader.read<nya_math::vec3>();
-    float bbox_size = reader.read<float>();
-    mesh.draw_dist = bbox_size * 200;
+    mesh.draw_dist = header.bbox_size * 200;
     mesh.draw_dist *= mesh.draw_dist;
-    reader.seek(148);
-    mesh.instances.resize(instances_count);
+
+    mesh.instances.resize(header.instances_count);
     for (auto &instance:mesh.instances)
     {
         instance.pos = reader.read<nya_math::vec3>();
         instance.yaw = reader.read<float>();
-        instance.bbox.origin = instance.pos + bbox_origin;
-        instance.bbox.delta = nya_math::vec3(bbox_size, bbox_size, bbox_size);
+        instance.bbox.origin = instance.pos + header.bbox_origin;
+        instance.bbox.delta = nya_math::vec3(header.bbox_size, header.bbox_size, header.bbox_size);
     }
 
     struct mptx_vert
@@ -758,7 +803,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
         float color_coord;
     };
 
-    std::vector<mptx_vert> verts(vcount);
+    std::vector<mptx_vert> verts(header.vert_count);
 
     for (auto &v: verts)
         v.pos = reader.read<nya_math::vec3>();
@@ -769,16 +814,24 @@ bool fhm_location::read_mptx(memory_reader &reader)
     for (auto &v: verts)
         v.normal = reader.read<nya_math::vec3>();
 
-    for (int i = 0; i < vcount; ++i)
-        verts[i].color_coord = (float(i) + 0.5f)/ vcount;
+    for (uint i = 0; i < header.vert_count; ++i)
+        verts[i].color_coord = (float(i) + 0.5f)/ header.vert_count;
 
-    const int bpp = int(reader.get_remained() / (vcount * instances_count));
+    const int bpp = int(reader.get_remained() / (header.vert_count * header.instances_count));
     assume(bpp == 4 || bpp == 8 || bpp == 12 || bpp == 0);
+
+    assume(header.vert_format == 4865 || header.vert_format == 8449 || header.vert_format == 8961);
+
+    assert((header.vert_format == 4865 && bpp == 4) || (header.vert_format != 4865 && bpp != 4));
+    assert((header.vert_format == 8449 && bpp == 8) || (header.vert_format != 8449 && bpp != 8));
+    assert((header.vert_format == 8961 && bpp == 12) || (header.vert_format != 8961 && bpp != 12));
+
+    //ToDo: vert format instead of bpp assumption
 
     nya_scene::shared_texture res;
     if (bpp == 4 || bpp == 12)
     {
-        res.tex.build_texture(reader.get_data(), vcount, instances_count, nya_render::texture::color_rgba);
+        res.tex.build_texture(reader.get_data(), header.vert_count, header.instances_count, nya_render::texture::color_rgba);
     }
     else //ToDo
     {
@@ -793,7 +846,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
     //if (reader.get_remained() > 0)
     //    printf("%ld\n", reader.get_remained());
 
-    mesh.vbo.set_vertex_data(&verts[0], sizeof(mptx_vert), vcount);
+    mesh.vbo.set_vertex_data(&verts[0], sizeof(mptx_vert), header.vert_count);
     mesh.vbo.set_normals(12);
     mesh.vbo.set_tc(0, 24, 3);
 
