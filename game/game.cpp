@@ -672,6 +672,8 @@ void missile::update(int dt)
     render->mdl.set_pos(phys->pos);
     render->mdl.set_rot(phys->rot);
 
+    render->engine_started = phys->accel_started;
+
     if (!target.expired())
     {
         auto dir = target.lock()->get_pos() - phys->pos;

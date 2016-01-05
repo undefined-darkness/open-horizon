@@ -97,7 +97,8 @@ void world::update(int dt)
 
 void missile::update(int dt)
 {
-    trail.update(mdl.get_pos(), dt);
+    if (engine_started)
+        trail.update(mdl.get_pos(), dt);
 }
 
 //------------------------------------------------------------

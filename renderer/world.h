@@ -21,6 +21,7 @@ namespace renderer
 typedef nya_math::vec3 vec3;
 typedef nya_math::quat quat;
 typedef params::fvalue fvalue;
+typedef params::value<bool> bvalue;
 
 //------------------------------------------------------------
 
@@ -53,6 +54,7 @@ typedef ptr<aircraft> aircraft_ptr;
 
 struct missile: public object
 {
+    bvalue engine_started;
     missile_trail trail;
     void update(int dt);
     void release();

@@ -42,13 +42,11 @@ void missile_trail::update(const nya_math::vec3 &pos, int dt)
     const float diff_len = diff.length();
 
     const float fragment_minimal_len = 1.0f;
-    const float fragment_minimal_angle_cos = 0.99;
-
     if (diff_len > fragment_minimal_len)
     {
         diff /= diff_len;
 
-        if (diff.dot(trp.dir.get(curr_tr_count - 2).xyz()) < fragment_minimal_angle_cos)
+        if (diff.dot(trp.dir.get(curr_tr_count - 2).xyz()) < 1.0f)
         {
             if (curr_tr_count >= max_trail_points)
             {
@@ -79,7 +77,28 @@ void missile_trail::update(const nya_math::vec3 &pos, int dt)
 
     //smoke puffs
 
-    //ToDo
+    auto &smp = m_smoke_params.back();
+
+    const int curr_sm_count = smp.get_count();
+    if (!curr_sm_count)
+    {
+        smp.set_count(1);
+        smp.set(0, pos, 0.25 * (rand() % 3));
+        return;
+    }
+
+    const float smoke_interval = 5;
+    if ((smp.get(curr_sm_count - 1).xyz() - pos).length_sq() > smoke_interval * smoke_interval)
+    {
+        if (curr_sm_count >= max_smoke_points)
+            m_smoke_params.resize(m_smoke_params.size() + 1);
+
+        auto &smp = m_smoke_params.back();
+        const int curr_sm_count = smp.get_count();
+
+        smp.set_count(curr_sm_count + 1);
+        smp.set(curr_sm_count, pos, 0.25 * (rand() % 3));
+    }
 }
 
 //------------------------------------------------------------
@@ -109,7 +128,7 @@ void missile_trails_render::init()
         trail_verts[i * 2 + 1].set(1.0f, float(i));
     }
 
-    m_trail_mesh.set_vertex_data(trail_verts.data(), 2*4, (int)trail_verts.size());
+    m_trail_mesh.set_vertex_data(trail_verts.data(), 2 * 4, (int)trail_verts.size());
     m_trail_mesh.set_vertices(0, 2);
     m_trail_mesh.set_element_type(nya_render::vbo::triangle_strip);
 
@@ -122,7 +141,7 @@ void missile_trails_render::init()
     p2.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
     p2.get_state().zwrite = false;
     p2.get_state().cull_face = false;
-    m_smoke_material.set_param_array(m_trail_material.get_param_idx("tr pos"), m_smoke_params);
+    m_smoke_material.set_param_array(m_smoke_material.get_param_idx("tr pos"), m_smoke_params);
     m_smoke_material.set_texture("diffuse", t);
 
     struct quad_vert { float pos[2], i, tc[2]; };
@@ -146,7 +165,7 @@ void missile_trails_render::init()
     }
 
     m_smoke_mesh.set_vertex_data(&verts[0], sizeof(quad_vert), (unsigned int)verts.size());
-    m_smoke_mesh.set_tc(0, sizeof(float)*2, 2);
+    m_smoke_mesh.set_tc(0, sizeof(float) * 3, 2);
 }
 
 //------------------------------------------------------------
@@ -163,7 +182,7 @@ void missile_trails_render::draw(const missile_trail &t) const
         m_trail_tr.set(tp.tr);
         m_trail_dir.set(tp.dir);
         m_trail_material.internal().set();
-        m_trail_mesh.draw(tp.tr.get_count()*2);
+        m_trail_mesh.draw(tp.tr.get_count() * 2);
         m_trail_material.internal().unset();
     }
     m_trail_mesh.unbind();
@@ -175,7 +194,7 @@ void missile_trails_render::draw(const missile_trail &t) const
     {
         m_smoke_params.set(sp);
         m_smoke_material.internal().set();
-        m_smoke_mesh.draw(sp.get_count()*6);
+        m_smoke_mesh.draw(sp.get_count() * 6);
         m_smoke_material.internal().unset();
     }
     m_smoke_mesh.unbind();
