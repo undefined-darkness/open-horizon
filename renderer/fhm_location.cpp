@@ -471,7 +471,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
     nya_math::vec3 about_fog_color = params.sky.low.ambient * params.sky.low.skysphere_intensity; //ToDo
     //ms01 0.688, 0.749, 0.764
 
-    nya_scene::material::param light_dir(-params.sky.sun_dir);
+    nya_scene::material::param light_dir(-params.sky.sun_dir, 0.0f);
     nya_scene::material::param fog_color(about_fog_color.x, about_fog_color.y, about_fog_color.z, -0.01*params.sky.fog_density);
     nya_scene::material::param fog_height(params.sky.fog_height_fresnel, params.sky.fog_height,
                                           -0.01 * params.sky.fog_height_fade_density, -0.01 * params.sky.fog_height_density);
@@ -632,7 +632,7 @@ void fhm_location::draw_mptx_transparent()
 
     auto &p = m_map_parts_material.get_default_pass();
     p.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha); //ToDo: different blend modes
-    p.get_state().zwrite = false;
+    p.get_state().zwrite = false; //ToDo: depend on material flags, apply to non-transparent meshes too
     draw(m_mptx_transparent_meshes);
 
     glDisable(GL_POLYGON_OFFSET_FILL);

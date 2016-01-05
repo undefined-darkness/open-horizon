@@ -19,7 +19,6 @@ public:
     gui::hud hud;
     gui::render ui_render;
 
-
 private:
     gui::fonts m_ui_fonts;
     bool m_paused;
@@ -37,6 +36,7 @@ private:
     nya_math::vec3 m_cam_fp_off;
     nya_scene::shader m_cockpit_black;
     nya_render::screen_quad m_cockpit_black_quad;
+    missile_trails_render m_missile_trails_renderer;
 
 private:
     int m_frame_counter, m_frame_counter_time, m_fps;

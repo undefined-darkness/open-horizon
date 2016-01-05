@@ -42,7 +42,6 @@ missile_ptr world::add_missile(const char *name)
 {
     missile_ptr m(true);
     m->mdl.load((std::string("w_") + name).c_str(), m_location.get_params());
-    m->trail.init();
     m_missiles.push_back(m);
     return m;
 }
@@ -105,7 +104,6 @@ void missile::update(int dt)
 
 void missile::release()
 {
-    trail.release();
 }
 
 //------------------------------------------------------------

@@ -120,7 +120,7 @@ void lens_flare::apply_location(const location_params &params)
     if (!m_dir_alpha.is_valid())
         m_dir_alpha.create();
 
-    m_dir_alpha.set(-params.sky.sun_dir);
+    m_dir_alpha->set(-params.sky.sun_dir, 0.0f);
     m_brightness = params.sky.low.lens_brightness;
 }
 
@@ -131,7 +131,7 @@ void lens_flare::draw() const
     if (!m_dir_alpha.is_valid())
         return;
 
-    auto da = m_dir_alpha->get();
+    auto da = m_dir_alpha.get();
 
     auto dir = nya_scene::get_camera().get_dir();
     dir.z = -dir.z;

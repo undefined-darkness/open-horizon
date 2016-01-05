@@ -102,7 +102,7 @@ void render::draw(const std::vector<rect_pair> &elements, const nya_scene::textu
     const float itwidth = 1.0f / tex.get_width();
     const float itheight = 1.0f / tex.get_height();
 
-    m_color->set(color);
+    m_color.set(color);
     m_tex.set(tex);
 
     for (int b = 0; b < (int)elements.size();b+=elements_per_batch)
@@ -207,7 +207,7 @@ bool render::set_transform(const transform &t) const
         utr.y = (utr.y - 0.5f) * aspect + 0.5f;
         utr.w *= aspect;
     }
-    m_utr->set(utr);
+    m_utr.set(utr);
 
     return true;
 }

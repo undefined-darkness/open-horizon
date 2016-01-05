@@ -14,18 +14,32 @@ namespace renderer
 
 class missile_trail
 {
+    friend class missile_trails_render;
+
+public:
+    void update(const nya_math::vec3 &pos, int dt);
+
+    missile_trail();
+
+private:
+    struct param { nya_scene::material::param_array tr, dir; };
+    std::vector<param> m_trail_params;
+    std::vector<nya_scene::material::param_array> m_smoke_params;
+};
+
+//------------------------------------------------------------
+
+class missile_trails_render
+{
 public:
     void init();
-    void update(const nya_math::vec3 &pos, int dt);
-    void draw() const;
+    void draw(const missile_trail &t) const;
     void release();
 
 private:
-    nya_scene::material m_material;
-    nya_render::vbo m_mesh;
-    bool m_first;
-    nya_math::vec3 m_prev_point;
-    nya_render::debug_draw m_debug;
+    nya_scene::material m_trail_material, m_smoke_material;
+    nya_render::vbo m_trail_mesh, m_smoke_mesh;
+    mutable nya_scene::material::param_array_proxy m_trail_tr, m_trail_dir, m_smoke_params;
 };
 
 //------------------------------------------------------------

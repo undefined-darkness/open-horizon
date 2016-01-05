@@ -90,6 +90,7 @@ void scene::set_location(const char *name)
         m_flare.init(get_texture("main_color"), get_texture("main_depth"));
         m_cockpit_black.load("shaders/cockpit_black.nsh");
         m_cockpit_black_quad.init();
+        m_missile_trails_renderer.init();
     }
 
     world::set_location(name);
@@ -255,7 +256,7 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
     if (t.has("particles"))
     {
         for (auto &m:m_missiles)
-            m->trail.draw();
+            m_missile_trails_renderer.draw(m->trail);
     }
     if (t.has("cockpit"))
     {
