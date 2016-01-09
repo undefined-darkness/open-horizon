@@ -9,7 +9,7 @@ uniform vec4 camera_pos;
 
 vec3 get_eye(vec3 pos)
 {
-    return normalize(camera_pos.xyz - pos.xyz);
+    return normalize(camera_pos.xyz - pos);
 }
 
 @vertex

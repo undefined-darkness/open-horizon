@@ -54,7 +54,8 @@ bool fhm_file::read_chunks_info(size_t base_offset)
             unsigned int size;
         } chunk_info;
 
-        m_data->read_chunk(&chunk_info, sizeof(chunk_info), base_offset + offset);
+        const bool read_ok = m_data->read_chunk(&chunk_info, sizeof(chunk_info), base_offset + offset);
+        assert(read_ok);
 
         chunk c;
         c.offset = chunk_info.offset + 48;

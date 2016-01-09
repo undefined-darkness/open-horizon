@@ -5,7 +5,9 @@
 #pragma once
 
 #include "fhm_location.h"
+#include "fhm_mesh.h"
 #include "location_params.h"
+#include "render/fbo.h"
 
 namespace renderer
 {
@@ -45,6 +47,7 @@ class location
 public:
     bool load(const char *name);
     void update(int dt);
+    void update_tree_texture();
     void draw();
 
 public:
@@ -55,6 +58,9 @@ private:
     location_params m_params;
     sky_mesh m_sky;
     sun_mesh m_sun;
+    fhm_mesh m_trees;
+    nya_render::fbo m_tree_fbo;
+    nya_scene::texture m_tree_depth;
 };
 
 //------------------------------------------------------------

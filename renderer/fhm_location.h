@@ -27,12 +27,16 @@ public:
     void draw_mptx();
     void draw_mptx_transparent();
     void draw_landscape();
+    void draw_trees();
     void draw_cols() { m_debug_draw.draw(); }
+
+    const nya_scene::texture_proxy &get_trees_texture() const;
 
 protected:
     bool read_mptx(memory_reader &reader);
     bool read_colh(memory_reader &reader);
     bool read_ntxr(memory_reader &reader, fhm_location_load_data &load_data);
+    bool read_wpdc(memory_reader &reader, fhm_location_load_data &load_data);
     bool read_location_tex_indices(memory_reader &reader, fhm_location_load_data &load_data);
     bool read_location_patches(memory_reader &reader, fhm_location_load_data &load_data);
     bool finish_load_location(fhm_location_load_data &load_data);
@@ -87,10 +91,13 @@ protected:
         {
             nya_math::aabb box;
             std::vector<group> groups;
+
+            uint tree_offset, tree_count;
         };
 
         std::vector<patch> patches;
         nya_render::vbo vbo;
+        nya_render::vbo tree_vbo;
 
     public:
         std::vector<float> heights;
@@ -108,6 +115,7 @@ protected:
     nya_scene::texture_proxy m_map_parts_diffuse_texture;
     nya_scene::texture_proxy m_map_parts_specular_texture;
     nya_scene::material::param_array_proxy m_map_parts_tr;
+    nya_scene::material m_trees_material;
 
     nya_scene::material m_land_material;
 

@@ -186,6 +186,8 @@ void scene::resize(unsigned int width,unsigned int height)
 
 void scene::draw()
 {
+    m_location.update_tree_texture();
+
     nya_scene::postprocess::draw(0);
 
     const auto white = nya_math::vec4(1.0, 1.0, 1.0, 1.0);

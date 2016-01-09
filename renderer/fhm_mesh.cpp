@@ -118,16 +118,16 @@ bool fhm_mesh::load(const char *file_name)
         {
             shared::load_texture(reader.get_data(), reader.get_remained());
         }
-        else
+        else if (reader.get_remained() > 0)
         {
             //read_unknown(reader);
 
-            //char fname[255]; sprintf(fname, "chunk%d.txt", j); print_data(reader, 0, 2000000, 0, fname);
+            //char fname[255]; sprintf(fname, "out/chunk%d.txt", j); print_data(reader, 0, reader.get_remained(), 0, fname);
 
             //read_unknown(reader);
             //int i = 5;
 
-            //printf("chunk%d offset %d\n", j, ch.offset + 48);
+            //printf("chunk%d offset %ld\n", j, fhm.get_chunk_offset(j));
         }
     }
 
@@ -1170,6 +1170,17 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                     }
                     break;
 
+                case 4865:
+                    for (int i = 0; i < rgf.header.vcount; ++i)
+                    {
+                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 11], sizeof(verts[0].pos));
+                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 11 + 9], sizeof(verts[0].tc));
+                        float3_to_half3(&ndxr_verts[i * 11 + 4], verts[i + first_index].normal);
+
+                        //ToDo: + 8 ubyte4n color
+                    }
+                    break;
+
                 /*
                 case 8710:
                     for (int i = 0; i < rgf.header.vcount; ++i)
@@ -1253,6 +1264,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                 default:
                     printf("ERROR: invalid stride. Vertex format: %d\n", rgf.header.vertex_format);
                     //print_data(reader,reader.get_offset(),512);
+                    //print_data(reader,reader.get_offset(), header.vertices_buffer_size);
                     continue;
             }
 

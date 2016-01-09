@@ -319,8 +319,6 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
 
     m_mesh.load(name_tmp_str.c_str(), params);
 
-    name = name_str.c_str();
-
     if (player)
     {
         auto amb_name = tex_pref + name_str + "/00/" + name_str + "_00_amb.img";

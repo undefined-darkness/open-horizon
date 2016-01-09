@@ -50,13 +50,18 @@ public:
 
 struct fhm_location_load_data
 {
-    unsigned char height_patches[location_size * location_size];
+    unsigned char height_patches[location_size * location_size] = {0};
     std::vector<float> heights;
 
-    unsigned char patches[location_size * location_size];
+    unsigned char patches[location_size * location_size] = {0};
     std::vector<unsigned char> tex_indices_data;
 
     std::vector<unsigned int> textures;
+
+    uint tree_types_count = 0;
+    struct tree_info { uint idx, offset, count = 0; };
+    std::vector<tree_info> tree_patches[location_size * location_size];
+    std::vector<nya_math::vec2> tree_positions;
 };
 
 //------------------------------------------------------------
@@ -65,9 +70,17 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 {
     assert(!load_data.tex_indices_data.empty());
 
-    auto &p=m_land_material.get_pass(m_land_material.add_pass(nya_scene::material::default_pass));
+    auto &p = m_land_material.get_default_pass();
     p.set_shader(nya_scene::shader("shaders/land.nsh"));
     p.get_state().set_cull_face(true);
+
+    auto &p2 = m_trees_material.get_default_pass();
+    p2.set_shader(nya_scene::shader("shaders/trees.nsh"));
+    p2.get_state().set_cull_face(false);
+    nya_scene::texture tree_tex;
+    const uint tree_texture_resolution = 256;
+    tree_tex.build(0, tree_texture_resolution * load_data.tree_types_count, tree_texture_resolution, nya_render::texture::color_bgra);
+    m_trees_material.set_texture("diffuse", tree_tex);
 
     class vbo_data
     {
@@ -235,13 +248,17 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     vbo_data vdata; //ToDo
     vdata.end_group();
 
+    struct tree_vert { nya_math::vec3 pos; float tc[2], delta[2]; };
+    std::vector<tree_vert> tree_verts;
+    const float tree_tc_width = 1.0f / load_data.tree_types_count;
+
     //int py = 0;
     for (int py = 0; py < location_size; ++py)
     for (int px = 0; px < location_size; ++px)
     {
         const int idx = py * location_size + px;
 
-        landscape::patch &p = m_landscape.patches[idx] ;
+        landscape::patch &p = m_landscape.patches[idx];
 
         int tc_idx = load_data.patches[idx] * quads_per_patch * quads_per_patch;
         if (tc_idx < 0)
@@ -325,11 +342,58 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
             p.box = nya_math::aabb(box_min, box_max);
         }
+
+        p.tree_offset = (uint)tree_verts.size();
+        auto &tp = load_data.tree_patches[idx];
+        for (auto &p: tp)
+        {
+            for (uint i = p.offset; i < p.offset + p.count; ++i)
+            {
+                auto &to = load_data.tree_positions[i];
+
+                const float half_size = 25.0f * 0.5f; //ToDo
+
+                nya_math::vec3 pos;
+                pos.x  = base_x + to.x;
+                pos.z  = base_y + to.y;
+                //pos.y = get_height(pos.x, pos.z); //ToDo
+                pos.y += half_size;
+
+                //get_debug_draw().add_line(p, p+nya_math::vec3(0.0, 10.0, 0.0), nya_math::vec4(1.0, 0.0, 0.0, 1.0));
+
+                tree_verts.resize(tree_verts.size() + 6);
+                auto *v = &tree_verts[tree_verts.size() - 6];
+
+                v[0].delta[0] = -1.0f, v[0].delta[1] = -1.0f;
+                v[1].delta[0] = -1.0f, v[1].delta[1] =  1.0f;
+                v[2].delta[0] =  1.0f, v[2].delta[1] =  1.0f;
+                v[3].delta[0] = -1.0f, v[3].delta[1] = -1.0f;
+                v[4].delta[0] =  1.0f, v[4].delta[1] =  1.0f;
+                v[5].delta[0] =  1.0f, v[5].delta[1] = -1.0f;
+
+                for (int j = 0; j < 6; ++j)
+                {
+                    v[j].tc[0] = (0.5f * (v[j].delta[0] + 1.0f) + p.idx) * tree_tc_width;
+                    v[j].tc[1] = 0.5f * (v[j].delta[1] + 1.0f);
+                    v[j].pos = pos;
+
+                    v[j].delta[0] *= half_size;
+                    v[j].delta[1] *= half_size;
+                }
+            }
+        }
+        p.tree_count = (uint)tree_verts.size() - p.tree_offset;
     }
 
     m_landscape.vbo.set_vertex_data(vdata.get_vdata(), 5 * 4, vdata.get_vcount());
     m_landscape.vbo.set_index_data(vdata.get_idata(), nya_render::vbo::index4b, vdata.get_icount());
     m_landscape.vbo.set_tc(0, 3 * 4, 2);
+
+    //tree_verts
+    m_landscape.tree_vbo.set_vertex_data(tree_verts.data(), (uint)sizeof(tree_vert), (uint)tree_verts.size());
+    m_landscape.tree_vbo.set_tc(0, 3 * 4, 4);
+
+    //ToDo: tree indices
 
     return true;
 }
@@ -372,6 +436,10 @@ bool fhm_location::load(const char *fileName, const location_params &params)
         {
             read_mptx(reader);
             has_mptx = true;
+        }
+        else if (sign == 'cdpw')
+        {
+            read_wpdc(reader, location_load_data);
         }
         else if (sign == 'clde')//edlc
         {
@@ -444,7 +512,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
                 location_load_data.tex_indices_data.resize(reader.get_remained());
                 memcpy(&location_load_data.tex_indices_data[0], reader.get_data(), reader.get_remained());
             }
-            else
+            else if (reader.get_remained() > 0)
             {
                 //char fname[255]; sprintf(fname, "out/chunk%d.txt", j); print_data(reader, 0, reader.get_remained(), 0, fname);
             }
@@ -458,7 +526,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
             //read_unknown(reader);
             //int i = 5;
 
-            //printf("chunk%d offset %d\n", j, ch.offset + 48);
+            printf("chunk%d offset %ld\n", j, fhm.get_chunk_offset(j));
         }
     }
 
@@ -491,6 +559,13 @@ bool fhm_location::load(const char *fileName, const location_params &params)
         m.set_param(m.get_param_idx("map param2 ps"), map_param2_ps);
         m.set_param(m.get_param_idx("specular color"), s.parts_color.x, s.parts_color.y, s.parts_color.z, s.parts_contrast);
     }
+
+    {
+        auto &m = m_trees_material;
+        m.set_param(m.get_param_idx("fog color"), fog_color);
+        m.set_param(m.get_param_idx("fog height"), fog_height);
+    }
+
 
     auto &m = m_land_material;
     m.set_param(m.get_param_idx("light dir"), light_dir);
@@ -640,14 +715,46 @@ void fhm_location::draw_mptx_transparent()
 
 //------------------------------------------------------------
 
-void fhm_location::draw_landscape()
+void fhm_location::draw_trees()
 {
-    nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
-    m_land_material.internal().set(nya_scene::material::default_pass);
-
-    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    const float tree_draw_distance = 7000;
 
     auto &c = nya_scene::get_camera();
+    nya_render::set_modelview_matrix(c.get_view_matrix());
+    m_trees_material.internal().set();
+
+    m_landscape.tree_vbo.bind();
+    for (const auto &p: m_landscape.patches)
+    {
+        if (!c.get_frustum().test_intersect(p.box))
+            continue;
+
+        const float sq = p.box.sq_dist(c.get_pos());
+        if (sq > tree_draw_distance * tree_draw_distance)
+            continue;
+
+        m_landscape.tree_vbo.draw(p.tree_offset, p.tree_count);
+    }
+    m_landscape.tree_vbo.unbind();
+    m_trees_material.internal().unset();
+}
+
+//------------------------------------------------------------
+
+const nya_scene::texture_proxy &fhm_location::get_trees_texture() const
+{
+    return m_trees_material.get_texture("diffuse");
+}
+
+//------------------------------------------------------------
+
+void fhm_location::draw_landscape()
+{
+    auto &c = nya_scene::get_camera();
+    nya_render::set_modelview_matrix(c.get_view_matrix());
+    m_land_material.internal().set();
+
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
     m_landscape.vbo.bind();
     for (const auto &p: m_landscape.patches)
@@ -694,6 +801,75 @@ bool fhm_location::read_ntxr(memory_reader &reader, fhm_location_load_data &load
     }
 
     return r>0;
+}
+
+//------------------------------------------------------------
+
+bool fhm_location::read_wpdc(memory_reader &reader, fhm_location_load_data &load_data)
+{
+    struct wpdc_header
+    {
+        char sign[4];
+        char version[4];
+        uint unknown;
+        uint unknown2;
+        uint unknown3;
+        float width;
+        float height;
+        uint zero;
+    };
+
+    auto header = reader.read<wpdc_header>();
+    uint offsets[location_size * location_size];
+    for (auto &o: offsets)
+        o = reader.read<uint>();
+
+    uint curr_patch = 0;
+    std::map<uint, uint> cached;
+
+    for (auto &o: offsets)
+    {
+        auto c = cached.find(o);
+        if (c != cached.end())
+        {
+            load_data.tree_patches[curr_patch++] = load_data.tree_patches[c->second];
+            continue;
+        }
+
+        reader.seek(o);
+        for (uint i = 0; i < 16; ++i)
+        {
+            reader.seek(o + i * 8);
+            const uint off = reader.read<uint>();
+            const uint count = reader.read<uint>();
+
+            if (!count)
+                continue;
+
+            if (i + 1 > load_data.tree_types_count)
+                load_data.tree_types_count = i + 1;
+
+            auto &ps = load_data.tree_patches[curr_patch];
+            ps.resize(ps.size() + 1);
+            auto &p = ps.back();
+            p.idx = i;
+            p.offset = (uint)load_data.tree_positions.size();
+            p.count  = count;
+
+            reader.seek(o + 16 * 8 + off);
+            for (uint j = 0; j < count; ++j)
+            {
+                nya_math::vec2 pos;
+                pos.x = (reader.read<short>() / 65535.0f + 0.5) * header.width;
+                pos.y = (reader.read<short>() / 65535.0f + 0.5) * header.height;
+                load_data.tree_positions.push_back(pos);
+            }
+        }
+
+        cached[o] = curr_patch++;
+    }
+
+    return true;
 }
 
 //------------------------------------------------------------
