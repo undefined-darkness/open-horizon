@@ -719,6 +719,9 @@ void fhm_location::draw_trees()
 {
     const float tree_draw_distance = 7000;
 
+    static nya_scene::transform t;
+    nya_scene::transform::set(t);
+
     auto &c = nya_scene::get_camera();
     nya_render::set_modelview_matrix(c.get_view_matrix());
     m_trees_material.internal().set();

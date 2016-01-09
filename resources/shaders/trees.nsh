@@ -1,27 +1,32 @@
-@predefined camera_pos "nya camera pos"
+@include "common.nsh"
 
 @all
 
 varying vec2 tc;
+varying vec3 eye;
+varying float vfogh;
+varying float vfogf;
 
 @vertex
-
-uniform vec4 camera_pos;
 
 void main()
 {
     vec4 p = gl_Vertex;
     vec2 d = gl_MultiTexCoord0.zw;
-    
-    vec3 cam_dir = normalize(camera_pos.xyz - p.xyz);
-    vec3 right = normalize(vec3(cam_dir.z, 0.0, -cam_dir.x));
-    vec3 up = cross(cam_dir, right.xyz);
+        
+    vfogh = get_fogh(p.xyz);
+
+    eye = get_eye(p.xyz);
+    vec3 right = normalize(vec3(eye.z, 0.0, -eye.x));
+    vec3 up = cross(eye, right.xyz);
 
     p.xyz += d.x * right + d.y * up;
 
     tc = gl_MultiTexCoord0.xy;
     
-    gl_Position = gl_ModelViewProjectionMatrix * p;
+    p = gl_ModelViewProjectionMatrix * p;
+    vfogf = get_fogv(p);
+    gl_Position = p;
 }
 
 @sampler base_map "diffuse"
@@ -32,10 +37,13 @@ uniform sampler2D base_map;
 
 void main()
 {
-    vec4 color = texture2D(base_map, tc);
+    vec4 color = texture2D(base_map, tc) * 1.2;
     if(color.a < 0.1)
         discard;
         //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); else
+        
+    float fog = get_fog(vfogf, vfogh, eye);
+	color.xyz = mix(fog_color.xyz, color.xyz, fog);
 
-    gl_FragColor = color;
+    gl_FragColor = color * 0.8;
 }
