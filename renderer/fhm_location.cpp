@@ -342,7 +342,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             p.box = nya_math::aabb(box_min, box_max);
         }
 
-        p.tree_offset = (uint)tree_verts.size();
+        p.tree_offset = (uint)tree_verts.size() * 6 / 4;
         auto &tp = load_data.tree_patches[idx];
         for (auto &p: tp)
         {
@@ -397,17 +397,15 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
                 //get_debug_draw().add_line(p, p+nya_math::vec3(0.0, 10.0, 0.0), nya_math::vec4(1.0, 0.0, 0.0, 1.0));
 
-                tree_verts.resize(tree_verts.size() + 6);
-                auto *v = &tree_verts[tree_verts.size() - 6];
+                tree_verts.resize(tree_verts.size() + 4);
+                auto *v = &tree_verts[tree_verts.size() - 4];
 
                 v[0].delta[0] = -1.0f, v[0].delta[1] = -1.0f;
                 v[1].delta[0] = -1.0f, v[1].delta[1] =  1.0f;
                 v[2].delta[0] =  1.0f, v[2].delta[1] =  1.0f;
-                v[3].delta[0] = -1.0f, v[3].delta[1] = -1.0f;
-                v[4].delta[0] =  1.0f, v[4].delta[1] =  1.0f;
-                v[5].delta[0] =  1.0f, v[5].delta[1] = -1.0f;
+                v[3].delta[0] =  1.0f, v[3].delta[1] = -1.0f;
 
-                for (int j = 0; j < 6; ++j)
+                for (int j = 0; j < 4; ++j)
                 {
                     v[j].tc[0] = (0.5f * (v[j].delta[0] + 1.0f) + p.idx) * tree_tc_width;
                     v[j].tc[1] = 0.5f * (v[j].delta[1] + 1.0f);
@@ -418,7 +416,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 }
             }
         }
-        p.tree_count = (uint)tree_verts.size() - p.tree_offset;
+        p.tree_count = (uint)tree_verts.size() * 6 / 4 - p.tree_offset;
     }
 
     m_landscape.vbo.set_vertex_data(vdata.get_vdata(), 5 * 4, vdata.get_vcount());
@@ -429,7 +427,17 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     m_landscape.tree_vbo.set_vertex_data(tree_verts.data(), (uint)sizeof(tree_vert), (uint)tree_verts.size());
     m_landscape.tree_vbo.set_tc(0, 3 * 4, 4);
 
-    //ToDo: tree indices
+    std::vector<uint> tree_indices(tree_verts.size() * 6 / 4);
+    for (uint i = 0, v = 0; i < (uint)tree_indices.size(); i += 6, v+=4)
+    {
+        tree_indices[i] = v;
+        tree_indices[i + 1] = v + 1;
+        tree_indices[i + 2] = v + 2;
+        tree_indices[i + 3] = v;
+        tree_indices[i + 4] = v + 2;
+        tree_indices[i + 5] = v + 3;
+    }
+    m_landscape.tree_vbo.set_index_data(tree_indices.data(), nya_render::vbo::index4b, (uint)tree_indices.size());
 
     return true;
 }

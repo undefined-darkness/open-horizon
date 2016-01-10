@@ -145,18 +145,16 @@ void missile_trails_render::init()
     m_smoke_material.set_texture("diffuse", t);
 
     struct quad_vert { float pos[2], i, tc[2]; };
-    std::vector<quad_vert> verts(max_smoke_points * 6); //ToDo: indices
+    std::vector<quad_vert> verts(max_smoke_points * 4);
 
-    for (int i = 0, idx = 0; i < (int)verts.size(); i += 6, ++idx)
+    for (int i = 0, idx = 0; i < (int)verts.size(); i += 4, ++idx)
     {
         verts[i+0].pos[0] = -1.0f, verts[i+0].pos[1] = -1.0f;
         verts[i+1].pos[0] = -1.0f, verts[i+1].pos[1] =  1.0f;
         verts[i+2].pos[0] =  1.0f, verts[i+2].pos[1] =  1.0f;
-        verts[i+3].pos[0] = -1.0f, verts[i+3].pos[1] = -1.0f;
-        verts[i+4].pos[0] =  1.0f, verts[i+4].pos[1] =  1.0f;
-        verts[i+5].pos[0] =  1.0f, verts[i+5].pos[1] = -1.0f;
+        verts[i+3].pos[0] =  1.0f, verts[i+5].pos[1] = -1.0f;
 
-        for (int j = 0; j < 6; ++j)
+        for (int j = 0; j < 4; ++j)
         {
             verts[i+j].tc[0] = 0.5f * (verts[i+j].pos[0] + 1.0f);
             verts[i+j].tc[1] = 0.5f * (verts[i+j].pos[1] + 1.0f);
@@ -164,7 +162,19 @@ void missile_trails_render::init()
         }
     }
 
-    m_smoke_mesh.set_vertex_data(&verts[0], sizeof(quad_vert), (unsigned int)verts.size());
+    std::vector<unsigned short> indices(max_smoke_points * 6);
+    for (int i = 0, v = 0; i < (int)indices.size(); i += 6, v+=4)
+    {
+        indices[i] = v;
+        indices[i + 1] = v + 1;
+        indices[i + 2] = v + 2;
+        indices[i + 3] = v;
+        indices[i + 4] = v + 2;
+        indices[i + 5] = v + 3;
+    }
+
+    m_smoke_mesh.set_vertex_data(verts.data(), sizeof(quad_vert), (unsigned int)verts.size());
+    m_smoke_mesh.set_index_data(indices.data(), nya_render::vbo::index2b, (unsigned int)indices.size());
     m_smoke_mesh.set_tc(0, sizeof(float) * 3, 2);
 }
 
