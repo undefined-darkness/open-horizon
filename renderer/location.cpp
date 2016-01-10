@@ -269,13 +269,12 @@ void location::update_tree_texture()
     float size = 0.5f;
     nya_math::mat4 pm;
     pm.ortho(-size, size, -size, size, -size, size);
-    pm.scale(2.0);
+    pm.scale(1.99);
     tree_cam->set_proj(pm);
-    auto r = prev_cam->get_rot().get_euler();
-    tree_cam->set_rot(-r.y * 180.0 / 3.1415, -r.x * 180.0 / 3.1415, 0.0);
     tree_cam->set_pos(0.0, size, 0.0);
-    //tree_cam->set_proj(60.0f, 1.0f, 0.01f, 1000.0f);
-    //tree_cam->set_pos(0, -1.0f, 0.0f);
+
+    auto r = prev_cam->get_rot().get_euler();
+    tree_cam->set_rot(nya_math::quat(-r.x, -r.y, 0.0f));
 
     m_tree_fbo.bind();
     const auto prev_vp = nya_render::get_viewport();

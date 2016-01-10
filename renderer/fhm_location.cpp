@@ -85,7 +85,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     class vbo_data
     {
     public:
-        void add_patch(float x, float y, int tc_idx, float *h)
+        void add_patch(float x, float y, int tc_idx, const float *h)
         {
             //ToDo: strips
             //ToDo: exclude patches with -9999.0 height
@@ -305,8 +305,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 last_tex_idx = tex_idx;
             }
 
-            const int hpp = (hpw-1)/quads_per_patch;
-            float *h = &load_data.heights[h_idx+(x + y * hpw)*hpp];
+            const float *h = &load_data.heights[h_idx+(x + y * hpw)*quads_per_patch];
 
             const float pos_x = base_x + patch_size * x;
             const float pos_y = base_y + patch_size * y;
@@ -351,11 +350,48 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             {
                 auto &to = load_data.tree_positions[i];
 
-                const float half_size = 25.0f * 0.5f; //ToDo
+                const float half_size = 32.0f * 0.5f; //ToDo
 
                 nya_math::vec3 pos;
-                pos.x  = base_x + to.x;
-                pos.z  = base_y + to.y;
+                pos.x = base_x + to.x;
+                pos.z = base_y + to.y;
+
+                //ToDo
+                {
+                    const int hpatch_size = patch_size / subquads_per_quad;
+
+                    const int base = location_size/2 * patch_size * quads_per_patch;
+
+                    const int idx_x = int(pos.x + base) / hpatch_size;
+                    const int idx_z = int(pos.z + base) / hpatch_size;
+
+                    const int tmp_idx_x = idx_x / subquads_per_quad;
+                    const int tmp_idx_z = idx_z / subquads_per_quad;
+
+                    const int qidx_x = tmp_idx_x - px * subquads_per_quad;
+                    const int qidx_z = tmp_idx_z - py * subquads_per_quad;
+
+                    const float *h = &load_data.heights[h_idx+(qidx_x + qidx_z * hpw)*quads_per_patch];
+
+                    const uint hhpw = subquads_per_quad * subquads_per_quad + 1;
+
+                    const int hidx_x = idx_x - tmp_idx_x * subquads_per_quad;
+                    const int hidx_z = idx_z - tmp_idx_z * subquads_per_quad;
+                    
+                    const float kx = (pos.x + base) / hpatch_size - idx_x;
+                    const float kz = (pos.z + base) / hpatch_size - idx_z;
+                    
+                    const float h00 = h[hidx_x + hidx_z * hhpw];
+                    const float h10 = h[hidx_x + 1 + hidx_z * hhpw];
+                    const float h01 = h[hidx_x + (hidx_z + 1) * hhpw];
+                    const float h11 = h[hidx_x + 1 + (hidx_z + 1) * hhpw];
+                    
+                    const float h00_h10 = nya_math::lerp(h00, h10, kx);
+                    const float h01_h11 = nya_math::lerp(h01, h11, kx);
+
+                    pos.y = nya_math::lerp(h00_h10, h01_h11, kz);
+                }
+
                 //pos.y = get_height(pos.x, pos.z); //ToDo
                 pos.y += half_size;
 
@@ -526,7 +562,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
             //read_unknown(reader);
             //int i = 5;
 
-            printf("chunk%d offset %ld\n", j, fhm.get_chunk_offset(j));
+            //printf("chunk%d offset %ld\n", j, fhm.get_chunk_offset(j));
         }
     }
 
