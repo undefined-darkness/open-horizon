@@ -179,6 +179,21 @@ void hud::draw(const render &r)
 
         const int radar_range = min_enemy_range < 1000 ? 1000 : ( min_enemy_range < 5000 ? 5000 : 15000);
         const int radar_center_x = 185, radar_center_y = r.get_height()-140, radar_radius = 75;
+        const int frame_half_size = radar_radius + 5;
+
+        static std::vector<nya_math::vec2> radar_frame(5);
+        radar_frame[0].x = radar_frame[1].x = radar_center_x - frame_half_size;
+        radar_frame[2].x = radar_frame[3].x = radar_center_x + frame_half_size;
+        radar_frame[0].y = radar_frame[3].y = radar_center_y + frame_half_size;
+        radar_frame[1].y = radar_frame[2].y = radar_center_y - frame_half_size;
+        radar_frame[4] = radar_frame[0];
+        static std::vector<rect_pair> bg(1);
+        bg[0].r.x = radar_center_x - frame_half_size;
+        bg[0].r.y = radar_center_y - frame_half_size;
+        bg[0].r.w = frame_half_size * 2;
+        bg[0].r.h = frame_half_size * 2;
+        r.draw(bg, shared::get_white_texture(), nya_math::vec4(0.0f, 0.02f, 0.0f, 0.5f));
+        r.draw(radar_frame, green);
 
         m_common.draw(r, 214, radar_center_x, radar_center_y, green); //circle
         if (radar_range>5000)
@@ -199,11 +214,9 @@ void hud::draw(const render &r)
         static std::vector<nya_math::vec2> radar_ang(3);
         for (auto &r: radar_ang)
             r.x = radar_center_x, r.y = radar_center_y;
-
-        auto radar_ang_vec = -nya_math::vec2::rotate(nya_math::vec2(0.0f, radar_radius + 5.0f), (60.0f*0.5f) * nya_math::constants::pi/180.0f);
+        auto radar_ang_vec = -nya_math::vec2::rotate(nya_math::vec2(0.0f, radar_radius + 15.0f), (60.0f*0.5f) * nya_math::constants::pi/180.0f);
         radar_ang[0].x -= radar_ang_vec.x, radar_ang[0].y += radar_ang_vec.y,
         radar_ang[2].x += radar_ang_vec.x, radar_ang[2].y += radar_ang_vec.y,
-
         r.draw(radar_ang, green);
 
         for (auto &t: m_targets)
