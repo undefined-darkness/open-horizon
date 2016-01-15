@@ -13,12 +13,16 @@
 #include <vector>
 #include <algorithm>
 
+//------------------------------------------------------------
+
 #define assume(expr) assert(expr) //like assert, but not critical
 
 //------------------------------------------------------------
 
 inline uint32_t swap_bytes(uint32_t v) { return (v >> 24) | ((v<<8) & 0x00FF0000) | ((v>>8) & 0x0000FF00) | (v << 24); }
 inline uint16_t swap_bytes(uint16_t v) { return ((v & 0xff) << 8) | ((v & 0xff00) >> 8); }
+
+//------------------------------------------------------------
 
 inline nya_memory::tmp_buffer_ref load_resource(const char *name)
 {
@@ -50,24 +54,10 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
     if (size > reader.get_remained())
         size = reader.get_remained();
 
-    //bool had_zero = false;
     for (int i = 0; reader.get_offset() < offset+size; ++i)
     {
         int off = int(reader.get_offset());
-        unsigned int t = reader.read<unsigned int>();/*
-                                                      if (t == 0 && !substruct_size)
-                                                      {
-                                                      if (!had_zero)
-                                                      {
-                                                      prnt("\n");
-                                                      had_zero = true;
-                                                      }
-
-                                                      continue;
-                                                      }
-
-                                                      had_zero = false;
-                                                      */
+        unsigned int t = reader.read<unsigned int>();
 
         if (i * 4 == off)
             prnt( "%7d ", i * 4 );

@@ -5,132 +5,164 @@
 #include "particles.h"
 
 #include "scene/camera.h"
-#include "memory/memory_reader.h"
 #include "shared.h"
 
 namespace renderer
 {
+
+static const int max_trail_points = 240;
+static const int max_points = 500;
+
 //------------------------------------------------------------
 
-bool particles_bcf::load(const char *name)
+plane_trail::plane_trail() { m_trail_params.resize(1); }
+
+//------------------------------------------------------------
+
+void plane_trail::update(const nya_math::vec3 &pos, int dt)
 {
-    nya_memory::tmp_buffer_scoped res(load_resource(name));
-    if (!res.get_data())
-        return false;
+    auto &trp = m_trail_params.back();
 
-    params::memory_reader reader(res.get_data(), res.get_size());
-
-    struct bcf_header
+    int curr_tr_count = trp.tr.get_count();
+    if (!curr_tr_count)
     {
-        char sign[4]; //"BCF\32"
-        char unknown[4]; //"1000"
-        uint32_t count;
-        uint32_t unknown_zero;
-        uint32_t unknown_zero2;
-
-    } header;
-
-    header = reader.read<bcf_header>();
-    assert(memcmp(header.sign, "BCF ", 4) == 0);
-    assume(header.unknown_zero == 0 && header.unknown_zero2 == 0);
-
-    std::vector<uint32_t> offsets(header.count);
-    for (auto &o: offsets)
-        o = reader.read<uint32_t>();
-
-    reader = params::memory_reader(reader.get_data(), reader.get_remained());
-
-    for (auto &o: offsets)
-    {
-        reader.seek(o);
-
-        unknown_structs.push_back({});
-        auto &uh = unknown_structs.back().header;
-        uh = reader.read<unknown_header>();
-        assume(uh.zero_or_one == 0 || uh.zero_or_one == 1);
-        assume(uh.zero[0] == 0 && uh.zero[1] == 0);
-
-        std::vector<uint32_t> sub_offsets(uh.count);
-        for (auto &o: sub_offsets)
-            o = reader.read<uint32_t>();
-
-        auto base_offset = reader.get_offset();
-
-        for (auto &so: sub_offsets)
-        {
-            reader.seek(base_offset + so);
-
-            unknown_structs.back().sub_structs.push_back({});
-            auto &us = unknown_structs.back().sub_structs.back();
-            auto &ush = us.header;
-            ush = reader.read<unknown_sub_header>();
-            assume(ush.zero == 0 && ush.zero2 == 0);
-
-            for (int i = 0; i < uh.sub_count; ++i)
-                us.sub_data.push_back(reader.read<unknown_sub_data>());
-        }
+        trp.tr.set_count(2);
+        trp.tr.set(0, pos);
+        trp.tr.set(1, pos);
+        return;
     }
 
-    return true;
+    auto diff = pos - trp.tr.get(curr_tr_count - 2).xyz();
+    const float diff_len = diff.length();
+
+    const float fragment_minimal_len = 1.0f;
+    if (diff_len > fragment_minimal_len)
+    {
+        diff /= diff_len;
+
+        if (diff.dot(trp.dir.get(curr_tr_count - 2).xyz()) < 1.0f)
+        {
+            if (curr_tr_count >= max_trail_points)
+            {
+                m_trail_params.resize(m_trail_params.size() + 1);
+
+                auto &prev = m_trail_params[m_trail_params.size() - 2];
+                auto &trp = m_trail_params.back();
+
+                curr_tr_count = 2;
+                trp.tr.set_count(curr_tr_count);
+                trp.tr.set(0, prev.tr.get(max_trail_points-1));
+                trp.dir.set_count(curr_tr_count);
+                trp.dir.set(0, prev.dir.get(max_trail_points-1));
+            }
+            else
+            {
+                ++curr_tr_count;
+                m_trail_params.back().tr.set_count(curr_tr_count);
+                m_trail_params.back().dir.set_count(curr_tr_count);
+            }
+        }
+    }
+    else if (diff_len > 0.01f)
+        diff /= diff_len;
+
+    m_trail_params.back().tr.set(curr_tr_count - 1, pos);
+    m_trail_params.back().dir.set(curr_tr_count - 1, diff, diff_len + m_trail_params.back().dir.get(curr_tr_count-2).w);
 }
 
 //------------------------------------------------------------
 
-bool particles_bfx::load(const char *name)
+void particles_render::init()
 {
-    nya_memory::tmp_buffer_scoped res(load_resource(name));
-    if (!res.get_data())
-        return false;
 
-    params::memory_reader reader(res.get_data(), res.get_size());
+    auto t = shared::get_texture(shared::load_texture("Effect/Effect.nut"));
 
-    struct bcf_header
+    //trails
+
+    m_trail_tr.create();
+    m_trail_dir.create();
+
+    auto &p = m_trail_material.get_default_pass();
+    p.set_shader(nya_scene::shader("shaders/plane_trail.nsh"));
+    p.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
+    p.get_state().zwrite = false;
+    p.get_state().cull_face = false;
+    m_trail_material.set_param_array(m_trail_material.get_param_idx("tr pos"), m_trail_tr);
+    m_trail_material.set_param_array(m_trail_material.get_param_idx("tr dir"), m_trail_dir);
+    m_trail_material.set_texture("diffuse", t);
+
+    std::vector<nya_math::vec2> trail_verts(max_trail_points * 2);
+    for (int i = 0; i < max_trail_points; ++i)
     {
-        char sign[4]; //"BFX\32"
-        char unknown[4]; //"1300"
-        uint32_t count;
-        uint32_t count2;
-        uint32_t count3;
-        uint32_t unknown2;
-        uint32_t unknown_zero;
-        uint32_t unknown_zero2;
-
-    } header;
-
-    header = reader.read<bcf_header>();
-    assert(memcmp(header.sign, "BFX ", 4) == 0);
-    assume(header.unknown_zero == 0 && header.unknown_zero2 == 0);
-
-    unknown_structs.resize(header.count);
-    assert(reader.get_remained() >= unknown_structs.size() * sizeof(unknown_struct));
-
-    for (auto &u: unknown_structs)
-    {
-        u = reader.read<unknown_struct>();
-        assume(u.zero == 0);
+        trail_verts[i * 2].set(-1.0f, float(i));
+        trail_verts[i * 2 + 1].set(1.0f, float(i));
     }
 
-    unknown_structs2.resize(header.count2);
-    assert(reader.get_remained() >= unknown_structs2.size() * sizeof(unknown_struct2));
+    m_trail_mesh.set_vertex_data(trail_verts.data(), 2 * 4, (int)trail_verts.size());
+    m_trail_mesh.set_vertices(0, 2);
+    m_trail_mesh.set_element_type(nya_render::vbo::triangle_strip);
 
-    for (auto &u: unknown_structs2)
+    //points
+
+    struct quad_vert { float pos[2], i, tc[2]; };
+    std::vector<quad_vert> verts(max_points * 4);
+
+    for (int i = 0, idx = 0; i < (int)verts.size(); i += 4, ++idx)
     {
-        u = reader.read<unknown_struct2>();
-        for (auto &z: u.zero)
-            assume(z == 0);
+        verts[i+0].pos[0] = -1.0f, verts[i+0].pos[1] = -1.0f;
+        verts[i+1].pos[0] = -1.0f, verts[i+1].pos[1] =  1.0f;
+        verts[i+2].pos[0] =  1.0f, verts[i+2].pos[1] =  1.0f;
+        verts[i+3].pos[0] =  1.0f, verts[i+5].pos[1] = -1.0f;
+
+        for (int j = 0; j < 4; ++j)
+        {
+            verts[i+j].tc[0] = 0.5f * (verts[i+j].pos[0] + 1.0f);
+            verts[i+j].tc[1] = 0.5f * (verts[i+j].pos[1] + 1.0f);
+            verts[i+j].i = float(idx);
+        }
     }
 
-    unknown_structs3.resize(header.count3);
-    assert(reader.get_remained() >= unknown_structs3.size() * sizeof(unknown_struct3));
-
-    for (auto &u: unknown_structs3)
+    std::vector<unsigned short> indices(max_points * 6);
+    for (int i = 0, v = 0; i < (int)indices.size(); i += 6, v+=4)
     {
-        u = reader.read<unknown_struct3>();
+        indices[i] = v;
+        indices[i + 1] = v + 1;
+        indices[i + 2] = v + 2;
+        indices[i + 3] = v;
+        indices[i + 4] = v + 2;
+        indices[i + 5] = v + 3;
     }
 
-    assert(reader.get_remained() == 0);
+    //engine heat
+}
 
-    return true;
+//------------------------------------------------------------
+
+void particles_render::draw(const plane_trail &t) const
+{
+    nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
+
+    //trail
+
+    m_trail_mesh.bind();
+    for (auto &tp: t.m_trail_params)
+    {
+        m_trail_tr.set(tp.tr);
+        m_trail_dir.set(tp.dir);
+        m_trail_material.internal().set();
+        m_trail_mesh.draw(tp.tr.get_count() * 2);
+        m_trail_material.internal().unset();
+    }
+    m_trail_mesh.unbind();
+}
+
+//------------------------------------------------------------
+
+void particles_render::release()
+{
+    m_trail_material.unload();
+    m_trail_mesh.release();
+    m_point_mesh.release();
 }
 
 //------------------------------------------------------------

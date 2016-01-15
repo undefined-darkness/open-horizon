@@ -20,6 +20,7 @@ public:
     void load_special(const char *name, const location_params &params);
     void apply_location(const char *location_name, const location_params &params);
     void draw(int lod_idx);
+    void draw_player();
     int get_lods_count() const { return m_mesh.get_lods_count(); }
     void update(int dt);
     void set_hide(bool value) { m_hide = value; }
@@ -78,7 +79,7 @@ public:
     //info
     static unsigned int get_colors_count(const char *plane_name);
 
-    aircraft(): m_hide(false), m_time(0), m_camera_mode(camera_mode_third), m_half_flaps_flag(false)
+    aircraft(): m_hide(false), m_time(0), m_camera_mode(camera_mode_third), m_half_flaps_flag(false), m_engine_lod_idx(0)
     {
         m_adimx_bone_idx = m_adimx2_bone_idx = -1;
         m_adimz_bone_idx = m_adimz2_bone_idx = -1;
@@ -107,6 +108,8 @@ private:
     int m_adimxz_bone_idx, m_adimxz2_bone_idx;
 
     bool m_half_flaps_flag;
+
+    int m_engine_lod_idx;
 
     model m_missile;
     model m_special;

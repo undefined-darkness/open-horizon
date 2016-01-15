@@ -319,14 +319,21 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
 
     m_mesh.load(name_tmp_str.c_str(), params);
 
+    m_engine_lod_idx = -1;
+    if (m_mesh.get_lods_count() == 11) //ToDo: aircraft configs
+        m_engine_lod_idx = 3;
+
+    if (name_str == "p_su37")
+        m_engine_lod_idx = 2;
+
     if (player)
     {
         auto amb_name = tex_pref + name_str + "/00/" + name_str + "_00_amb.img";
         m_mesh.set_texture(0, "ambient", amb_name.c_str());
-        m_mesh.set_texture(3, "ambient", amb_name.c_str());
+        m_mesh.set_texture(m_engine_lod_idx, "ambient", amb_name.c_str());
         auto norm_name = tex_pref + name_str + "/00/" + name_str + "_00_nor.img";
         m_mesh.set_texture(0, "normal", norm_name.c_str());
-        m_mesh.set_texture(3, "normal", norm_name.c_str());
+        m_mesh.set_texture(m_engine_lod_idx, "normal", norm_name.c_str());
     }
     else
     {
@@ -348,19 +355,19 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
 
     auto diff_tex = baker.bake();
     m_mesh.set_texture(0, "diffuse", diff_tex );
-    m_mesh.set_texture(3, "diffuse", diff_tex );
+    m_mesh.set_texture(m_engine_lod_idx, "diffuse", diff_tex );
 
     std::string spec_tex = tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_spe.img";
     m_mesh.set_texture(0, "specular", spec_tex.c_str());
-    m_mesh.set_texture(3, "specular", spec_tex.c_str());
+    m_mesh.set_texture(m_engine_lod_idx, "specular", spec_tex.c_str());
 
     player = true, name_str = name_tmp_str; //ToDo d_
 
     std::string mat_name = std::string("model_id/mech/") + (player ? "plyr/" : "airp/") + name_str + "/" + name_str + "_pcol" + cfldr + ".fhm";
 
     m_mesh.load_material(0, 0, mat_name.c_str(), "shaders/player_plane.nsh");
-    if (player && m_mesh.get_lods_count() == 11)
-        m_mesh.load_material(3, 2, mat_name.c_str(), "shaders/player_plane.nsh");
+    if (player && m_engine_lod_idx >= 0)
+        m_mesh.load_material(m_engine_lod_idx, 2, mat_name.c_str(), "shaders/player_plane.nsh");
 
     m_mesh.set_relative_anim_time(0, 'rudl', 0.5);
     m_mesh.set_relative_anim_time(0, 'rudr', 0.5);
@@ -449,10 +456,10 @@ void aircraft::apply_location(const char *location_name, const location_params &
 
     auto refl_tex = shared::get_texture(shared::load_texture((std::string("Map/envmap_") + location_name + ".nut").c_str()));
     m_mesh.set_texture(0, "reflection", refl_tex);
-    m_mesh.set_texture(3, "reflection", refl_tex);
+    m_mesh.set_texture(m_engine_lod_idx, "reflection", refl_tex);
     auto ibl_tex = shared::get_texture(shared::load_texture((std::string("Map/ibl_") + location_name + ".nut").c_str()));
     m_mesh.set_texture(0, "ibl", ibl_tex);
-    m_mesh.set_texture(3, "ibl", ibl_tex);
+    m_mesh.set_texture(m_engine_lod_idx, "ibl", ibl_tex);
 }
 
 //------------------------------------------------------------
@@ -760,6 +767,18 @@ void aircraft::draw(int lod_idx)
             }
         }
     }
+}
+
+//------------------------------------------------------------
+
+void aircraft::draw_player()
+{
+    draw(0);
+
+    if (m_engine_lod_idx >= 0)
+        draw(m_engine_lod_idx);
+
+    //draw(4); //(3 if no engine skining) landing gear
 }
 
 //------------------------------------------------------------

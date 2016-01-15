@@ -6,7 +6,6 @@
 
 #include "scene/material.h"
 #include "render/vbo.h"
-#include "render/debug_draw.h"
 
 namespace renderer
 {
