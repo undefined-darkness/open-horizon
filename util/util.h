@@ -273,3 +273,8 @@ private:
 inline nya_render::debug_draw &get_debug_draw() { static nya_render::debug_draw dd; return dd; }
 
 //------------------------------------------------------------
+
+inline float random(float from, float to) { return from + (to - from) * float(rand()/(RAND_MAX + 1.0f)); }
+inline int random(int from, int to) { return from +  rand() % (to - from + 1); }
+
+//------------------------------------------------------------

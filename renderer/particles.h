@@ -36,12 +36,16 @@ public:
     bool is_finished() const;
 
     explosion(): m_radius(0) {}
-    explosion(const nya_math::vec3 &pos, float r): m_pos(pos), m_radius(r), m_time(0) {}
+    explosion(const nya_math::vec3 &pos, float r);
 
 private:
     nya_math::vec3 m_pos;
     float m_radius;
     float m_time;
+    std::vector<nya_math::vec3> m_smoke_dirs;
+    std::vector<int> m_smoke_alpha_tc_idx;
+    std::vector<nya_math::vec3> m_fire_dirs;
+    std::vector<int> m_fire_alpha_tc_idx;
 };
 
 //------------------------------------------------------------
@@ -76,8 +80,9 @@ public:
 
 private:
     typedef nya_math::vec4 tc;
+    typedef nya_math::vec4 color;
     void clear_points() const;
-    void add_point(const nya_math::vec3 &pos, float size, const tc &tc_rgb, bool rgb_from_a, const tc &tc_a, bool a_from_a) const;
+    void add_point(const nya_math::vec3 &pos, float size, const tc &tc_rgb, bool rgb_from_a, const tc &tc_a, bool a_from_a, const color &c) const;
     void draw_points() const;
 
 private:
@@ -85,7 +90,7 @@ private:
     nya_scene::material m_trail_material;
     nya_render::vbo m_trail_mesh, m_point_mesh;
     mutable nya_scene::material::param_array_proxy m_trail_tr, m_trail_dir;
-    mutable nya_scene::material::param_array_proxy m_tr_pos, m_tr_tc_rgb, m_tr_tc_a;
+    mutable nya_scene::material::param_array_proxy m_tr_pos, m_tr_tc_rgb, m_tr_tc_a, m_col;
 };
 
 //------------------------------------------------------------

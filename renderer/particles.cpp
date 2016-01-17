@@ -72,6 +72,30 @@ void plane_trail::update(const nya_math::vec3 &pos, int dt)
 
 //------------------------------------------------------------
 
+explosion::explosion(const nya_math::vec3 &pos, float r): m_pos(pos), m_radius(r), m_time(0)
+{
+    m_fire_dirs.resize(random(5, 7));
+    m_smoke_dirs.resize(random(7, 10));
+
+    for (int i = 0; i < 2; ++i)
+    {
+        auto &dirs = i == 0 ? m_smoke_dirs : m_fire_dirs;
+        auto &tis = i == 0 ? m_smoke_alpha_tc_idx : m_fire_alpha_tc_idx;
+
+        for (auto &d: dirs)
+        {
+            d.set(random(-1.0f, 1.0f), random(-1.0f, 1.0f), random(-1.0f, 1.0f));
+            d.normalize();
+        }
+
+        tis.resize(dirs.size());
+        for (auto &t: tis)
+            t = random(0, 5);
+    }
+}
+
+//------------------------------------------------------------
+
 void explosion::update(int dt)
 {
     m_time += dt * 0.001f;
@@ -81,7 +105,7 @@ void explosion::update(int dt)
 
 bool explosion::is_finished() const
 {
-    return m_time > 1.0f;
+    return m_time > 5.0f;
 }
 
 //------------------------------------------------------------
@@ -154,6 +178,7 @@ void particles_render::init()
     m_tr_pos.create();
     m_tr_tc_rgb.create();
     m_tr_tc_a.create();
+    m_col.create();
 
     auto &p2 = m_material.get_default_pass();
     p2.set_shader(nya_scene::shader("shaders/particles.nsh"));
@@ -163,6 +188,7 @@ void particles_render::init()
     m_material.set_param_array(m_material.get_param_idx("tr pos"), m_tr_pos);
     m_material.set_param_array(m_material.get_param_idx("tr tc_rgb"), m_tr_tc_rgb);
     m_material.set_param_array(m_material.get_param_idx("tr tc_a"), m_tr_tc_a);
+    m_material.set_param_array(m_material.get_param_idx("color"), m_col);
     m_material.set_texture("diffuse", t);
 }
 
@@ -189,8 +215,42 @@ void particles_render::draw(const plane_trail &t) const
 void particles_render::draw(const explosion &e) const
 {
     clear_points();
-    add_point(e.m_pos, e.m_radius, tc(0, 0, 128, 128), false,
-                                   tc(0, 1920, 128, 128), true);
+
+    const float life_time = 5.0f;
+
+    //цвет 0 256 128 128 наверн из альфы и 16 вправо 2 вниз вариантов
+    //альфа 640 1792 128 128 из альфыш и 5 вправо 2 вниз вариантов
+
+    //fire
+
+    for (size_t i = 0; i < e.m_fire_dirs.size(); ++i)
+    {
+        auto &d = e.m_fire_dirs[i];
+        auto &ti = e.m_fire_alpha_tc_idx[i];
+
+        auto nt = e.m_time / life_time;
+        auto t = nya_math::min(e.m_time, 1.0f) + nt * 0.1f;
+        auto p = e.m_pos + d * t * e.m_radius * 0.25f;
+        auto r = e.m_radius * t * 0.75f;
+
+        const int tc_w_count = 16;
+        const int tc_h_count = 2;
+        const int tc_idx = (tc_w_count * tc_h_count + 1) * nya_math::min(e.m_time / 2.0f, 1.0f);
+
+        auto ctc = tc(0, 0, 128, 128);
+        ctc.x += ctc.z * (tc_idx % tc_w_count);
+        ctc.y += ctc.w * (tc_idx / tc_w_count);
+
+        auto atc = tc(0, 1920, 128, 128);
+        atc.x += atc.z * ti;
+
+        auto c = color(1.0f, 1.0f, 1.0f, 0.7f);
+        if (e.m_time > 1.5)
+            c.w -= (e.m_time - 1.5);
+
+        add_point(p, r, ctc, false, atc, true, c);
+    }
+
     draw_points();
 }
 
@@ -206,12 +266,13 @@ void particles_render::clear_points() const
 //------------------------------------------------------------
 
 void particles_render::add_point(const nya_math::vec3 &pos, float size, const tc &tc_rgb, bool rgb_from_a,
-                                 const tc &tc_a, bool a_from_a) const
+                                 const tc &tc_a, bool a_from_a, const color &c) const
 {
     const int idx = m_tr_pos->get_count();
     m_tr_pos->set_count(idx + 1);
     m_tr_tc_rgb->set_count(idx + 1);
     m_tr_tc_a->set_count(idx + 1);
+    m_col->set_count(idx + 1);
 
     const float inv_tex_size = 1.0f / 2048.0f;
     m_tr_pos->set(idx, pos, size);
@@ -223,6 +284,7 @@ void particles_render::add_point(const nya_math::vec3 &pos, float size, const tc
     if (a_from_a)
         tc.w = -tc.w;
     m_tr_tc_a->set(idx, tc);
+    m_col->set(idx, c);
 }
 
 //------------------------------------------------------------
