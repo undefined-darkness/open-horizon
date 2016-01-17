@@ -91,6 +91,7 @@ void scene::set_location(const char *name)
         m_cockpit_black.load("shaders/cockpit_black.nsh");
         m_cockpit_black_quad.init();
         m_missile_trails_renderer.init();
+        m_particles_render.init();
     }
 
     world::set_location(name);
@@ -251,6 +252,9 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
     {
         for (auto &m:m_missiles)
             m_missile_trails_renderer.draw(m->trail);
+
+        for (auto &e:m_explosions)
+            m_particles_render.draw(e);
     }
     if (t.has("cockpit"))
     {

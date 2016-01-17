@@ -152,7 +152,7 @@ void missile_trails_render::init()
         verts[i+0].pos[0] = -1.0f, verts[i+0].pos[1] = -1.0f;
         verts[i+1].pos[0] = -1.0f, verts[i+1].pos[1] =  1.0f;
         verts[i+2].pos[0] =  1.0f, verts[i+2].pos[1] =  1.0f;
-        verts[i+3].pos[0] =  1.0f, verts[i+5].pos[1] = -1.0f;
+        verts[i+3].pos[0] =  1.0f, verts[i+3].pos[1] = -1.0f;
 
         for (int j = 0; j < 4; ++j)
         {

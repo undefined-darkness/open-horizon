@@ -11,7 +11,7 @@ namespace renderer
 {
 
 static const int max_trail_points = 240;
-static const int max_points = 500;
+static const int max_points = 120;
 
 //------------------------------------------------------------
 
@@ -72,9 +72,22 @@ void plane_trail::update(const nya_math::vec3 &pos, int dt)
 
 //------------------------------------------------------------
 
+void explosion::update(int dt)
+{
+    m_time += dt * 0.001f;
+}
+
+//------------------------------------------------------------
+
+bool explosion::is_finished() const
+{
+    return m_time > 1.0f;
+}
+
+//------------------------------------------------------------
+
 void particles_render::init()
 {
-
     auto t = shared::get_texture(shared::load_texture("Effect/Effect.nut"));
 
     //trails
@@ -112,7 +125,7 @@ void particles_render::init()
         verts[i+0].pos[0] = -1.0f, verts[i+0].pos[1] = -1.0f;
         verts[i+1].pos[0] = -1.0f, verts[i+1].pos[1] =  1.0f;
         verts[i+2].pos[0] =  1.0f, verts[i+2].pos[1] =  1.0f;
-        verts[i+3].pos[0] =  1.0f, verts[i+5].pos[1] = -1.0f;
+        verts[i+3].pos[0] =  1.0f, verts[i+3].pos[1] = -1.0f;
 
         for (int j = 0; j < 4; ++j)
         {
@@ -133,7 +146,24 @@ void particles_render::init()
         indices[i + 5] = v + 3;
     }
 
-    //engine heat
+
+    m_point_mesh.set_vertex_data(verts.data(), sizeof(quad_vert), (unsigned int)verts.size());
+    m_point_mesh.set_index_data(indices.data(), nya_render::vbo::index2b, (unsigned int)indices.size());
+    m_point_mesh.set_tc(0, sizeof(float) * 3, 2);
+
+    m_tr_pos.create();
+    m_tr_tc_rgb.create();
+    m_tr_tc_a.create();
+
+    auto &p2 = m_material.get_default_pass();
+    p2.set_shader(nya_scene::shader("shaders/particles.nsh"));
+    p2.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
+    p2.get_state().zwrite = false;
+    p2.get_state().cull_face = false;
+    m_material.set_param_array(m_material.get_param_idx("tr pos"), m_tr_pos);
+    m_material.set_param_array(m_material.get_param_idx("tr tc_rgb"), m_tr_tc_rgb);
+    m_material.set_param_array(m_material.get_param_idx("tr tc_a"), m_tr_tc_a);
+    m_material.set_texture("diffuse", t);
 }
 
 //------------------------------------------------------------
@@ -141,8 +171,6 @@ void particles_render::init()
 void particles_render::draw(const plane_trail &t) const
 {
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
-
-    //trail
 
     m_trail_mesh.bind();
     for (auto &tp: t.m_trail_params)
@@ -158,9 +186,64 @@ void particles_render::draw(const plane_trail &t) const
 
 //------------------------------------------------------------
 
+void particles_render::draw(const explosion &e) const
+{
+    clear_points();
+    add_point(e.m_pos, e.m_radius, tc(0, 0, 128, 128), false,
+                                   tc(0, 1920, 128, 128), true);
+    draw_points();
+}
+
+//------------------------------------------------------------
+
+void particles_render::clear_points() const
+{
+    m_tr_pos->set_count(0);
+    m_tr_tc_rgb->set_count(0);
+    m_tr_tc_a->set_count(0);
+}
+
+//------------------------------------------------------------
+
+void particles_render::add_point(const nya_math::vec3 &pos, float size, const tc &tc_rgb, bool rgb_from_a,
+                                 const tc &tc_a, bool a_from_a) const
+{
+    const int idx = m_tr_pos->get_count();
+    m_tr_pos->set_count(idx + 1);
+    m_tr_tc_rgb->set_count(idx + 1);
+    m_tr_tc_a->set_count(idx + 1);
+
+    const float inv_tex_size = 1.0f / 2048.0f;
+    m_tr_pos->set(idx, pos, size);
+    auto tc = tc_rgb * inv_tex_size;
+    if (rgb_from_a)
+        tc.w = -tc.w;
+    m_tr_tc_rgb->set(idx, tc);
+    tc = tc_a * inv_tex_size;
+    if (a_from_a)
+        tc.w = -tc.w;
+    m_tr_tc_a->set(idx, tc);
+}
+
+//------------------------------------------------------------
+
+void particles_render::draw_points() const
+{
+    nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
+
+    m_point_mesh.bind();
+    m_material.internal().set();
+    m_point_mesh.draw(m_tr_pos->get_count() * 6);
+    m_material.internal().unset();
+    m_point_mesh.unbind();
+}
+
+//------------------------------------------------------------
+
 void particles_render::release()
 {
     m_trail_material.unload();
+    m_material.unload();
     m_trail_mesh.release();
     m_point_mesh.release();
 }

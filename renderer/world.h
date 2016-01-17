@@ -11,6 +11,7 @@
 #include "model.h"
 #include "clouds.h"
 #include "missile_trail.h"
+#include "particles.h"
 #include <functional>
 #include <vector>
 
@@ -78,12 +79,15 @@ public:
 
     missile_ptr add_missile(const char *name);
 
+    void spawn_explosion(const nya_math::vec3 &pos,float radius);
+
     virtual void update(int dt);
 
 protected:
     std::vector<object_ptr> m_objects;
     std::vector<aircraft_ptr> m_aircrafts;
     std::vector<missile_ptr> m_missiles;
+    std::vector<explosion> m_explosions;
 
 protected:
     std::string m_location_name;

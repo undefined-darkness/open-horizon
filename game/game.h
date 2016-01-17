@@ -35,7 +35,7 @@ struct object
     ivalue max_hp;
     ivalue hp;
 
-    virtual void take_damage(int damage) { hp = damage < hp ? hp - damage : 0; }
+    virtual void take_damage(int damage, world &w) { hp = damage < hp ? hp - damage : 0; }
 };
 
 typedef ptr<object> object_ptr;
@@ -107,6 +107,8 @@ struct plane: public object
     vec3 get_dir() { static vec3 fw(0.0, 0.0, 1.0); return get_rot().rotate(fw); }
     void select_target(const object_ptr &o);
     void update(int dt, world &w, gui::hud &h, bool player);
+
+    virtual void take_damage(int damage, world &w) override;
 };
 
 typedef ptr<plane> plane_ptr;
@@ -122,7 +124,7 @@ struct missile: public object
     fvalue homing_angle_cos;
 
     void update_homing(int dt);
-    void update(int dt);
+    void update(int dt, world &w);
     void release();
 };
 
@@ -137,6 +139,8 @@ public:
 
     plane_ptr add_plane(const char *name, int color, bool player);
     missile_ptr add_missile(const char *id, const char *model);
+
+    void spawn_explosion(const nya_math::vec3 &pos, int damage, float radius);
 
     int get_planes_count() const { return (int)m_planes.size(); }
     plane_ptr get_plane(int idx);
@@ -183,5 +187,6 @@ public:
 protected:
     world &m_world;
 };
+
 //------------------------------------------------------------
 }

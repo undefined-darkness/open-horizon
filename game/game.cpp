@@ -169,6 +169,15 @@ plane_ptr world::add_plane(const char *name, int color, bool player)
 
 //------------------------------------------------------------
 
+void world::spawn_explosion(const nya_math::vec3 &pos, int damage, float radius)
+{
+    //ToDo: damage
+
+    m_render_world.spawn_explosion(pos, radius);
+}
+
+//------------------------------------------------------------
+
 plane_ptr world::get_plane(int idx)
 {
     if (idx < 0 || idx >= (int)m_planes.size())
@@ -213,7 +222,7 @@ void world::update(int dt)
 
         if (!b) //hit ground
         {
-            p->take_damage(9000);
+            p->take_damage(9000, *this);
             p->render->set_hide(true);
         }
     });
@@ -227,7 +236,7 @@ void world::update(int dt)
         p->update(dt, *this, m_hud, p->render == m_render_world.get_player_aircraft());
 
     for (auto &m: m_missiles)
-        m->update(dt);
+        m->update(dt, *this);
 
     m_render_world.update(dt);
 }
@@ -649,6 +658,18 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
 //------------------------------------------------------------
 
+void plane::take_damage(int damage, world &w)
+{
+    if (hp <= 0)
+        return;
+
+    object::take_damage(damage, w);
+    if (hp <= 0)
+        w.spawn_explosion(get_pos(), 0, 25.0f);
+}
+
+//------------------------------------------------------------
+
 void missile::update_homing(int dt)
 {
     if (target.expired())
@@ -667,7 +688,7 @@ void missile::update_homing(int dt)
 
 //------------------------------------------------------------
 
-void missile::update(int dt)
+void missile::update(int dt, world &w)
 {
     render->mdl.set_pos(phys->pos);
     render->mdl.set_rot(phys->rot);
@@ -684,7 +705,8 @@ void missile::update(int dt)
             //if (vec3::normalize(target.lock()->phys->vel) * dir.normalize() < -0.5)  //direct shoot
             //    missile_damage *= 3;
 
-            target.lock()->take_damage(missile_damage);
+            target.lock()->take_damage(missile_damage, w);
+            w.spawn_explosion(phys->pos, 0, 20.0);
         }
 
         if (target.lock()->hp < 0)

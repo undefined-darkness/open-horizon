@@ -37,6 +37,7 @@ private:
     nya_scene::shader m_cockpit_black;
     nya_render::screen_quad m_cockpit_black_quad;
     missile_trails_render m_missile_trails_renderer;
+    particles_render m_particles_render;
 
 private:
     int m_frame_counter, m_frame_counter_time, m_fps;

@@ -48,6 +48,13 @@ missile_ptr world::add_missile(const char *name)
 
 //------------------------------------------------------------
 
+void world::spawn_explosion(const nya_math::vec3 &pos,float radius)
+{
+    m_explosions.push_back(explosion(pos, radius));
+}
+
+//------------------------------------------------------------
+
 void world::set_location(const char *name)
 {
     if (name && m_location_name == name)
@@ -91,6 +98,11 @@ void world::update(int dt)
                                     }), m_missiles.end());
 
     for (auto &m: m_missiles) m->update(dt);
+
+    m_explosions.erase(std::remove_if(m_explosions.begin(), m_explosions.end(), [](explosion &e)
+                                   { return e.is_finished(); }), m_explosions.end());
+
+    for (auto &e: m_explosions) e.update(dt);
 }
 
 //------------------------------------------------------------
