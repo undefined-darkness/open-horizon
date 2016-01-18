@@ -273,6 +273,8 @@ void plane::reset_state()
 
     phys->reset_state();
 
+    render->set_dead(false);
+
     //render->reset_state(); //ToDo
 
     special_weapon = false;
@@ -665,7 +667,10 @@ void plane::take_damage(int damage, world &w)
 
     object::take_damage(damage, w);
     if (hp <= 0)
+    {
+        render->set_dead(true);
         w.spawn_explosion(get_pos(), 0, 25.0f);
+    }
 }
 
 //------------------------------------------------------------

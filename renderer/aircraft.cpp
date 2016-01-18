@@ -11,6 +11,7 @@
 #include "containers/fhm.h"
 #include "containers/dpl.h"
 #include "renderer/shared.h"
+#include "renderer/scene.h"
 #include <stdint.h>
 
 namespace renderer
@@ -464,6 +465,15 @@ void aircraft::apply_location(const char *location_name, const location_params &
 
 //------------------------------------------------------------
 
+void aircraft::set_dead(bool dead)
+{
+    m_dead = dead;
+    if (m_dead)
+        m_fire_trail = fire_trail(5.0f);
+}
+
+//------------------------------------------------------------
+
 unsigned int aircraft::get_colors_count(const char *plane_name)
 {
     auto info = aircraft_information::get().get_info(plane_name);
@@ -740,6 +750,9 @@ void aircraft::update(int dt)
     */
 
     m_mesh.update(dt);
+
+    if (m_dead)
+        m_fire_trail.update(get_pos(), dt);
 }
 
 //------------------------------------------------------------
@@ -779,6 +792,14 @@ void aircraft::draw_player()
         draw(m_engine_lod_idx);
 
     //draw(4); //(3 if no engine skining) landing gear
+}
+
+//------------------------------------------------------------
+
+void aircraft::draw_particles(const scene &s)
+{
+    if (m_dead)
+        s.get_part_renderer().draw(m_fire_trail);
 }
 
 //------------------------------------------------------------

@@ -12,7 +12,7 @@ namespace renderer
 {
 
 static const int max_trail_points = 240;
-static const int max_points = 120;
+static const int max_points = 100;
 
 //------------------------------------------------------------
 
@@ -73,6 +73,29 @@ void plane_trail::update(const nya_math::vec3 &pos, int dt)
 
 //------------------------------------------------------------
 
+void fire_trail::update(const nya_math::vec3 &pos, int dt)
+{
+    if (!m_count || (m_pos[(m_offset + max_count - 1) % max_count].xyz() - pos).length_sq() > m_radius * m_radius * 0.5)
+    {
+        m_pos[m_offset].set(pos, random(m_radius * 0.6, m_radius));
+        m_tci[m_offset] = random(0, 31);
+        m_tcia[m_offset] = random(0, 4);
+        m_rot[m_offset] = random(-nya_math::constants::pi, nya_math::constants::pi);
+
+        m_offset = (m_offset + 1) % max_count;
+        if (m_count < 20)
+            ++m_count;
+    }
+
+    auto kdt = dt * 0.001f;
+    for (auto &p: m_pos)
+        p.w += kdt * 15.0f;
+
+    m_time += kdt;
+}
+
+//------------------------------------------------------------
+
 explosion::explosion(const nya_math::vec3 &pos, float r): m_pos(pos), m_radius(r), m_time(0)
 {
     for (int i = 0; i < 2; ++i)
@@ -91,12 +114,15 @@ explosion::explosion(const nya_math::vec3 &pos, float r): m_pos(pos), m_radius(r
     }
 
     m_fire_dirs.resize(random(5, 7));
-
     for (auto &d: m_fire_dirs)
     {
         d.set(random(-1.0f, 1.0f), random(-1.0f, 1.0f), random(-1.0f, 1.0f));
         d.normalize();
     }
+
+    m_fire_rots.resize(m_fire_dirs.size());
+    for (auto &r: m_fire_rots)
+        r = random(-nya_math::constants::pi, nya_math::constants::pi);
 
     m_fire_alpha_tc_idx.resize(m_fire_dirs.size());
     for (auto &t: m_fire_alpha_tc_idx)
@@ -223,6 +249,30 @@ void particles_render::draw(const plane_trail &t) const
 
 //------------------------------------------------------------
 
+void particles_render::draw(const fire_trail &t) const
+{
+    clear_points();
+
+    for (size_t fi = 0; fi < t.m_count; ++fi)
+    {
+        const int i = (fi + t.m_offset) % t.max_count;
+
+        const int tc_w_count = 16;
+        //const int tc_h_count = 2;
+        const int tc_idx = t.m_tci[i];//(tc_w_count * tc_h_count + 1) * nya_math::min(t.m_time / 5.0f, 1.0f);
+
+        bool fire = fi + 7 < t.m_count;
+
+        add_point(t.m_pos[i].xyz(), t.m_pos[i].w, tc((tc_idx % tc_w_count) * 128, (fire ? 128 : 0) + (tc_idx / tc_w_count) * 128, 128, 128), fire,
+                  tc(640 + t.m_tcia[i], 1280 + 128, 128, 128), true, color(1.0f, 1.0f, 1.0f, 0.1 + 0.5f * fi / t.max_count),
+                  nya_math::vec2(), t.m_rot[i]);
+    }
+
+    draw_points();
+}
+
+//------------------------------------------------------------
+
 void particles_render::draw(const explosion &e) const
 {
     clear_points();
@@ -290,7 +340,7 @@ void particles_render::draw(const explosion &e) const
         if (e.m_time > 1.5)
             c.w -= (e.m_time - 1.5);
 
-        add_point(p, r, ctc, false, atc, true, c);
+        add_point(p, r, ctc, false, atc, true, c, nya_math::vec2(), e.m_fire_rots[i]);
     }
 
     draw_points();

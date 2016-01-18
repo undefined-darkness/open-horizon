@@ -54,6 +54,9 @@ public:
     void pause(bool paused) { m_paused = paused; }
     void loading(bool loading) { m_loading = loading; }
 
+public:
+    const particles_render &get_part_renderer() const { return m_particles_render; }
+
 private:
     aircraft_ptr add_aircraft(const char *name, int color, bool player);
     void set_location(const char *name);

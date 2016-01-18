@@ -27,6 +27,29 @@ private:
 
 //------------------------------------------------------------
 
+class fire_trail
+{
+    friend class particles_render;
+
+public:
+    void update(const nya_math::vec3 &pos, int dt);
+
+    fire_trail() {}
+    fire_trail(float r): m_radius(r), m_time(0.0f), m_offset(0), m_count(0) {}
+
+private:
+    static const int max_count = 20;
+    nya_math::vec4 m_pos[max_count];
+    int m_tci[max_count];
+    float m_rot[max_count];
+    int m_tcia[max_count];
+    int m_offset, m_count;
+    float m_radius;
+    float m_time;
+};
+
+//------------------------------------------------------------
+
 class explosion
 {
     friend class particles_render;
@@ -47,6 +70,7 @@ private:
     std::vector<float> m_shrapnel2_rots;
     std::vector<int> m_shrapnel2_alpha_tc_idx;
     std::vector<nya_math::vec3> m_fire_dirs;
+    std::vector<float> m_fire_rots;
     std::vector<int> m_fire_alpha_tc_idx;
 };
 
@@ -75,6 +99,7 @@ class particles_render
 public:
     void init();
     void draw(const plane_trail &t) const;
+    void draw(const fire_trail &t) const;
     void draw(const explosion &e) const;
     void draw(const plane_engine &e) const;
     void draw_heat(const plane_engine &e) const;

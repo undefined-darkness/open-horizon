@@ -5,12 +5,15 @@
 #pragma once
 
 #include "phys/plane_params.h"
-#include "renderer/model.h"
-#include "renderer/location_params.h"
+#include "model.h"
+#include "location_params.h"
+#include "particles.h"
 
 namespace renderer
 {
 //------------------------------------------------------------
+
+class scene;
 
 class aircraft
 {
@@ -21,6 +24,7 @@ public:
     void apply_location(const char *location_name, const location_params &params);
     void draw(int lod_idx);
     void draw_player();
+    void draw_particles(const scene &s);
     int get_lods_count() const { return m_mesh.get_lods_count(); }
     void update(int dt);
     void set_hide(bool value) { m_hide = value; }
@@ -33,6 +37,7 @@ public:
 
     void set_damage(float value) { m_damage = value; }
     float get_damage() const { return m_damage; }
+    void set_dead(bool dead);
 
     //aircraft animations
     void set_elev(float left, float right); //elevons and tailerons
@@ -79,7 +84,7 @@ public:
     //info
     static unsigned int get_colors_count(const char *plane_name);
 
-    aircraft(): m_hide(false), m_time(0), m_camera_mode(camera_mode_third), m_half_flaps_flag(false), m_engine_lod_idx(0)
+    aircraft(): m_hide(false), m_time(0), m_camera_mode(camera_mode_third), m_half_flaps_flag(false), m_engine_lod_idx(0), m_dead(false)
     {
         m_adimx_bone_idx = m_adimx2_bone_idx = -1;
         m_adimz_bone_idx = m_adimz2_bone_idx = -1;
@@ -125,6 +130,9 @@ private:
 
     nya_math::vec3 m_camera_offset;
     camera_mode m_camera_mode;
+
+    fire_trail m_fire_trail;
+    bool m_dead;
 };
 
 //------------------------------------------------------------
