@@ -17,12 +17,12 @@ class plane_trail
 
 public:
     void update(const nya_math::vec3 &pos, int dt);
-
-    plane_trail();
+    void clear() { m_trail_params.tr.set_count(0), m_trail_params.dir.set_count(0); }
+    bool is_full();
 
 private:
     struct param { nya_scene::material::param_array tr, dir; };
-    std::vector<param> m_trail_params;
+    param m_trail_params;
 };
 
 //------------------------------------------------------------

@@ -38,6 +38,7 @@ private:
     nya_render::screen_quad m_cockpit_black_quad;
     missile_trails_render m_missile_trails_renderer;
     particles_render m_particles_render;
+    std::vector<std::pair<plane_trail, unsigned int> > m_plane_trails;
 
 private:
     int m_frame_counter, m_frame_counter_time, m_fps;
@@ -56,6 +57,7 @@ public:
 
 public:
     const particles_render &get_part_renderer() const { return m_particles_render; }
+    void add_trail(const plane_trail &t) { m_plane_trails.push_back(std::make_pair(t, 0)); }
 
 private:
     aircraft_ptr add_aircraft(const char *name, int color, bool player);

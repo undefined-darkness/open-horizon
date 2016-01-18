@@ -431,6 +431,9 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     if (m_adimxz_bone_idx < 0) m_adimxz_bone_idx = m_mesh.get_bone_idx(1, "adimxz");
     m_adimxz2_bone_idx = m_mesh.get_bone_idx(1, "adimxz2");
 
+    m_trails[0].second = m_mesh.get_bone_idx(0, "clh2");
+    m_trails[1].second = m_mesh.get_bone_idx(0, "clh3");
+
     return true;
 }
 
@@ -744,15 +747,45 @@ void aircraft::update(int dt)
         //m_mesh.set_relative_anim_time(1, 'accm', accel * 0.5 + 0.5);
     }
 
-    m_mesh.set_relative_anim_time(1, 'aoam', nya_math::min(10.0 * nya_math::max(1.0 - nya_math::vec3::normalize(m_vel)*forward, 0.0), 1.0));
     m_mesh.set_relative_anim_time(1, 'ecsp', 0.5 + 0.5 * m_thrust_time/m_params.move.accel.thrustMinWait);
      //erpm - engine rpm
     */
+
+    m_mesh.set_relative_anim_time(1, 'aoam', nya_math::min(10.0 * nya_math::max(m_aoa / nya_math::constants::pi, 0.0), 1.0));
 
     m_mesh.update(dt);
 
     if (m_dead)
         m_fire_trail.update(get_pos(), dt);
+}
+
+//------------------------------------------------------------
+
+void aircraft::update_trail(int dt, scene &s)
+{
+    const bool has_trail = fabsf(m_aoa) > 0.1f;
+    if (has_trail)
+    {
+        m_has_trail = true;
+        for (auto &t: m_trails)
+        {
+            auto p = m_mesh.get_bone_pos(0, t.second);
+            t.first.update(p, dt);
+
+            if (t.first.is_full())
+            {
+                s.add_trail(t.first);
+                t.first.clear();
+                t.first.update(p, dt);
+            }
+        }
+    }
+    else if(m_has_trail)
+    {
+        m_has_trail = false;
+        for (auto &t: m_trails)
+            s.add_trail(t.first);
+    }
 }
 
 //------------------------------------------------------------
@@ -796,7 +829,18 @@ void aircraft::draw_player()
 
 //------------------------------------------------------------
 
-void aircraft::draw_particles(const scene &s)
+void aircraft::draw_trails(const scene &s)
+{
+    if (m_has_trail)
+    {
+        for (auto &t: m_trails)
+            s.get_part_renderer().draw(t.first);
+    }
+}
+
+//------------------------------------------------------------
+
+void aircraft::draw_fire_trail(const scene &s)
 {
     if (m_dead)
         s.get_part_renderer().draw(m_fire_trail);

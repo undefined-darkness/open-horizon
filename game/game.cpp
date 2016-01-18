@@ -546,13 +546,18 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
     //cockpit animations and hud
 
+    auto dir = phys->rot.rotate(nya_math::vec3(0.0f, 0.0f, 1.0f));
+
+    const float aoa = acosf(nya_math::vec3::dot(nya_math::vec3::normalize(phys->vel), dir));
+    render->set_aoa(aoa);
+
     if (player)
     {
         h.set_hide(false);
 
         render->set_speed(speed);
 
-        auto proj_dir = phys->rot.rotate(nya_math::vec3(0.0, 0.0, 1000.0));
+        auto proj_dir = dir * 1000.0f;
         h.set_project_pos(phys->pos + proj_dir);
         h.set_pos(phys->pos);
         h.set_yaw(phys->rot.get_euler().y);
@@ -669,7 +674,7 @@ void plane::take_damage(int damage, world &w)
     if (hp <= 0)
     {
         render->set_dead(true);
-        w.spawn_explosion(get_pos(), 0, 25.0f);
+        w.spawn_explosion(get_pos(), 0, 30.0f);
     }
 }
 

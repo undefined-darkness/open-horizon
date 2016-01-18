@@ -16,24 +16,18 @@ static const int max_points = 100;
 
 //------------------------------------------------------------
 
-plane_trail::plane_trail() { m_trail_params.resize(1); }
-
-//------------------------------------------------------------
-
 void plane_trail::update(const nya_math::vec3 &pos, int dt)
 {
-    auto &trp = m_trail_params.back();
-
-    int curr_tr_count = trp.tr.get_count();
+    int curr_tr_count = m_trail_params.tr.get_count();
     if (!curr_tr_count)
     {
-        trp.tr.set_count(2);
-        trp.tr.set(0, pos);
-        trp.tr.set(1, pos);
+        m_trail_params.tr.set_count(2);
+        m_trail_params.tr.set(0, pos);
+        m_trail_params.tr.set(1, pos);
         return;
     }
 
-    auto diff = pos - trp.tr.get(curr_tr_count - 2).xyz();
+    auto diff = pos - m_trail_params.tr.get(curr_tr_count - 2).xyz();
     const float diff_len = diff.length();
 
     const float fragment_minimal_len = 1.0f;
@@ -41,34 +35,25 @@ void plane_trail::update(const nya_math::vec3 &pos, int dt)
     {
         diff /= diff_len;
 
-        if (diff.dot(trp.dir.get(curr_tr_count - 2).xyz()) < 1.0f)
+        if (diff.dot(m_trail_params.dir.get(curr_tr_count - 2).xyz()) < 1.0f)
         {
-            if (curr_tr_count >= max_trail_points)
-            {
-                m_trail_params.resize(m_trail_params.size() + 1);
-
-                auto &prev = m_trail_params[m_trail_params.size() - 2];
-                auto &trp = m_trail_params.back();
-
-                curr_tr_count = 2;
-                trp.tr.set_count(curr_tr_count);
-                trp.tr.set(0, prev.tr.get(max_trail_points-1));
-                trp.dir.set_count(curr_tr_count);
-                trp.dir.set(0, prev.dir.get(max_trail_points-1));
-            }
-            else
-            {
-                ++curr_tr_count;
-                m_trail_params.back().tr.set_count(curr_tr_count);
-                m_trail_params.back().dir.set_count(curr_tr_count);
-            }
+            ++curr_tr_count;
+            m_trail_params.tr.set_count(curr_tr_count);
+            m_trail_params.dir.set_count(curr_tr_count);
         }
     }
     else if (diff_len > 0.01f)
         diff /= diff_len;
 
-    m_trail_params.back().tr.set(curr_tr_count - 1, pos);
-    m_trail_params.back().dir.set(curr_tr_count - 1, diff, diff_len + m_trail_params.back().dir.get(curr_tr_count-2).w);
+    m_trail_params.tr.set(curr_tr_count - 1, pos);
+    m_trail_params.dir.set(curr_tr_count - 1, diff, diff_len + m_trail_params.dir.get(curr_tr_count-2).w);
+}
+
+//------------------------------------------------------------
+
+bool plane_trail::is_full()
+{
+    return m_trail_params.tr.get_count() >= max_trail_points;
 }
 
 //------------------------------------------------------------
@@ -236,14 +221,12 @@ void particles_render::draw(const plane_trail &t) const
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
 
     m_trail_mesh.bind();
-    for (auto &tp: t.m_trail_params)
-    {
-        m_trail_tr.set(tp.tr);
-        m_trail_dir.set(tp.dir);
-        m_trail_material.internal().set();
-        m_trail_mesh.draw(tp.tr.get_count() * 2);
-        m_trail_material.internal().unset();
-    }
+
+    m_trail_tr.set(t.m_trail_params.tr);
+    m_trail_dir.set(t.m_trail_params.dir);
+    m_trail_material.internal().set();
+    m_trail_mesh.draw(t.m_trail_params.tr.get_count() * 2);
+    m_trail_material.internal().unset();
     m_trail_mesh.unbind();
 }
 
