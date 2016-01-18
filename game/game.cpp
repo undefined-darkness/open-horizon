@@ -706,7 +706,7 @@ void missile::update(int dt, world &w)
             //    missile_damage *= 3;
 
             target.lock()->take_damage(missile_damage, w);
-            w.spawn_explosion(phys->pos, 0, 15.0);
+            w.spawn_explosion(phys->pos, 0, 10.0);
         }
 
         if (target.lock()->hp < 0)

@@ -1,6 +1,7 @@
 @predefined camera_pos "nya camera pos"
 
 @uniform tr_pos "tr pos"
+@uniform tr_off_rot_asp "tr off rot asp"
 @uniform tr_tc_rgb "tr tc_rgb"
 @uniform tr_tc_a "tr tc_a"
 @uniform col "color"
@@ -17,10 +18,17 @@ varying vec4 color;
 
 uniform vec4 camera_pos;
 
-uniform vec4 tr_pos[120];
-uniform vec4 tr_tc_rgb[120];
-uniform vec4 tr_tc_a[120];
-uniform vec4 col[120];
+uniform vec4 tr_pos[100];
+uniform vec4 tr_off_rot_asp[100];
+uniform vec4 tr_tc_rgb[100];
+uniform vec4 tr_tc_a[100];
+uniform vec4 col[100];
+
+vec2 rotate(vec2 v,float a)
+{
+    float c=cos(a), s=sin(a);
+    return vec2(c*v.x - s*v.y, s*v.x + c*v.y); 
+}
 
 void main()
 {
@@ -28,6 +36,7 @@ void main()
     int idx = int(v.z);
 
     vec4 p = tr_pos[idx];
+    vec4 ora = tr_off_rot_asp[idx];
     vec4 t = tr_tc_rgb[idx];
     vec4 ta = tr_tc_a[idx];
     color = col[idx];
@@ -36,7 +45,12 @@ void main()
     vec3 right = normalize(vec3(cam_dir.z, 0.0, -cam_dir.x));
     vec3 up = cross(cam_dir, right.xyz);
 
-    p.xyz += (gl_Vertex.x * right + gl_Vertex.y * up) * p.w;
+    vec2 pv = (gl_Vertex.xy + ora.xy) * p.w;
+    pv.x *= ora.w;
+    
+    pv = rotate(pv, ora.z);
+
+    p.xyz += pv.x * right + pv.y * up;
 
     float color_repeat = 1.0;
 

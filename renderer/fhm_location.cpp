@@ -79,7 +79,8 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     p2.get_state().set_cull_face(false);
     nya_scene::texture tree_tex;
     const uint tree_texture_resolution = 256;
-    tree_tex.build(0, tree_texture_resolution * load_data.tree_types_count, tree_texture_resolution, nya_render::texture::color_bgra);
+    if (load_data.tree_types_count > 0)
+        tree_tex.build(0, tree_texture_resolution * load_data.tree_types_count, tree_texture_resolution, nya_render::texture::color_bgra);
     m_trees_material.set_texture("diffuse", tree_tex);
 
     class vbo_data
@@ -424,20 +425,23 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     m_landscape.vbo.set_tc(0, 3 * 4, 2);
 
     //tree_verts
-    m_landscape.tree_vbo.set_vertex_data(tree_verts.data(), (uint)sizeof(tree_vert), (uint)tree_verts.size());
-    m_landscape.tree_vbo.set_tc(0, 3 * 4, 4);
-
-    std::vector<uint> tree_indices(tree_verts.size() * 6 / 4);
-    for (uint i = 0, v = 0; i < (uint)tree_indices.size(); i += 6, v+=4)
+    if (!tree_verts.empty())
     {
-        tree_indices[i] = v;
-        tree_indices[i + 1] = v + 1;
-        tree_indices[i + 2] = v + 2;
-        tree_indices[i + 3] = v;
-        tree_indices[i + 4] = v + 2;
-        tree_indices[i + 5] = v + 3;
+        m_landscape.tree_vbo.set_vertex_data(tree_verts.data(), (uint)sizeof(tree_vert), (uint)tree_verts.size());
+        m_landscape.tree_vbo.set_tc(0, 3 * 4, 4);
+
+        std::vector<uint> tree_indices(tree_verts.size() * 6 / 4);
+        for (uint i = 0, v = 0; i < (uint)tree_indices.size(); i += 6, v+=4)
+        {
+            tree_indices[i] = v;
+            tree_indices[i + 1] = v + 1;
+            tree_indices[i + 2] = v + 2;
+            tree_indices[i + 3] = v;
+            tree_indices[i + 4] = v + 2;
+            tree_indices[i + 5] = v + 3;
+        }
+        m_landscape.tree_vbo.set_index_data(tree_indices.data(), nya_render::vbo::index4b, (uint)tree_indices.size());
     }
-    m_landscape.tree_vbo.set_index_data(tree_indices.data(), nya_render::vbo::index4b, (uint)tree_indices.size());
 
     return true;
 }

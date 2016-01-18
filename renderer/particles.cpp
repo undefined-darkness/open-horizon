@@ -6,6 +6,7 @@
 
 #include "scene/camera.h"
 #include "shared.h"
+#include "math/constants.h"
 
 namespace renderer
 {
@@ -74,24 +75,32 @@ void plane_trail::update(const nya_math::vec3 &pos, int dt)
 
 explosion::explosion(const nya_math::vec3 &pos, float r): m_pos(pos), m_radius(r), m_time(0)
 {
-    m_fire_dirs.resize(random(5, 7));
-    m_smoke_dirs.resize(random(7, 10));
-
     for (int i = 0; i < 2; ++i)
     {
-        auto &dirs = i == 0 ? m_smoke_dirs : m_fire_dirs;
-        auto &tis = i == 0 ? m_smoke_alpha_tc_idx : m_fire_alpha_tc_idx;
+        auto &rots = i == 0 ? m_shrapnel_rots : m_shrapnel2_rots;
+        auto &tis = i == 0 ? m_shrapnel_alpha_tc_idx : m_shrapnel2_alpha_tc_idx;
 
-        for (auto &d: dirs)
-        {
-            d.set(random(-1.0f, 1.0f), random(-1.0f, 1.0f), random(-1.0f, 1.0f));
-            d.normalize();
-        }
+        rots.resize(i == 0 ? random(7, 10) : random(3, 7));
 
-        tis.resize(dirs.size());
+        for (auto &r: rots)
+            r = random(-nya_math::constants::pi, nya_math::constants::pi);
+
+        tis.resize(rots.size());
         for (auto &t: tis)
-            t = random(0, 5);
+            t = random(0, 1);
     }
+
+    m_fire_dirs.resize(random(5, 7));
+
+    for (auto &d: m_fire_dirs)
+    {
+        d.set(random(-1.0f, 1.0f), random(-1.0f, 1.0f), random(-1.0f, 1.0f));
+        d.normalize();
+    }
+
+    m_fire_alpha_tc_idx.resize(m_fire_dirs.size());
+    for (auto &t: m_fire_alpha_tc_idx)
+        t = random(0, 4);
 }
 
 //------------------------------------------------------------
@@ -176,6 +185,7 @@ void particles_render::init()
     m_point_mesh.set_tc(0, sizeof(float) * 3, 2);
 
     m_tr_pos.create();
+    m_tr_off_rot_asp.create();
     m_tr_tc_rgb.create();
     m_tr_tc_a.create();
     m_col.create();
@@ -186,6 +196,7 @@ void particles_render::init()
     p2.get_state().zwrite = false;
     p2.get_state().cull_face = false;
     m_material.set_param_array(m_material.get_param_idx("tr pos"), m_tr_pos);
+    m_material.set_param_array(m_material.get_param_idx("tr off rot asp"), m_tr_off_rot_asp);
     m_material.set_param_array(m_material.get_param_idx("tr tc_rgb"), m_tr_tc_rgb);
     m_material.set_param_array(m_material.get_param_idx("tr tc_a"), m_tr_tc_a);
     m_material.set_param_array(m_material.get_param_idx("color"), m_col);
@@ -218,8 +229,39 @@ void particles_render::draw(const explosion &e) const
 
     const float life_time = 5.0f;
 
-    //цвет 0 256 128 128 наверн из альфы и 16 вправо 2 вниз вариантов
-    //альфа 640 1792 128 128 из альфыш и 5 вправо 2 вниз вариантов
+    for (int i = 0; i < 2; ++i)
+    {
+        auto &rots = i == 0 ? e.m_shrapnel_rots : e.m_shrapnel2_rots;
+        auto &tis = i == 0 ? e.m_shrapnel_alpha_tc_idx : e.m_shrapnel2_alpha_tc_idx;
+
+        for (size_t j = 0; j < rots.size(); ++j)
+        {
+            auto &r = rots[j];
+            auto &ti = tis[j];
+
+            auto nt = e.m_time / life_time;
+
+            const int tc_w_count = 16;
+            const int tc_h_count = 2;
+            const int tc_idx = (tc_w_count * tc_h_count + 1) * nt;
+
+            float l = nya_math::min(e.m_time / 2.0f, 1.0f) * e.m_radius * 1.6f;
+
+            auto ctc = tc(0, 512, 128, 128);
+            ctc.x += ctc.z * (tc_idx % tc_w_count);
+            ctc.y += ctc.w * (tc_idx / tc_w_count);
+
+            auto atc = i == 0 ? tc(1920, 768, 64, 256) : tc(1664, 768, 128, 256);
+            atc.x += atc.z * ti;
+
+            auto c = color(1.0f, 1.0f, 1.0f, 1.0f);
+            if (e.m_time > 1.0)
+                c.w -= (e.m_time - 1.0);
+
+            add_point(e.m_pos, l, ctc, true, atc, false, c, nya_math::vec2(0.0f, -0.9f), r, i == 0 ? 0.4f : 0.2f);
+        }
+        //
+    }
 
     //fire
 
@@ -266,16 +308,19 @@ void particles_render::clear_points() const
 //------------------------------------------------------------
 
 void particles_render::add_point(const nya_math::vec3 &pos, float size, const tc &tc_rgb, bool rgb_from_a,
-                                 const tc &tc_a, bool a_from_a, const color &c) const
+                                 const tc &tc_a, bool a_from_a, const color &c,
+                                 const nya_math::vec2 &off, float rot, float aspect) const
 {
     const int idx = m_tr_pos->get_count();
     m_tr_pos->set_count(idx + 1);
+    m_tr_off_rot_asp->set_count(idx + 1);
     m_tr_tc_rgb->set_count(idx + 1);
     m_tr_tc_a->set_count(idx + 1);
     m_col->set_count(idx + 1);
 
     const float inv_tex_size = 1.0f / 2048.0f;
     m_tr_pos->set(idx, pos, size);
+    m_tr_off_rot_asp->set(idx, off.x, off.y, rot, aspect);
     auto tc = tc_rgb * inv_tex_size;
     if (rgb_from_a)
         tc.w = -tc.w;
