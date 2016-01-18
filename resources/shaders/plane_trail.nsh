@@ -24,7 +24,7 @@ void main()
     
     vec3 p = pos[idx].xyz;
     vec3 diff = camera_pos.xyz - p;
-    float width = 0.01 * sqrt(length(diff));
+    float width = 0.02 * sqrt(length(diff));
     p += normalize(cross(camera_pos.xyz - p, dir[idx].xyz)) * v.x * width;
 
     gl_Position = gl_ModelViewProjectionMatrix * vec4(p, 1.0);
@@ -34,5 +34,5 @@ void main()
 
 void main()
 {
-    gl_FragColor = vec4(vec3(1.0), 0.1);
+    gl_FragColor = vec4(vec3(1.0), 0.05);
 }

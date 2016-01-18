@@ -763,7 +763,7 @@ void aircraft::update(int dt)
 
 void aircraft::update_trail(int dt, scene &s)
 {
-    const bool has_trail = fabsf(m_aoa) > 0.1f;
+    const bool has_trail = !m_dead && fabsf(m_aoa) > 0.1f;
     if (has_trail)
     {
         m_has_trail = true;
