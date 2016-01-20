@@ -420,6 +420,30 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
             m_special_mount.push_back(m);
     }
 
+    m_mguns.clear();
+    const int mgun_bone = m_mesh.find_bone_idx(0, "wgnn");
+    if (mgun_bone >= 0)
+    {
+        mgun m;
+        m.bone_idx = mgun_bone;
+        m_mguns.push_back(m);
+    }
+    else
+    {
+        for (int i = 0; i < 9; ++i)
+        {
+            char name[] = "wgnn01";
+            name[5]+=i;
+            const int mgun_bone = m_mesh.find_bone_idx(0, name);
+            if (mgun_bone < 0)
+                break;
+
+            mgun m;
+            m.bone_idx = mgun_bone;
+            m_mguns.push_back(m);
+        }
+    }
+
     //attitude
     m_adimx_bone_idx = m_mesh.get_bone_idx(1, "adimx1");
     if (m_adimx_bone_idx < 0) m_adimx_bone_idx = m_mesh.get_bone_idx(1, "adimx");
@@ -458,7 +482,7 @@ void aircraft::apply_location(const char *location_name, const location_params &
     if (!location_name || !location_name[0])
         return;
 
-    auto refl_tex = shared::get_texture(shared::load_texture((std::string("Map/envmap_") + location_name + ".nut").c_str()));
+    auto refl_tex = shared::get_texture(shared::load_texture((std::string("Map/sub_envmap_") + location_name + ".nut").c_str()));
     m_mesh.set_texture(0, "reflection", refl_tex);
     m_mesh.set_texture(m_engine_lod_idx, "reflection", refl_tex);
     auto ibl_tex = shared::get_texture(shared::load_texture((std::string("Map/ibl_") + location_name + ".nut").c_str()));
@@ -491,6 +515,23 @@ unsigned int aircraft::get_colors_count(const char *plane_name)
 nya_math::vec3 aircraft::get_bone_pos(const char *name)
 {
     return m_mesh.get_bone_pos(0, m_mesh.get_bone_idx(0, name));
+}
+
+//------------------------------------------------------------
+
+int aircraft::get_mguns_count() const
+{
+    return (int)m_mguns.size();
+}
+
+//------------------------------------------------------------
+
+nya_math::vec3 aircraft::get_mgun_pos(int idx)
+{
+    if (idx<0 || idx>=get_mguns_count())
+        return nya_math::vec3();
+
+    return m_mesh.get_bone_pos(0, m_mguns[idx].bone_idx);
 }
 
 //------------------------------------------------------------
@@ -632,6 +673,16 @@ bool aircraft::is_missile_ready()
 
 //------------------------------------------------------------
 
+bool aircraft::is_mgun_ready()
+{
+    if (!m_mesh.has_anim(0, 'gunc'))
+        return true;
+
+    return m_mesh.get_relative_anim_time(0, 'gunc') >= 0.999f;
+}
+
+//------------------------------------------------------------
+
 nya_math::vec3 aircraft::get_missile_mount_pos(int idx)
 {
     if (idx < 0 || idx >= m_msls_mount.size())
@@ -757,6 +808,13 @@ void aircraft::update(int dt)
 
     if (m_dead)
         m_fire_trail.update(get_pos(), dt);
+
+    if (m_fire_mgun)
+    {
+        auto dir = get_rot().rotate(vec3(0.0f, 0.0f, 1.0f));
+        for (auto &m: m_mguns)
+            m.flash.update(m_mesh.get_bone_pos(0, m.bone_idx), dir, dt);
+    }
 }
 
 //------------------------------------------------------------
@@ -844,6 +902,17 @@ void aircraft::draw_fire_trail(const scene &s)
 {
     if (m_dead)
         s.get_part_renderer().draw(m_fire_trail);
+}
+
+//------------------------------------------------------------
+
+void aircraft::draw_mgun_flash(const scene &s)
+{
+    if (m_fire_mgun)
+    {
+        for (auto &m: m_mguns)
+            s.get_part_renderer().draw(m.flash);
+    }
 }
 
 //------------------------------------------------------------

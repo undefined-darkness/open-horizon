@@ -178,6 +178,13 @@ void world::spawn_explosion(const nya_math::vec3 &pos, int damage, float radius)
 
 //------------------------------------------------------------
 
+void world::spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_math::vec3 &dir)
+{
+    m_phys_world.spawn_bullet(type, pos, dir);
+}
+
+//------------------------------------------------------------
+
 plane_ptr world::get_plane(int idx)
 {
     if (idx < 0 || idx >= (int)m_planes.size())
@@ -210,8 +217,8 @@ void world::set_location(const char *name)
 
 void world::update(int dt)
 {
-    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](plane_ptr &p){ return p.use_count() <= 1; }), m_planes.end());
-    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m){ return m.use_count() <= 1 && m->time <= 0; }), m_missiles.end());
+    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p){ return p.use_count() <= 1; }), m_planes.end());
+    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m){ return m.use_count() <= 1 && m->time <= 0; }), m_missiles.end());
 
     for (auto &p: m_planes)
         p->phys->controls = p->controls;
@@ -230,7 +237,17 @@ void world::update(int dt)
     for (auto &m: m_missiles)
         m->update_homing(dt);
 
-    m_phys_world.update_missiles(dt, [](const phys::object_ptr &a, const phys::object_ptr &b) {});
+    m_phys_world.update_missiles(dt, [this](const phys::object_ptr &a, const phys::object_ptr &b)
+    {
+        auto m = this->get_missile(a);
+        if(m && m->time > 0)
+        {
+            this->spawn_explosion(m->phys->pos, 0, 10.0);
+            m->time = 0;
+        }
+    });
+
+    m_phys_world.update_bullets(dt, [this](const phys::object_ptr &a, const phys::object_ptr &b) {});
 
     for (auto &p: m_planes)
         p->update(dt, *this, m_hud, p->render == m_render_world.get_player_aircraft());
@@ -262,6 +279,19 @@ plane_ptr world::get_plane(const phys::object_ptr &o)
     }
 
     return plane_ptr();
+}
+
+//------------------------------------------------------------
+
+missile_ptr world::get_missile(const phys::object_ptr &o)
+{
+    for (auto &m: m_missiles)
+    {
+        if (m->phys == o)
+            return m;
+    }
+
+    return missile_ptr();
 }
 
 //------------------------------------------------------------
@@ -485,7 +515,13 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     }
 
     if (controls.mgun != last_controls.mgun)
+    {
         render->set_mgun_bay(controls.mgun);
+        if (controls.mgun && render->is_mgun_ready())
+            render->set_mgun_fire(true);
+        else
+            render->set_mgun_fire(false);
+    }
 
     plane_ptr me;
     for (int i = 0; i < w.get_planes_count(); ++i) //ugly

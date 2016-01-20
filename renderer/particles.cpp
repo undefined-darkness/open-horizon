@@ -81,6 +81,15 @@ void fire_trail::update(const nya_math::vec3 &pos, int dt)
 
 //------------------------------------------------------------
 
+void muzzle_flash::update(const nya_math::vec3 &pos, const nya_math::vec3 &dir, int dt)
+{
+    m_pos = pos;
+    m_dir = dir;
+    m_time += dt;
+}
+
+//------------------------------------------------------------
+
 explosion::explosion(const nya_math::vec3 &pos, float r): m_pos(pos), m_radius(r), m_time(0)
 {
     for (int i = 0; i < 2; ++i)
@@ -252,6 +261,16 @@ void particles_render::draw(const fire_trail &t) const
     }
 
     draw_points();
+}
+
+//------------------------------------------------------------
+
+void particles_render::draw(const muzzle_flash &f) const
+{
+    //const color c = color(250, 92, 70, 128) / 255.0;
+    //tc(5, 2037, 5, 5), false, tc(0, 1280, 64, 128), false
+
+    //ToDo
 }
 
 //------------------------------------------------------------

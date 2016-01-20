@@ -26,6 +26,7 @@ public:
     void draw_player();
     void draw_trails(const scene &s);
     void draw_fire_trail(const scene &s);
+    void draw_mgun_flash(const scene &s);
     int get_lods_count() const { return m_mesh.get_lods_count(); }
     void update(int dt);
     void update_trail(int dt, scene &s);
@@ -36,6 +37,9 @@ public:
     const nya_math::vec3 &get_pos() { return m_mesh.get_pos(); }
     nya_math::quat get_rot() { return m_mesh.get_rot(); }
     nya_math::vec3 get_bone_pos(const char *name);
+
+    int get_mguns_count() const;
+    nya_math::vec3 get_mgun_pos(int idx);
 
     void set_damage(float value) { m_damage = value; }
     float get_damage() const { return m_damage; }
@@ -53,12 +57,14 @@ public:
     void set_special_bay(bool value);
     void set_missile_bay(bool value);
     void set_mgun_bay(bool value);
+    void set_mgun_fire(bool value) { m_fire_mgun = value; }
 
     //weapons
     bool has_special_bay();
     bool is_special_bay_opened();
     bool is_special_bay_closed();
     bool is_missile_ready();
+    bool is_mgun_ready();
     int get_missile_mount_count() { return (int)m_msls_mount.size(); }
     nya_math::vec3 get_missile_mount_pos(int idx);
     nya_math::quat get_missile_mount_rot(int idx);
@@ -88,7 +94,7 @@ public:
     static unsigned int get_colors_count(const char *plane_name);
 
     aircraft(): m_hide(false), m_time(0), m_camera_mode(camera_mode_third), m_half_flaps_flag(false),
-                m_engine_lod_idx(0), m_dead(false), m_has_trail(false)
+                m_engine_lod_idx(0), m_dead(false), m_has_trail(false), m_fire_mgun(false)
     {
         m_adimx_bone_idx = m_adimx2_bone_idx = -1;
         m_adimz_bone_idx = m_adimz2_bone_idx = -1;
@@ -141,6 +147,15 @@ private:
 
     bool m_has_trail;
     std::pair<plane_trail, int> m_trails[2];
+
+    struct mgun
+    {
+        int bone_idx;
+        muzzle_flash flash;
+    };
+
+    std::vector<mgun> m_mguns;
+    bool m_fire_mgun;
 };
 
 //------------------------------------------------------------

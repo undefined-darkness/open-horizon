@@ -87,6 +87,15 @@ typedef ptr<missile> missile_ptr;
 
 //------------------------------------------------------------
 
+struct bullet
+{
+    nya_math::vec3 pos;
+    nya_math::vec3 vel;
+    int time;
+};
+
+//------------------------------------------------------------
+
 class world
 {
 public:
@@ -95,14 +104,20 @@ public:
     plane_ptr add_plane(const char *name);
     missile_ptr add_missile(const char *name);
 
+    void spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_math::vec3 &dir);
+
     void update_planes(int dt, hit_hunction on_hit);
     void update_missiles(int dt, hit_hunction on_hit);
+    void update_bullets(int dt, hit_hunction on_hit);
+
+    const std::vector<bullet> &get_bullets() const { return m_bullets; }
 
     float get_height(float x, float z) const;
 
 private:
     std::vector<plane_ptr> m_planes;
     std::vector<missile_ptr> m_missiles;
+    std::vector<bullet> m_bullets;
 
     const static unsigned int location_size = 16;
     unsigned char m_height_patches[location_size * location_size];

@@ -1231,6 +1231,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                             break;
 
                         case 4371:
+                            //print_data(reader,reader.get_offset(), rgf.header.vcount * 24 * 4);
                             for (int i = 0; i < rgf.header.vcount; ++i)
                             {
                                 memcpy(verts[i + first_index].pos, &ndxr_verts[i * 24], sizeof(verts[0].pos));
@@ -1238,8 +1239,13 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
                                 //float3_to_half3(&ndxr_verts[i * 24 + 12], verts[i + first_index].tangent);
                                 //float3_to_half3(&ndxr_verts[i * 24 + 6], verts[i + first_index].bitangent);
                                 //ToDo
+
+                                //verts[i + first_index].bone = float(*(int *)&ndxr_verts[i * 24 + 16]); //ToDo: correct skining, 4 bones 4 weights
+
+                                //printf("%f %f\n", verts[i + first_index].bone, ndxr_verts[i * 24 + 20]);
                             }
                             add_vertex_offset += rgf.header.vcount * 24 * 4;
+
                             break;
                     }
                 }
@@ -1472,8 +1478,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data) /
             a.second.set_speed(0.0f);
             a.second.set_loop(false);
             l.mesh.set_anim(a.second, layer++);
-            
-            //if (lods.size() == 1) printf("anim %s\n", a.first.c_str());
+
+            //printf("lod %d anim %s\n", (int)lods.size() - 1,a.first.c_str());
         }
         
         l.mesh.update(0);
@@ -1496,8 +1502,11 @@ void fhm_mesh::draw(int lod_idx)
     l.mesh.draw();
 
 /*
+if (lod_idx == 0)
+{
     nya_render::depth_test::disable();
     static nya_render::debug_draw d;
+    d.set_point_size(5.0);
     d.clear();
     d.add_skeleton(l.mesh.get_skeleton());
     //d.add_line(l.mesh.get_skeleton().get_bone_pos(16), l.mesh.get_skeleton().get_bone_pos(18), nya_math::vec4(1.0,0.0,0.0,1.0));
@@ -1505,7 +1514,14 @@ void fhm_mesh::draw(int lod_idx)
     //d.add_line(l.mesh.get_skeleton().get_bone_pos(66), l.mesh.get_skeleton().get_bone_pos(66) + nya_math::vec3(0,1,0), nya_math::vec4(0.0,0.0,1.0,1.0));
     //d.add_line(l.mesh.get_skeleton().get_bone_pos(33), l.mesh.get_skeleton().get_bone_pos(33) + nya_math::vec3(0,1,0), nya_math::vec4(1.0,0.0,1.0,1.0));
     //d.add_line(l.mesh.get_skeleton().get_bone_pos(60), l.mesh.get_skeleton().get_bone_pos(60) + nya_math::vec3(0,1,0), nya_math::vec4(1.0,1.0,0.0,1.0));
+
+    static auto last_dvar = debug_variable::get();
+    if (last_dvar != debug_variable::get())
+        printf("bone %d %s\n", debug_variable::get(), l.mesh.get_skeleton().get_bone_name(last_dvar = debug_variable::get()));
+
+    d.add_point(l.mesh.get_skeleton().get_bone_pos(debug_variable::get()), nya_math::vec4(0.0,1.0,0.0,1.0));
     d.draw();
+}
 */
 }
 

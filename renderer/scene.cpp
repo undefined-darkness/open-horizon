@@ -130,6 +130,12 @@ void scene::update(int dt)
     m_plane_trails.erase(std::remove_if(m_plane_trails.begin(), m_plane_trails.end(), [](std::pair<plane_trail, unsigned int> &t)
                                       { return t.second > 5000; }), m_plane_trails.end());
 
+    for (auto &t: m_missile_trails)
+        t.second += dt;
+
+    m_missile_trails.erase(std::remove_if(m_missile_trails.begin(), m_missile_trails.end(), [](std::pair<missile_trail, unsigned int> &t)
+                                        { return t.second > 5000; }), m_missile_trails.end());
+
     if (m_player_aircraft.is_valid())
     {
         const bool is_camera_third = m_player_aircraft->get_camera_mode() == aircraft::camera_mode_third;
@@ -259,11 +265,17 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
     }
     if (t.has("particles"))
     {
+        for (auto &a: m_aircrafts)
+            a->draw_mgun_flash(*this);
+
         for (auto &t: m_plane_trails)
             m_particles_render.draw(t.first);
 
         for (auto &a: m_aircrafts)
             a->draw_trails(*this);
+
+        for (auto &t: m_missile_trails)
+            m_missile_trails_renderer.draw(t.first);
 
         for (auto &m: m_missiles)
             m_missile_trails_renderer.draw(m->trail);

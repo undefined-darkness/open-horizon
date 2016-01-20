@@ -85,21 +85,24 @@ void world::update(int dt)
 
     for (auto &o: m_objects) o->mdl.update(dt);
 
-    m_objects.erase(std::remove_if(m_objects.begin(), m_objects.end(), [](object_ptr &o)
+    m_objects.erase(std::remove_if(m_objects.begin(), m_objects.end(), [](const object_ptr &o)
                                     { return o.get_ref_count() <= 1; }), m_objects.end());
 
-    m_aircrafts.erase(std::remove_if(m_aircrafts.begin(), m_aircrafts.end(), [](aircraft_ptr &a){ return a.get_ref_count() <= 1; }), m_aircrafts.end());
+    m_aircrafts.erase(std::remove_if(m_aircrafts.begin(), m_aircrafts.end(), [](const aircraft_ptr &a)
+                                    { return a.get_ref_count() <= 1; }), m_aircrafts.end());
     for (auto &a: m_aircrafts) a->update(dt);
 
-    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m)
+    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [this](const missile_ptr &m)
                                     { if (m.get_ref_count() > 1)
-                                          return false; m->release();
-                                      return true;
+                                          return false;
+
+                                        this->add_trail(m->trail);
+                                        return true;
                                     }), m_missiles.end());
 
     for (auto &m: m_missiles) m->update(dt);
 
-    m_explosions.erase(std::remove_if(m_explosions.begin(), m_explosions.end(), [](explosion &e)
+    m_explosions.erase(std::remove_if(m_explosions.begin(), m_explosions.end(), []( const explosion &e)
                                    { return e.is_finished(); }), m_explosions.end());
 
     for (auto &e: m_explosions) e.update(dt);
@@ -111,12 +114,6 @@ void missile::update(int dt)
 {
     if (engine_started)
         trail.update(mdl.get_pos(), dt);
-}
-
-//------------------------------------------------------------
-
-void missile::release()
-{
 }
 
 //------------------------------------------------------------

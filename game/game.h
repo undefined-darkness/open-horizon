@@ -69,6 +69,8 @@ struct wpn_missile_params
     wpn_missile_params(std::string id, std::string model);
 };
 
+//------------------------------------------------------------
+
 struct plane: public object
 {
     plane_controls controls;
@@ -141,6 +143,7 @@ public:
     missile_ptr add_missile(const char *id, const char *model);
 
     void spawn_explosion(const nya_math::vec3 &pos, int damage, float radius);
+    void spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_math::vec3 &dir);
 
     int get_planes_count() const { return (int)m_planes.size(); }
     plane_ptr get_plane(int idx);
@@ -163,6 +166,7 @@ public:
 private:
     void update_plane(plane_ptr &p);
     plane_ptr get_plane(const phys::object_ptr &o);
+    missile_ptr get_missile(const phys::object_ptr &o);
 
 private:
     std::vector<plane_ptr> m_planes;

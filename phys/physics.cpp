@@ -90,16 +90,23 @@ missile_ptr world::add_missile(const char *name)
 
 //------------------------------------------------------------
 
+void world::spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_math::vec3 &dir)
+{
+    //ToDo
+}
+
+//------------------------------------------------------------
+
 void world::update_planes(int dt, hit_hunction on_hit)
 {
-    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](plane_ptr &p){ return p.use_count() <= 1; }), m_planes.end());
+    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p){ return p.use_count() <= 1; }), m_planes.end());
     for (auto &p: m_planes)
     {
         p->update(dt);
 
         if (p->pos.y < get_height(p->pos.x, p->pos.z) + 5.0f)
         {
-            p->pos.y = 5.0f;
+            p->pos -= p->vel * (dt * 0.001f);
             //p->rot = quat(-0.5, p->rot.get_euler().y, 0.0);
             p->vel = vec3();
 
@@ -113,8 +120,33 @@ void world::update_planes(int dt, hit_hunction on_hit)
 
 void world::update_missiles(int dt, hit_hunction on_hit)
 {
-    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](missile_ptr &m){ return m.use_count() <= 1; }), m_missiles.end());
-    for (auto &m: m_missiles) m->update(dt);
+    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m){ return m.use_count() <= 1; }), m_missiles.end());
+    for (auto &m: m_missiles)
+    {
+        m->update(dt);
+
+        auto &p = m->pos;
+        if (p.y < get_height(p.x, p.z) + 1.0f)
+        {
+            m->pos -= m->vel * (dt * 0.001f);
+            m->vel = vec3();
+
+            if (on_hit)
+                on_hit(std::static_pointer_cast<object>(m), object_ptr());
+        }
+    }
+}
+
+//------------------------------------------------------------
+
+void world::update_bullets(int dt, hit_hunction on_hit)
+{
+    m_bullets.erase(std::remove_if(m_bullets.begin(), m_bullets.end(), [](const bullet &b){ return b.time < 0; }), m_bullets.end());
+
+    float kdt = dt * 0.001f;
+
+    for (auto &b: m_bullets)
+        b.pos += b.vel * kdt;
 }
 
 //------------------------------------------------------------

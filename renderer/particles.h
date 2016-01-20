@@ -50,6 +50,21 @@ private:
 
 //------------------------------------------------------------
 
+class muzzle_flash
+{
+    friend class particles_render;
+
+public:
+    void update(const nya_math::vec3 &pos, const nya_math::vec3 &dir, int dt);
+
+private:
+    nya_math::vec3 m_pos;
+    nya_math::vec3 m_dir;
+    int m_time = 0;
+};
+
+//------------------------------------------------------------
+
 class explosion
 {
     friend class particles_render;
@@ -100,6 +115,7 @@ public:
     void init();
     void draw(const plane_trail &t) const;
     void draw(const fire_trail &t) const;
+    void draw(const muzzle_flash &f) const;
     void draw(const explosion &e) const;
     void draw(const plane_engine &e) const;
     void draw_heat(const plane_engine &e) const;

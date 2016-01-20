@@ -58,7 +58,6 @@ struct missile: public object
     bvalue engine_started;
     missile_trail trail;
     void update(int dt);
-    void release();
 };
 
 typedef ptr<missile> missile_ptr;
@@ -82,6 +81,9 @@ public:
     void spawn_explosion(const nya_math::vec3 &pos,float radius);
 
     virtual void update(int dt);
+
+protected:
+    virtual void add_trail(const missile_trail &t) {}
 
 protected:
     std::vector<object_ptr> m_objects;
