@@ -94,7 +94,7 @@ void world::spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_
 {
     bullet b;
     b.pos = pos;
-    b.time = 2000; //ToDo
+    b.time = 1500; //ToDo
     b.vel = dir * 1000.0f; //ToDo
 
     m_bullets.push_back(b);
@@ -151,7 +151,11 @@ void world::update_bullets(int dt, hit_hunction on_hit)
     float kdt = dt * 0.001f;
 
     for (auto &b: m_bullets)
+    {
+        b.time -= dt;
         b.pos += b.vel * kdt;
+        b.vel.y -= 9.8 * kdt;
+    }
 }
 
 //------------------------------------------------------------

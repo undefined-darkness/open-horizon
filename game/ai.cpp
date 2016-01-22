@@ -15,6 +15,8 @@ void ai::update(const world &w, int dt)
 
     auto p = m_plane.lock();
 
+    p->controls.mgun = false;
+
     if (m_state == state_pursuit)
     {
         if ((m_target.expired() || m_target.lock()->hp <= 0) && m_state != state_follow)
@@ -53,7 +55,10 @@ void ai::update(const world &w, int dt)
     }
 
     if (!p->targets.empty() && p->targets.front().locked)
+    {
         p->controls.missile = !p->controls.missile;
+        p->controls.mgun = true; //ToDo
+    }
     else
         p->controls.missile = false;
 }
@@ -148,7 +153,7 @@ void ai::find_best_target()
             if (tp->hp <= 0)
                 continue;
 
-            auto tdir = tp->phys->pos;
+            auto tdir = tp->phys->pos - p->phys->pos;
             const bool in_front = tdir.dot(dir) < 0.0;
             if ((i == 0) == in_front)
                 return;
