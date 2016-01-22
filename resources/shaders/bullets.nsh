@@ -43,5 +43,5 @@ uniform vec4 color;
 
 void main()
 {
-    gl_FragColor = vec4(color.xyz * 1.6, texture2D(base_map, tc).r * color.a);
+    gl_FragColor = vec4(color.xyz, texture2D(base_map, tc).r * color.a);
 }

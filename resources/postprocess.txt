@@ -171,6 +171,7 @@
 
 @set_target heat_blur
 @clear
+@draw_scene default = heat
 
 @set_target
 @set_texture diffuse = main_color

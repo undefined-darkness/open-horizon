@@ -71,6 +71,7 @@ class explosion
 
 public:
     void update(int dt);
+    const nya_math::vec3 &get_pos() const { return m_pos; }
     bool is_finished() const;
 
     explosion(): m_radius(0) {}
@@ -134,6 +135,7 @@ public:
     void draw(const explosion &e) const;
     void draw(const bullets &b) const;
     void draw(const plane_engine &e) const;
+    void draw_heat(const explosion &e) const;
     void draw_heat(const plane_engine &e) const;
     void release();
 
