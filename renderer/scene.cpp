@@ -283,6 +283,8 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
         for (auto &a: m_aircrafts)
             a->draw_fire_trail(*this);
 
+        m_particles_render.draw(m_bullets);
+
         for (auto &e: m_explosions)
             m_particles_render.draw(e);
     }

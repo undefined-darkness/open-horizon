@@ -80,6 +80,7 @@ struct plane: public object
     bvalue special_weapon;
     bvalue need_fire_missile;
     ivalue rocket_bay_time;
+    ivalue mgun_fire_update;
 
     wpn_missile_params missile;
     ivalue missile_cooldown[2];

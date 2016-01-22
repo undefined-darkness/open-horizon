@@ -92,7 +92,12 @@ missile_ptr world::add_missile(const char *name)
 
 void world::spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_math::vec3 &dir)
 {
-    //ToDo
+    bullet b;
+    b.pos = pos;
+    b.time = 2000; //ToDo
+    b.vel = dir * 1000.0f; //ToDo
+
+    m_bullets.push_back(b);
 }
 
 //------------------------------------------------------------

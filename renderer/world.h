@@ -78,6 +78,8 @@ public:
 
     missile_ptr add_missile(const char *name);
 
+    bullets &get_bullets() { return m_bullets; }
+
     void spawn_explosion(const nya_math::vec3 &pos,float radius);
 
     virtual void update(int dt);
@@ -90,6 +92,7 @@ protected:
     std::vector<aircraft_ptr> m_aircrafts;
     std::vector<missile_ptr> m_missiles;
     std::vector<explosion> m_explosions;
+    bullets m_bullets;
 
 protected:
     std::string m_location_name;

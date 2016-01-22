@@ -217,9 +217,10 @@ void world::set_location(const char *name)
 
 void world::update(int dt)
 {
-    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p){ return p.use_count() <= 1; }), m_planes.end());
-    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m){ return m.use_count() <= 1 && m->time <= 0; }), m_missiles.end());
-
+    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p)
+                                  { return p.use_count() <= 1; }), m_planes.end());
+    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m)
+                                    { return m.use_count() <= 1 && m->time <= 0; }), m_missiles.end());
     for (auto &p: m_planes)
         p->phys->controls = p->controls;
 
@@ -254,6 +255,12 @@ void world::update(int dt)
 
     for (auto &m: m_missiles)
         m->update(dt, *this);
+
+    const auto &bullets_from = m_phys_world.get_bullets();
+    auto &bullets_to = m_render_world.get_bullets();
+    bullets_to.clear();
+    for (auto &b: bullets_from)
+        bullets_to.add_bullet(b.pos, b.vel);
 
     m_render_world.update(dt);
 }
@@ -412,6 +419,8 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             count = 6;
     }
 
+    const auto dir = phys->rot.rotate(nya_math::vec3(0.0f, 0.0f, 1.0f));
+
     if (controls.missile && controls.missile != last_controls.missile)
     {
         if (special_weapon)
@@ -523,6 +532,19 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             render->set_mgun_fire(false);
     }
 
+    if (controls.mgun && render->is_mgun_ready())
+    {
+        mgun_fire_update += dt;
+        const int mgun_update_time = 300;
+        if (mgun_fire_update > mgun_update_time)
+        {
+            mgun_fire_update %= mgun_update_time;
+
+            for (int i = 0; i < render->get_mguns_count(); ++i)
+                w.spawn_bullet("MG", render->get_mgun_pos(i), dir);
+        }
+    }
+
     plane_ptr me;
     for (int i = 0; i < w.get_planes_count(); ++i) //ugly
     {
@@ -581,8 +603,6 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                                  || t.target_plane.lock()->hp <= 0; }), targets.end());
 
     //cockpit animations and hud
-
-    auto dir = phys->rot.rotate(nya_math::vec3(0.0f, 0.0f, 1.0f));
 
     const float aoa = acosf(nya_math::vec3::dot(nya_math::vec3::normalize(phys->vel), dir));
     render->set_aoa(aoa);
