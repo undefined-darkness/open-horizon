@@ -72,31 +72,29 @@
         <btn0 control="menu_next"/>
         <btn1 control="menu_prev"/>
     </joystick>
-
+	
     <joystick name="Microsoft PC-joystick driver">
         <axis0 control="roll" dead="0.01"/>
         <axis1 control="pitch" invert="true" dead="0.01"/>
-        <axis3 control="yaw" dead="0.01"/>
-        <axis2 control="throttle" invert="true" dead="0.01"/>
+		<axis2 control="yaw" invert="true" dead="0.05"/>
+
         <btn0 control="mgun"/>
         <btn1 control="missile"/>
-        <btn2 control="missile"/>
-        <btn4 control="change_target"/>
-        <btn5 control="change_weapon"/>
-        <btn6 control="brake"/>
-        <btn7 control="brake"/>
-        <btn8 control="change_camera"/>
+        <btn2 control="change_weapon"/>
+        <btn3 control="change_target"/>
+        <btn4 control="brake"/>
+        <btn5 control="throttle"/>
+        <btn6 control="radar"/>
+        <btn7 control="pause"/>
+        <btn8 control="flare"/>
         <btn9 control="change_camera"/>
-        <btn10 control="pause"/>
-        <btn11 control="pause"/>
 
         <axis1 control="menu_up_down" invert="true" dead="0.5"/>
-        <btn12 control="menu_up"/>
-        <btn14 control="menu_down"/>
-        <btn15 control="menu_prev"/>
-        <btn13 control="menu_next"/>
-        <btn0 control="menu_next"/>
-        <btn1 control="menu_prev"/>
+		<btn10 control="menu_up"/>
+		<btn12 control="menu_down"/>
+        <btn11 control="menu_next"/>
+		<btn13 control="menu_prev"/>
+		<btn0 control="menu_next"/>
+		<btn1 control="menu_prev"/>
     </joystick>
-
 </joysticks>
