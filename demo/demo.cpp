@@ -591,7 +591,8 @@ int main(void)
 
         if (active_game_mode)
         {
-            active_game_mode->update(paused ? 0 : (speed10x ? dt * 10 : dt), controls);
+            if (!paused)
+                active_game_mode->update(speed10x ? dt * 10 : dt, controls);
             scene.draw();
 
             //util debug draw
@@ -669,6 +670,7 @@ int main(void)
         if (platform.get_key(GLFW_KEY_RIGHT)) controls.rot.z = 1.0f, menu_controls.right = true;
 
         if (platform.get_key(GLFW_KEY_LEFT_CONTROL)) controls.mgun = true;
+        if (platform.get_key(GLFW_KEY_LEFT_SHIFT)) controls.mgun = true;
         if (platform.get_key(GLFW_KEY_SPACE)) controls.missile = true, menu_controls.next = true;
         if (platform.get_key(GLFW_KEY_F)) controls.flares = true;
         if (platform.get_key(GLFW_KEY_Q)) controls.change_weapon = true;

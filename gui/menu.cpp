@@ -77,6 +77,8 @@ void menu::update(int dt, const menu_controls &controls)
     {
         if (m_selected > 0)
             --m_selected;
+        else if(!m_entries.empty())
+            m_selected = (int)m_entries.size() - 1;
     }
 
     if (controls.down && controls.down != m_prev_controls.down)
@@ -85,6 +87,8 @@ void menu::update(int dt, const menu_controls &controls)
         {
             if (m_selected + 1 < m_entries.size())
                 ++m_selected;
+            else
+                m_selected = 0;
         }
     }
 
@@ -206,7 +210,7 @@ void menu::set_screen(const std::string &screen)
         add_entry(L"Deathmatch", {"mode=dm", "screen=map_select"});
         add_entry(L"Team deathmatch", {"mode=tdm", "screen=map_select"});
         add_entry(L"Free flight", {"mode=ff", "screen=map_select"});
-        add_entry(L"Aircraft viewer", {"mode=none", "screen=ac_view"});
+        //add_entry(L"Aircraft viewer", {"mode=none", "screen=ac_view"});
         add_entry(L"Exit", {"exit"});
     }
     else if (screen == "map_select")
@@ -214,19 +218,19 @@ void menu::set_screen(const std::string &screen)
         m_title = L"LOCATION";
         add_entry(L"Miami", {"map=ms01"});
         add_entry(L"Dubai", {"map=ms06"});
-        add_entry(L"Moscow", {"map=ms11b"});
         add_entry(L"Paris", {"map=ms30"});
         add_entry(L"Tokyo", {"map=ms50"});
         add_entry(L"Honolulu", {"map=ms51"});
+        add_entry(L"Beliy Base", {"map=ms08x"}); //siege
+        add_entry(L"Black Sea", {"map=ms09"});
 /*
+        add_entry(L"Moscow", {"map=ms11b"});
         add_entry(L"02", {"map=ms02"}); //inferno //oil day
         //add_entry(L"03 Eastern Africa", {"map=ms03"}); //red moon //tex indices idx < size assert
         //add_entry(L"04 Mogadiyu", {"map=ms04"}); //spooky //tex indices idx < size assert
         add_entry(L"05", {"map=ms05"}); //oil night - blue on blue
         //add_entry(L"07 Suez Canal", {"map=ms07"}); //lock n load //tex indices idx < size assert
         add_entry(L"08 Derbent", {"map=ms08"}); //pipeline
-        add_entry(L"08X Belyi Base", {"map=ms08x"}); //siege
-        add_entry(L"09 Black Sea", {"map=ms09"}); //hostile fleet
         add_entry(L"10 Caucasus Region", {"map=ms10"}); //launch
         //add_entry(L"11A Moscow", {"map=ms11a"}); //motherland //tex indices idx < size assert
         //add_entry(L"12 Miami", {"map=ms12"}); //homefront //type 8 chunk assert, kinda small

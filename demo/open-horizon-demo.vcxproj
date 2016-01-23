@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -120,6 +120,7 @@
     <ClCompile Include="../renderer/plane_camera.cpp" />
     <ClCompile Include="../renderer/scene.cpp" />
     <ClCompile Include="../renderer/shared.cpp" />
+    <ClCompile Include="../renderer/sky.cpp" />
     <ClCompile Include="../renderer/world.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -145,6 +146,7 @@
     <ClInclude Include="../renderer/plane_camera.h" />
     <ClInclude Include="../renderer/scene.h" />
     <ClInclude Include="../renderer/shared.h" />
+    <ClInclude Include="../renderer/sky.h" />
     <ClInclude Include="../renderer/world.h" />
     <ClInclude Include="../util/params.h" />
     <ClInclude Include="../util/util.h" />

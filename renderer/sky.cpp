@@ -2,13 +2,77 @@
 // open horizon -- undefined_darkness@outlook.com
 //
 
-#include "location.h"
+#include "sky.h"
 #include "scene/camera.h"
 #include "shared.h"
 #include "math/constants.h"
 
 namespace renderer
 {
+//------------------------------------------------------------
+
+class sph
+{
+public:
+    bool load(const char *file_name)
+    {
+        auto r = load_resource(file_name);
+        if (!r.get_data())
+            return false;
+
+        struct sph_data
+        {
+            float radius;
+            float height;
+            uint zero[2];
+
+            color colors[24];
+            uint zero2[2];
+            color colors2[3];
+            uint zero3;
+
+            //color colors[30];
+
+            float k[10];
+
+        } data[2];
+
+        //colors count is 40 ? and coeffs is char and 40 too?
+
+        assert(r.get_size() == sizeof(data));
+
+        memcpy(&data, r.get_data(), r.get_size());
+
+        for (uint i = 0; i < sizeof(data)/sizeof(uint32_t); ++i)
+            ((uint32_t *)&data)[i] = swap_bytes(((uint32_t *)&data)[i]);
+
+        for (auto &d: data)
+        {
+            assume(d.zero[0] == 0 && d.zero[1] == 0);
+            //assume(d.zero2[0] == 0 && d.zero2[1] == 0);
+            //assume(d.zero3 == 0);
+
+            for (auto &c: d.colors) assume(c.unused == 0);
+            //for (auto &c: d.colors2) assume(c.a == 0);
+        }
+
+        r.free();
+        return true;
+    }
+
+private:
+    struct color { unsigned char r, g, b, unused; };
+
+    color mix(const color &c0, const color &c1, float k)
+    {
+        color out;
+        out.r = c0.r + k * (c1.r - c0.r);
+        out.g = c0.g + k * (c1.g - c0.g);
+        out.b = c0.b + k * (c1.b - c0.b);
+        return out;
+    }
+};
+
 //------------------------------------------------------------
 
 struct solid_sphere
@@ -56,7 +120,9 @@ bool sky_mesh::load(const char *name, const location_params &params)
     m_mesh.set_vertex_data(&s.vertices[0], sizeof(float)*3, (unsigned int)s.vertices.size());
     m_mesh.set_index_data(&s.indices[0], nya_render::vbo::index2b, (unsigned int)s.indices.size());
 
+    //ToDo: load from Map/sph_*.sph
     auto env = shared::get_texture(shared::load_texture((std::string("Map/envmap_") + name + ".nut").c_str()));
+
     auto dithering = shared::get_texture(shared::load_texture("PostProcess/dithering.nut"));
 
     m_material.get_default_pass().set_shader(nya_scene::shader("shaders/sky.nsh"));
@@ -160,141 +226,6 @@ void sun_mesh::draw() const
     m_mesh.draw();
     m_mesh.unbind();
     m_material.internal().unset();
-}
-
-//------------------------------------------------------------
-
-bool location::load(const char *name)
-{
-    m_trees = fhm_mesh();
-
-    if (!name || !name[0])
-    {
-        m_params = location_params();
-        m_location.m_map_parts_material.set_texture("reflection", nya_scene::texture_proxy());
-        m_location.m_map_parts_material.set_texture("detail", nya_scene::texture_proxy());
-        m_location.m_map_parts_material.set_texture("ocean", nya_scene::texture_proxy());
-        m_location.m_map_parts_material.set_texture("normal", nya_scene::texture_proxy());
-        m_sky.release();
-        return false;
-    }
-    else if (strcmp(name, "def") == 0)
-    {
-        m_params = location_params();
-
-        auto e = shared::get_texture(shared::load_texture("Map/envmap_def.nut"));
-        m_location.m_map_parts_material.set_texture("reflection", e);
-    }
-    else
-    {
-        m_params.load((std::string("Map/mapset_") + name + ".bin").c_str());
-
-        m_location.load((std::string("Map/") + name + ".fhm").c_str(), m_params);
-        m_location.load((std::string("Map/") + name + "_mpt.fhm").c_str(), m_params);
-        m_trees.load((std::string("Map/") + name + "_tree_nut.fhm").c_str());
-        m_trees.load((std::string("Map/") + name + "_tree_nud.fhm").c_str());
-
-        auto e = shared::get_texture(shared::load_texture((std::string("Map/envmap_mapparts_") + name + ".nut").c_str()));
-        m_location.m_map_parts_material.set_texture("reflection", e);
-
-        auto &t = m_location.get_trees_texture();
-        if (t.is_valid() && t->get_height() > 0)
-        {
-            m_tree_depth.build(0, t->get_width(), t->get_height(), nya_render::texture::depth16);
-            m_tree_fbo.set_color_target(t->internal().get_shared_data()->tex);
-            m_tree_fbo.set_depth_target(m_tree_depth.internal().get_shared_data()->tex);
-        }
-    }
-
-    auto t = shared::get_texture(shared::load_texture((std::string("Map/detail_") + name + ".nut").c_str()));
-    m_location.m_land_material.set_texture("detail", t);
-    auto t2 = shared::get_texture(shared::load_texture((std::string("Map/ocean_") + name + ".nut").c_str()));
-    m_location.m_land_material.set_texture("ocean", t2);
-    auto t3 = shared::get_texture(shared::load_texture((std::string("Map/ocean_nrm_") + name + ".nut").c_str()));
-    m_location.m_land_material.set_texture("normal", t3);
-
-    m_sky.load(name, m_params);
-    m_sun.init();
-    m_sun.apply_location(m_params);
-
-   return true;
-}
-
-//------------------------------------------------------------
-
-void location::update(int dt)
-{
-    m_location.update(dt);
-}
-
-//------------------------------------------------------------
-
-void location::draw()
-{
-    m_location.draw_mptx();
-    m_location.draw_trees();
-    m_location.draw_landscape();
-    m_location.draw_mptx_transparent();
-
-    m_sky.draw();
-    m_sun.draw();
-
-    //nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
-    //m_location.draw_cols();
-}
-
-//------------------------------------------------------------
-
-void location::update_tree_texture()
-{
-    if (!m_location.get_trees_texture().is_valid())
-        return;
-
-    const auto width = m_location.get_trees_texture()->get_width();
-    const auto height = m_location.get_trees_texture()->get_height();
-    if (!height)
-        return;
-
-    auto prev_cam = nya_scene::get_camera_proxy();
-
-    nya_render::state_override s; //ToDo: fix tree material instead
-    s.override_cull_face = true;
-    s.cull_face = false;
-    auto prev_s = nya_render::get_state_override();
-    nya_render::set_state_override(s);
-
-    nya_scene::camera_proxy tree_cam;
-    tree_cam.create();
-    nya_scene::set_camera(tree_cam);
-    float size = 0.5f;
-    nya_math::mat4 pm;
-    pm.ortho(-size, size, -size, size, -size, size);
-    pm.scale(1.99);
-    tree_cam->set_proj(pm);
-    tree_cam->set_pos(0.0, size, 0.0);
-
-    auto r = prev_cam->get_rot().get_euler();
-    tree_cam->set_rot(nya_math::quat(-r.x, -r.y, 0.0f));
-
-    m_tree_fbo.bind();
-    const auto prev_vp = nya_render::get_viewport();
-    nya_render::set_viewport(0, 0, width, height);
-    nya_render::clear(true, true);
-    for (int i = 0; i < width / height; ++i)
-    {
-        nya_render::set_viewport(height * i, 0, height, height);
-        nya_render::scissor::enable(height * i, 0, height, height);
-
-        m_trees.draw(i);
-    }
-    nya_render::scissor::disable();
-
-    nya_render::set_state_override(prev_s);
-
-    //nya_render::set_clear_color(0.0, 0.0, 0.0, 0.0);
-    nya_render::set_viewport(prev_vp);
-    nya_scene::set_camera(prev_cam);
-    m_tree_fbo.unbind();
 }
 
 //------------------------------------------------------------

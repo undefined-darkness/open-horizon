@@ -11,6 +11,7 @@
 		F503E52419048E2D00C3590A /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52319048E2D00C3590A /* libglfw3.a */; };
 		F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52519048E5000C3590A /* OpenGL.framework */; };
 		F503E52919048E7300C3590A /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52819048E7300C3590A /* IOKit.framework */; };
+		F50BFC621C53BBCB000B8500 /* sky.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50BFC601C53BBCB000B8500 /* sky.cpp */; };
 		F50DADAC1C3047D5000DD3EA /* hangar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50DADAA1C3047D5000DD3EA /* hangar.cpp */; };
 		F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53304C61B09DEC300D8C3C7 /* menu.cpp */; };
 		F5696AAA1B1136B100C7BFC9 /* joystick.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5696AA11B10E3F800C7BFC9 /* joystick.xml */; };
@@ -96,6 +97,8 @@
 		F503E52319048E2D00C3590A /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = "../deps/glfw-bin/lib/libglfw3.a"; sourceTree = "<group>"; };
 		F503E52519048E5000C3590A /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		F503E52819048E7300C3590A /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		F50BFC601C53BBCB000B8500 /* sky.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sky.cpp; path = ../renderer/sky.cpp; sourceTree = "<group>"; };
+		F50BFC611C53BBCB000B8500 /* sky.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sky.h; path = ../renderer/sky.h; sourceTree = "<group>"; };
 		F50DADAA1C3047D5000DD3EA /* hangar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hangar.cpp; path = ../game/hangar.cpp; sourceTree = "<group>"; };
 		F50DADAB1C3047D5000DD3EA /* hangar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hangar.h; path = ../game/hangar.h; sourceTree = "<group>"; };
 		F53304C61B09DEC300D8C3C7 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = menu.cpp; path = ../gui/menu.cpp; sourceTree = "<group>"; };
@@ -324,6 +327,8 @@
 				F59AB5971AFA4F1800137527 /* scene.h */,
 				F59AB5A01AFA4F1800137527 /* shared.cpp */,
 				F59AB59F1AFA4F1800137527 /* shared.h */,
+				F50BFC601C53BBCB000B8500 /* sky.cpp */,
+				F50BFC611C53BBCB000B8500 /* sky.h */,
 				F59AB5AF1AFA4FEC00137527 /* world.cpp */,
 				F59AB5B01AFA4FEC00137527 /* world.h */,
 			);
@@ -504,6 +509,7 @@
 				F59AB5921AFA389500137527 /* game.cpp in Sources */,
 				F5C3B6FE1B2C809000479524 /* particles.cpp in Sources */,
 				F59AB5B11AFA4FEC00137527 /* world.cpp in Sources */,
+				F50BFC621C53BBCB000B8500 /* sky.cpp in Sources */,
 				F59AB5A71AFA4F1800137527 /* scene.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
