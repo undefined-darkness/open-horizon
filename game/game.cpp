@@ -314,7 +314,8 @@ void plane::reset_state()
 
     //render->reset_state(); //ToDo
 
-    special_weapon = false;
+    render->set_special_visible(-1, special_weapon);
+
     need_fire_missile = false;
     rocket_bay_time = 0;
 
@@ -347,6 +348,8 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 {
     const int missile_cooldown_time = 3500;
     const int special_cooldown_time = 7000;
+
+    const auto pos_fix = phys->pos - render->get_pos(); //skeleton is not updated yet
 
     render->set_pos(phys->pos);
     render->set_rot(phys->rot);
@@ -441,14 +444,13 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
                     special_mount_cooldown.resize(render->get_special_mount_count());
 
-                    render->update(0);
                     for (int i = 0; i < count; ++i)
                     {
                         auto m = w.add_missile(special.id.c_str(), special.model.c_str());
                         special_mount_idx = ++special_mount_idx % render->get_special_mount_count();
                         special_mount_cooldown[special_mount_idx] = special_cooldown_time;
                         render->set_special_visible(special_mount_idx, false);
-                        m->phys->pos = render->get_special_mount_pos(special_mount_idx);
+                        m->phys->pos = render->get_special_mount_pos(special_mount_idx) + pos_fix;
                         m->phys->rot = render->get_special_mount_rot(special_mount_idx);
                         m->phys->vel = phys->vel;
                         m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0)); //ToDo
@@ -475,12 +477,11 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             else if (missile_cooldown[1] <= 0)
                 missile_cooldown[1] = missile_cooldown_time;
 
-            render->update(0);
             auto m = w.add_missile(missile.id.c_str(), missile.model.c_str());
             missile_mount_idx = ++missile_mount_idx % render->get_missile_mount_count();
             missile_mount_cooldown[missile_mount_idx] = missile_cooldown_time;
             render->set_missile_visible(missile_mount_idx, false);
-            m->phys->pos = render->get_missile_mount_pos(missile_mount_idx);
+            m->phys->pos = render->get_missile_mount_pos(missile_mount_idx) + pos_fix;
             m->phys->rot = render->get_missile_mount_rot(missile_mount_idx);
             m->phys->vel = phys->vel;
 
@@ -541,7 +542,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             mgun_fire_update %= mgun_update_time;
 
             for (int i = 0; i < render->get_mguns_count(); ++i)
-                w.spawn_bullet("MG", render->get_mgun_pos(i), dir);
+                w.spawn_bullet("MG", render->get_mgun_pos(i) + pos_fix, dir);
         }
     }
 

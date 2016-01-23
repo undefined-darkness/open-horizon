@@ -733,7 +733,12 @@ nya_math::quat aircraft::get_special_mount_rot(int idx)
 
 void aircraft::set_special_visible(int idx, bool visible)
 {
-    if (idx >= 0 && idx < m_special_mount.size())
+    if (idx < 0)
+    {
+        for (auto &s: m_special_mount)
+            s.visible = visible;
+    }
+    else if (idx < m_special_mount.size())
         m_special_mount[idx].visible = visible;
 }
 
