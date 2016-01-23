@@ -192,8 +192,8 @@ void menu::send_sub_events(const entry &e)
     if (!e.sub_event.empty() && e.sub_selected < e.sub_select.size())
         send_event(e.sub_event + '=' + e.sub_select[e.sub_selected].second);
 
-    for (auto &e: e.sub_events)
-        send_event(e);
+    for (auto &se: e.sub_events)
+        send_event(se);
 }
 
 //------------------------------------------------------------
