@@ -574,7 +574,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             if (dist < 12000.0f) //ToDo
             {
                 if (fp == targets.end())
-                    fp = targets.insert(targets.end(), {p});
+                    fp = targets.insert(targets.end(), {p, false});
 
                 if (special_weapon) //ToDo
                 {
