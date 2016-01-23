@@ -23,7 +23,7 @@ uniform sampler2D base;
 
 void main( void )
 {
-	const mat3 gaussianCoef = mat3(1.0,2.0,1.0,2.0,4.0,2.0,1.0,2.0,1.0);
+	mat3 gaussianCoef = mat3(1.0,2.0,1.0,2.0,4.0,2.0,1.0,2.0,1.0);
 
     vec2 texCoord = tc-iwh;
 	vec4 result = vec4(0.0);
