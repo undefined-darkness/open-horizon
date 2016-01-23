@@ -196,7 +196,7 @@ float world::get_height(float x, float z) const
     const int hpp = (hpw-1)/quads_per_patch;
     const float *h = &m_heights[h_idx+(qidx_x + qidx_z * hpw)*hpp];
 
-    const uint hhpw = hquads_per_quad*hquads_per_quad+1;
+    const unsigned int hhpw = hquads_per_quad*hquads_per_quad+1;
 
     const int hidx_x = idx_x - tmp_idx_x * hquads_per_quad;
     const int hidx_z = idx_z - tmp_idx_z * hquads_per_quad;

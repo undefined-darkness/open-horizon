@@ -21,6 +21,11 @@
 
 #include "shared.h"
 
+#ifdef min
+#undef min
+#undef max
+#endif
+
 namespace renderer
 {
 //------------------------------------------------------------
@@ -50,16 +55,16 @@ public:
 
 struct fhm_location_load_data
 {
-    unsigned char height_patches[location_size * location_size] = {0};
+    unsigned char height_patches[location_size * location_size];
     std::vector<float> heights;
 
-    unsigned char patches[location_size * location_size] = {0};
+    unsigned char patches[location_size * location_size];
     std::vector<unsigned char> tex_indices_data;
 
     std::vector<unsigned int> textures;
 
-    uint tree_types_count = 0;
-    struct tree_info { uint idx, offset, count = 0; };
+    unsigned int tree_types_count = 0;
+    struct tree_info { unsigned int idx, offset, count = 0; };
     std::vector<tree_info> tree_patches[location_size * location_size];
     std::vector<nya_math::vec2> tree_positions;
 };
@@ -927,19 +932,6 @@ bool fhm_location::read_wpdc(memory_reader &reader, fhm_location_load_data &load
 
 bool fhm_location::read_mptx(memory_reader &reader)
 {
-    auto &p = m_map_parts_material.get_default_pass();
-    p.set_shader("shaders/map_parts.nsh");
-    p.get_state().set_cull_face(true);
-
-    m_map_parts_color_texture.create();
-    m_map_parts_material.set_texture("color", m_map_parts_color_texture);
-    m_map_parts_diffuse_texture.create();
-    m_map_parts_material.set_texture("diffuse", m_map_parts_diffuse_texture);
-    m_map_parts_specular_texture.create();
-    m_map_parts_material.set_texture("specular", m_map_parts_specular_texture);
-    m_map_parts_tr.create();
-    m_map_parts_material.set_param_array(m_map_parts_material.get_param_idx("transform"), m_map_parts_tr);
-
     struct tex_header
     {
         uint id;
@@ -990,6 +982,22 @@ bool fhm_location::read_mptx(memory_reader &reader)
     assume(header.zero4[0] == 0 && header.zero4[1] == 0 && header.zero4[2] == 0);
     assume(header.zero5 == 0);
     assume(header.zero6 == 0);
+
+    if (!header.vert_count || !header.instances_count)
+        return true;
+
+    auto &p = m_map_parts_material.get_default_pass();
+    p.set_shader("shaders/map_parts.nsh");
+    p.get_state().set_cull_face(true);
+
+    m_map_parts_color_texture.create();
+    m_map_parts_material.set_texture("color", m_map_parts_color_texture);
+    m_map_parts_diffuse_texture.create();
+    m_map_parts_material.set_texture("diffuse", m_map_parts_diffuse_texture);
+    m_map_parts_specular_texture.create();
+    m_map_parts_material.set_texture("specular", m_map_parts_specular_texture);
+    m_map_parts_tr.create();
+    m_map_parts_material.set_param_array(m_map_parts_material.get_param_idx("transform"), m_map_parts_tr);
 
     const bool transparent = header.material_params[1] > 0;
 

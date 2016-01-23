@@ -9,6 +9,10 @@
 #include "util/half.h"
 #include "render/platform_specific_gl.h"
 
+#ifdef min
+#undef min
+#endif
+
 namespace gui
 {
 //------------------------------------------------------------

@@ -118,6 +118,7 @@
     <ClCompile Include="../renderer/location_params.cpp" />
     <ClCompile Include="../renderer/model.cpp" />
     <ClCompile Include="../renderer/plane_camera.cpp" />
+    <ClCompile Include="../renderer/particles.cpp" />
     <ClCompile Include="../renderer/scene.cpp" />
     <ClCompile Include="../renderer/shared.cpp" />
     <ClCompile Include="../renderer/sky.cpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="../renderer/location_params.h" />
     <ClInclude Include="../renderer/model.h" />
     <ClInclude Include="../renderer/plane_camera.h" />
+    <ClInclude Include="../renderer/particles.h" />
     <ClInclude Include="../renderer/scene.h" />
     <ClInclude Include="../renderer/shared.h" />
     <ClInclude Include="../renderer/sky.h" />

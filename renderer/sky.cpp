@@ -24,12 +24,12 @@ public:
         {
             float radius;
             float height;
-            uint zero[2];
+            uint32_t zero[2];
 
             color colors[24];
-            uint zero2[2];
+            uint32_t zero2[2];
             color colors2[3];
-            uint zero3;
+            uint32_t zero3;
 
             //color colors[30];
 
@@ -43,7 +43,7 @@ public:
 
         memcpy(&data, r.get_data(), r.get_size());
 
-        for (uint i = 0; i < sizeof(data)/sizeof(uint32_t); ++i)
+        for (size_t i = 0; i < sizeof(data)/sizeof(uint32_t); ++i)
             ((uint32_t *)&data)[i] = swap_bytes(((uint32_t *)&data)[i]);
 
         for (auto &d: data)
@@ -164,8 +164,8 @@ void sky_mesh::release()
 
 bool sun_mesh::init()
 {
-    auto texture = shared::get_texture(shared::load_texture("Map/sun.nut"));
-    auto tex_data = texture.internal().get_shared_data();
+    auto &texture = shared::get_texture(shared::load_texture("Map/sun.nut"));
+    auto &tex_data = texture.internal().get_shared_data();
     if (!tex_data.is_valid())
         return false;
 
