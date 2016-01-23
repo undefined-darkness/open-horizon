@@ -85,7 +85,7 @@ public:
 
     bool should_terminate()
     {
-        return m_window ? glfwWindowShouldClose(m_window) : true;
+        return m_window ? glfwWindowShouldClose(m_window) > 0 : true;
     }
 
     void end_frame()
@@ -114,8 +114,8 @@ public:
     }
 
     bool get_key(int key) { auto k = m_buttons.find(key); return k == m_buttons.end() ? false : k->second; }
-    bool get_mouse_lbtn() { return m_window ? glfwGetMouseButton(m_window, 0) : false; }
-    bool get_mouse_rbtn() { return m_window ? glfwGetMouseButton(m_window, 1) : false; }
+    bool get_mouse_lbtn() { return m_window ? glfwGetMouseButton(m_window, 0) > 0 : false; }
+    bool get_mouse_rbtn() { return m_window ? glfwGetMouseButton(m_window, 1) > 0 : false; }
     int get_mouse_x() { return m_mouse_x; }
     int get_mouse_y() { return m_mouse_y; }
     int get_width() { return m_screen_w; }

@@ -57,7 +57,7 @@ private:
 
         res_data(qdf_archive &a, int i): arch(a), idx(i) {}
 
-        size_t get_size() { return arch.get_file_size(idx); }
+        size_t get_size() { return (size_t)arch.get_file_size(idx); }
         bool read_all(void*data) { return arch.read_file_data(idx, data); }
         bool read_chunk(void *data, size_t size, size_t offset = 0)
         {

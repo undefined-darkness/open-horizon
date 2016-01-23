@@ -97,10 +97,10 @@ private:
         }
 
         size_t get_size() { return entry.get_file_size(idx); }
-        bool read_all(void*data) { return memcpy(data, entry.get_file_data(idx), get_size()); }
+        bool read_all(void*data) { return memcpy(data, entry.get_file_data(idx), get_size()) != 0; }
         bool read_chunk(void *data, size_t size, size_t offset = 0)
         {
-            return memcpy(data, (char *)entry.get_file_data(idx) + offset, size);
+            return memcpy(data, (char *)entry.get_file_data(idx) + offset, size) != 0;
         }
 
         void release() { buf.free(); delete this; }
