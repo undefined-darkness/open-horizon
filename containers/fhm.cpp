@@ -9,14 +9,22 @@
 
 bool fhm_file::open(const char *name)
 {
+    return open(nya_resources::get_resources_provider().access(name));
+}
+
+//------------------------------------------------------------
+
+bool fhm_file::open(nya_resources::resource_data *data)
+{
     close();
 
-    m_data = nya_resources::get_resources_provider().access(name);
-    if (!m_data)
+    if (!data)
     {
         nya_resources::log()<<"unable to open fhm file\n";
         return false;
     }
+
+    m_data = data;
 
     fhm_header header;
     m_data->read_chunk(&header, sizeof(header), 0);

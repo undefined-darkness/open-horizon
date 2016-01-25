@@ -14,6 +14,7 @@ class fhm_file
 {
 public:
     bool open(const char *name);
+    bool open(nya_resources::resource_data *data);
     void close();
 
     int get_chunks_count() const { return int(m_chunks.size()); }

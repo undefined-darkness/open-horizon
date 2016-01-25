@@ -145,6 +145,7 @@ bool fhm_mesh::load(const char *file_name)
         }
     }
 
+    fhm.close();
     return true;
 }
 
@@ -331,6 +332,7 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
         ++mat_idx;
     }
 
+    m.close();
     return true;
 }
 

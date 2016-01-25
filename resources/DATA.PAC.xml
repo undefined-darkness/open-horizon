@@ -2,6 +2,9 @@
 
 <entry idx="1" sub="0" name="target/Information/AircraftInformation.AIN"/>
 
+<entry idx="7" name="Map/ms50.fhm"/>
+<entry idx="8" name="Map/ms50_mpt.fhm"/>
+
 <path name="model_id/tdb/mech/plyr/p_yf23/"/>
 <entry idx="17" sub="10" name="00/p_yf23_00_amb.img"/>
 <entry idx="17" sub="11" name="00/p_yf23_00_nor.img"/>

@@ -619,7 +619,6 @@ bool fhm_location::load(const char *fileName, const location_params &params)
         m.set_param(m.get_param_idx("fog height"), fog_height);
     }
 
-
     auto &m = m_land_material;
     m.set_param(m.get_param_idx("light dir"), light_dir);
     m.set_param(m.get_param_idx("fog color"), fog_color);
@@ -658,6 +657,7 @@ bool fhm_location::load(const char *fileName, const location_params &params)
         }
     }
 */
+    fhm.close();
     return true;
 }
 
@@ -1055,8 +1055,10 @@ bool fhm_location::read_mptx(memory_reader &reader)
     const int bpp = int(reader.get_remained() / (header.vert_count * header.instances_count));
     assume(bpp == 4 || bpp == 8 || bpp == 12 || bpp == 0);
 
-    assume(header.vert_format == 4865 || header.vert_format == 8449 || header.vert_format == 8961);
+    assume(header.vert_format == 4353 || header.vert_format == 4865
+           || header.vert_format == 8449 || header.vert_format == 8961);
 
+    assert((header.vert_format == 4353 && bpp == 0) || (header.vert_format != 4353 && bpp != 0));
     assert((header.vert_format == 4865 && bpp == 4) || (header.vert_format != 4865 && bpp != 4));
     assert((header.vert_format == 8449 && bpp == 8) || (header.vert_format != 8449 && bpp != 8));
     assert((header.vert_format == 8961 && bpp == 12) || (header.vert_format != 8961 && bpp != 12));

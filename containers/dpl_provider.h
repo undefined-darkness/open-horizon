@@ -18,8 +18,13 @@ public:
     {
         for (auto &e:m_entries)
         {
-            if (e.name == resource_name)
-                return new res_data(m_archive, e.idx, e.sub);
+            if (e.name != resource_name)
+                continue;
+
+            if (e.sub >= 0)
+                return new sub_data(m_archive, e.idx, e.sub);
+
+            return new res_data(m_archive, e.idx);
         }
 
         return 0;
@@ -69,7 +74,7 @@ public:
                 entry e;
                 e.name = curr_path + object.attribute("name").as_string("");
                 e.idx = object.attribute("idx").as_int();
-                e.sub = object.attribute("sub").as_int();
+                e.sub = object.attribute("sub").as_int(-1);
                 m_entries.push_back(e);
             }
         }
@@ -85,24 +90,31 @@ private:
 
     struct res_data: nya_resources::resource_data
     {
-        dpl_entry entry;
-        int idx;
         nya_memory::tmp_buffer_ref buf;
 
-        res_data(dpl_file &a, int i, int s): idx(s), entry(0, 0)
+        res_data(dpl_file &a, int i) { buf.allocate(a.get_file_size(i)); a.read_file_data(i, buf.get_data()); }
+        size_t get_size() { return buf.get_size(); }
+        bool read_all(void*data) { return buf.copy_to(data, buf.get_size()); }
+        bool read_chunk(void *data, size_t size, size_t offset = 0) { return buf.copy_to(data, size, offset); }
+        void release() { buf.free(); delete this; }
+    };
+
+    struct sub_data: nya_resources::resource_data
+    {
+        nya_memory::tmp_buffer_ref buf;
+
+        sub_data(dpl_file &a, int i, int s)
         {
-            buf.allocate(a.get_file_size(i));
-            a.read_file_data(i, buf.get_data());
-            entry = dpl_entry(buf.get_data(), (uint32_t)buf.get_size());
+            fhm_file f;
+            f.open(new res_data(a, i));
+            buf.allocate(f.get_chunk_size(s));
+            f.read_chunk_data(s, buf.get_data());
+            f.close();
         }
 
-        size_t get_size() { return entry.get_file_size(idx); }
-        bool read_all(void*data) { return memcpy(data, entry.get_file_data(idx), get_size()) != 0; }
-        bool read_chunk(void *data, size_t size, size_t offset = 0)
-        {
-            return memcpy(data, (char *)entry.get_file_data(idx) + offset, size) != 0;
-        }
-
+        size_t get_size() { return buf.get_size(); }
+        bool read_all(void*data) { return buf.copy_to(data, buf.get_size()); }
+        bool read_chunk(void *data, size_t size, size_t offset = 0) { return buf.copy_to(data, size, offset); }
         void release() { buf.free(); delete this; }
     };
 };

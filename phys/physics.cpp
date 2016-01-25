@@ -50,6 +50,8 @@ void world::set_location(const char *name)
     fhm.read_chunk_data(5, &m_heights[0]);
 
     //ToDo: collision meshes
+
+    fhm.close();
 }
 
 //------------------------------------------------------------

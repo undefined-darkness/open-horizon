@@ -3,7 +3,6 @@
 //
 
 #include "dpl.h"
-#include "fhm.h"
 #include "dpl_keys.h"
 #include "memory/tmp_buffer.h"
 #include "memory/memory_reader.h"
@@ -114,9 +113,10 @@ bool dpl_file::open(const char *name)
             assert(s.idx <= h.unknown_struct_count);
         }
 
+        m_infos[i].header = h;
         m_infos[i].offset = e.offset;
         m_infos[i].size = e.size;
-        m_infos[i].unpacked_size = m_archieved ? h.size : e.size;
+        m_infos[i].unpacked_size = m_archieved ? h.size + sizeof(fhm_file::fhm_header) : e.size;
         m_infos[i].key = e.key;
     }
 
@@ -182,6 +182,9 @@ bool dpl_file::read_file_data(int idx, void *data) const
     if (!m_archieved)
         return m_data->read_chunk(data, e.size, (size_t)e.offset);
 
+    memcpy(data, &e.header, sizeof(e.header));
+    data = (char *)data + sizeof(e.header);
+
     nya_memory::tmp_buffer_scoped buf(e.size);
     if (!m_data->read_chunk(buf.get_data(), e.size, (size_t)e.offset))
         return false;
@@ -230,46 +233,6 @@ bool dpl_file::read_file_data(int idx, void *data) const
     }
 
     return true;
-}
-
-//------------------------------------------------------------
-
-void dpl_entry::read_entries(uint32_t offset)
-{
-    if (!m_data)
-        return;
-
-    assert(offset < m_size);
-    nya_memory::memory_reader reader((char *)m_data + offset, m_size - offset);
-
-    uint32_t count = reader.read<uint32_t>();
-    for (uint32_t i = 0; i < count; ++i)
-    {
-        reader.seek(4 + 8 * i);
-
-        uint32_t has_childs = reader.read<uint32_t>();
-        uint32_t entry_offset = reader.read<uint32_t>();
-
-        assert(has_childs == 0 || has_childs == 1);
-
-        if (has_childs > 0)
-        {
-            read_entries(offset + entry_offset);
-            continue;
-        }
-
-        reader.seek(entry_offset);
-
-        auto unknown = reader.read<uint16_t>();
-        assert(unknown<32);
-        auto unknown2 = reader.read<uint16_t>();
-        assert(unknown2<16);
-        auto unknown_pot = reader.read<uint32_t>();
-        assert(unknown_pot == 16 || unknown_pot == 128 || unknown_pot == 4096);
-        auto off = reader.read<uint32_t>();
-        auto size = reader.read<uint32_t>();
-        m_entries.push_back(std::make_pair(off, size));
-    }
 }
 
 //------------------------------------------------------------
