@@ -3,6 +3,7 @@
 //
 
 #include "dpl.h"
+#include "fhm.h"
 #include "dpl_keys.h"
 #include "memory/tmp_buffer.h"
 #include "memory/memory_reader.h"
@@ -59,23 +60,8 @@ bool dpl_file::open(const char *name)
 
     m_infos.resize(header.infos_count);
 
-    struct fhm_entry
+    struct entry
     {
-        char sign[4];
-        uint32_t byte_order_20101010;
-        uint32_t flags;
-        uint32_t unknown_struct_count;
-
-        // next block zero if not arch
-        uint32_t arch_unknown;
-        uint32_t arch_unpacked_size;
-        uint32_t arch_unknown3;
-        uint32_t arch_unknown4;
-        uint32_t arch_unknown5;
-        uint32_t arch_unknown_16;
-        uint32_t arch_unknown_pot;
-        uint32_t arch_unknown_pot2;
-
         uint64_t offset;
         uint32_t size;
         uint32_t idx;
@@ -92,27 +78,31 @@ bool dpl_file::open(const char *name)
 
     for (uint32_t i = 0; i < header.infos_count; ++i)
     {
-        fhm_entry e = r.read<fhm_entry>();
+        fhm_file::fhm_header h = r.read<fhm_file::fhm_header>();
+        entry e = r.read<entry>();
 
-        assert(memcmp(e.sign, "FHM", 3) == 0);
+        assert(h.check_sign());
 
-        const bool byte_order = e.byte_order_20101010 != 20101010;
+        const bool byte_order = h.wrong_byte_order();
         assert(byte_order == m_byte_order);
         if (byte_order)
         {
+            for (uint32_t j = 1; j < sizeof(h) / 4; ++j)
+                ((uint32_t *)&h)[j] = swap_bytes(((uint32_t *)&h)[j]);
+
             for (uint32_t j = 1; j < sizeof(e) / 4; ++j)
                 ((uint32_t *)&e)[j] = swap_bytes(((uint32_t *)&e)[j]);
 
             std::swap(((uint32_t *)&e.offset)[0], ((uint32_t *)&e.offset)[1]);
         }
 
-        assert(e.byte_order_20101010 == 20101010);
-        assert(e.flags == header.flags);
+        assert(h.byte_order_20101010 == 20101010);
+        assert(h.flags == header.flags);
         //assert(e.idx == (m_archieved ? i+10000 : i));
         assert(e.offset+e.size <= (uint64_t)m_data->get_size());
         //assert(e.arch_unknown_16 == (m_archieved ? 16 : 0));
 
-        for (uint32_t j = 0; j < e.unknown_struct_count; ++j)
+        for (uint32_t j = 0; j < h.unknown_struct_count; ++j)
         {
             unknown_struct s = r.read<unknown_struct>();
             if (byte_order)
@@ -121,12 +111,12 @@ bool dpl_file::open(const char *name)
                     ((uint32_t *)&s)[j] = swap_bytes(((uint32_t *)&s)[j]);
             }
 
-            assert(s.idx <= e.unknown_struct_count);
+            assert(s.idx <= h.unknown_struct_count);
         }
 
         m_infos[i].offset = e.offset;
         m_infos[i].size = e.size;
-        m_infos[i].unpacked_size = m_archieved ? e.arch_unpacked_size : e.size;
+        m_infos[i].unpacked_size = m_archieved ? h.size : e.size;
         m_infos[i].key = e.key;
     }
 

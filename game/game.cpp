@@ -314,7 +314,7 @@ void plane::reset_state()
 
     //render->reset_state(); //ToDo
 
-    render->set_special_visible(-1, special_weapon);
+    render->set_special_visible(-1, true);
 
     need_fire_missile = false;
     rocket_bay_time = 0;
