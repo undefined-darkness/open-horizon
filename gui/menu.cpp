@@ -210,7 +210,7 @@ void menu::set_screen(const std::string &screen)
         add_entry(L"Deathmatch", {"mode=dm", "screen=map_select"});
         add_entry(L"Team deathmatch", {"mode=tdm", "screen=map_select"});
         add_entry(L"Free flight", {"mode=ff", "screen=map_select"});
-        //add_entry(L"Aircraft viewer", {"mode=none", "screen=ac_view"});
+        add_entry(L"Aircraft viewer", {"mode=none", "screen=ac_view"});
         add_entry(L"Exit", {"exit"});
     }
     else if (screen == "map_select")
@@ -282,13 +282,11 @@ void menu::set_screen(const std::string &screen)
             add_entry(L"Su-25", {"ac=su25"});
             add_entry(L"Su-34", {"ac=su34"});
             add_entry(L"Tornado GR4", {"ac=tnd4"});
+            add_entry(L"YF23", {"ac=yf23"});
+            add_entry(L"FA44", {"ac=fa44"});
         }
 
         /*
-        //no anims
-        add_entry(L"YF23", {"ac=yf23"});
-        add_entry(L"FA44", {"ac=fa44"});
-
         //helicopters are not yet supported
         add_entry(L"AH64", {"ac=ah64"});
         add_entry(L"MI24", {"ac=mi24"});
@@ -339,6 +337,7 @@ void menu::set_screen(const std::string &screen)
         //add_sub_entry(L"MH-60", "mh60");
         //add_sub_entry(L"AC-130", "a130");
         //ToDo
+        
 
         add_entry(L"Color: ", {""}, "color", {"viewer_update_color"});
 

@@ -49,7 +49,7 @@ public:
     };
 
 private:
-    bool read_chunks_info(size_t base_offset);
+    bool read_chunks_info(size_t base_offset, int nesting, int &group);
 
     struct chunk
     {

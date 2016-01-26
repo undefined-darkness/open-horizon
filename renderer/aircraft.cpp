@@ -324,9 +324,6 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     if (m_mesh.get_lods_count() == 11) //ToDo: aircraft configs
         m_engine_lod_idx = 3;
 
-    if (name_str == "p_su37")
-        m_engine_lod_idx = 2;
-
     if (player)
     {
         auto amb_name = tex_pref + name_str + "/00/" + name_str + "_00_amb.img";

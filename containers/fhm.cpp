@@ -9,6 +9,7 @@
 
 bool fhm_file::open(const char *name)
 {
+    //printf("\n\nfhm %s\n", name);
     return open(nya_resources::get_resources_provider().access(name));
 }
 
@@ -38,14 +39,16 @@ bool fhm_file::open(nya_resources::resource_data *data)
     assert(!header.wrong_byte_order()); //ToDo
     assert(header.size + sizeof(header) == m_data->get_size()); //assumption
 
-    read_chunks_info(sizeof(header));
+    int group = 0;
+    read_chunks_info(sizeof(header), 0, group);
     return true;
 }
 
 //------------------------------------------------------------
 
-bool fhm_file::read_chunks_info(size_t base_offset)
+bool fhm_file::read_chunks_info(size_t base_offset, int nesting, int &group)
 {
+    const int g = group++;
     unsigned int chunks_count = 0;
     m_data->read_chunk(&chunks_count, 4, base_offset);
 
@@ -58,7 +61,7 @@ bool fhm_file::read_chunks_info(size_t base_offset)
 
         if (nested == 1)
         {
-            read_chunks_info(offset + base_offset);
+            read_chunks_info(offset + base_offset, nesting + 1, group);
             continue;
         }
 
@@ -82,6 +85,8 @@ bool fhm_file::read_chunks_info(size_t base_offset)
         c.type = 0;
         if (c.size >= 4)
             m_data->read_chunk(&c.type, 4, c.offset);
+
+        //for(int j=0;j<nested;++j) printf("\t"); printf("chunk %d %d %c%c%c%c %d\n", nested, g, ((char *)&c.type)[0], ((char *)&c.type)[1], ((char *)&c.type)[2], ((char *)&c.type)[3], c.type);
 
         m_chunks.push_back(c);
 

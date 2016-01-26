@@ -11,6 +11,8 @@
 
 class memory_reader;
 struct fhm_mesh_load_data;
+struct fhm_mnt;
+struct fhm_mop2;
 
 //------------------------------------------------------------
 
@@ -40,13 +42,14 @@ public:
         set_texture(lod_idx,semantics,nya_scene::texture(file_name));
     }
 
-    int get_lods_count() const { return (int)lods.size(); }
-    nya_scene::mesh &get_mesh(int lod_idx) { assert(lod_idx>=0 && lod_idx < lods.size()); return lods[lod_idx].mesh; }
+    int get_lods_count() const { return (int)m_lods.size(); }
+    nya_scene::mesh &get_mesh(int lod_idx) { assert(lod_idx>=0 && lod_idx < m_lods.size()); return m_lods[lod_idx].mesh; }
 
 protected:
-    bool read_mnt(memory_reader &reader, fhm_mesh_load_data &load_data);
-    bool read_mop2(memory_reader &reader, fhm_mesh_load_data &load_data);
-    bool read_ndxr(memory_reader &reader, fhm_mesh_load_data &load_data);
+    bool read_mnt(memory_reader &reader, fhm_mnt &mnt);
+    bool read_mop2(memory_reader &reader, fhm_mnt &mnt, fhm_mop2 &mop2);
+    struct lod;
+    bool read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mop2 &mop2, lod &l);
 
 protected:
     typedef unsigned int uint;
@@ -97,7 +100,7 @@ protected:
         std::map<uint, anim> anims;
     };
 
-    std::vector<lod> lods;
+    std::vector<lod> m_lods;
 
 protected:
     nya_math::vec3 m_pos;

@@ -5,6 +5,12 @@
 <entry idx="7" name="Map/ms50.fhm"/>
 <entry idx="8" name="Map/ms50_mpt.fhm"/>
 
+<!--
+<entry idx="77" name="model_id/mech/plyr/p_su37/p_su37_pcom.fhm"/>
+<entry idx="17" name="model_id/mech/plyr/p_yf23/p_yf23_pcom.fhm"/>
+<entry idx="62" name="model_id/mech/plyr/p_fa44/p_fa44_pcom.fhm"/>
+-->
+
 <path name="model_id/tdb/mech/plyr/p_yf23/"/>
 <entry idx="17" sub="10" name="00/p_yf23_00_amb.img"/>
 <entry idx="17" sub="11" name="00/p_yf23_00_nor.img"/>
