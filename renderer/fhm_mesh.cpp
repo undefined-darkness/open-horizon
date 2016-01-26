@@ -101,7 +101,7 @@ bool fhm_mesh::load(const char *file_name)
         }
     }
 
-    const bool single_mnt = mnt_count == 1;
+    const bool single_mnt = mnt_count == 1, no_mnt = !mnt_count;
 
     int lods_count = 0;
     for (int j = ndxr_offset; j < fhm.get_chunks_count(); ++j)
@@ -113,7 +113,7 @@ bool fhm_mesh::load(const char *file_name)
         }
         else
         {
-            if (!single_mnt && mnt_count > 0)
+            if (!single_mnt && !no_mnt)
                 assert(sign == '\0TNM');
             break;
         }
@@ -127,7 +127,7 @@ bool fhm_mesh::load(const char *file_name)
 
         int offsets[] = { lods_count, lods_count * 2, 0 };
         int signs[] = { '\0TNM', '2POM', 'RXDN' };
-        for (int i = single_mnt ? 2 : 0; i < 3; ++i)
+        for (int i = (single_mnt || no_mnt) ? 2 : 0; i < 3; ++i)
         {
             for (int j = 0; j < lods_count; ++j)
             {
