@@ -6,4 +6,4 @@
 	url = https://github.com/glfw/glfw
 [submodule "deps/asio"]
 	path = deps/asio
-	url = http://github.com/chriskohlhoff/asio
+	url = https://github.com/chriskohlhoff/asio
