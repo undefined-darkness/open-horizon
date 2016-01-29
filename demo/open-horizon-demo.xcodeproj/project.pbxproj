@@ -11,6 +11,7 @@
 		F503E52419048E2D00C3590A /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52319048E2D00C3590A /* libglfw3.a */; };
 		F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52519048E5000C3590A /* OpenGL.framework */; };
 		F503E52919048E7300C3590A /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52819048E7300C3590A /* IOKit.framework */; };
+		F504CB1E1C5B9FA200FBB72D /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F504CB1C1C5B9FA200FBB72D /* network.cpp */; };
 		F50BFC621C53BBCB000B8500 /* sky.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50BFC601C53BBCB000B8500 /* sky.cpp */; };
 		F50DADAC1C3047D5000DD3EA /* hangar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50DADAA1C3047D5000DD3EA /* hangar.cpp */; };
 		F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53304C61B09DEC300D8C3C7 /* menu.cpp */; };
@@ -97,6 +98,8 @@
 		F503E52319048E2D00C3590A /* libglfw3.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libglfw3.a; path = "../deps/glfw-bin/lib/libglfw3.a"; sourceTree = "<group>"; };
 		F503E52519048E5000C3590A /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		F503E52819048E7300C3590A /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		F504CB1C1C5B9FA200FBB72D /* network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network.cpp; path = ../game/network.cpp; sourceTree = "<group>"; };
+		F504CB1D1C5B9FA200FBB72D /* network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network.h; path = ../game/network.h; sourceTree = "<group>"; };
 		F50BFC601C53BBCB000B8500 /* sky.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sky.cpp; path = ../renderer/sky.cpp; sourceTree = "<group>"; };
 		F50BFC611C53BBCB000B8500 /* sky.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sky.h; path = ../renderer/sky.h; sourceTree = "<group>"; };
 		F50DADAA1C3047D5000DD3EA /* hangar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hangar.cpp; path = ../game/hangar.cpp; sourceTree = "<group>"; };
@@ -292,6 +295,8 @@
 				F59AB5911AFA389500137527 /* game.h */,
 				F50DADAA1C3047D5000DD3EA /* hangar.cpp */,
 				F50DADAB1C3047D5000DD3EA /* hangar.h */,
+				F504CB1C1C5B9FA200FBB72D /* network.cpp */,
+				F504CB1D1C5B9FA200FBB72D /* network.h */,
 				F5A2A2E31B05466C009765C1 /* team_deathmatch.cpp */,
 				F5A2A2DF1B05466C009765C1 /* team_deathmatch.h */,
 			);
@@ -486,6 +491,7 @@
 				F5A2A2E61B05466C009765C1 /* free_flight.cpp in Sources */,
 				F59AB5A81AFA4F1800137527 /* fhm_location.cpp in Sources */,
 				F5A2A2DC1AFE86E4009765C1 /* hud.cpp in Sources */,
+				F504CB1E1C5B9FA200FBB72D /* network.cpp in Sources */,
 				F5C6D3921AF969A5006FB7E6 /* fhm.cpp in Sources */,
 				F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */,
 				F578323E1AFBE859005FE829 /* ui.cpp in Sources */,
@@ -541,6 +547,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
+					ASIO_STANDALONE,
 					"$(inherited)",
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -554,7 +561,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SYMROOT = ../bin/;
-				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../";
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../deps/asio/asio/include/ ../";
 			};
 			name = Debug;
 		};
@@ -580,6 +587,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_NS_ASSERTIONS = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = ASIO_STANDALONE;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -590,7 +598,7 @@
 				OBJROOT = ../obj/;
 				SDKROOT = macosx;
 				SYMROOT = ../bin/;
-				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../";
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../deps/asio/asio/include/ ../";
 			};
 			name = Release;
 		};

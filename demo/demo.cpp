@@ -392,11 +392,23 @@ private:
 
 //------------------------------------------------------------
 
+#include "game/network.h"
+
 int main(void)
 {
 #ifndef _WIN32
     chdir(nya_system::get_app_path());
 #endif
+
+    std::string data;
+    game::http_get("www.boost.org","/LICENSE_1_0.txt", data);
+
+    game::servers_list sl;
+    sl.register_server();
+    sl.request_update();
+
+    game::servers_list::list l;
+    sl.get_list(l);
 
     qdf_resources_provider qdfp;
     if (!qdfp.open_archive("datafile.qdf"))

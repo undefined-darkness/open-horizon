@@ -37,7 +37,7 @@ void menu::draw(const render &r)
 
     if (m_screens.back() == "main")
         m_bkg.draw_tx(r, 0, 0, sr, white);
-    else if (m_screens.back() == "map_select")
+    else if (m_screens.back() == "map_select" || m_screens.back() == "mp" || m_screens.back() == "mp_create")
         m_bkg.draw_tx(r, 0, 2, sr, white);
     else if (m_screens.back() == "ac_select" || m_screens.back() == "color_select")
         m_bkg.draw_tx(r, 0, 1, sr, white);
@@ -210,8 +210,38 @@ void menu::set_screen(const std::string &screen)
         add_entry(L"Deathmatch", {"mode=dm", "screen=map_select"});
         add_entry(L"Team deathmatch", {"mode=tdm", "screen=map_select"});
         add_entry(L"Free flight", {"mode=ff", "screen=map_select"});
+        add_entry(L"Multiplayer", {"screen=mp"});
         add_entry(L"Aircraft viewer", {"mode=none", "screen=ac_view"});
         add_entry(L"Exit", {"exit"});
+    }
+    else if (screen == "mp")
+    {
+        m_title = L"MULTIPLAYER";
+        add_entry(L"Internet servers", {"screen=mp_inet"});
+        add_entry(L"Local network servers", {"screen=mp_local"});
+        add_entry(L"Connect to ip", {"screen=mp_connect_ip"});
+        add_entry(L"Start server", {"screen=mp_create"});
+    }
+    else if (screen == "mp_create")
+    {
+        m_title = L"START SERVER";
+
+        add_entry(L"Game mode: ", {""}, "mode", {"mp_mode_updated"});
+        add_sub_entry(L"Free flight", "ff");
+
+        add_entry(L"Max players: any", {});
+
+        add_entry(L"Aircraft: ", {""}, "ac", {"update_ac"});
+        add_sub_entry(L"F-14D", "f14d");
+        add_sub_entry(L"Su-33", "su33");
+        add_sub_entry(L"B-01B", "b01b");
+
+        add_entry(L"Color: ", {""}, "color", {});
+
+        send_sub_events(*(m_entries.end() - 2));
+        send_sub_events(m_entries.back());
+
+        add_entry(L"Start", {"start"});
     }
     else if (screen == "map_select")
     {
@@ -328,7 +358,7 @@ void menu::set_screen(const std::string &screen)
 
         send_sub_events(m_entries.back());
 
-        add_entry(L"Aircraft: ", {""}, "ac", {"viewer_update_ac"});
+        add_entry(L"Aircraft: ", {""}, "ac", {"update_ac","viewer_update_ac"});
         add_sub_entry(L"F-14D", "f14d");
         add_sub_entry(L"Su-33", "su33");
         add_sub_entry(L"B-01B", "b01b");
@@ -368,7 +398,7 @@ void menu::send_event(const std::string &event)
         return;
     }
 
-    if (event == "viewer_update_ac")
+    if (event == "update_ac")
     {
         for (auto &e: m_entries)
         {
@@ -389,6 +419,7 @@ void menu::send_event(const std::string &event)
             }
             break;
         }
+        return;
     }
 
     if (m_on_action)
