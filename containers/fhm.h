@@ -6,6 +6,7 @@
 
 #include "resources/resources.h"
 #include <string.h>
+#include <stdint.h>
 #include <vector>
 
 //------------------------------------------------------------

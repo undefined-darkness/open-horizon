@@ -4,7 +4,9 @@
 
 #include "network.h"
 
+#define ASIO_STANDALONE
 #include "asio.hpp"
+
 #include <iostream>
 
 using asio::ip::tcp;

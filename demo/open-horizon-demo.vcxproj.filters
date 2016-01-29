@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -34,7 +34,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../game/hangar.cpp">
-        <Filter>Source Files</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../gui/ui.cpp">
       <Filter>Source Files</Filter>
@@ -73,7 +73,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../renderer/particles.cpp">
-        <Filter>Source Files</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="../renderer/scene.cpp">
       <Filter>Source Files</Filter>
@@ -108,6 +108,9 @@
     <ClCompile Include="..\renderer\missile_trail.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\game\network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\deps\pugixml-1.4\src\pugiconfig.hpp">
@@ -132,7 +135,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../game/hangar.h">
-        <Filter>Header Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../gui/ui.h">
       <Filter>Header Files</Filter>
@@ -171,7 +174,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../renderer/particles.h">
-        <Filter>Header Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../renderer/scene.h">
       <Filter>Header Files</Filter>
@@ -214,6 +217,9 @@
     </ClInclude>
     <ClInclude Include="..\renderer\missile_trail.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\network.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
