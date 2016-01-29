@@ -5,6 +5,7 @@ project(open_horizon)
 add_subdirectory(deps/nya-engine)
 include_directories(deps/nya-engine)
 include_directories(deps/pugixml-1.4/src)
+include_directories(deps/asio/asio/include)
 include_directories(.)
 
 define_source_files(demo)
