@@ -226,10 +226,20 @@ void menu::set_screen(const std::string &screen)
     {
         m_title = L"START SERVER";
 
-        add_entry(L"Game mode: ", {""}, "mode", {"mp_mode_updated"});
+        add_entry(L"Game mode: ", {}, "mode", {"mp_mode_updated"});
         add_sub_entry(L"Free flight", "ff");
 
-        add_entry(L"Max players: any", {});
+        send_sub_events(m_entries.back());
+
+        add_entry(L"Max players: -", {});
+
+        add_entry(L"Location: ", {}, "map", {});
+        add_sub_entry(L"Miami", "ms01");
+        add_sub_entry(L"Dubai", "ms06");
+        add_sub_entry(L"Honolulu", "ms51");
+        add_sub_entry(L"Beliy Base", "ms08x");
+
+        send_sub_events(m_entries.back());
 
         add_entry(L"Aircraft: ", {""}, "ac", {"update_ac"});
         add_sub_entry(L"F-14D", "f14d");
