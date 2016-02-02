@@ -3,16 +3,25 @@
 //
 
 #include "network.h"
-
-#define ASIO_STANDALONE
-#include "asio.hpp"
-
 #include <iostream>
-
-using asio::ip::tcp;
 
 namespace game
 {
+//------------------------------------------------------------
+
+static const int version = 1;
+const char *server_header = "Open-Horizon server";
+
+//------------------------------------------------------------
+
+inline std::string as_string(asio::streambuf &b)
+{
+    std::ostringstream ss;
+    ss << &b;
+    std::string s = ss.str();
+    return std::string(s.c_str());
+}
+
 //------------------------------------------------------------
 
 bool http_get(const char *url, const char *arg, std::string &data)
@@ -92,12 +101,44 @@ bool http_get(const char *url, const char *arg, std::string &data)
     while (!error)
     {
         asio::read(socket, response, asio::transfer_at_least(1), error);
-        std::ostringstream ss;
-        ss << &response;
-        data.append(ss.str());
+        data += as_string(response);
     }
 
     return error == asio::error::eof;
+}
+
+//------------------------------------------------------------
+
+static bool get_info(const std::string &s, server_info &info)
+{
+    if (s.compare(0, strlen(server_header), server_header) != 0)
+        return false;
+
+    std::istringstream ss(s.c_str() + strlen(server_header) + 1);
+    std::string tmp;
+    ss >> tmp;
+    if (tmp != "version")
+        return false;
+
+    ss >> info.version;
+
+    ss >> tmp;
+    if (tmp != "game_mode")
+        return false;
+
+    ss >> info.game_mode;
+
+    ss >> tmp;
+    if (tmp != "max_players")
+        return false;
+    
+    ss >> info.max_players;
+    
+    ss >> tmp;
+    if (tmp != "end")
+        return false;
+    
+    return true;
 }
 
 //------------------------------------------------------------
@@ -115,8 +156,19 @@ bool servers_list::request_update()
 
     std::stringstream ss(data);
     std::string to;
-    while(std::getline(ss,to,'\n'))
+    while (std::getline(ss,to,'\n'))
         m_list.push_back(to);
+
+    for (auto &l: m_list)
+    {
+        asio::error_code error;
+        asio::io_service service;
+        tcp::socket socket(service);
+
+        //asio::connect(socket, tcp::endpoint(asio::ip::address::from_string(l), port), error);
+        if (error)
+            continue;
+    }
 
     //ToDo: check servers
 
@@ -143,6 +195,190 @@ bool servers_list::is_ready() const
 void servers_list::get_list(std::vector<std::string> &list) const
 {
     list = m_list;
+}
+
+//------------------------------------------------------------
+
+bool network_server::open(short port, const char *game_mode, int max_players)
+{
+    if (m_acceptor)
+        return false;
+
+    if (!game_mode)
+        return false;
+
+    m_header = server_header;
+    m_header.append(" version ").append(std::to_string(version));
+    m_header.append(" game_mode ").append(game_mode);
+    m_header.append(" max_players ").append(std::to_string(max_players));
+    m_header.append(" end\n");
+
+    //self-check
+    server_info i;
+    if (!get_info(m_header, i))
+        return false;
+
+    m_max_players = max_players;
+
+    try { m_acceptor = new tcp::acceptor(m_service, tcp::endpoint(tcp::v4(), port)); }
+    catch (asio::system_error &e) { return false; }
+
+    new_client_wait();
+    m_thread = std::thread([&]() { try { m_service.run(); } catch (asio::system_error &e) {} });
+    return true;
+}
+
+//------------------------------------------------------------
+
+void network_server::new_client_wait()
+{
+    if (!m_acceptor)
+        return;
+
+    client *c = new client(m_service);
+    m_acceptor->async_accept(c->m_socket, std::bind(&network_server::handle_accept, this, c, std::placeholders::_1));
+}
+
+//------------------------------------------------------------
+
+void network_server::handle_accept(client* c, asio::error_code error)
+{
+    if (!error)
+    {
+        asio::write(c->m_socket, asio::buffer(m_header), error);
+        if (!error)
+        {
+            asio::streambuf b;
+            asio::read_until(c->m_socket, b, "\n", error);
+            if (!error)
+            {
+                auto response = as_string(b);
+                if (response == "connect\n")
+                {
+                    int players_count = 0;
+                    m_handle_mutex.lock();
+                    players_count = (int)m_clients.size() + 1; //server is also a player
+                    m_handle_mutex.unlock();
+
+                    if (m_max_players > 0 && players_count >= m_max_players)
+                    {
+                        asio::write(c->m_socket, asio::buffer("max_players_limit\n"), error);
+                        delete c;
+                        c = 0;
+                    }
+                    else
+                    {
+                        asio::write(c->m_socket, asio::buffer("connected\n"), error);
+                        if (!error)
+                        {
+                            m_handle_mutex.lock();
+                            m_clients.push_back(c);
+                            m_handle_mutex.unlock();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (error && c)
+        delete c;
+
+    new_client_wait();
+}
+
+//------------------------------------------------------------
+
+void network_server::close()
+{
+    if (!m_acceptor)
+        return;
+
+    m_service.stop();
+    if (m_thread.joinable())
+        m_thread.join();
+
+    delete m_acceptor;
+    m_acceptor = 0;
+}
+
+//------------------------------------------------------------
+
+network_server::~network_server()
+{
+    close();
+}
+
+//------------------------------------------------------------
+
+bool network_client::connect(const char *address, short port)
+{
+    if (!address || m_socket)
+        return false;
+
+    asio::error_code error;
+
+    m_socket = new tcp::socket(m_service);
+
+    tcp::endpoint ep(asio::ip::address::from_string(address), port);
+    m_socket->connect(ep, error);
+    if (error)
+    {
+        delete m_socket;
+        m_socket = 0;
+        return  false;
+    }
+
+    asio::streambuf b;
+    asio::read_until(*m_socket, b, "\n", error);
+    if (error && error != asio::error::eof)
+    {
+        m_socket->close();
+        delete m_socket;
+        m_socket = 0;
+        return false;
+    }
+
+    server_info info;
+    if (!get_info(as_string(b), info))
+    {
+        m_socket->close();
+        delete m_socket;
+        m_socket = 0;
+        return false;
+    }
+
+    asio::write(*m_socket, asio::buffer("connect\n"));
+    asio::read_until(*m_socket, b, "\n", error);
+
+    auto response = as_string(b);
+    if (response != "connected\n")
+    {
+        m_socket->close();
+        delete m_socket;
+        m_socket = 0;
+        return false;
+    }
+
+    return true;
+}
+
+//------------------------------------------------------------
+
+void network_client::disconnect()
+{
+    if(!m_socket)
+        return;
+
+    delete m_socket;
+    m_socket = 0;
+}
+
+//------------------------------------------------------------
+
+network_client::~network_client()
+{
+    disconnect();
 }
 
 //------------------------------------------------------------

@@ -25,6 +25,18 @@ inline uint16_t swap_bytes(uint16_t v) { return ((v & 0xff) << 8) | ((v & 0xff00
 
 //------------------------------------------------------------
 
+class noncopyable
+{
+protected:
+    noncopyable() {}
+
+private:
+    noncopyable(const noncopyable& ) = delete; // non construction-copyable
+    noncopyable& operator=(const noncopyable& ) = delete; // non copyable
+};
+
+//------------------------------------------------------------
+
 inline nya_memory::tmp_buffer_ref load_resource(const char *name)
 {
     nya_resources::resource_data *res = nya_resources::get_resources_provider().access(name);
