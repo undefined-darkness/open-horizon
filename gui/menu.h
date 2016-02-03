@@ -38,6 +38,7 @@ private:
     void set_hide(bool value) { m_hide = value; }
     void set_screen(const std::string &screen);
     void send_event(const std::string &event);
+    void init_var(const std::string &name, const std::string &value);
 
 private:
     bvalue m_hide;

@@ -3,10 +3,18 @@
 //
 
 #include "menu.h"
+#include "util/config.h"
 #include "renderer/aircraft.h"
 
 namespace gui
 {
+//------------------------------------------------------------
+
+void menu::init_var(const std::string &name, const std::string &value)
+{
+    config::register_var(name, value);
+    m_vars[name] = config::get_var(name);
+}
 
 //------------------------------------------------------------
 
@@ -20,10 +28,9 @@ void menu::init()
     m_bkg.load("UI/comp_simple_bg.lar");
     m_select.load("UI/comp_menu.lar");
 
-    //ToDo: load from config
-    send_event("name=PLAYER");
-    send_event("address=127.0.0.1");
-    send_event("port=8001");
+    init_var("name", "PLAYER");
+    init_var("address", "127.0.0.1");
+    init_var("port", "8001");
 }
 
 //------------------------------------------------------------
@@ -496,7 +503,9 @@ void menu::send_event(const std::string &event)
     if (eq != std::string::npos)
     {
         auto var = event.substr(0, eq);
-        m_vars[var] = event.substr(eq + 1);
+        auto value = event.substr(eq + 1);
+        m_vars[var] = value;
+        config::set_var(var, value);
         if (var == "screen")
             set_screen(m_vars[var]);
 
