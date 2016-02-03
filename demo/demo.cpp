@@ -121,13 +121,37 @@ public:
     int get_width() { return m_screen_w; }
     int get_height() { return m_screen_h; }
 
+    typedef std::function<void(char c)> key_callback;
+    void set_keyboard_callback(key_callback &k) { m_key_callback = k; }
+
     platform(): m_window(0) {}
 
 private:
     static void key_func(GLFWwindow *, int key, int scancode, int action, int mods)
     {
         if (action == GLFW_PRESS)
+        {
             m_buttons[key] = true;
+            if (m_key_callback)
+            {
+                if (key >= GLFW_KEY_0 && key <= GLFW_KEY_9)
+                    m_key_callback('0' + key - GLFW_KEY_0);
+                else if (key >= GLFW_KEY_A && key <= GLFW_KEY_Z)
+                    m_key_callback('A' + key - GLFW_KEY_A);
+                else if (key == GLFW_KEY_PERIOD)
+                    m_key_callback('.');
+                else if (key == GLFW_KEY_SEMICOLON)
+                    m_key_callback(':');
+                else if (key == GLFW_KEY_MINUS)
+                    m_key_callback('-');
+                else if (key == GLFW_KEY_SLASH)
+                    m_key_callback('/');
+                else if (key == GLFW_KEY_SPACE)
+                    m_key_callback(' ');
+                else if (key == GLFW_KEY_BACKSPACE)
+                    m_key_callback(8);
+            }
+        }
         else if (action == GLFW_RELEASE)
             m_buttons[key] = false;
     }
@@ -138,11 +162,13 @@ private:
     int m_screen_w, m_screen_h;
     static std::map<int, bool> m_buttons;
     std::map<int, bool> m_last_buttons;
+    static key_callback m_key_callback;
 };
 
 //------------------------------------------------------------
 
 std::map<int, bool> platform::m_buttons;
+platform::key_callback platform::m_key_callback;
 
 //------------------------------------------------------------
 
@@ -490,6 +516,9 @@ int main(void)
 
     gui::menu menu;
     gui::menu_controls menu_controls;
+
+    platform::key_callback kcb = std::bind(&gui::menu::on_input, &menu, std::placeholders::_1);
+    platform.set_keyboard_callback(kcb);
 
     int mx = platform.get_mouse_x(), my = platform.get_mouse_y();
     int screen_width = platform.get_width(), screen_height = platform.get_height();

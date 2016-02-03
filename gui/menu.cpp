@@ -19,6 +19,11 @@ void menu::init()
     m_fonts.load("UI/text/menuCommon.acf");
     m_bkg.load("UI/comp_simple_bg.lar");
     m_select.load("UI/comp_menu.lar");
+
+    //ToDo: load from config
+    send_event("name=PLAYER");
+    send_event("address=127.0.0.1");
+    send_event("port=8001");
 }
 
 //------------------------------------------------------------
@@ -37,7 +42,8 @@ void menu::draw(const render &r)
 
     if (m_screens.back() == "main")
         m_bkg.draw_tx(r, 0, 0, sr, white);
-    else if (m_screens.back() == "map_select" || m_screens.back() == "mp" || m_screens.back() == "mp_create")
+    else if (m_screens.back() == "map_select" || m_screens.back() == "mp"
+             || m_screens.back() == "mp_create" || m_screens.back() == "mp_connect")
         m_bkg.draw_tx(r, 0, 2, sr, white);
     else if (m_screens.back() == "ac_select" || m_screens.back() == "color_select")
         m_bkg.draw_tx(r, 0, 1, sr, white);
@@ -60,6 +66,8 @@ void menu::draw(const render &r)
         auto off = m_fonts.draw_text(r, e.name.c_str(), "ZurichBD_M", x, y, font_color);
         if (!e.sub_select.empty())
             m_fonts.draw_text(r, e.sub_select[e.sub_selected].first.c_str(), "ZurichBD_M", x + off, y, font_color);
+        if (!e.input.empty())
+            m_fonts.draw_text(r, e.input.c_str(), "ZurichBD_M", x + off, y, font_color);
 
         y += 34;
     }
@@ -102,6 +110,18 @@ void menu::update(int dt, const menu_controls &controls)
                 --e.sub_selected;
                 send_sub_events(e);
             }
+
+            if (e.input_numeric)
+            {
+                std::string s(e.input.begin(), e.input.end());
+                int n = atoi(s.c_str());
+                if (n > 0)
+                {
+                    s = std::to_string(--n);
+                    e.input = std::wstring(s.begin(), s.end());
+                    send_event(e.input_event + "=" + std::string(e.input.begin(), e.input.end()));
+                }
+            }
         }
     }
 
@@ -114,6 +134,18 @@ void menu::update(int dt, const menu_controls &controls)
             {
                 ++e.sub_selected;
                 send_sub_events(e);
+            }
+
+            if (e.input_numeric)
+            {
+                std::string s(e.input.begin(), e.input.end());
+                int n = atoi(s.c_str());
+                if (n < 65535)
+                {
+                    s = std::to_string(++n);
+                    e.input = std::wstring(s.begin(), s.end());
+                    send_event(e.input_event + "=" + std::string(e.input.begin(), e.input.end()));
+                }
             }
         }
     }
@@ -154,6 +186,30 @@ void menu::update(int dt, const menu_controls &controls)
 
 //------------------------------------------------------------
 
+void menu::on_input(char c)
+{
+    if (m_selected >= m_entries.size())
+        return;
+
+    auto &e = m_entries[m_selected];
+    if (!e.allow_input)
+        return;
+
+    if (c == 8 && !e.input.empty())
+        e.input.pop_back();
+
+    if (e.input_numeric && (c < '0' || c > '9'))
+        return;
+
+    if (c < 32 || c >= 127)
+        return;
+
+    e.input.push_back(c);
+    send_event(e.input_event + "=" + std::string(e.input.begin(), e.input.end()));
+}
+
+//------------------------------------------------------------
+
 std::string menu::get_var(const std::string &name) const
 {
     auto v = m_vars.find(name);
@@ -183,6 +239,26 @@ void menu::add_sub_entry(const std::wstring &name, const std::string &value)
         return;
 
     m_entries.back().sub_select.push_back({name, value});
+}
+
+//------------------------------------------------------------
+
+void menu::add_input(const std::string &event, bool numeric_only)
+{
+    if (m_entries.empty())
+        return;
+
+    auto &e = m_entries.back();
+
+    e.allow_input = true;
+    e.input_numeric = numeric_only;
+    e.input_event = event;
+
+    if (event.empty())
+        return;
+
+    auto v = get_var(event);
+    e.input = std::wstring(v.begin(), v.end());
 }
 
 //------------------------------------------------------------
@@ -218,13 +294,29 @@ void menu::set_screen(const std::string &screen)
     {
         m_title = L"MULTIPLAYER";
         add_entry(L"Internet servers", {"screen=mp_inet"});
-        add_entry(L"Local network servers", {"screen=mp_local"});
-        add_entry(L"Connect to ip", {"screen=mp_connect_ip"});
+        //add_entry(L"Local network servers", {"screen=mp_local"});
+        add_entry(L"Connect to address", {"screen=mp_connect"});
         add_entry(L"Start server", {"screen=mp_create"});
+    }
+    else if (screen == "mp_connect")
+    {
+        m_title = L"CONNECT TO SERVER";
+
+        add_entry(L"Name: ", {});
+        add_input("name");
+
+        add_entry(L"Address: ", {});
+        add_input("address");
+        add_entry(L"Port: ", {});
+        add_input("port", true);
+        add_entry(L"Connect", {"connect"});
     }
     else if (screen == "mp_create")
     {
         m_title = L"START SERVER";
+
+        add_entry(L"Name: ", {});
+        add_input("name", "PLAYER");
 
         add_entry(L"Game mode: ", {}, "mode", {"mp_mode_updated"});
         add_sub_entry(L"Free flight", "ff");
@@ -250,6 +342,9 @@ void menu::set_screen(const std::string &screen)
 
         send_sub_events(*(m_entries.end() - 2));
         send_sub_events(m_entries.back());
+
+        add_entry(L"Port: ", {});
+        add_input("port", true);
 
         add_entry(L"Start", {"start"});
     }

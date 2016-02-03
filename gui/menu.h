@@ -28,6 +28,7 @@ public:
     void init();
     void draw(const render &r);
     void update(int dt, const menu_controls &controls);
+    void on_input(char c);
 
     typedef std::function<void(const std::string &name)> on_action;
     void set_callback(on_action f) { m_on_action = f; }
@@ -55,6 +56,10 @@ private:
         std::string sub_event;
         std::vector<std::string> sub_events;
         uvalue sub_selected;
+        bool allow_input = false;
+        bool input_numeric = false;
+        std::wstring input;
+        std::string input_event;
     };
 
     void send_sub_events(const entry &e);
@@ -62,6 +67,7 @@ private:
     void add_entry(const std::wstring &name, const std::vector<std::string> &events,
                    const std::string &sub_event = "", const std::vector<std::string> &sub_events = {});
     void add_sub_entry(const std::wstring &name, const std::string &value);
+    void add_input(const std::string &event, bool numeric_only = false);
 
     std::vector<entry> m_entries;
     uvalue m_selected;
