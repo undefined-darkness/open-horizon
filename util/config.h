@@ -46,6 +46,12 @@ public:
         return p->second;
     }
 
+    static int get_var_int(const std::string &name)
+    {
+        auto v = get_var(name);
+        return atoi(v.c_str());
+    }
+
 private:
     static config &cfg() { static config c; return c; }
     config() { read(); }

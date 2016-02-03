@@ -113,10 +113,10 @@ void menu::update(int dt, const menu_controls &controls)
         {
             auto &e = m_entries[m_selected];
             if (e.sub_selected > 0)
-            {
                 --e.sub_selected;
-                send_sub_events(e);
-            }
+            else if(!e.sub_select.empty())
+                e.sub_selected = (int)e.sub_select.size() - 1;
+            send_sub_events(e);
 
             if (e.input_numeric)
             {
@@ -125,6 +125,9 @@ void menu::update(int dt, const menu_controls &controls)
                 if (n > 0)
                 {
                     s = std::to_string(--n);
+                    if (!n && e.input_event == "max_players")
+                        s = "No limit";
+
                     e.input = std::wstring(s.begin(), s.end());
                     send_event(e.input_event + "=" + std::string(e.input.begin(), e.input.end()));
                 }
@@ -138,10 +141,10 @@ void menu::update(int dt, const menu_controls &controls)
         {
             auto &e = m_entries[m_selected];
             if (e.sub_selected + 1 < e.sub_select.size())
-            {
                 ++e.sub_selected;
-                send_sub_events(e);
-            }
+            else
+                e.sub_selected = 0;
+            send_sub_events(e);
 
             if (e.input_numeric)
             {
@@ -325,12 +328,21 @@ void menu::set_screen(const std::string &screen)
         add_entry(L"Name: ", {});
         add_input("name", "PLAYER");
 
-        add_entry(L"Game mode: ", {}, "mode", {"mp_mode_updated"});
+        add_entry(L"Game mode: ", {}, "mode");
         add_sub_entry(L"Free flight", "ff");
 
         send_sub_events(m_entries.back());
 
-        add_entry(L"Max players: -", {});
+        add_entry(L"Max players: ", {});
+        send_event("max_players=8");
+        add_input("max_players", true);
+        m_entries.back().allow_input = false;
+
+        add_entry(L"Public: ", {}, "mp_public", {});
+        add_sub_entry(L"Yes", "yes");
+        add_sub_entry(L"No", "no");
+
+        send_sub_events(m_entries.back());
 
         add_entry(L"Location: ", {}, "map", {});
         add_sub_entry(L"Miami", "ms01");

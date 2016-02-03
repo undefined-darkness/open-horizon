@@ -21,6 +21,8 @@
 #include "scene/camera.h"
 #include "system/system.h"
 
+#include "util/config.h"
+
 #include <thread>
 #include <chrono>
 
@@ -485,8 +487,11 @@ int main(void)
 
     nya_resources::set_resources_provider(&trp);
 
+    config::register_var("screen_width", "1000");
+    config::register_var("screen_height", "562");
+
     platform platform;
-    if (!platform.init(1000, 562, "Open Horizon 4th demo"))
+    if (!platform.init(config::get_var_int("screen_width"), config::get_var_int("screen_height"), "Open Horizon 4th demo"))
         return -1;
 
     std::vector<joystick_config> joysticks;
@@ -613,6 +618,9 @@ int main(void)
         {
             screen_width = platform.get_width(), screen_height = platform.get_height();
             scene.resize(screen_width, screen_height);
+
+            config::set_var("screen_width", std::to_string(screen_width));
+            config::set_var("screen_height", std::to_string(screen_height));
         }
 
         if (!active_game_mode)
