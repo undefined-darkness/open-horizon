@@ -555,19 +555,12 @@ int main(void)
 
             auto mode = menu.get_var("mode");
             auto mp_var = menu.get_var("multiplayer");
-            if (mp_var != "no")
+            if (mp_var == "server")
             {
-                if (mp_var == "server")
-                {
-                    auto port = menu.get_var_int("port");
-                    server.open(port, mode.c_str(), menu.get_var_int("max_players"));
-                    if (menu.get_var("mp_public") == "true")
-                        game::servers_list::register_server(port);
-                }
-                else if (mp_var == "client")
-                {
-                    //ToDo
-                }
+                auto port = menu.get_var_int("port");
+                server.open(port, mode.c_str(), menu.get_var("map").c_str(), menu.get_var_int("max_players"));
+                if (menu.get_var("mp_public") == "true")
+                    game::servers_list::register_server(port);
             }
 
             if (mode == "dm")
@@ -590,8 +583,14 @@ int main(void)
         {
             client.disconnect();
             auto port = menu.get_var_int("port");
-            if (!client.connect(menu.get_var("address").c_str(), port))
-                printf("unable to connect to server\n"); //ToDo: mbox
+            if (client.connect(menu.get_var("address").c_str(), port))
+            {
+                menu.send_event("map=" + client.get_server_info().location);
+                menu.send_event("mode=" + client.get_server_info().game_mode);
+                menu.send_event("screen=ac_select");
+            }
+            else
+                printf("unable to connect to server\n"); //ToDo: show error
         }
         else if (event == "viewer_start")
         {

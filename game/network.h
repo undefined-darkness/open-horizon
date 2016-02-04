@@ -28,6 +28,8 @@ struct server_info
 {
     int version = 0;
     std::string game_mode;
+    std::string location;
+    int players = 0;
     int max_players = 0;
 };
 
@@ -54,7 +56,7 @@ private:
 class network_server: public noncopyable
 {
 public:
-    bool open(short port, const char *game_mode, int max_players);
+    bool open(short port, const char *game_mode, const char *location, int max_players);
     void close();
 
     ~network_server();
@@ -92,12 +94,15 @@ public:
     bool connect(const char *address, short port);
     void disconnect();
 
+    const server_info &get_server_info() const;
+
     ~network_client();
 
 private:
     asio::io_service m_service;
     tcp::socket *m_socket = 0;
     std::thread m_thread;
+    server_info m_server_info;
 };
 
 //------------------------------------------------------------

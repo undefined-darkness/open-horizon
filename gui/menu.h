@@ -35,11 +35,11 @@ public:
     void set_callback(on_action f) { m_on_action = f; }
     std::string get_var(const std::string &name) const;
     int get_var_int(const std::string &name) const;
+    void send_event(const std::string &event);
 
 private:
     void set_hide(bool value) { m_hide = value; }
     void set_screen(const std::string &screen);
-    void send_event(const std::string &event);
     void init_var(const std::string &name, const std::string &value);
 
 private:

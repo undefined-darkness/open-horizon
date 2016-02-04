@@ -129,6 +129,18 @@ static bool get_info(const std::string &s, server_info &info)
     ss >> info.game_mode;
 
     ss >> tmp;
+    if (tmp != "location")
+        return false;
+
+    ss >> info.location;
+
+    ss >> tmp;
+    if (tmp != "players")
+        return false;
+
+    ss >> info.players;
+
+    ss >> tmp;
     if (tmp != "max_players")
         return false;
     
@@ -204,17 +216,19 @@ void servers_list::get_list(std::vector<std::string> &list) const
 
 //------------------------------------------------------------
 
-bool network_server::open(short port, const char *game_mode, int max_players)
+bool network_server::open(short port, const char *game_mode, const char *location, int max_players)
 {
     if (m_acceptor)
         return false;
 
-    if (!game_mode)
+    if (!game_mode || !location)
         return false;
 
     m_header = server_header;
     m_header.append(" version ").append(std::to_string(version));
     m_header.append(" game_mode ").append(game_mode);
+    m_header.append(" location ").append(location);
+    m_header.append(" players ").append("1"); //ToDo
     m_header.append(" max_players ").append(std::to_string(max_players));
     m_header.append(" end\n");
 
@@ -344,8 +358,7 @@ bool network_client::connect(const char *address, short port)
         return false;
     }
 
-    server_info info;
-    if (!get_info(as_string(b), info))
+    if (!get_info(as_string(b), m_server_info))
     {
         m_socket->close();
         delete m_socket;
@@ -379,6 +392,13 @@ void network_client::disconnect()
 
     delete m_socket;
     m_socket = 0;
+}
+
+//------------------------------------------------------------
+
+const server_info &network_client::get_server_info() const
+{
+    return m_server_info;
 }
 
 //------------------------------------------------------------
