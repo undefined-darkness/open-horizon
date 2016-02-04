@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ui.h"
+#include "game/network.h"
 #include <functional>
 #include <list>
 
@@ -33,6 +34,7 @@ public:
     typedef std::function<void(const std::string &name)> on_action;
     void set_callback(on_action f) { m_on_action = f; }
     std::string get_var(const std::string &name) const;
+    int get_var_int(const std::string &name) const;
 
 private:
     void set_hide(bool value) { m_hide = value; }
@@ -77,6 +79,8 @@ private:
 
     tiles m_bkg;
     tiles m_select;
+
+    game::servers_list m_servers_list;
 };
 
 //------------------------------------------------------------

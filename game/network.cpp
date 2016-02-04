@@ -150,7 +150,9 @@ bool servers_list::request_update()
 
     m_list.clear();
     std::string data;
-    bool result = http_get("razgriz.pythonanywhere.com", "/get?app=open-horizon&version=1", data);
+    std::string params("/get?app=open-horizon");
+    params.append("&version=").append(std::to_string(version));
+    bool result = http_get("razgriz.pythonanywhere.com", params.c_str(), data);
     if (!result)
         return false;
 
@@ -177,10 +179,13 @@ bool servers_list::request_update()
 
 //------------------------------------------------------------
 
-bool servers_list::register_server()
+bool servers_list::register_server(short port)
 {
     std::string data;
-    return http_get("razgriz.pythonanywhere.com", "/log?app=open-horizon&version=1", data);
+    std::string params("/log?app=open-horizon");
+    params.append("&version=").append(std::to_string(version));
+    params.append("&port=").append(std::to_string(port));
+    return http_get("razgriz.pythonanywhere.com", params.c_str(), data);
 }
 
 //------------------------------------------------------------
@@ -369,6 +374,8 @@ void network_client::disconnect()
 {
     if(!m_socket)
         return;
+
+    asio::write(*m_socket, asio::buffer("disconnect\n"));
 
     delete m_socket;
     m_socket = 0;

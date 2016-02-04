@@ -231,6 +231,13 @@ std::string menu::get_var(const std::string &name) const
 
 //------------------------------------------------------------
 
+int menu::get_var_int(const std::string &name) const
+{
+    return atoi(get_var(name).c_str());
+}
+
+//------------------------------------------------------------
+
 void menu::add_entry(const std::wstring &name, const std::vector<std::string> &events,
                      const std::string &sub_event, const std::vector<std::string> &sub_events)
 {
@@ -293,9 +300,9 @@ void menu::set_screen(const std::string &screen)
     if (screen == "main")
     {
         m_title = L"MAIN MENU";
-        add_entry(L"Deathmatch", {"mode=dm", "screen=map_select"});
-        add_entry(L"Team deathmatch", {"mode=tdm", "screen=map_select"});
-        add_entry(L"Free flight", {"mode=ff", "screen=map_select"});
+        add_entry(L"Deathmatch", {"mode=dm", "screen=map_select", "multiplayer=no"});
+        add_entry(L"Team deathmatch", {"mode=tdm", "screen=map_select", "multiplayer=no"});
+        add_entry(L"Free flight", {"mode=ff", "screen=map_select", "multiplayer=no"});
         add_entry(L"Multiplayer", {"screen=mp"});
         add_entry(L"Aircraft viewer", {"mode=none", "screen=ac_view"});
         add_entry(L"Exit", {"exit"});
@@ -303,10 +310,10 @@ void menu::set_screen(const std::string &screen)
     else if (screen == "mp")
     {
         m_title = L"MULTIPLAYER";
-        add_entry(L"Internet servers", {"screen=mp_inet"});
-        //add_entry(L"Local network servers", {"screen=mp_local"});
-        add_entry(L"Connect to address", {"screen=mp_connect"});
-        add_entry(L"Start server", {"screen=mp_create"});
+        add_entry(L"Internet servers", {"screen=mp_inet", "multiplayer=client"});
+        //add_entry(L"Local network servers", {"screen=mp_local", "multiplayer=client"});
+        add_entry(L"Connect to address", {"screen=mp_connect", "multiplayer=client"});
+        add_entry(L"Start server", {"screen=mp_create", "multiplayer=server"});
     }
     else if (screen == "mp_connect")
     {
@@ -339,8 +346,8 @@ void menu::set_screen(const std::string &screen)
         m_entries.back().allow_input = false;
 
         add_entry(L"Public: ", {}, "mp_public", {});
-        add_sub_entry(L"Yes", "yes");
-        add_sub_entry(L"No", "no");
+        add_sub_entry(L"Yes", "true");
+        add_sub_entry(L"No", "false");
 
         send_sub_events(m_entries.back());
 

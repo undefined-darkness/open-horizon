@@ -510,8 +510,11 @@ int main(void)
         printf("joy%d: %s %d axis %d buttons\n", i, name, axis_count, buttons_count);
     }
 
+    game::network_client client;
+    game::network_server server;
+
     renderer::scene scene;
-    game::world world(scene, scene.hud);
+    game::world world(scene, scene.hud, client, server);
     game::free_flight game_mode_ff(world);
     game::deathmatch game_mode_dm(world);
     game::team_deathmatch game_mode_tdm(world);
@@ -551,6 +554,22 @@ int main(void)
             scene.loading(false);
 
             auto mode = menu.get_var("mode");
+            auto mp_var = menu.get_var("multiplayer");
+            if (mp_var != "no")
+            {
+                if (mp_var == "server")
+                {
+                    auto port = menu.get_var_int("port");
+                    server.open(port, mode.c_str(), menu.get_var_int("max_players"));
+                    if (menu.get_var("mp_public") == "true")
+                        game::servers_list::register_server(port);
+                }
+                else if (mp_var == "client")
+                {
+                    //ToDo
+                }
+            }
+
             if (mode == "dm")
             {
                 active_game_mode = &game_mode_dm;
@@ -566,6 +585,13 @@ int main(void)
                 active_game_mode = &game_mode_ff;
                 game_mode_ff.start(plane.c_str(), color, location.c_str());
             }
+        }
+        else if (event == "connect")
+        {
+            client.disconnect();
+            auto port = menu.get_var_int("port");
+            if (!client.connect(menu.get_var("address").c_str(), port))
+                printf("unable to connect to server\n"); //ToDo: mbox
         }
         else if (event == "viewer_start")
         {
@@ -595,7 +621,11 @@ int main(void)
             hangar.end();
         }
         else if (event == "exit")
+        {
+            server.close();
+            client.disconnect();
             platform.terminate();
+        }
         else
             printf("unknown event: %s\n", event.c_str());
     };
@@ -728,6 +758,8 @@ int main(void)
             {
                 active_game_mode->end();
                 active_game_mode = 0;
+                server.close();
+                client.disconnect();
                 menu_controls.prev = false;
             }
         }
@@ -750,6 +782,8 @@ int main(void)
         }
     }
 
+    server.close();
+    client.disconnect();
     platform.terminate();
 
     return 0;

@@ -42,7 +42,7 @@ public:
     void get_list(list &l) const;
 
 public:
-    bool register_server();
+    static bool register_server(short port);
 
 private:
     list m_list;
