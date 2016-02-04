@@ -323,6 +323,13 @@ void network_server::close()
 
 //------------------------------------------------------------
 
+net_plane_ptr network_server:: add_plane(const char *name, int color)
+{
+    return net_plane_ptr(); //ToDo
+}
+
+//------------------------------------------------------------
+
 network_server::~network_server()
 {
     close();
@@ -392,6 +399,13 @@ void network_client::disconnect()
 
     delete m_socket;
     m_socket = 0;
+}
+
+//------------------------------------------------------------
+
+net_plane_ptr network_client::add_plane(const char *name, int color)
+{
+    return net_plane_ptr(); //ToDo
 }
 
 //------------------------------------------------------------

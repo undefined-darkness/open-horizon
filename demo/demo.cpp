@@ -510,17 +510,16 @@ int main(void)
         printf("joy%d: %s %d axis %d buttons\n", i, name, axis_count, buttons_count);
     }
 
-    game::network_client client;
-    game::network_server server;
-
     renderer::scene scene;
-    game::world world(scene, scene.hud, client, server);
+    game::world world(scene, scene.hud);
     game::free_flight game_mode_ff(world);
     game::deathmatch game_mode_dm(world);
     game::team_deathmatch game_mode_tdm(world);
     game::hangar hangar(scene);
     game::game_mode *active_game_mode = 0;
     game::plane_controls controls;
+    game::network_client client;
+    game::network_server server;
 
     gui::menu menu;
     gui::menu_controls menu_controls;
@@ -557,6 +556,7 @@ int main(void)
             auto mp_var = menu.get_var("multiplayer");
             if (mp_var == "server")
             {
+                world.set_network(&server);
                 auto port = menu.get_var_int("port");
                 server.open(port, mode.c_str(), menu.get_var("map").c_str(), menu.get_var_int("max_players"));
                 if (menu.get_var("mp_public") == "true")
@@ -581,6 +581,7 @@ int main(void)
         }
         else if (event == "connect")
         {
+            world.set_network(&client);
             client.disconnect();
             auto port = menu.get_var_int("port");
             if (client.connect(menu.get_var("address").c_str(), port))
@@ -759,6 +760,7 @@ int main(void)
                 active_game_mode = 0;
                 server.close();
                 client.disconnect();
+                world.set_network(0);
                 menu_controls.prev = false;
             }
         }

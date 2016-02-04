@@ -11,6 +11,8 @@ using asio::ip::tcp;
 
 #include "util/util.h"
 
+#include "network_data.h"
+
 #include <thread>
 #include <mutex>
 #include <vector>
@@ -53,11 +55,13 @@ private:
 
 //------------------------------------------------------------
 
-class network_server: public noncopyable
+class network_server: public noncopyable, public network_interface
 {
 public:
     bool open(short port, const char *game_mode, const char *location, int max_players);
     void close();
+
+    net_plane_ptr add_plane(const char *name, int color) override;
 
     ~network_server();
 
@@ -88,11 +92,13 @@ private:
 
 //------------------------------------------------------------
 
-class network_client: public noncopyable
+class network_client: public noncopyable, public network_interface
 {
 public:
     bool connect(const char *address, short port);
     void disconnect();
+
+    net_plane_ptr add_plane(const char *name, int color) override;
 
     const server_info &get_server_info() const;
 

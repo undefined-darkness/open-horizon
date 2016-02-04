@@ -112,6 +112,7 @@
 		F578323C1AFBE859005FE829 /* ui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ui.cpp; path = ../gui/ui.cpp; sourceTree = "<group>"; };
 		F578323D1AFBE859005FE829 /* ui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui.h; path = ../gui/ui.h; sourceTree = "<group>"; };
 		F578323F1AFC20B1005FE829 /* weapons.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = weapons.xml; path = ../resources/weapons.xml; sourceTree = "<group>"; };
+		F58E4F581C63F7410056B029 /* network_data.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = network_data.h; path = ../game/network_data.h; sourceTree = "<group>"; };
 		F59AB5901AFA389500137527 /* game.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = game.cpp; path = ../game/game.cpp; sourceTree = "<group>"; };
 		F59AB5911AFA389500137527 /* game.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = game.h; path = ../game/game.h; sourceTree = "<group>"; };
 		F59AB5971AFA4F1800137527 /* scene.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = scene.h; path = ../renderer/scene.h; sourceTree = "<group>"; };
@@ -298,6 +299,7 @@
 				F50DADAB1C3047D5000DD3EA /* hangar.h */,
 				F504CB1C1C5B9FA200FBB72D /* network.cpp */,
 				F504CB1D1C5B9FA200FBB72D /* network.h */,
+				F58E4F581C63F7410056B029 /* network_data.h */,
 				F5A2A2E31B05466C009765C1 /* team_deathmatch.cpp */,
 				F5A2A2DF1B05466C009765C1 /* team_deathmatch.h */,
 			);

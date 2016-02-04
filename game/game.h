@@ -7,7 +7,7 @@
 #include "phys/physics.h"
 #include "renderer/scene.h"
 #include "gui/hud.h"
-#include "network.h"
+#include "network_data.h"
 #include <memory>
 #include <list>
 
@@ -21,6 +21,8 @@ typedef params::fvalue fvalue;
 typedef params::uvalue uvalue;
 typedef params::value<int> ivalue;
 typedef params::value<bool> bvalue;
+
+//------------------------------------------------------------
 
 class world;
 
@@ -163,8 +165,10 @@ public:
 
     void update(int dt);
 
-    world(renderer::world &w, gui::hud &h, network_client &c, network_server &s):
-                           m_render_world(w), m_hud(h), m_client(c), m_server(s) {}
+    void set_network(network_interface *n) { m_network = n; }
+
+    world(renderer::world &w, gui::hud &h): m_render_world(w), m_hud(h) {}
+
 private:
     void update_plane(plane_ptr &p);
     plane_ptr get_plane(const phys::object_ptr &o);
@@ -180,8 +184,7 @@ private:
     is_ally_handler m_ally_handler;
 
 private:
-    network_client &m_client;
-    network_server &m_server;
+    network_interface *m_network;
 };
 
 //------------------------------------------------------------

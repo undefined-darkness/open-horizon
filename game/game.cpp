@@ -217,6 +217,9 @@ void world::set_location(const char *name)
 
 void world::update(int dt)
 {
+    if (m_network)
+        m_network->update();
+
     m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p)
                                   { return p.use_count() <= 1; }), m_planes.end());
     m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m)
@@ -263,6 +266,9 @@ void world::update(int dt)
         bullets_to.add_bullet(b.pos, b.vel);
 
     m_render_world.update(dt);
+
+    if (m_network)
+        m_network->update_post();
 }
 
 //------------------------------------------------------------
