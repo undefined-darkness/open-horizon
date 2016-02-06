@@ -4,6 +4,10 @@
 
 #include "network.h"
 #include <iostream>
+#include <chrono>
+
+//ToDo: send plane data binary via udp and only important commands via tcp
+//current inplementation is for testing purpose only
 
 namespace game
 {
@@ -216,6 +220,79 @@ void servers_list::get_list(std::vector<std::string> &list) const
 
 //------------------------------------------------------------
 
+void network_messages::start(tcp::socket *socket)
+{
+    m_socket = socket;
+    start_read();
+}
+
+//------------------------------------------------------------
+
+void network_messages::end()
+{
+    m_socket = 0;
+}
+
+//------------------------------------------------------------
+
+void network_messages::send_message(const std::string &msg)
+{
+    if (!m_socket)
+        return;
+
+    asio::async_write(*m_socket, asio::buffer(msg), std::bind(&network_messages::write_callback, this, std::placeholders::_1));
+}
+
+//------------------------------------------------------------
+
+bool network_messages::get_message(std::string &msg)
+{
+    bool result = false;
+    m_mutex.lock();
+    if (!m_msgs.empty())
+    {
+        msg = m_msgs.front();
+        m_msgs.pop_front();
+        result = true;
+    }
+    m_mutex.unlock();
+    return result;
+}
+
+//------------------------------------------------------------
+
+void network_messages::start_read()
+{
+    if (!m_socket)
+        return;
+
+    asio::async_read_until(*m_socket,  m_response, '\n', std::bind(&network_messages::read_callback, this, std::placeholders::_1, std::placeholders::_2));
+}
+
+//------------------------------------------------------------
+
+void network_messages::read_callback(const asio::error_code& error, std::size_t bytes_transferred)
+{
+    if (bytes_transferred)
+    {
+        m_mutex.lock();
+        m_msgs.push_back(as_string(m_response));
+        m_mutex.unlock();
+    }
+    
+    start_read();
+}
+
+//------------------------------------------------------------
+
+void network_messages::write_callback(const asio::error_code& error)
+{
+    if (error)
+        printf("write_callback error\n");
+}
+
+//------------------------------------------------------------
+
 bool network_server::open(short port, const char *game_mode, const char *location, int max_players)
 {
     if (m_acceptor)
@@ -243,7 +320,40 @@ bool network_server::open(short port, const char *game_mode, const char *locatio
     catch (asio::system_error &e) { return false; }
 
     new_client_wait();
-    m_thread = std::thread([&]() { try { m_service.run(); } catch (asio::system_error &e) {} });
+    m_accept_thread = std::thread([&]() { try { m_service.run(); } catch (asio::system_error &e) {} });
+
+    m_update_thread = std::thread([&]()
+    {
+        std::string msg;
+        while (m_acceptor) //active
+        {
+            m_msg_mutex.lock();
+            m_mutex.lock();
+
+            for (auto &c: m_clients)
+            {
+                if (c->messages.get_message(msg))
+                {
+                    if (msg == "start\n")
+                    {
+                        for (auto &p: m_planes)
+                        {
+                            std::string m = "add_plane " + p.r.name + " " + std::to_string(p.r.color) + "\n";
+                            c->messages.send_message(m);
+                        }
+                    }
+                    else
+                        printf("server received: %s", msg.c_str());
+                }
+            }
+
+            m_msg_mutex.unlock();
+            m_mutex.unlock();
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    });
+
     return true;
 }
 
@@ -255,7 +365,7 @@ void network_server::new_client_wait()
         return;
 
     client *c = new client(m_service);
-    m_acceptor->async_accept(c->m_socket, std::bind(&network_server::handle_accept, this, c, std::placeholders::_1));
+    m_acceptor->async_accept(c->socket, std::bind(&network_server::handle_accept, this, c, std::placeholders::_1));
 }
 
 //------------------------------------------------------------
@@ -264,35 +374,36 @@ void network_server::handle_accept(client* c, asio::error_code error)
 {
     if (!error)
     {
-        asio::write(c->m_socket, asio::buffer(m_header), error);
+        asio::write(c->socket, asio::buffer(m_header), error);
         if (!error)
         {
             asio::streambuf b;
-            asio::read_until(c->m_socket, b, "\n", error);
+            asio::read_until(c->socket, b, "\n", error);
             if (!error)
             {
                 auto response = as_string(b);
                 if (response == "connect\n")
                 {
                     int players_count = 0;
-                    m_handle_mutex.lock();
+                    m_mutex.lock();
                     players_count = (int)m_clients.size() + 1; //server is also a player
-                    m_handle_mutex.unlock();
+                    m_mutex.unlock();
 
                     if (m_max_players > 0 && players_count >= m_max_players)
                     {
-                        asio::write(c->m_socket, asio::buffer("max_players_limit\n"), error);
+                        asio::write(c->socket, asio::buffer("max_players_limit\n"), error);
                         delete c;
                         c = 0;
                     }
                     else
                     {
-                        asio::write(c->m_socket, asio::buffer("connected\n"), error);
+                        asio::write(c->socket, asio::buffer("connected\n"), error);
                         if (!error)
                         {
-                            m_handle_mutex.lock();
+                            c->messages.start(&c->socket);
+                            m_mutex.lock();
                             m_clients.push_back(c);
-                            m_handle_mutex.unlock();
+                            m_mutex.unlock();
                         }
                     }
                 }
@@ -314,18 +425,14 @@ void network_server::close()
         return;
 
     m_service.stop();
-    if (m_thread.joinable())
-        m_thread.join();
+    if (m_accept_thread.joinable())
+        m_accept_thread.join();
 
     delete m_acceptor;
     m_acceptor = 0;
-}
 
-//------------------------------------------------------------
-
-net_plane_ptr network_server:: add_plane(const char *name, int color)
-{
-    return net_plane_ptr(); //ToDo
+    if (m_update_thread.joinable())
+        m_update_thread.join();
 }
 
 //------------------------------------------------------------
@@ -390,22 +497,50 @@ bool network_client::connect(const char *address, short port)
 
 //------------------------------------------------------------
 
-void network_client::disconnect()
+void network_client::start()
 {
-    if(!m_socket)
+    if (!m_socket || m_started)
         return;
 
-    asio::write(*m_socket, asio::buffer("disconnect\n"));
+    m_messages.start(m_socket);
+    m_thread = std::thread([&]() { try { m_service.run(); } catch (asio::system_error &e) {} });
+    m_messages.send_message("start\n");
+    m_started = true;
+    m_update_thread = std::thread([&]()
+    {
+        std::string msg;
+        while (m_started)
+        {
+            if (m_messages.get_message(msg))
+            {
+                printf("client received: %s", msg.c_str());
+            }
 
-    delete m_socket;
-    m_socket = 0;
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+    });
 }
 
 //------------------------------------------------------------
 
-net_plane_ptr network_client::add_plane(const char *name, int color)
+void network_client::disconnect()
 {
-    return net_plane_ptr(); //ToDo
+    if (!m_socket)
+        return;
+
+    m_messages.send_message("disconnect\n");
+    m_messages.end();
+    delete m_socket;
+    m_socket = 0;
+
+    if (!m_started)
+        return;
+
+    if (m_thread.joinable())
+        m_thread.join();
+    m_started = false;
+    if (m_update_thread.joinable())
+        m_update_thread.join();
 }
 
 //------------------------------------------------------------

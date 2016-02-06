@@ -76,6 +76,7 @@ struct wpn_missile_params
 
 struct plane: public object
 {
+    net_plane_ptr net;
     plane_controls controls;
     plane_controls last_controls;
     phys::plane_ptr phys;
@@ -143,7 +144,7 @@ class world
 public:
     void set_location(const char *name);
 
-    plane_ptr add_plane(const char *name, int color, bool player);
+    plane_ptr add_plane(const char *name, int color, bool player, net_plane_ptr ptr = net_plane_ptr());
     missile_ptr add_missile(const char *id, const char *model);
 
     void spawn_explosion(const nya_math::vec3 &pos, int damage, float radius);

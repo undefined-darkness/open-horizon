@@ -16,6 +16,7 @@ using asio::ip::tcp;
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <deque>
 #include <string>
 
 namespace game
@@ -55,13 +56,35 @@ private:
 
 //------------------------------------------------------------
 
+class network_messages
+{
+public:
+    void start(tcp::socket *socket);
+    void end();
+    void send_message(const std::string &msg);
+    bool get_message(std::string &msg);
+
+private:
+    void start_read();
+    void read_callback(const asio::error_code& error, std::size_t bytes_transferred);
+    void write_callback(const asio::error_code& error);
+
+private:
+    asio::streambuf m_response;
+    tcp::socket *m_socket = 0;
+    std::mutex m_mutex;
+    std::deque<std::string> m_msgs;
+};
+
+//------------------------------------------------------------
+
 class network_server: public noncopyable, public network_interface
 {
 public:
     bool open(short port, const char *game_mode, const char *location, int max_players);
     void close();
 
-    net_plane_ptr add_plane(const char *name, int color) override;
+    bool is_server() const override { return true; }
 
     ~network_server();
 
@@ -78,14 +101,18 @@ private:
 
     struct client
     {
-        tcp::socket m_socket;
-        client(asio::io_service& io_service): m_socket(io_service) {}
-        ~client() { m_socket.close(); }
+        bool started = false;
+        tcp::socket socket;
+        network_messages messages;
+
+        client(asio::io_service& io_service): socket(io_service) {}
+        ~client() { socket.close(); }
     };
 
     std::vector<client *> m_clients;
-    std::mutex m_handle_mutex;
-    std::thread m_thread;
+    std::mutex m_mutex;
+    std::thread m_accept_thread;
+    std::thread m_update_thread;
     std::string m_header;
     int m_max_players = 0;
 };
@@ -98,7 +125,7 @@ public:
     bool connect(const char *address, short port);
     void disconnect();
 
-    net_plane_ptr add_plane(const char *name, int color) override;
+    void start();
 
     const server_info &get_server_info() const;
 
@@ -108,7 +135,10 @@ private:
     asio::io_service m_service;
     tcp::socket *m_socket = 0;
     std::thread m_thread;
+    std::thread m_update_thread;
     server_info m_server_info;
+    network_messages m_messages;
+    bool m_started = false;
 };
 
 //------------------------------------------------------------

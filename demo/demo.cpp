@@ -57,7 +57,7 @@ public:
         typedef BOOL (WINAPI *PFNWGLSWAPINTERVALEXTPROC)(int interval);
         PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = NULL;
         wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
-        if(wglSwapIntervalEXT)
+        if (wglSwapIntervalEXT)
             wglSwapIntervalEXT(1);
 #endif
 */
@@ -562,6 +562,11 @@ int main(void)
                 if (menu.get_var("mp_public") == "true")
                     game::servers_list::register_server(port);
             }
+            else if (mp_var == "client")
+            {
+                world.set_network(&client);
+                client.start();
+            }
 
             if (mode == "dm")
             {
@@ -581,7 +586,6 @@ int main(void)
         }
         else if (event == "connect")
         {
-            world.set_network(&client);
             client.disconnect();
             auto port = menu.get_var_int("port");
             if (client.connect(menu.get_var("address").c_str(), port))

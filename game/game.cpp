@@ -131,13 +131,17 @@ missile_ptr world::add_missile(const char *id, const char *model)
 
 //------------------------------------------------------------
 
-plane_ptr world::add_plane(const char *name, int color, bool player)
+plane_ptr world::add_plane(const char *name, int color, bool player, net_plane_ptr ptr)
 {
     if (!name)
         return plane_ptr();
 
     plane_ptr p(new plane());
-    p->phys = m_phys_world.add_plane(name);
+    if (ptr && !ptr->source)
+        p->phys = phys::plane_ptr(new phys::plane());
+    else
+        p->phys = m_phys_world.add_plane(name);
+
     p->render = m_render_world.add_aircraft(name, color, player);
 
     p->hp = p->max_hp = int(p->phys->params.misc.maxHp);
@@ -161,6 +165,9 @@ plane_ptr world::add_plane(const char *name, int color, bool player)
         p->render->load_missile(wi->missile.model.c_str(), m_render_world.get_location_params());
         p->missile = wpn_missile_params(wi->missile.id, wi->missile.model);
     }
+
+    if (m_network)
+        p->net = ptr ? ptr : m_network->add_plane(name, color);
 
     m_planes.push_back(p);
     get_arms_param(); //cache
@@ -244,7 +251,7 @@ void world::update(int dt)
     m_phys_world.update_missiles(dt, [this](const phys::object_ptr &a, const phys::object_ptr &b)
     {
         auto m = this->get_missile(a);
-        if(m && m->time > 0)
+        if (m && m->time > 0)
         {
             this->spawn_explosion(m->phys->pos, 0, 10.0);
             m->time = 0;
@@ -268,7 +275,12 @@ void world::update(int dt)
     m_render_world.update(dt);
 
     if (m_network)
+    {
         m_network->update_post();
+
+        for (auto &m: m_network->get_add_plane_msg())
+            add_plane(m.name.c_str(), m.color, false, m.data);
+    }
 }
 
 //------------------------------------------------------------
@@ -354,6 +366,22 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 {
     const int missile_cooldown_time = 3500;
     const int special_cooldown_time = 7000;
+
+    if (net)
+    {
+        if (net->source)
+        {
+            net->pos = phys->pos;
+            net->rot = phys->rot;
+            net->vel = phys->vel;
+        }
+        else
+        {
+            phys->pos = net->pos;
+            phys->rot = net->rot;
+            phys->vel = net->vel;
+        }
+    }
 
     const auto pos_fix = phys->pos - render->get_pos(); //skeleton is not updated yet
 
@@ -601,7 +629,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                     }
                 }
             }
-            else if(fp != targets.end())
+            else if (fp != targets.end())
                 fp = targets.erase(fp);
         }
     }
