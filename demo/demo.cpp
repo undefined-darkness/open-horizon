@@ -537,6 +537,7 @@ int main(void)
 
     menu.init();
     bool viewer_mode = false;
+    bool is_client = false;
 
     gui::menu::on_action on_menu_action = [&](const std::string &event)
     {
@@ -545,6 +546,8 @@ int main(void)
             auto location = menu.get_var("map");
             auto plane = menu.get_var("ac");
             const int color = atoi(menu.get_var("color").c_str());
+
+            is_client = false;
 
             scene.loading(true);
             nya_render::clear(true, true);
@@ -566,6 +569,7 @@ int main(void)
             {
                 world.set_network(&client);
                 client.start();
+                is_client = true;
             }
 
             if (mode == "dm")
@@ -758,7 +762,11 @@ int main(void)
                 scene.pause(paused = !paused);
             last_pause = pause;
 
-            if (platform.was_pressed(GLFW_KEY_ESCAPE))
+            bool should_stop = platform.was_pressed(GLFW_KEY_ESCAPE);
+            if (is_client && !client.is_started())
+                should_stop = true;
+
+            if (should_stop)
             {
                 active_game_mode->end();
                 active_game_mode = 0;

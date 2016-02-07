@@ -128,6 +128,8 @@ public:
 
     void start();
 
+    bool is_started() const { return m_started; }
+
     const server_info &get_server_info() const;
 
     ~network_client();

@@ -531,6 +531,11 @@ void network_server::close()
     if (!m_acceptor)
         return;
 
+    m_mutex.lock();
+    for (auto &c: m_clients)
+        c->messages.send_message("disconnect\n");
+    m_mutex.unlock();
+
     m_service.stop();
     if (m_accept_thread.joinable())
         m_accept_thread.join();
@@ -654,27 +659,34 @@ void network_client::start()
                 {
                     is>>m_id;
                 }
+                else if (cmd == "disconnect")
+                {
+                    m_started = false;
+                }
                 else
                     printf("client received: %s", msg.c_str());
             }
 
-            if (!m_add_plane_requests.empty())
+            if (m_id)
             {
-                for (auto &r: m_add_plane_requests)
-                    m_messages.send_message("add_plane " + to_string(r) + "\n");
-                m_add_plane_requests.clear();
-            }
-
-            for (auto &p: m_planes)
-            {
-                if (!p.net.source)
-                    continue;
-
-                if (p.net.time > p.last_time)
+                if (!m_add_plane_requests.empty())
                 {
-                    m_messages.send_message("plane " + std::to_string(p.r.client_id) + " " +
-                                             std::to_string(p.r.plane_id) + " "+ to_string(p.net) + "\n");
-                    p.last_time = p.net.time;
+                    for (auto &r: m_add_plane_requests)
+                        m_messages.send_message("add_plane " + to_string(r) + "\n");
+                    m_add_plane_requests.clear();
+                }
+
+                for (auto &p: m_planes)
+                {
+                    if (!p.net.source)
+                        continue;
+
+                    if (p.net.time > p.last_time)
+                    {
+                        m_messages.send_message("plane " + std::to_string(p.r.client_id) + " " +
+                                                 std::to_string(p.r.plane_id) + " "+ to_string(p.net) + "\n");
+                        p.last_time = p.net.time;
+                    }
                 }
             }
 
@@ -694,15 +706,14 @@ void network_client::disconnect()
 
     m_messages.send_message("disconnect\n");
     m_messages.end();
+    m_socket->close();
     delete m_socket;
     m_socket = 0;
 
-    if (!m_started)
-        return;
+    m_started = false;
 
     if (m_thread.joinable())
         m_thread.join();
-    m_started = false;
     if (m_update_thread.joinable())
         m_update_thread.join();
 }
