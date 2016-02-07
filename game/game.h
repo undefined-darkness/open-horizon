@@ -168,7 +168,7 @@ public:
 
     void set_network(network_interface *n) { m_network = n; }
 
-    world(renderer::world &w, gui::hud &h): m_render_world(w), m_hud(h) {}
+    world(renderer::world &w, gui::hud &h): m_render_world(w), m_hud(h), m_network(0) {}
 
 private:
     void update_plane(plane_ptr &p);

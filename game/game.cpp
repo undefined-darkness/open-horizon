@@ -228,7 +228,7 @@ void world::update(int dt)
         m_network->update();
 
     m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p)
-                                  { return p.use_count() <= 1; }), m_planes.end());
+                                  { return p.use_count() <= 1 && !p->net; }), m_planes.end());
     m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m)
                                     { return m.use_count() <= 1 && m->time <= 0; }), m_missiles.end());
     for (auto &p: m_planes)
@@ -278,8 +278,9 @@ void world::update(int dt)
     {
         m_network->update_post();
 
-        for (auto &m: m_network->get_add_plane_msg())
-            add_plane(m.name.c_str(), m.color, false, m.data);
+        network_interface::msg_add_plane m;
+        while(m_network->get_add_plane_msg(m))
+            add_plane(m.name.c_str(), m.color, false, m_network->add_plane(m));
     }
 }
 

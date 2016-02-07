@@ -8,6 +8,7 @@
 #include "math/quaternion.h"
 
 #include <vector>
+#include <deque>
 #include <string>
 #include <memory>
 #include <mutex>
@@ -36,21 +37,7 @@ class network_interface
 public:
     net_plane_ptr add_plane(const char *name, int color)
     {
-        net_plane_ptr p(new net_plane());
-        p->source = true;
-
-        plane_request r;
-        r.name.assign(name);
-        r.color = color;
-
-        m_msg_mutex.lock();
-        m_self_add_planes.push_back(p);
-        m_add_plane_requests.push_back(r);
-        m_planes.resize(m_planes.size() + 1);
-        m_planes.back().r = r;
-        m_msg_mutex.unlock();
-
-        return p;
+        return add_plane(name, color, true, m_id, m_last_plane_id++);
     }
 
     virtual bool is_server() const { return false; };
@@ -58,18 +45,34 @@ public:
 public:
     struct msg_add_plane
     {
+        unsigned short client_id = 0, plane_id = 0;
         std::string name;
         int color = 0;
-        net_plane_ptr data;
     };
 
-    const std::vector<msg_add_plane> &get_add_plane_msg() const { return m_safe_plane_msgs; }
+    net_plane_ptr add_plane(const msg_add_plane &m)
+    {
+        return add_plane(m.name.c_str(), m.color, false, m.client_id, m.plane_id);
+    }
+
+    bool get_add_plane_msg(msg_add_plane &m)
+    {
+        bool result = false;
+        m_msg_mutex.lock();
+        if (!m_add_plane_msgs.empty())
+        {
+            m = m_add_plane_msgs.front();
+            m_add_plane_msgs.pop_front();
+            result = true;
+        }
+        m_msg_mutex.unlock();
+        return result;
+    }
 
     void update()
     {
         m_msg_mutex.lock();
 
-        m_safe_plane_msgs = m_add_plane_msgs;
         for (size_t i = 0; i < m_safe_planes.size(); ++i)
         {
             if (!m_safe_planes[i]->source)
@@ -83,13 +86,6 @@ public:
     {
         m_msg_mutex.lock();
 
-        if (!m_self_add_planes.empty())
-        {
-            for (auto &sp: m_self_add_planes)
-                m_safe_planes.push_back(sp);
-            m_self_add_planes.clear();
-        }
-
         assert(m_safe_planes.size() == m_planes.size());
 
         for (size_t i = 0; i < m_safe_planes.size(); ++i)
@@ -101,32 +97,45 @@ public:
         m_msg_mutex.unlock();
     }
 
+private:
+    net_plane_ptr add_plane(const char *name, int color, bool source, unsigned short client_id, unsigned short plane_id)
+    {
+        net_plane_ptr p(new net_plane());
+        p->source = source;
+
+        if (!source)
+            assert(client_id != m_id);
+
+        m_msg_mutex.lock();
+        m_planes.resize(m_planes.size() + 1);
+        m_safe_planes.push_back(p);
+        auto &r = m_planes.back().r;
+        r.name.assign(name);
+        r.color = color;
+        r.client_id = client_id;
+        r.plane_id = plane_id;
+        m_msg_mutex.unlock();
+
+        return p;
+    }
+
 protected:
     std::mutex m_msg_mutex;
 
-    struct plane_request
-    {
-        std::string name;
-        int color = 0;
-    };
-
-    std::vector<msg_add_plane> m_add_plane_msgs;
-    std::vector<plane_request> m_add_plane_requests;
+    std::deque<msg_add_plane> m_add_plane_msgs;
 
     struct plane
     {
-        plane_request r;
+        msg_add_plane r;
         net_plane net;
     };
 
     std::vector<plane> m_planes;
+    unsigned short m_id = 0;
 
 private:
-    std::vector<net_plane_ptr> m_self_add_planes;
-
-private:
-    std::vector<msg_add_plane> m_safe_plane_msgs;
     std::vector<net_plane_ptr> m_safe_planes;
+    unsigned short m_last_plane_id = 0;
 };
 
 //------------------------------------------------------------

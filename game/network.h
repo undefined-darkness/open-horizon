@@ -101,6 +101,7 @@ private:
 
     struct client
     {
+        short id = 0;
         bool started = false;
         tcp::socket socket;
         network_messages messages;
