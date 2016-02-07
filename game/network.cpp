@@ -390,7 +390,33 @@ bool network_server::open(short port, const char *game_mode, const char *locatio
             {
                 if (c->messages.get_message(msg))
                 {
-                    if (msg == "start\n")
+                    std::istringstream is(msg);
+                    std::string cmd;
+                    is>>cmd;
+
+                    if (cmd == "plane")
+                    {
+                        unsigned short client_id, plane_id;
+                        is>>client_id, is>>plane_id;
+
+                        for (auto &p: m_planes)
+                        {
+                            if (p.r.client_id == client_id && p.r.plane_id == plane_id)
+                            {
+                                read(is, p.net);
+                                printf("plane %s\n", p.r.name.c_str());
+                                break;
+                            }
+                        }
+                    }
+                    else if (cmd == "add_plane")
+                    {
+                        msg_add_plane ap;
+                        read(is, ap);
+                        m_add_plane_msgs.push_back(ap);
+                        printf("add_plane %s\n", ap.name.c_str());
+                    }
+                    else if (cmd == "start")
                     {
                         for (auto &p: m_planes)
                         {
@@ -405,6 +431,9 @@ bool network_server::open(short port, const char *game_mode, const char *locatio
                 if (!c->started)
                     continue;
 
+                for (auto &r: m_add_plane_requests)
+                    c->messages.send_message("add_plane " + to_string(r) + "\n");
+
                 for (auto &p: m_planes)
                 {
                     if (p.r.client_id == c->id)
@@ -415,6 +444,7 @@ bool network_server::open(short port, const char *game_mode, const char *locatio
                 }
             }
 
+            m_add_plane_requests.clear();
             m_msg_mutex.unlock();
             m_mutex.unlock();
 
@@ -581,6 +611,8 @@ void network_client::start()
         std::string msg;
         while (m_started)
         {
+            m_msg_mutex.lock();
+
             if (m_messages.get_message(msg))
             {
                 std::istringstream is(msg);
@@ -592,7 +624,6 @@ void network_client::start()
                     unsigned short client_id, plane_id;
                     is>>client_id, is>>plane_id;
 
-                    m_msg_mutex.lock();
                     for (auto &p: m_planes)
                     {
                         if (p.r.client_id == client_id && p.r.plane_id == plane_id)
@@ -601,15 +632,12 @@ void network_client::start()
                             break;
                         }
                     }
-                    m_msg_mutex.unlock();
                 }
                 else if (cmd == "add_plane")
                 {
                     msg_add_plane ap;
                     read(is, ap);
-                    m_msg_mutex.lock();
                     m_add_plane_msgs.push_back(ap);
-                    m_msg_mutex.unlock();
                 }
                 else if (cmd == "set_id")
                 {
@@ -618,6 +646,24 @@ void network_client::start()
                 else
                     printf("client received: %s", msg.c_str());
             }
+
+            if (!m_add_plane_requests.empty())
+            {
+                for (auto &r: m_add_plane_requests)
+                    m_messages.send_message("add_plane " + to_string(r) + "\n");
+                m_add_plane_requests.clear();
+            }
+
+            for (auto &p: m_planes)
+            {
+                if (!p.net.source)
+                    continue;
+
+                m_messages.send_message("plane " + std::to_string(p.r.client_id) + " " +
+                                         std::to_string(p.r.plane_id) + " "+ to_string(p.net) + "\n");
+            }
+
+            m_msg_mutex.unlock();
 
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }

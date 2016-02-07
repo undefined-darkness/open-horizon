@@ -114,6 +114,8 @@ private:
         r.color = color;
         r.client_id = client_id;
         r.plane_id = plane_id;
+        if (source)
+            m_add_plane_requests.push_back(r);
         m_msg_mutex.unlock();
 
         return p;
@@ -123,6 +125,7 @@ protected:
     std::mutex m_msg_mutex;
 
     std::deque<msg_add_plane> m_add_plane_msgs;
+    std::deque<msg_add_plane> m_add_plane_requests;
 
     struct plane
     {
