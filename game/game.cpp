@@ -276,7 +276,7 @@ void world::update(int dt)
 
     if (m_network)
     {
-        m_network->update_post();
+        m_network->update_post(dt);
 
         network_interface::msg_add_plane m;
         while(m_network->get_add_plane_msg(m))
@@ -375,12 +375,14 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             net->pos = phys->pos;
             net->rot = phys->rot;
             net->vel = phys->vel;
+            net->hp = hp;
         }
         else
         {
             phys->pos = net->pos;
             phys->rot = net->rot;
             phys->vel = net->vel;
+            hp = net->hp;
         }
     }
 

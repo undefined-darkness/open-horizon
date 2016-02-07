@@ -323,14 +323,14 @@ inline void read(std::istringstream &is, nya_math::quat &q)
 
 inline std::string to_string(const net_plane &n)
 {
-    return std::to_string(n.time) + " " + to_string(n.pos) + " " + to_string(n.vel) + " " + to_string(n.rot);
+    return std::to_string(n.time) + " " + to_string(n.pos) + " " + to_string(n.vel) + " " + to_string(n.rot) + " " + std::to_string(n.hp);
 }
 
 //------------------------------------------------------------
 
 inline void read(std::istringstream &is, net_plane &n)
 {
-    is>>n.time, read(is, n.pos), read(is, n.vel), read(is, n.rot);
+    is>>n.time, read(is, n.pos), read(is, n.vel), read(is, n.rot), is>>n.hp;
 }
 
 //------------------------------------------------------------
@@ -418,6 +418,7 @@ bool network_server::open(short port, const char *game_mode, const char *locatio
                     }
                     else if (cmd == "start")
                     {
+                        c->messages.send_message("set_time " + std::to_string(m_time) + "\n");
                         for (auto &p: m_planes)
                         {
                             c->messages.send_message("add_plane " + to_string(p.r) + "\n");
@@ -439,8 +440,12 @@ bool network_server::open(short port, const char *game_mode, const char *locatio
                     if (p.r.client_id == c->id)
                         continue;
 
-                    c->messages.send_message("plane " + std::to_string(p.r.client_id) + " " +
-                                             std::to_string(p.r.plane_id) + " "+ to_string(p.net) + "\n");
+                    if (p.net.time > p.last_time)
+                    {
+                        c->messages.send_message("plane " + std::to_string(p.r.client_id) + " " +
+                                                 std::to_string(p.r.plane_id) + " "+ to_string(p.net) + "\n");
+                        p.last_time = p.net.time;
+                    }
                 }
             }
 
@@ -448,7 +453,7 @@ bool network_server::open(short port, const char *game_mode, const char *locatio
             m_msg_mutex.unlock();
             m_mutex.unlock();
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     });
 
@@ -639,6 +644,10 @@ void network_client::start()
                     read(is, ap);
                     m_add_plane_msgs.push_back(ap);
                 }
+                else if (cmd == "set_time")
+                {
+                    is>>m_time;
+                }
                 else if (cmd == "set_id")
                 {
                     is>>m_id;
@@ -659,13 +668,17 @@ void network_client::start()
                 if (!p.net.source)
                     continue;
 
-                m_messages.send_message("plane " + std::to_string(p.r.client_id) + " " +
-                                         std::to_string(p.r.plane_id) + " "+ to_string(p.net) + "\n");
+                if (p.net.time > p.last_time)
+                {
+                    m_messages.send_message("plane " + std::to_string(p.r.client_id) + " " +
+                                             std::to_string(p.r.plane_id) + " "+ to_string(p.net) + "\n");
+                    p.last_time = p.net.time;
+                }
             }
 
             m_msg_mutex.unlock();
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     });
 }

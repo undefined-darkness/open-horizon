@@ -26,6 +26,8 @@ struct net_plane
     nya_math::quat rot;
 
     bool source = false;
+
+    int hp = 0;
 };
 
 typedef std::shared_ptr<net_plane> net_plane_ptr;
@@ -82,16 +84,20 @@ public:
         m_msg_mutex.unlock();
     }
 
-    void update_post()
+    void update_post(unsigned int dt)
     {
         m_msg_mutex.lock();
 
+        m_time += dt;
         assert(m_safe_planes.size() == m_planes.size());
 
         for (size_t i = 0; i < m_safe_planes.size(); ++i)
         {
             if (m_safe_planes[i]->source)
+            {
                 m_planes[i].net = *m_safe_planes[i].get();
+                m_planes[i].net.time = m_time;
+            }
         }
 
         m_msg_mutex.unlock();
@@ -131,10 +137,12 @@ protected:
     {
         msg_add_plane r;
         net_plane net;
+        unsigned int last_time = 0;
     };
 
     std::vector<plane> m_planes;
     unsigned short m_id = 0;
+    unsigned int m_time = 0;
 
 private:
     std::vector<net_plane_ptr> m_safe_planes;
