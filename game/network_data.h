@@ -25,6 +25,9 @@ struct net_plane
     nya_math::vec3 vel;
     nya_math::quat rot;
 
+    nya_math::vec3 ctrl_rot;
+    float ctrl_brake = 0.0f;
+
     bool source = false;
 
     int hp = 0;
@@ -102,6 +105,8 @@ public:
 
         m_msg_mutex.unlock();
     }
+
+    unsigned int get_time() const { return m_time; }
 
 private:
     net_plane_ptr add_plane(const char *name, int color, bool source, unsigned short client_id, unsigned short plane_id)

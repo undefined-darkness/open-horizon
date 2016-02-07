@@ -137,10 +137,8 @@ plane_ptr world::add_plane(const char *name, int color, bool player, net_plane_p
         return plane_ptr();
 
     plane_ptr p(new plane());
-    if (ptr && !ptr->source)
-        p->phys = phys::plane_ptr(new phys::plane());
-    else
-        p->phys = m_phys_world.add_plane(name);
+    const bool add_to_world = !(ptr && !ptr->source);
+    p->phys = m_phys_world.add_plane(name, add_to_world);
 
     p->render = m_render_world.add_aircraft(name, color, player);
 
@@ -375,13 +373,20 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             net->pos = phys->pos;
             net->rot = phys->rot;
             net->vel = phys->vel;
+            net->ctrl_rot = controls.rot;
+            net->ctrl_brake = controls.brake;
             net->hp = hp;
         }
         else
         {
-            phys->pos = net->pos;
+            //float kdt = (long(w.get_net_time() + dt) - long(net->time)) * 0.001f;
+            float kdt = dt * 0.001f;
+
+            phys->pos = net->pos + net->vel * kdt;
             phys->rot = net->rot;
             phys->vel = net->vel;
+            controls.rot = net->ctrl_rot;
+            controls.brake = net->ctrl_brake;
             hp = net->hp;
         }
     }

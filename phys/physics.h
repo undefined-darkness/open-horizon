@@ -101,7 +101,7 @@ class world
 public:
     void set_location(const char *name);
 
-    plane_ptr add_plane(const char *name);
+    plane_ptr add_plane(const char *name, bool add_to_world);
     missile_ptr add_missile(const char *name);
 
     void spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_math::vec3 &dir);

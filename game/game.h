@@ -168,6 +168,8 @@ public:
 
     void set_network(network_interface *n) { m_network = n; }
 
+    unsigned int get_net_time() const { return m_network ? m_network->get_time() : 0; }
+
     world(renderer::world &w, gui::hud &h): m_render_world(w), m_hud(h), m_network(0) {}
 
 private:
