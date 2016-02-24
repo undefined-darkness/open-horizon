@@ -49,6 +49,7 @@
 		F5C6D39F1AF96A18006FB7E6 /* postprocess.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5C6D39C1AF96A08006FB7E6 /* postprocess.txt */; };
 		F5C6D3A01AF96A18006FB7E6 /* shaders in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5C6D39D1AF96A08006FB7E6 /* shaders */; };
 		F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D7969F19B3432C006269F0 /* pugixml.cpp */; };
+		F5DC44881C7CD9AF00F68115 /* mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5DC44861C7CD9AF00F68115 /* mesh.cpp */; };
 		F5DFAD8B19BB248C00786736 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F5DFAD8A19BB248C00786736 /* libz.dylib */; };
 /* End PBXBuildFile section */
 
@@ -176,6 +177,8 @@
 		F5D7969F19B3432C006269F0 /* pugixml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pugixml.cpp; path = "../deps/pugixml-1.4/src/pugixml.cpp"; sourceTree = "<group>"; };
 		F5D796A019B3432C006269F0 /* pugiconfig.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugiconfig.hpp; path = "../deps/pugixml-1.4/src/pugiconfig.hpp"; sourceTree = "<group>"; };
 		F5D796A119B3432C006269F0 /* pugixml.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugixml.hpp; path = "../deps/pugixml-1.4/src/pugixml.hpp"; sourceTree = "<group>"; };
+		F5DC44861C7CD9AF00F68115 /* mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mesh.cpp; sourceTree = "<group>"; };
+		F5DC44871C7CD9AF00F68115 /* mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mesh.h; sourceTree = "<group>"; };
 		F5DFAD8A19BB248C00786736 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -375,6 +378,8 @@
 		F5C6D3941AF969BE006FB7E6 /* phys */ = {
 			isa = PBXGroup;
 			children = (
+				F5DC44861C7CD9AF00F68115 /* mesh.cpp */,
+				F5DC44871C7CD9AF00F68115 /* mesh.h */,
 				F5C6D3951AF969BE006FB7E6 /* physics.cpp */,
 				F5C6D3961AF969BE006FB7E6 /* physics.h */,
 				F5C6D3971AF969BE006FB7E6 /* plane_params.cpp */,
@@ -497,6 +502,7 @@
 				F5A2A2DC1AFE86E4009765C1 /* hud.cpp in Sources */,
 				F504CB1E1C5B9FA200FBB72D /* network.cpp in Sources */,
 				F5C6D3921AF969A5006FB7E6 /* fhm.cpp in Sources */,
+				F5DC44881C7CD9AF00F68115 /* mesh.cpp in Sources */,
 				F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */,
 				F578323E1AFBE859005FE829 /* ui.cpp in Sources */,
 				F59AB5A91AFA4F1800137527 /* fhm_mesh.cpp in Sources */,

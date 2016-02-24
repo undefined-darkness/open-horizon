@@ -5,6 +5,7 @@
 #include "physics.h"
 #include "math/constants.h"
 #include "math/scalar.h"
+#include "memory/memory_reader.h"
 #include "containers/fhm.h"
 #include <algorithm>
 
@@ -38,6 +39,9 @@ inline float tend(float value, float target, float speed)
 
 void world::set_location(const char *name)
 {
+    m_heights.clear();
+    m_meshes.clear();
+
     fhm_file fhm;
     if (!fhm.open((std::string("Map/") + name + ".fhm").c_str()))
         return;
@@ -49,19 +53,58 @@ void world::set_location(const char *name)
     assert(!m_heights.empty());
     fhm.read_chunk_data(5, &m_heights[0]);
 
-    //ToDo: collision meshes
+    for (int i = 0; i < fhm.get_chunks_count(); ++i)
+    {
+        if (fhm.get_chunk_type(i) == 'HLOC')
+        {
+            nya_memory::tmp_buffer_scoped buf(fhm.get_chunk_size(i));
+            fhm.read_chunk_data(i, buf.get_data());
+            m_meshes.resize(m_meshes.size() + 1);
+            m_meshes.back().load(buf.get_data(), buf.get_size());
+        }
+    }
+
+    fhm.close();
+
+    if (!fhm.open((std::string("Map/") + name + "_mpt.fhm").c_str()))
+        return;
+
+    assert(fhm.get_chunks_count() == m_meshes.size());
+
+    for (int i = 0; i < fhm.get_chunks_count(); ++i)
+    {
+        assert(fhm.get_chunk_type(i) == 'xtpm');
+
+        nya_memory::tmp_buffer_scoped buf(fhm.get_chunk_size(i));
+        fhm.read_chunk_data(i, buf.get_data());
+        nya_memory::memory_reader reader(buf.get_data(), buf.get_size());
+        reader.seek(128);
+        auto off = (uint32_t)m_instances.size();
+        auto count = reader.read<uint32_t>();
+        m_instances.resize(off + count);
+        for (uint32_t j = 0; j < count; ++j)
+        {
+            auto &inst = m_instances[off + j];
+            inst.mesh_idx = i;
+            inst.pos = reader.read<nya_math::vec3>();
+            inst.yaw = reader.read<float>();
+            inst.bbox = nya_math::aabb(m_meshes[i].get_box(), inst.pos,
+                                       nya_math::quat(0.0f, inst.yaw, 0.0f), nya_math::vec3(1.0f, 1.0f, 1.0f));
+        }
+    }
 
     fhm.close();
 }
 
 //------------------------------------------------------------
 
-plane_ptr world::add_plane(const char *name)
+plane_ptr world::add_plane(const char *name, bool add_to_world)
 {
     plane_ptr p(new plane());
     p->params.load(("Player/Behavior/param_p_" + std::string(name) + ".bin").c_str());
     p->reset_state();
-    m_planes.push_back(p);
+    if (add_to_world)
+        m_planes.push_back(p);
     get_arms_param();  //cache
     return p;
 }
@@ -164,7 +207,7 @@ void world::update_bullets(int dt, hit_hunction on_hit)
 
 float world::get_height(float x, float z) const
 {
-    if(m_heights.empty())
+    if (m_heights.empty())
         return 0.0f;
 
     const int patch_size = 1024;

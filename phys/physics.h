@@ -6,6 +6,7 @@
 
 #include "plane_params.h"
 #include "math/quaternion.h"
+#include "mesh.h"
 #include <functional>
 #include <vector>
 #include <memory>
@@ -122,6 +123,18 @@ private:
     const static unsigned int location_size = 16;
     unsigned char m_height_patches[location_size * location_size];
     std::vector<float> m_heights;
+
+    std::vector<mesh> m_meshes;
+
+    struct instance
+    {
+        int mesh_idx = -1;
+        nya_math::vec3 pos;
+        float yaw = 0.0f;
+        nya_math::aabb bbox;
+    };
+
+    std::vector<instance> m_instances;
 };
 
 //------------------------------------------------------------

@@ -127,9 +127,9 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
 
 //------------------------------------------------------------
 
-inline void print_data(const nya_memory::memory_reader &reader)
+inline void print_data(const nya_memory::memory_reader &reader, const char *file_name = 0)
 {
-    print_data(reader, reader.get_offset(), reader.get_remained());
+    print_data(reader, reader.get_offset(), reader.get_remained(), 0, file_name);
 }
 
 //------------------------------------------------------------
@@ -138,7 +138,7 @@ inline void print_data(const char *name, const char *file_name = 0)
 {
     nya_memory::tmp_buffer_scoped r(load_resource(name));
     nya_memory::memory_reader reader(r.get_data(),r.get_size());
-    print_data(reader, reader.get_offset(), reader.get_remained(), 0, file_name);
+    print_data(reader, file_name);
 }
 
 //------------------------------------------------------------
@@ -237,7 +237,7 @@ inline void find_data(nya_resources::resources_provider &rp, float *f, size_t co
         if (!r)
             continue;
 
-        unsigned int found_count = 0;
+        std::vector<size_t> found_offsets;
 
         nya_memory::tmp_buffer_scoped buf(r->get_size());
         r->read_all(buf.get_data());
@@ -260,11 +260,20 @@ inline void find_data(nya_resources::resources_provider &rp, float *f, size_t co
 
             }
             if (found)
-                ++found_count;
+                found_offsets.push_back(j);
         }
 
-        if (found_count > 0)
-            printf("found %u times in %s\n", found_count, n);
+        if (!found_offsets.empty())
+        {
+            printf("found %lu times in %s", found_offsets.size(), n);
+            if (found_offsets.size()<=10)
+            {
+                printf("at offset%s: ", found_offsets.size()==1?"":"s");
+                for (auto &o: found_offsets)
+                    printf("%lu ", o);
+            }
+            printf("\n");
+        }
     }
 
     printf("\n");

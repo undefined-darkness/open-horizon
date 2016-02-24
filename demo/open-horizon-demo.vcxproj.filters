@@ -42,6 +42,9 @@
     <ClCompile Include="../phys/physics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="../phys/mesh.cpp">
+        <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="../phys/plane_params.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -142,6 +145,9 @@
     </ClInclude>
     <ClInclude Include="../phys/physics.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="../phys/mesh.h">
+        <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="../phys/plane_params.h">
       <Filter>Header Files</Filter>

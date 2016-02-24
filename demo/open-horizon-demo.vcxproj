@@ -109,6 +109,7 @@
     <ClCompile Include="../game/hangar.cpp" />
     <ClCompile Include="../gui/ui.cpp" />
     <ClCompile Include="../phys/physics.cpp" />
+    <ClCompile Include="../phys/mesh.cpp" />
     <ClCompile Include="../phys/plane_params.cpp" />
     <ClCompile Include="../renderer/aircraft.cpp" />
     <ClCompile Include="../renderer/clouds.cpp" />
@@ -136,6 +137,7 @@
     <ClInclude Include="../game/hangar.h" />
     <ClInclude Include="../gui/ui.h" />
     <ClInclude Include="../phys/physics.h" />
+    <ClInclude Include="../phys/mesh.h" />
     <ClInclude Include="../phys/plane_params.h" />
     <ClInclude Include="../renderer/aircraft.h" />
     <ClInclude Include="../renderer/clouds.h" />
