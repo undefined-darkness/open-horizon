@@ -104,16 +104,21 @@ bool mesh::load(const void *data, size_t size)
             assume(f2 == 0);
             //test.add_point(p, nya_math::vec4(0.0, 1.0, 0.0, 1.0));
             //test.add_line(p, p2, nya_math::vec4(0.0, 1.0, 0.0, 1.0));
-            nya_math::aabb b;
-            b.origin = p;
-            //b.delta = nya_math::vec3(f, f, f);
-            b.delta = p2;
-
-            m_box = b;
+            bbox.origin = p;
+            //bbox.delta = nya_math::vec3(f, f, f);
+            bbox.delta = p2;
         }
+
+        //auto last = c.offset + c.size - reader.get_offset();
+        //print_data(reader, reader.get_offset(), last, 4);
+
+        //print_data(reader, reader.get_offset(), last);
+        reader.seek(c.offset + c.size);
     }
-    
-    //print_data(reader);
+
+    assert(reader.get_offset() == header.offset_to_unknown);
+
+    //print_data(reader, reader.get_offset(), reader.get_remained(), 4);
 
     return true;
 }

@@ -6,6 +6,7 @@
 
 #include "plane_params.h"
 #include "math/quaternion.h"
+#include "math/quadtree.h"
 #include "mesh.h"
 #include <functional>
 #include <vector>
@@ -135,6 +136,7 @@ private:
     };
 
     std::vector<instance> m_instances;
+    nya_math::quadtree m_qtree;
 };
 
 //------------------------------------------------------------

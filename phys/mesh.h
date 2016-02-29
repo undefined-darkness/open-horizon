@@ -11,14 +11,12 @@ namespace phys
 {
 //------------------------------------------------------------
 
-class mesh
+struct mesh
 {
+    nya_math::aabb bbox;
+
 public:
     bool load(const void *data, size_t size);
-    const nya_math::aabb &get_box() const { return m_box; }
-
-private:
-    nya_math::aabb m_box;
 };
 
 //------------------------------------------------------------

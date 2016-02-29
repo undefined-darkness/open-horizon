@@ -42,6 +42,9 @@ void world::set_location(const char *name)
     m_heights.clear();
     m_meshes.clear();
 
+    const int size = 64000;
+    m_qtree = nya_math::quadtree(-size, -size, size * 2, size * 2, 10);
+
     fhm_file fhm;
     if (!fhm.open((std::string("Map/") + name + ".fhm").c_str()))
         return;
@@ -79,8 +82,9 @@ void world::set_location(const char *name)
         fhm.read_chunk_data(i, buf.get_data());
         nya_memory::memory_reader reader(buf.get_data(), buf.get_size());
         reader.seek(128);
-        auto off = (uint32_t)m_instances.size();
-        auto count = reader.read<uint32_t>();
+        const auto off = m_instances.size();
+        const auto count = reader.read<uint32_t>();
+        reader.skip(16);
         m_instances.resize(off + count);
         for (uint32_t j = 0; j < count; ++j)
         {
@@ -88,8 +92,11 @@ void world::set_location(const char *name)
             inst.mesh_idx = i;
             inst.pos = reader.read<nya_math::vec3>();
             inst.yaw = reader.read<float>();
-            inst.bbox = nya_math::aabb(m_meshes[i].get_box(), inst.pos,
+            inst.bbox = nya_math::aabb(m_meshes[i].bbox, inst.pos,
                                        nya_math::quat(0.0f, inst.yaw, 0.0f), nya_math::vec3(1.0f, 1.0f, 1.0f));
+            m_qtree.add_object(inst.bbox, int(off+j));
+
+            //get_debug_draw().add_aabb(inst.bbox);
         }
     }
 
@@ -163,6 +170,20 @@ void world::update_planes(int dt, hit_hunction on_hit)
             if (on_hit)
                 on_hit(std::static_pointer_cast<object>(p), object_ptr());
         }
+/*
+        //test
+        get_debug_draw().clear();
+        static std::vector<int> insts;
+
+        nya_math::aabb test;
+        test.origin = p->pos;
+        test.delta.set(10, 10, 10);
+
+        //m_qtree.get_objects(p->pos, insts);
+        m_qtree.get_objects(test, insts);
+        for (auto &i: insts)
+            get_debug_draw().add_aabb(m_instances[i].bbox);
+*/
     }
 }
 
@@ -176,7 +197,35 @@ void world::update_missiles(int dt, hit_hunction on_hit)
         m->update(dt);
 
         auto &p = m->pos;
-        if (p.y < get_height(p.x, p.z) + 1.0f)
+
+        bool hit = p.y < get_height(p.x, p.z) + 1.0f;
+        if (!hit)
+        {
+            static std::vector<int> insts;
+            if (m_qtree.get_objects(p, insts))
+            {
+                for (auto &i:insts)
+                {
+                    const auto &mi = m_instances[i];
+                    //local pos
+                    auto lp = (p - mi.pos);
+                    //ToDo
+                    std::swap(lp.y,lp.z);
+                    lp.xy().rotate(-mi.yaw);
+                    std::swap(lp.y,lp.z);
+
+                    auto &m = m_meshes[mi.mesh_idx];
+                    if (m.bbox.test_intersect(lp))
+                    {
+                        //ToDo: further test
+                        hit = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (hit)
         {
             m->pos -= m->vel * (dt * 0.001f);
             m->vel = vec3();
