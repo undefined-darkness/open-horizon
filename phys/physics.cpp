@@ -91,11 +91,27 @@ void world::set_location(const char *name)
             auto &inst = m_instances[off + j];
             inst.mesh_idx = i;
             inst.pos = reader.read<nya_math::vec3>();
-            inst.yaw = reader.read<float>();
+            const float yaw = reader.read<float>();
+            inst.yaw_s = sinf(yaw);
+            inst.yaw_c = cosf(yaw);
             inst.bbox = nya_math::aabb(m_meshes[i].bbox, inst.pos,
-                                       nya_math::quat(0.0f, inst.yaw, 0.0f), nya_math::vec3(1.0f, 1.0f, 1.0f));
+                                       nya_math::quat(0.0f, yaw, 0.0f), nya_math::vec3(1.0f, 1.0f, 1.0f));
             m_qtree.add_object(inst.bbox, int(off+j));
 
+            /*
+            auto &m = m_meshes[i];
+            for (auto &s: m.m_shapes)
+            {
+                for(auto &pl: s.pls)
+                {
+                    for(int i = 0; i < 4; ++i)
+                    {
+                        auto p = nya_math::vec3(((float *)&pl.p.x)[i],((float *)&pl.p.y)[i],((float *)&pl.p.z)[i]);
+                        get_debug_draw().add_point(inst.transform(p));
+                    }
+                }
+            }
+            */
             //get_debug_draw().add_aabb(inst.bbox);
         }
     }
@@ -161,9 +177,37 @@ void world::update_planes(int dt, hit_hunction on_hit)
     {
         p->update(dt);
 
-        if (p->pos.y < get_height(p->pos.x, p->pos.z) + 5.0f)
+        const auto pt = p->pos + p->vel * (dt * 0.001f);
+
+        bool hit = pt.y < get_height(pt.x, pt.z) + 5.0f;
+        if (!hit)
         {
-            p->pos -= p->vel * (dt * 0.001f);
+            //ToDo: get plane's structure gauge points
+
+            static std::vector<int> insts;
+            if (m_qtree.get_objects(pt, insts))
+            {
+                for (auto &i:insts)
+                {
+                    const auto &mi = m_instances[i];
+
+                    auto lpt = mi.transform_inv(pt), lpf = mi.transform_inv(p->pos);
+                    auto &m = m_meshes[mi.mesh_idx];
+                    if (!m.bbox.test_intersect(lpt))
+                        continue;
+
+                    if(!m.trace(lpf, lpt))
+                        continue;
+
+                    //printf("hit instance %d mesh %d\n", i, mi.mesh_idx);
+                    hit = true;
+                    break;
+                }
+            }
+        }
+
+        if (hit)
+        {
             //p->rot = quat(-0.5, p->rot.get_euler().y, 0.0);
             p->vel = vec3();
 
@@ -196,38 +240,36 @@ void world::update_missiles(int dt, hit_hunction on_hit)
     {
         m->update(dt);
 
-        auto &p = m->pos;
+        const auto pt = m->pos + m->vel * (dt * 0.001f);
 
-        bool hit = p.y < get_height(p.x, p.z) + 1.0f;
+        bool hit = pt.y < get_height(pt.x, pt.z) + 1.0f;
         if (!hit)
         {
             static std::vector<int> insts;
-            if (m_qtree.get_objects(p, insts))
+            if (m_qtree.get_objects(pt, insts))
             {
                 for (auto &i:insts)
                 {
                     const auto &mi = m_instances[i];
-                    //local pos
-                    auto lp = (p - mi.pos);
-                    //ToDo
-                    std::swap(lp.y,lp.z);
-                    lp.xy().rotate(-mi.yaw);
-                    std::swap(lp.y,lp.z);
 
+                    auto lpt = mi.transform_inv(pt), lpf = mi.transform_inv(m->pos);
                     auto &m = m_meshes[mi.mesh_idx];
-                    if (m.bbox.test_intersect(lp))
-                    {
-                        //ToDo: further test
-                        hit = true;
-                        break;
-                    }
+                    if (!m.bbox.test_intersect(lpt))
+                        continue;
+
+                    if(!m.trace(lpf, lpt))
+                        continue;
+
+                    //printf("hit instance %d mesh %d\n", i, mi.mesh_idx);
+                    hit = true;
+                    break;
                 }
             }
         }
 
         if (hit)
         {
-            m->pos -= m->vel * (dt * 0.001f);
+            //m->pos -= m->vel * (dt * 0.001f);
             m->vel = vec3();
 
             if (on_hit)
@@ -476,6 +518,22 @@ void missile::update(int dt)
     }
 
     pos += vel * kdt;
+}
+
+//------------------------------------------------------------
+
+nya_math::vec3 world::instance::transform(const nya_math::vec3 &v) const
+{
+    return nya_math::vec3(yaw_c*v.x+yaw_s*v.z, v.y, yaw_c*v.z-yaw_s*v.x) + pos;
+}
+
+//------------------------------------------------------------
+
+nya_math::vec3 world::instance::transform_inv(const nya_math::vec3 &v) const
+{
+    nya_math::vec3 r = v - pos;
+    r.set(yaw_c*r.x-yaw_s*r.z, r.y, yaw_s*r.x+yaw_c*r.z);
+    return r;
 }
 
 //------------------------------------------------------------

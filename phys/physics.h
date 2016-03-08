@@ -131,8 +131,12 @@ private:
     {
         int mesh_idx = -1;
         nya_math::vec3 pos;
-        float yaw = 0.0f;
+        float yaw_s, yaw_c = 0.0f;
         nya_math::aabb bbox;
+
+    public:
+        nya_math::vec3 transform(const nya_math::vec3 &v) const;
+        nya_math::vec3 transform_inv(const nya_math::vec3 &v) const;
     };
 
     std::vector<instance> m_instances;

@@ -6,8 +6,6 @@
 #include "util/util.h"
 #include "memory/memory_reader.h"
 
-//------------------------------------------------------------
-
 namespace phys
 {
 //------------------------------------------------------------
@@ -34,10 +32,8 @@ bool mesh::load(const void *data, size_t size)
     };
 
     colh_header header = reader.read<colh_header>();
-    reader.seek(0);
-    //print_data(reader, 0, reader.get_remained());
 
-    assume(header.chunk_size == reader.get_remained());
+    assume(header.chunk_size == size);
     assume(header.unknown_zero == 0);
 
     struct colh_info
@@ -48,7 +44,8 @@ bool mesh::load(const void *data, size_t size)
         uint offset_to_unknown2;
         ushort unknown;
         short unknown2;
-        uint unknown_zero2;
+        ushort unknown_zero2;
+        ushort shapes_count;
         ushort vcount;
         ushort unknown3;
         ushort unknown4;
@@ -79,11 +76,7 @@ bool mesh::load(const void *data, size_t size)
         colh_chunk &c = chunks[i];
         reader.seek(c.offset);
 
-        //print_data(reader,reader.get_offset(),sizeof(colh_info));
-
         c.header = reader.read<colh_info>();
-
-        //print_data(reader,reader.get_offset(),c.size-sizeof(colh_info));
 
         assume(c.header.unknown_32 == 32);
         assume(c.header.unknown_zero == 0);
@@ -107,20 +100,85 @@ bool mesh::load(const void *data, size_t size)
             bbox.origin = p;
             //bbox.delta = nya_math::vec3(f, f, f);
             bbox.delta = p2;
+
+            reader.skip(24*sizeof(float)); //crude shape
         }
 
-        //auto last = c.offset + c.size - reader.get_offset();
-        //print_data(reader, reader.get_offset(), last, 4);
+        uint zero[4];
+        for (auto &z: zero)
+        {
+            z = reader.read<uint>();
+            assume(z == 0);
+        }
 
-        //print_data(reader, reader.get_offset(), last);
-        reader.seek(c.offset + c.size);
+        std::vector<uint> shape_offsets(c.header.shapes_count);
+        for (auto &s: shape_offsets)
+            s = reader.read<uint>();
+
+        std::vector<uint> shape_sizes(c.header.shapes_count);
+        for (auto &s: shape_sizes)
+            s = reader.read<ushort>() * 16;
+
+        auto last = c.offset + c.size - reader.get_offset();
+        auto last_buf = (const char *)reader.get_data();
+        for (int i = 0; i < last; ++i)
+            assume(last_buf[i] == 0);
+
+        m_shapes.resize(c.header.shapes_count);
+        for(int i = 0; i < c.header.shapes_count; ++i)
+        {
+            auto &s = m_shapes[i];
+            reader.seek(shape_offsets[i]);
+
+            struct shape_header
+            {
+                ushort size_div_16;
+                ushort count;
+                uint count4;
+                uint zero[2];
+            };
+
+            auto header = reader.read<shape_header>();
+            assume(header.size_div_16 * 16 == shape_sizes[i]);
+            assume(header.zero[0] == 0 && header.zero[1] == 0);
+            assume(header.count4 == header.count * 4);
+
+            s.pls.resize(header.count);
+            for (auto &p: s.pls)
+                p = reader.read<pl>();
+        }
     }
 
-    assert(reader.get_offset() == header.offset_to_unknown);
+    assume(reader.get_remained() == 0);
 
     //print_data(reader, reader.get_offset(), reader.get_remained(), 4);
 
     return true;
+}
+
+//------------------------------------------------------------
+
+bool mesh::trace(const nya_math::vec3 &from, const nya_math::vec3 &to) const
+{
+    const vec3_float4 from4 = vec3_float4(from);
+    const vec3_float4 dpu = vec3_float4(from - to);
+
+    for (const auto &s: m_shapes)
+    {
+        for (const auto &pl: s.pls)
+        {
+            const vec3_float4 dp = from4 - pl.p;
+            const float4 u = dpu.dot(pl.v), p = dp.dot(pl.v);
+            const vec3_float4 c = dpu.cross(dp);
+            const float4 l = -c.dot(pl.lv), r = c.dot(pl.rv);
+            const static float4 zero;
+            const float4 chk = u < zero | p < zero | r < zero | l < zero | u < p | u < r | u < l + r;
+            if (chk.is_zero())
+                return true;
+        }
+    }
+
+    return false;
 }
 
 //------------------------------------------------------------

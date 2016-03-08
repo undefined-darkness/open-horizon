@@ -174,6 +174,7 @@
 		F5C6D39C1AF96A08006FB7E6 /* postprocess.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = postprocess.txt; path = ../resources/postprocess.txt; sourceTree = "<group>"; };
 		F5C6D39D1AF96A08006FB7E6 /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shaders; path = ../resources/shaders; sourceTree = "<group>"; };
 		F5C6D3A11AF96B4B006FB7E6 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = ../util/util.h; sourceTree = "<group>"; };
+		F5C724A41C8F124700EF0A7B /* simd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = simd.h; path = ../util/simd.h; sourceTree = "<group>"; };
 		F5D7969F19B3432C006269F0 /* pugixml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pugixml.cpp; path = "../deps/pugixml-1.4/src/pugixml.cpp"; sourceTree = "<group>"; };
 		F5D796A019B3432C006269F0 /* pugiconfig.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugiconfig.hpp; path = "../deps/pugixml-1.4/src/pugiconfig.hpp"; sourceTree = "<group>"; };
 		F5D796A119B3432C006269F0 /* pugixml.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugixml.hpp; path = "../deps/pugixml-1.4/src/pugixml.hpp"; sourceTree = "<group>"; };
@@ -352,6 +353,7 @@
 				F504CB231C62942E00FBB72D /* config.h */,
 				F561C5FA1AFD24E900D8DD14 /* half.h */,
 				F5C6D37C1AF968E7006FB7E6 /* params.h */,
+				F5C724A41C8F124700EF0A7B /* simd.h */,
 				F5C6D3A11AF96B4B006FB7E6 /* util.h */,
 				F5C6D37D1AF968E7006FB7E6 /* xml.h */,
 			);
