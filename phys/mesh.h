@@ -20,7 +20,7 @@ public:
     bool load(const void *data, size_t size);
 
     bool trace(const nya_math::vec3 &from, const nya_math::vec3 &to) const;
-    //bool trace(const nya_math::vec3 &from, const nya_math::vec3 &to, nya_math::vec3 &result) const; //ToDo
+    bool trace(const nya_math::vec3 &from, const nya_math::vec3 &to, float &result) const;
 
 private:
     struct pl { vec3_float4 p, lv, rv, v; };

@@ -173,12 +173,46 @@ bool mesh::trace(const nya_math::vec3 &from, const nya_math::vec3 &to) const
             const float4 l = -c.dot(pl.lv), r = c.dot(pl.rv);
             const static float4 zero;
             const float4 chk = u < zero | p < zero | r < zero | l < zero | u < p | u < r | u < l + r;
-            if (chk.is_zero())
+            if (chk.is_zero_or_nan())
                 return true;
         }
     }
 
     return false;
+}
+
+//------------------------------------------------------------
+
+bool mesh::trace(const nya_math::vec3 &from, const nya_math::vec3 &to, float &result) const
+{
+    align16 float lf[4];
+    result = 1.0f;
+    bool hit = false;
+
+    const vec3_float4 from4 = vec3_float4(from);
+    const vec3_float4 dpu = vec3_float4(from - to);
+
+    for (const auto &s: m_shapes)
+    {
+        for (const auto &pl: s.pls)
+        {
+            const vec3_float4 dp = from4 - pl.p;
+            const float4 u = dpu.dot(pl.v), p = dp.dot(pl.v);
+            const vec3_float4 c = dpu.cross(dp);
+            const float4 l = -c.dot(pl.lv), r = c.dot(pl.rv);
+            const static float4 zero;
+            const float4 chk = u <= zero | p < zero | r < zero | l < zero | u < p | u < r | u < l + r;
+            if (chk.is_zero_or_nan())
+            {
+                hit = true;
+                float4 l = p / u + chk;
+                l.get(lf);
+                for (auto l: lf) if (l > 0.0f && l < result) result = l;
+            }
+        }
+    }
+
+    return hit;
 }
 
 //------------------------------------------------------------
