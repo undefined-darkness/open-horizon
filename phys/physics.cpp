@@ -165,6 +165,46 @@ void world::spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_
     b.time = 1500; //ToDo
     b.vel = dir * 1000.0f; //ToDo
 
+    const float t = (b.time * 0.001f);
+    auto to_dir = b.vel * t;
+    to_dir.y -= 9.8f * t * t * 0.5f;
+
+    const auto to = pos + to_dir;
+
+    static std::vector<int> insts;
+    float result = 1.0f, min_result = 1.0f;
+    bool hit = false;
+    nya_math::aabb box(nya_math::vec3::min(pos,to), nya_math::vec3::max(pos,to));
+    if (m_qtree.get_objects(box, insts))
+    {
+        for (auto &i:insts)
+        {
+            const auto &mi = m_instances[i];
+
+            const auto lpt = mi.transform_inv(to), lpf = mi.transform_inv(pos);
+            auto &m = m_meshes[mi.mesh_idx];
+            //if (!m.bbox.test_intersect(lpt)) //ToDo: trace bbox
+            //    continue;
+
+            if(!m.trace(lpf, lpt, result))
+                continue;
+
+            if(result < min_result)
+                min_result = result;
+
+            hit = true;
+            //printf("hit instance %d mesh %d\n", i, mi.mesh_idx);
+        }
+    }
+
+    if (hit)
+    {
+        b.time *= min_result;
+        auto p = pos + to_dir * min_result;
+
+        //get_debug_draw().add_point(p, nya_math::vec4(1.0f, 0.5f, 0.2f, 1.0f));
+    }
+
     m_bullets.push_back(b);
 }
 
@@ -199,7 +239,6 @@ void world::update_planes(int dt, hit_hunction on_hit)
                     if(!m.trace(lpf, lpt))
                         continue;
 
-                    //printf("hit instance %d mesh %d\n", i, mi.mesh_idx);
                     hit = true;
                     break;
                 }
@@ -260,7 +299,6 @@ void world::update_missiles(int dt, hit_hunction on_hit)
                     if(!m.trace(lpf, lpt))
                         continue;
 
-                    //printf("hit instance %d mesh %d\n", i, mi.mesh_idx);
                     hit = true;
                     break;
                 }
@@ -290,7 +328,7 @@ void world::update_bullets(int dt, hit_hunction on_hit)
     {
         b.time -= dt;
         b.pos += b.vel * kdt;
-        b.vel.y -= 9.8 * kdt;
+        b.vel.y -= 9.8f * kdt;
     }
 }
 

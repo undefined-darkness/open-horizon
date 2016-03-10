@@ -12,7 +12,6 @@ struct float4: public nya_math::simd_vec4
 {
     float4 (): float4(_mm_set1_ps(0)) {}
     float4 (__m128 v): nya_math::simd_vec4 (v) {}
-    float4 (const float4 &v): float4(v.xmm) {}
     float4 (float v): float4(_mm_set1_ps(v)) {}
 
     float4 operator - () const { return float4(_mm_xor_ps(xmm, _mm_set1_ps(-0.f))); }
@@ -24,8 +23,9 @@ struct float4: public nya_math::simd_vec4
 
     float4 operator | (const float4 &v) const { return float4(_mm_or_ps(xmm, v.xmm)); }
     float4 operator < (const float4 &v) const { return float4(_mm_cmplt_ps(xmm, v.xmm)); }
+    float4 operator <= (const float4 &v) const { return float4(_mm_cmple_ps(xmm, v.xmm)); }
 
-    bool is_zero() const { const static float4 zero; return _mm_movemask_ps(_mm_cmpeq_ps(zero.xmm, xmm)) != 0; }
+    bool is_zero_or_nan() const { const static float4 zero; return _mm_movemask_ps(_mm_cmpeq_ps(zero.xmm, xmm)) != 0; }
 };
 
 //------------------------------------------------------------

@@ -578,7 +578,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     if (controls.mgun && render->is_mgun_ready())
     {
         mgun_fire_update += dt;
-        const int mgun_update_time = 300;
+        const int mgun_update_time = 150;
         if (mgun_fire_update > mgun_update_time)
         {
             mgun_fire_update %= mgun_update_time;
