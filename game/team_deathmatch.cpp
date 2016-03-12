@@ -61,7 +61,7 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
             else
             {
                 ai b;
-                if(easter_edge)
+                if (easter_edge)
                 {
                     p = m_world.add_plane("f14d", 3, is_player);
                     b.set_follow(m_player, vec3(10.0, 0.0, -10.0));

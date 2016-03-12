@@ -47,7 +47,9 @@ bool location::load(const char *name)
         if (t.is_valid() && t->get_height() > 0)
         {
             m_tree_depth.build(0, t->get_width(), t->get_height(), nya_render::texture::depth16);
-            m_tree_fbo.set_color_target(t->internal().get_shared_data()->tex);
+            auto tex = t->internal().get_shared_data()->tex;
+            tex.set_wrap(nya_render::texture::wrap_clamp, nya_render::texture::wrap_clamp);
+            m_tree_fbo.set_color_target(tex);
             m_tree_fbo.set_depth_target(m_tree_depth.internal().get_shared_data()->tex);
         }
     }

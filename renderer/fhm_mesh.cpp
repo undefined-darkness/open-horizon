@@ -169,8 +169,10 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
     for (int i = 0; i < m.get_chunks_count(); ++i)
     {
         auto t = m.get_chunk_type(i);
-        if (t == 'RXTM')
+        if (t != 'ETAM')
             continue;
+
+        assert(m.get_chunk_size(i) > 0);
 
         if (material_idx >=0 && mat_idx != material_idx)
         {
@@ -197,8 +199,6 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
         };
 
         auto header = r.read<mate_header>();
-        if (memcmp(header.sign, "MATE", 4) != 0)
-            return false;
 
         //printf("MATE %d %d\n", header.groups_count, header.render_groups_count); continue;
 

@@ -493,7 +493,10 @@ void aircraft::set_dead(bool dead)
 {
     m_dead = dead;
     if (m_dead)
+    {
+        m_fire_mgun = false;
         m_fire_trail = fire_trail(5.0f);
+    }
 }
 
 //------------------------------------------------------------
