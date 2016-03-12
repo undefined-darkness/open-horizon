@@ -22,8 +22,11 @@ class color_baker
 {
 public:
     void set_base(const char *name) { m_mat.set_texture("base", nya_scene::texture(name)); }
+    void set_base(const nya_scene::texture &tex) { m_mat.set_texture("base", tex); }
     void set_colx(const char *name) { m_mat.set_texture("colx", nya_scene::texture(name)); }
+    void set_colx(const nya_scene::texture &tex) { m_mat.set_texture("colx", tex); }
     void set_coly(const char *name) { m_mat.set_texture("coly", nya_scene::texture(name)); }
+    void set_coly(const nya_scene::texture &tex) { m_mat.set_texture("coly", tex); }
 
     void set_color(unsigned int idx, const nya_math::vec3 &color)
     {
@@ -302,8 +305,11 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
 
     m_half_flaps_flag = name_str == "f22a" || name_str == "m21b" || name_str == "av8b";
 
-    std::string name_tmp_str = "p_" + name_str; //ToDo: d_
+    std::string name_tmp_str = "p_" + name_str; //ToDo: load d_ models
     name_str = (player ? "p_" : "d_") + name_str;
+
+    const std::string tex_pref = std::string("model_id/tdb/mech/") + (player ? "plyr/" : "airp/");
+    const std::string mesh_pref = std::string("model_id/mech/") + "plyr/"; //ToDo: + (player ? "plyr/" : "airp/");
 
     auto info = aircraft_information::get().get_info(name);
     if (!info)
@@ -315,8 +321,6 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     auto &color = info->colors[color_idx];
 
     m_camera_offset = info->camera_offset;
-
-    std::string tex_pref = std::string("model_id/tdb/mech/") + (player ? "plyr/" : "airp/");
 
     m_mesh.load(name_tmp_str.c_str(), params);
 
@@ -343,10 +347,43 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     sprintf(cfldr, "%02d", color.coledit_idx);
     std::string cfldr2 = std::string(cfldr) + (player ? "" : "_l");
 
+    const std::string mat_name = mesh_pref + name_tmp_str + "/" + name_tmp_str + "_pcol" + cfldr + ".fhm";
+    fhm_materials mat;
+    mat.load(mat_name.c_str());
+    assert(!mat.materials.empty());
+
     color_baker baker;
-    baker.set_base((tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_col.img").c_str());
-    baker.set_colx((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mkx.img").c_str());
-    baker.set_coly((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mky.img").c_str());
+
+    if(!mat.textures.empty())
+    {
+        assert(mat.textures.size() == 2);
+
+        baker.set_base(mat.textures[0]);
+        auto &spec_tex = mat.textures[1];
+
+        m_mesh.set_texture(0, "specular", spec_tex);
+        m_mesh.set_texture(m_engine_lod_idx, "specular", spec_tex);
+
+         // made up _pcoledit name to bind data.pac.xml entry somehow
+        const std::string mat_name = mesh_pref + name_tmp_str + "/" + name_tmp_str + "_pcoledit" + cfldr + ".fhm";
+
+        fhm_materials mat;
+        mat.load(mat_name.c_str());
+        assert(mat.textures.size() == 2);
+
+        baker.set_colx(mat.textures[0]);
+        baker.set_coly(mat.textures[1]);
+    }
+    else
+    {
+        baker.set_base((tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_col.img").c_str());
+        baker.set_colx((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mkx.img").c_str());
+        baker.set_coly((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mky.img").c_str());
+
+        std::string spec_tex = tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_spe.img";
+        m_mesh.set_texture(0, "specular", spec_tex.c_str());
+        m_mesh.set_texture(m_engine_lod_idx, "specular", spec_tex.c_str());
+    }
 
     for (int i = 0; i < 6; ++i)
         baker.set_color(i, color.colors[i]);
@@ -355,17 +392,9 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     m_mesh.set_texture(0, "diffuse", diff_tex );
     m_mesh.set_texture(m_engine_lod_idx, "diffuse", diff_tex );
 
-    std::string spec_tex = tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_spe.img";
-    m_mesh.set_texture(0, "specular", spec_tex.c_str());
-    m_mesh.set_texture(m_engine_lod_idx, "specular", spec_tex.c_str());
-
-    player = true, name_str = name_tmp_str; //ToDo d_
-
-    std::string mat_name = std::string("model_id/mech/") + (player ? "plyr/" : "airp/") + name_str + "/" + name_str + "_pcol" + cfldr + ".fhm";
-
-    m_mesh.load_material(0, 0, mat_name.c_str(), "shaders/player_plane.nsh");
-    if (player && m_engine_lod_idx >= 0)
-        m_mesh.load_material(m_engine_lod_idx, 2, mat_name.c_str(), "shaders/player_plane.nsh");
+    m_mesh.set_material(0, mat.materials[0], "shaders/player_plane.nsh");
+    if (player && m_engine_lod_idx >= 0 && mat.materials.size() > 2)
+        m_mesh.set_material(m_engine_lod_idx, mat.materials[2], "shaders/player_plane.nsh");
 
     m_mesh.set_relative_anim_time(0, 'rudl', 0.5);
     m_mesh.set_relative_anim_time(0, 'rudr', 0.5);

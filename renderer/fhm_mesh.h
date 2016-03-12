@@ -16,11 +16,31 @@ struct fhm_mop2;
 
 //------------------------------------------------------------
 
+struct fhm_materials
+{
+public:
+    bool load(const char *file_name);
+
+public:
+    typedef std::vector< std::pair<std::string, nya_math::vec4> > material_params;
+
+    struct material
+    {
+        std::vector<material_params> params;
+        std::vector<uint16_t> render_groups;
+        std::vector<std::pair<uint16_t,uint16_t> > groups_offset_count;
+    };
+
+    std::vector<material> materials;
+    std::vector<nya_scene::texture> textures;
+};
+
+//------------------------------------------------------------
+
 class fhm_mesh
 {
 public:
     bool load(const char *file_name);
-    bool load_material(int lod_idx, int material_idx, const char *file_name, const char *shader);
 
 public:
     void draw(int lod_idx);
@@ -35,6 +55,8 @@ public:
     float get_relative_anim_time(int lod_idx, unsigned int anim_hash_id);
     void set_relative_anim_time(int lod_idx, unsigned int anim_hash_id, float time);
     void set_anim_speed(int lod_idx, unsigned int anim_hash_id, float speed);
+
+    void set_material(int lod_idx, const fhm_materials::material &m, const char *shader);
 
     void set_texture(int lod_idx, const char *semantics, const nya_scene::texture &tex);
     void set_texture(int lod_idx, const char *semantics, const char *file_name)

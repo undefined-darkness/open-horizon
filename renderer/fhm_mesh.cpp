@@ -161,27 +161,38 @@ bool fhm_mesh::load(const char *file_name)
 
 //------------------------------------------------------------
 
-bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_name, const char *shader)
+bool fhm_materials::load(const char *file_name)
 {
+    materials.clear();
+    textures.clear();
+
     fhm_file m;
-    m.open(file_name);
-    int mat_idx = 0;
+    if (!m.open(file_name))
+        return false;
+
     for (int i = 0; i < m.get_chunks_count(); ++i)
     {
         auto t = m.get_chunk_type(i);
-        if (t != 'ETAM')
-            continue;
 
-        assert(m.get_chunk_size(i) > 0);
-
-        if (material_idx >=0 && mat_idx != material_idx)
+        if (t == ' SDD')
         {
-            ++mat_idx;
+            const auto size = m.get_chunk_size(i);
+            nya_scene::resource_data data(size);
+            m.read_chunk_data(i, data.get_data());
+            nya_scene::shared_texture st;
+            nya_scene::texture::load_dds(st, data, "");
+            nya_scene::texture t;
+            t.create(st);
+            textures.push_back(t);
             continue;
         }
 
-        typedef std::vector< std::pair<std::string, nya_math::vec4> > material_params;
-        std::vector<material_params> material;
+        if (t != 'ETAM')
+            continue;
+
+        material mat;
+
+        assert(m.get_chunk_size(i) > 0);
 
         nya_memory::tmp_buffer_scoped b(m.get_chunk_size(i));
         m.read_chunk_data(i, b.get_data());
@@ -200,13 +211,6 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
 
         auto header = r.read<mate_header>();
 
-        //printf("MATE %d %d\n", header.groups_count, header.render_groups_count); continue;
-
-        assert(!m_lods.empty());
-
-        material.resize(header.mat_count);
-        r.seek(header.offset_to_mat_offsets);
-
         struct mat_offset
         {
             uint32_t offset;
@@ -214,6 +218,8 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
             uint32_t unknown;
         };
 
+        r.seek(header.offset_to_mat_offsets);
+        mat.params.resize(header.mat_count);
         std::vector<mat_offset> mat_offsets(header.mat_count);
         for (size_t j = 0; j < mat_offsets.size(); ++j)
         {
@@ -241,7 +247,7 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
             assume(header.zero == 0 && header.zero3[0] == 0 && header.zero3[1] == 0 && header.zero3[2] == 0);
             r.skip(header.unknown_count * 24);
 
-            auto &params = material[j];
+            auto &params = mat.params[j];
 
             while (r.get_remained())
             {
@@ -270,9 +276,8 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
             }
         }
 
-        std::vector<uint16_t> render_groups(header.render_groups_count);
-
         r.seek(header.offset_to_render_groups);
+        mat.render_groups.resize(header.render_groups_count);
         for (uint16_t j = 0; j < header.render_groups_count; ++j)
         {
             struct bind
@@ -286,19 +291,13 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
             assert(b.idx == j);
             assume(b.zero[0] == 0 && b.zero[1] == 0 && b.zero[2] == 0);
 
-            render_groups[b.idx] = b.mat_idx;
+            mat.render_groups[b.idx] = b.mat_idx;
         }
 
-        int idx = 0;
         r.seek(header.offset_to_groups);
 
-        auto &l = m_lods[lod_idx];
-
-        assert(l.params_tex.is_valid());
-        assert(l.params_tex->get_width() == header.render_groups_count);
-
-        unsigned int rg_idx = 0;
-        for (uint16_t j = 0; j < header.groups_count; ++j)
+        mat.groups_offset_count.resize(header.groups_count);
+        for (auto &g: mat.groups_offset_count)
         {
             struct bind
             {
@@ -308,42 +307,64 @@ bool fhm_mesh::load_material(int lod_idx, int material_idx, const char *file_nam
             };
 
             auto b = r.read<bind>();
-            assert(b.render_groups_count + b.render_groups_offset <= render_groups.size());
+            assert(b.render_groups_count + b.render_groups_offset <= mat.render_groups.size());
             assume(b.zero == 0);
 
-            for (int k = 0; k < b.render_groups_count; ++k, ++rg_idx)
-            {
-                auto &m = l.mesh.modify_material(idx++);
-                m.get_default_pass().set_shader(nya_scene::shader(shader));
-
-                auto r = render_groups[b.render_groups_offset + k];
-
-                assert(r < material.size());
-
-                for (auto &p: material[r])
-                {
-                    if (p.first.find("HASH") != std::string::npos)
-                        continue;
-
-                    if (p.first.find("FLAG") != std::string::npos) //ToDo
-                        continue;
-
-                    if (p.first == "NU_ACE_vSpecularParam")
-                        l.set_param(lod::specular_param, rg_idx, p.second);
-                    else if (p.first == "NU_ACE_vIBLParam")
-                        l.set_param(lod::ibl_param, rg_idx, p.second);
-                    else if (p.first == "NU_ACE_vRimLightMtr")
-                        l.set_param(lod::rim_light_mtr, rg_idx, p.second);
-                }
-            }
+            g.first = b.render_groups_offset;
+            g.second = b.render_groups_count;
         }
 
-        l.update_params_tex();
-        ++mat_idx;
+        materials.push_back(mat);
     }
 
     m.close();
     return true;
+}
+
+//------------------------------------------------------------
+
+void fhm_mesh::set_material(int lod_idx, const fhm_materials::material &m, const char *shader)
+{
+    assert(!m_lods.empty());
+
+    int idx = 0;
+    auto &l = m_lods[lod_idx];
+
+    assert(l.params_tex.is_valid());
+    assert(l.params_tex->get_width() == m.render_groups.size());
+
+    unsigned int rg_idx = 0;
+    for (const auto &g: m.groups_offset_count)
+    {
+        for (int k = 0; k < g.second; ++k, ++rg_idx)
+        {
+            const auto &r = m.render_groups[g.first + k];
+            const auto &p = m.params;
+
+            auto &m = l.mesh.modify_material(idx++);
+            m.get_default_pass().set_shader(nya_scene::shader(shader));
+
+            assert(r < p.size());
+
+            for (auto &p: p[r])
+            {
+                if (p.first.find("HASH") != std::string::npos)
+                    continue;
+
+                if (p.first.find("FLAG") != std::string::npos) //ToDo
+                    continue;
+
+                if (p.first == "NU_ACE_vSpecularParam")
+                    l.set_param(lod::specular_param, rg_idx, p.second);
+                else if (p.first == "NU_ACE_vIBLParam")
+                    l.set_param(lod::ibl_param, rg_idx, p.second);
+                else if (p.first == "NU_ACE_vRimLightMtr")
+                    l.set_param(lod::rim_light_mtr, rg_idx, p.second);
+            }
+        }
+    }
+
+    l.update_params_tex();
 }
 
 //------------------------------------------------------------

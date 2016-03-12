@@ -55,9 +55,9 @@ public:
         return m_mesh.set_texture(lod_idx, semantics, file_name);
     }
 
-    bool load_material(int lod_idx, int material_idx, const char *file_name, const char *shader)
+    void set_material(int lod_idx, const fhm_materials::material &m, const char *shader)
     {
-        return m_mesh.load_material(lod_idx, material_idx, file_name, shader);
+        return m_mesh.set_material(lod_idx, m, shader);
     }
 
     int get_bones_count(int lod_idx);
