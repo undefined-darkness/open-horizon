@@ -21,11 +21,8 @@ namespace renderer
 class color_baker
 {
 public:
-    void set_base(const char *name) { m_mat.set_texture("base", nya_scene::texture(name)); }
     void set_base(const nya_scene::texture &tex) { m_mat.set_texture("base", tex); }
-    void set_colx(const char *name) { m_mat.set_texture("colx", nya_scene::texture(name)); }
     void set_colx(const nya_scene::texture &tex) { m_mat.set_texture("colx", tex); }
-    void set_coly(const char *name) { m_mat.set_texture("coly", nya_scene::texture(name)); }
     void set_coly(const nya_scene::texture &tex) { m_mat.set_texture("coly", tex); }
 
     void set_color(unsigned int idx, const nya_math::vec3 &color)
@@ -52,7 +49,7 @@ public:
         res.tex.build_texture(0, tp->get_width(), tp->get_height(), nya_render::texture::color_rgba);
         fbo.set_color_target(res.tex);
 
-        m_mat.get_pass(m_mat.add_pass(nya_scene::material::default_pass)).set_shader(nya_scene::shader("shaders/plane_camo.nsh"));
+        m_mat.get_default_pass().set_shader(nya_scene::shader("shaders/plane_camo.nsh"));
         m_mat.set_param_array(m_mat.get_param_idx("colors"), m_colors);
 
         fbo.bind();
@@ -310,6 +307,7 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
 
     const std::string tex_pref = std::string("model_id/tdb/mech/") + (player ? "plyr/" : "airp/");
     const std::string mesh_pref = std::string("model_id/mech/") + "plyr/"; //ToDo: + (player ? "plyr/" : "airp/");
+    m_engine_lod_idx = 3; //ToDo: player ? 3 : -1;
 
     auto info = aircraft_information::get().get_info(name);
     if (!info)
@@ -324,9 +322,6 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
 
     m_mesh.load(name_tmp_str.c_str(), params);
 
-    m_engine_lod_idx = -1;
-    if (m_mesh.get_lods_count() == 11) //ToDo: aircraft configs
-        m_engine_lod_idx = 3;
 
     if (player)
     {
@@ -916,7 +911,7 @@ void aircraft::draw_player()
     if (m_engine_lod_idx >= 0)
         draw(m_engine_lod_idx);
 
-    //draw(4); //(3 if no engine skining) landing gear
+    //draw(4); //landing gear
 }
 
 //------------------------------------------------------------

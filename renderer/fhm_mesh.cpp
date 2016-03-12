@@ -327,8 +327,13 @@ void fhm_mesh::set_material(int lod_idx, const fhm_materials::material &m, const
 {
     assert(!m_lods.empty());
 
+    if (lod_idx < 0 || lod_idx >= get_lods_count())
+        return;
+
     int idx = 0;
     auto &l = m_lods[lod_idx];
+    if (!l.mesh.get_groups_count())
+        return;
 
     assert(l.params_tex.is_valid());
     assert(l.params_tex->get_width() == m.render_groups.size());
