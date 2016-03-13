@@ -1,0 +1,240 @@
+<!--ids from common/Arms/ArmsParam.txt-->
+<!--models from target/model_id/mech/weap/w_-->
+
+<aircrafts>
+
+<!----------------------------------------------------------------------------->
+
+    <!--Fighters-->
+
+<!----------------------------------------------------------------------------->
+
+<aircraft id="f22a" role="fighter" name="F-22A Raptor">
+    <msl id="MISSILE" model="msl_a0" count="226"/>
+    <spc id="_4AAM" model="xma_a0" count="30"/>
+    <spc id="QAAM" model="qaa_a0" count="36"/>
+</aircraft>
+
+<aircraft id="su47" role="fighter" name="Su-47 Berkut">
+    <msl id="MISSILE" model="msl_r0" count="198"/>
+    <spc id="QAAM" model="qaa_r0" count="30"/>
+    <spc id="SAAM" model="saa_r0" count="24"/>
+</aircraft>
+
+<aircraft id="yf23" role="fighter" name="YF-23 Black Widow II">
+    <msl id="MISSILE" model="msl_a0" count="230"/>
+    <spc id="QAAM" model="qaa_a0" count="36"/>
+    <spc id="SAAM" model="saa_r0" count="28"/>
+</aircraft>
+
+<aircraft id="su35" role="fighter" name="Su-35 Flanker-E">
+    <msl id="MISSILE" model="msl_r0" count="216"/>
+    <spc id="_6AAM" model="xla_r0" count="32"/>
+    <spc id="QAAM" model="qaa_r0" count="34"/>
+</aircraft>
+
+<aircraft id="typn" role="fighter" name="Typhoon">
+    <msl id="MISSILE" model="msl_a0" count="198"/>
+    <spc id="_4AAM" model="xma_a0" count="26"/>
+    <spc id="_6AAM" model="xla_a0" count="28"/>
+</aircraft>
+
+<aircraft id="su37" role="fighter" name="Su-37 Terminator">
+    <msl id="MISSILE" model="msl_r0" count="198"/>
+    <spc id="QAAM" model="qaa_r0" count="30"/>
+    <spc id="_4AAM" model="xma_r0" count="26"/>
+</aircraft>
+
+<aircraft id="f15c" role="fighter" name="F-15C Eagle">
+    <msl id="MISSILE" model="msl_a0" count="216"/>
+    <spc id="_4AAM" model="xma_a0" count="28"/>
+    <spc id="SAAM" model="saa_a0" count="26"/>
+</aircraft>
+
+<aircraft id="su33" role="fighter" name="Su-33 Flanker-D">
+    <msl id="MISSILE" model="msl_r0" count="198"/>
+    <spc id="SAAM" model="saa_r0" count="24"/>
+    <spc id="_6AAM" model="xla_r0" count="28"/>
+</aircraft>
+
+<aircraft id="f14d" role="fighter" name="F-14D Super Tomcat">
+    <msl id="MISSILE" model="msl_a0" count="180"/>
+    <spc id="_6AAM" model="xla_a0" count="26"/>
+    <spc id="SAAM" model="saa_a0" count="22"/>
+</aircraft>
+
+<aircraft id="su24" role="fighter" name="Su-24MP Fencer">
+    <msl id="MISSILE" model="msl_r0" count="172"/>
+    <spc id="ECM" model="ecm_r0" count="12"/>
+    <spc id="QAAM" model="qaa_r0" count="26"/>
+</aircraft>
+
+<aircraft id="m29a" role="fighter" name="MiG-29A Fulcrum">
+    <msl id="MISSILE" model="msl_r0" count="180"/>
+    <spc id="QAAM" model="qaa_r0" count="28"/>
+    <spc id="_4AAM" model="xma_r0" count="24"/>
+</aircraft>
+
+<aircraft id="f16c" role="fighter" name="F-16C Fighting Falcon">
+    <msl id="MISSILE" model="msl_a0" count="172"/>
+    <spc id="QAAM" model="qaa_a0" count="26"/>
+    <spc id="_4AAM" model="xma_a0" count="22"/>
+</aircraft>
+
+<aircraft id="m21b" role="fighter" name="MiG-21bis Fishbed">
+    <msl id="MISSILE" model="msl_r0" count="162"/>
+    <spc id="MGP" model="gpd_r0" count="540"/>
+    <spc id="SAAM" model="saa_r0" count="20"/>
+</aircraft>
+
+<!----------------------------------------------------------------------------->
+
+    <!--Multirole-->
+
+<!----------------------------------------------------------------------------->
+
+<aircraft id="pkfa" role="multirole" name="PAK-FA">
+    <msl id="MISSILE" model="msl_r0" count="234"/>
+    <spc id="_4AAM" model="xma_r0" count="32"/>
+    <spc id="QAAM" model="qaa_r0" count="36"/>
+</aircraft>
+
+<aircraft id="fa44" role="multirole" name="CFA-44 Nosferatu">
+    <msl id="MISSILE" model="msl_x0" count="234"/>
+    <spc id="ADMM" model="adm_x0" count="26"/>
+    <spc id="EML" model="eml_x0" count="14"/>
+    <spc id="ECM" model="ecm_x0" count="10"/>
+</aircraft>
+
+<aircraft id="kwmr" role="multirole" name="ASF-X Shinden II">
+    <msl id="MISSILE" model="msl_j0" count="226"/>
+    <spc id="_6AAM" model="xla_j0" count="32"/>
+    <spc id="RKTL" model="rcl_j0" count="36"/>
+    <spc id="LAGM" model="las_j0" count="22"/>
+</aircraft>
+
+<aircraft id="rflm" role="multirole" name="Rafale M">
+    <msl id="MISSILE" model="msl_f0" count="198"/>
+    <spc id="_6AAM" model="xla_e0" count="28"/>
+    <spc id="BDM" model="sod_f0" count="18"/>
+    <spc id="LAGM" model="las_f0" count="20"/>
+</aircraft>
+
+<aircraft id="f15m" role="multirole" name="F-15C Eagle">
+    <msl id="MISSILE" model="msl_a0" count="216"/>
+    <spc id="QAAM" model="qaa_a0" count="34"/>
+    <spc id="SAAM" model="saa_a0" count="26"/>
+    <spc id="LAGM" model="las_a0" count="22"/>
+</aircraft>
+
+<aircraft id="f35b" role="multirole" name="F-35B Lightning II">
+    <msl id="MISSILE" model="msl_a0" count="198"/>
+    <spc id="QAAM" model="qaa_a0" count="30"/>
+    <spc id="LAGM" model="las_a0" count="20"/>
+    <spc id="GPB" model="gpb_a1" count="34"/>
+</aircraft>
+
+<aircraft id="f15e" role="multirole" name="F-15E Strike Eagle">
+    <msl id="MISSILE" model="msl_a0" count="216"/>
+    <spc id="_4AAM" model="xma_a0" count="28"/>
+    <spc id="UGB" model="ugb_a1" count="40"/>
+    <spc id="_4AGM" model="agm_a0" count="38"/>
+</aircraft>
+
+<aircraft id="j39c" role="multirole" name="JAS-39C Gripen">
+    <msl id="MISSILE" model="msl_a0" count="190"/>
+    <spc id="QAAM" model="qaa_e0" count="32"/>
+    <spc id="_4AAM" model="xma_a0" count="28"/>
+    <spc id="RKTL" model="rcl_e0" count="32"/>
+</aircraft>
+
+<aircraft id="f18f" role="multirole" name="F/A-18F Super Hornet">
+    <msl id="MISSILE" model="msl_a0" count="206"/>
+    <spc id="SAAM" model="saa_a0" count="26"/>
+    <spc id="LAGM" model="las_a0" count="20"/>
+    <spc id="ECM" model="ecm_a0" count="10"/>
+</aircraft>
+
+<aircraft id="av8b" role="multirole" name="AV-8B Harrier II plus">
+    <msl id="MISSILE" model="msl_a0" count="180"/>
+    <spc id="_4AAM" model="xma_a0" count="24"/>
+    <spc id="RKTL" model="rcl_a0" count="28"/>
+    <spc id="_4AGM" model="agm_a0" count="32"/>
+</aircraft>
+
+<aircraft id="f16f" role="multirole" name="F-16F Fighting Falcon">
+    <msl id="MISSILE" model="msl_a0" count="180"/>
+    <spc id="QAAM" model="qaa_a0" count="28"/>
+    <spc id="GPB" model="gpb_a1" count="30"/>
+    <spc id="ECM" model="ecm_a1" count="8"/>
+</aircraft>
+
+<aircraft id="mr2k" role="multirole" name="Mirage 2000-5">
+    <msl id="MISSILE" model="msl_f0" count="162"/>
+    <spc id="_4AAM" model="xma_f0" count="22"/>
+    <spc id="_4AGM" model="xag_f0" count="28"/>
+    <spc id="LAGM" model="las_f0" count="16"/>
+</aircraft>
+
+<aircraft id="f04e" role="multirole" name="F-4E Phantom II">
+    <msl id="MISSILE" model="msl_a0" count="208"/>
+    <spc id="SAAM" model="saa_a0" count="26"/>
+    <spc id="UGB" model="ugb_a1" count="40"/>
+    <spc id="ECM" model="ecm_a1" count="8"/>
+</aircraft>
+
+<!----------------------------------------------------------------------------->
+
+    <!--Attackers-->
+
+<!----------------------------------------------------------------------------->
+
+<aircraft id="su34" role="attacker" name="Su-34 Fullback">
+    <msl id="MISSILE" model="msl_r0" count="172"/>
+    <spc id="_4AGM" model="xag_r0" count="38"/>
+    <spc id="GPB" model="gpb_r0" count="36"/>
+</aircraft>
+
+<aircraft id="f02a" role="attacker" name="F-2A">
+    <msl id="MISSILE" model="msl_j0" count="196"/>
+    <spc id="LAGM" model="las_j0" count="20"/>
+    <spc id="RKTL" model="rcl_j0" count="30"/>
+</aircraft>
+
+<aircraft id="a10a" role="attacker" name="A-10A Thunderbolt II">
+    <msl id="MISSILE" model="msl_a0" count="226"/>
+    <spc id="_4AGM" model="xag_a0" count="40"/>
+    <spc id="RKTL" model="rcl_a0" count="36"/>
+</aircraft>
+
+<aircraft id="f17a" role="attacker" name="F-117A Nighthawk">
+    <msl id="MISSILE" model="msl_j0" count="194"/>
+    <spc id="GPB" model="gpb_a1" count="34"/>
+    <spc id="LAGM" model="las_a0" count="20"/>
+</aircraft>
+
+<aircraft id="su25" role="attacker" name="Su-2fTM Frogfoot">
+    <msl id="MISSILE" model="msl_r0" count="198"/>
+    <spc id="UGB" model="ugb_r0" count="38"/>
+    <spc id="MGP" model="gpd_r0" count="680"/>
+</aircraft>
+
+<!----------------------------------------------------------------------------->
+
+    <!--Bombers-->
+
+<!----------------------------------------------------------------------------->
+
+<aircraft id="b01b" role="bomber" name="B-1B Lancer">
+    <spc id="GPB" model="gpb_a1" count="218"/>
+    <spc id="MUGB" model="ugb_a1" count="320"/>
+</aircraft>
+
+<aircraft id="b02a" role="bomber" name="B-2 Spirit">
+    <spc id="GPB" model="gpb_a1" count="180"/>
+    <spc id="MUGB" model="ugb_a1" count="264"/>
+</aircraft>
+
+<!----------------------------------------------------------------------------->
+
+</aircrafts>

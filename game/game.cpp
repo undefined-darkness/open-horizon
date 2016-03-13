@@ -31,13 +31,12 @@ public:
     {
         weapon missile;
         std::vector<weapon> special;
-        weapon flare;
     };
 
 public:
     static weapon_information &get()
     {
-        static weapon_information info("weapons.xml");
+        static weapon_information info("aircrafts.xml");
         return info;
     }
 
@@ -62,13 +61,13 @@ private:
         if (!load_xml(xml_name, doc))
             return;
 
-        pugi::xml_node root = doc.child("weapons");
+        pugi::xml_node root = doc.child("aircrafts");
         if (!root)
             return;
 
         for (pugi::xml_node ac = root.child("aircraft"); ac; ac = ac.next_sibling("aircraft"))
         {
-            aircraft_weapons &a = m_aircrafts[ac.attribute("name").as_string("")];
+            aircraft_weapons &a = m_aircrafts[ac.attribute("id").as_string("")];
 
             for (pugi::xml_node wpn = ac.first_child(); wpn; wpn = wpn.next_sibling())
             {
@@ -82,8 +81,6 @@ private:
                     a.missile = w;
                 else if (name == "spc")
                     a.special.push_back(w);
-                else if (name == "flr")
-                    a.flare = w;
             }
         }
     }

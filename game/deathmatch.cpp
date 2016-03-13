@@ -34,11 +34,11 @@ void deathmatch::start(const char *plane, int color, int special, const char *lo
     std::vector<std::string> planes;
     size_t plane_idx = 0;
     pugi::xml_document doc;
-    if (load_xml("weapons.xml", doc))
+    if (load_xml("aircrafts.xml", doc))
     {
-        pugi::xml_node root = doc.child("weapons");
+        pugi::xml_node root = doc.child("aircrafts");
         for (pugi::xml_node ac = root.child("aircraft"); ac; ac = ac.next_sibling("aircraft"))
-            planes.push_back(ac.attribute("name").as_string(""));
+            planes.push_back(ac.attribute("id").as_string(""));
     }
     assert(!planes.empty());
 
