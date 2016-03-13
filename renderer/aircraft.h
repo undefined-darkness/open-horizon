@@ -74,6 +74,10 @@ public:
     nya_math::quat get_special_mount_rot(int idx);
     void set_special_visible(int idx, bool visible);
 
+    //weapon models
+    const renderer::model &get_missile_model();
+    const renderer::model &get_special_model();
+
     //cockpit
     void set_time(unsigned int time) { m_time = time * 1000; } //in seconds
     void set_speed(float speed) { m_speed = speed; }

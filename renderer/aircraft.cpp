@@ -560,6 +560,20 @@ nya_math::vec3 aircraft::get_mgun_pos(int idx)
 
 //------------------------------------------------------------
 
+const renderer::model &aircraft::get_missile_model()
+{
+    return m_missile;
+}
+
+//------------------------------------------------------------
+
+const renderer::model &aircraft::get_special_model()
+{
+    return m_special;
+}
+
+//------------------------------------------------------------
+
 void aircraft::set_elev(float left, float right)
 {
     const float anim_speed_k = 5.0f;

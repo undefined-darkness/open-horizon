@@ -77,6 +77,7 @@ public:
     aircraft_ptr get_player_aircraft() { return m_player_aircraft; }
 
     missile_ptr add_missile(const char *name);
+    missile_ptr add_missile(const model &m);
 
     bullets &get_bullets() { return m_bullets; }
 

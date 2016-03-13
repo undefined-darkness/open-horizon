@@ -152,6 +152,7 @@ public:
 
     plane_ptr add_plane(const char *name, int color, bool player, net_plane_ptr ptr = net_plane_ptr());
     missile_ptr add_missile(const char *id, const char *model);
+    missile_ptr add_missile(const char *id, const renderer::model &m);
 
     void spawn_explosion(const nya_math::vec3 &pos, int damage, float radius);
     void spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_math::vec3 &dir);

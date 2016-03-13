@@ -169,14 +169,26 @@ const std::wstring &get_aircraft_name(const std::string &id)
 
 //------------------------------------------------------------
 
-missile_ptr world::add_missile(const char *id, const char *model)
+missile_ptr world::add_missile(const char *id, const char *model_id)
 {
-    if (!model || !id)
+    if (!model_id || !id)
+        return missile_ptr();
+
+    renderer::model m;
+    m.load((std::string("w_") + model_id).c_str(), m_render_world.get_location_params());
+    return add_missile(id, m);
+}
+
+//------------------------------------------------------------
+
+missile_ptr world::add_missile(const char *id, const renderer::model &mdl)
+{
+    if (!id)
         return missile_ptr();
 
     missile_ptr m(new missile());
     m->phys = m_phys_world.add_missile(id);
-    m->render = m_render_world.add_missile(model);
+    m->render = m_render_world.add_missile(mdl);
 
     auto &param = get_arms_param();
 
@@ -547,7 +559,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
                     for (int i = 0; i < count; ++i)
                     {
-                        auto m = w.add_missile(special.id.c_str(), special.model.c_str());
+                        auto m = w.add_missile(special.id.c_str(), render->get_special_model());
                         special_mount_idx = ++special_mount_idx % render->get_special_mount_count();
                         special_mount_cooldown[special_mount_idx] = special_cooldown_time;
                         render->set_special_visible(special_mount_idx, false);
@@ -578,7 +590,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             else if (missile_cooldown[1] <= 0)
                 missile_cooldown[1] = missile_cooldown_time;
 
-            auto m = w.add_missile(missile.id.c_str(), missile.model.c_str());
+            auto m = w.add_missile(missile.id.c_str(), render->get_missile_model());
             missile_mount_idx = ++missile_mount_idx % render->get_missile_mount_count();
             missile_mount_cooldown[missile_mount_idx] = missile_cooldown_time;
             render->set_missile_visible(missile_mount_idx, false);

@@ -40,8 +40,17 @@ aircraft_ptr world::add_aircraft(const char *name, int color, bool player)
 
 missile_ptr world::add_missile(const char *name)
 {
+    model m;
+    m.load((std::string("w_") + name).c_str(), m_location.get_params());
+    return add_missile(m);
+}
+
+//------------------------------------------------------------
+
+missile_ptr world::add_missile(const model &mdl)
+{
     missile_ptr m(true);
-    m->mdl.load((std::string("w_") + name).c_str(), m_location.get_params());
+    m->mdl = mdl;
     m_missiles.push_back(m);
     return m;
 }
