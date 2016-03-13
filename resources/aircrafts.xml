@@ -213,7 +213,7 @@
     <spc id="LAGM" model="las_a0" count="20"/>
 </aircraft>
 
-<aircraft id="su25" role="attacker" name="Su-2fTM Frogfoot">
+<aircraft id="su25" role="attacker" name="Su-25TM Frogfoot">
     <msl id="MISSILE" model="msl_r0" count="198"/>
     <spc id="UGB" model="ugb_r0" count="38"/>
     <spc id="MGP" model="gpd_r0" count="680"/>
