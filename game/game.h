@@ -15,6 +15,12 @@ namespace game
 {
 //------------------------------------------------------------
 
+std::vector<std::string> get_aircraft_ids(const std::vector<std::string> &roles);
+
+const std::wstring &get_aircraft_name(const std::string &id);
+
+//------------------------------------------------------------
+
 typedef nya_math::vec3 vec3;
 typedef nya_math::quat quat;
 typedef params::fvalue fvalue;

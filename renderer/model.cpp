@@ -76,7 +76,7 @@ bool model::load(const char *name, const location_params &params)
     else
     {
         tdp_name[tdp_name.size()-5] = '0';
-        load_tdp(tdp_name.c_str());
+        load_tdp(tdp_name);
     }
 
     lst main_list(folder + name + "/" + name +"_com.lst");
@@ -125,6 +125,7 @@ void model::load_tdp(const std::string &name)
         }
         else if (nya_resources::check_extension(s.c_str(), "img"))
         {
+            assert(!headers.empty());
             nya_memory::tmp_buffer_scoped buf(header.size() + headers[idx].size() + res.get_size());
             buf.copy_from(&header[0], header.size());
             buf.copy_from(&(headers[idx])[0], headers[idx].size(), header.size());

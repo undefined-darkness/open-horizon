@@ -5,6 +5,7 @@
 #include "menu.h"
 #include "util/config.h"
 #include "renderer/aircraft.h"
+#include "game.h"
 
 namespace gui
 {
@@ -92,7 +93,7 @@ void menu::update(int dt, const menu_controls &controls)
     {
         if (m_selected > 0)
             --m_selected;
-        else if(!m_entries.empty())
+        else if (!m_entries.empty())
             m_selected = (int)m_entries.size() - 1;
     }
 
@@ -114,7 +115,7 @@ void menu::update(int dt, const menu_controls &controls)
             auto &e = m_entries[m_selected];
             if (e.sub_selected > 0)
                 --e.sub_selected;
-            else if(!e.sub_select.empty())
+            else if (!e.sub_select.empty())
                 e.sub_selected = (int)e.sub_select.size() - 1;
             send_sub_events(e);
 
@@ -303,8 +304,10 @@ void menu::set_screen(const std::string &screen)
         add_entry(L"Deathmatch", {"mode=dm", "screen=map_select", "multiplayer=no"});
         add_entry(L"Team deathmatch", {"mode=tdm", "screen=map_select", "multiplayer=no"});
         add_entry(L"Free flight", {"mode=ff", "screen=map_select", "multiplayer=no"});
+/*
         add_entry(L"Multiplayer", {"screen=mp"});
         add_entry(L"Aircraft viewer", {"mode=none", "screen=ac_view"});
+*/
         add_entry(L"Exit", {"exit"});
     }
     else if (screen == "mp")
@@ -352,6 +355,9 @@ void menu::set_screen(const std::string &screen)
         send_sub_events(m_entries.back());
 
         add_entry(L"Location: ", {}, "map", {});
+#if _DEBUG || DEBUG
+        add_sub_entry(L"Test", "def");
+#endif
         add_sub_entry(L"Miami", "ms01");
         add_sub_entry(L"Dubai", "ms06");
         add_sub_entry(L"Honolulu", "ms51");
@@ -405,47 +411,16 @@ void menu::set_screen(const std::string &screen)
     }
     else if (screen == "ac_select")
     {
-        m_title = L"AIRCRAFT";
-        add_entry(L"F-14D", {"ac=f14d"});
-        add_entry(L"F-15C", {"ac=f15c"});
-        add_entry(L"F-16C", {"ac=f16c"});
-        add_entry(L"F-18F", {"ac=f18f"});
-        add_entry(L"F-22A", {"ac=f22a"});
-        add_entry(L"Mig-29A", {"ac=m29a"});
-        add_entry(L"PAK FA", {"ac=pkfa"});
-        add_entry(L"Su-33", {"ac=su33"});
-        add_entry(L"Su-35", {"ac=su35"});
-        add_entry(L"Su-37", {"ac=su37"});
-        add_entry(L"Su-47", {"ac=su47"});
-        add_entry(L"Typhoon", {"ac=typn"});
-
-        //ToDo: aircraft lists
-
+        std::vector<std::string> roles;
         if (get_var("mode") == "ff")
-        {
-            add_entry(L"A-10A", {"ac=a10a"});
-            add_entry(L"AV-8B", {"ac=av8b"});
-            add_entry(L"ASF X", {"ac=kwmr"});
-            add_entry(L"B-01B", {"ac=b01b"});
-            add_entry(L"B-02A", {"ac=b02a"});
-            add_entry(L"F-2A", {"ac=f02a"});
-            add_entry(L"F-4E", {"ac=f04e"});
-            add_entry(L"F-15M", {"ac=f15m"});
-            add_entry(L"F-15E", {"ac=f15e"});
-            add_entry(L"F-16F", {"ac=f16f"});
-            add_entry(L"F-35B", {"ac=f35b"});
-            add_entry(L"F-117A", {"ac=f17a"});
-            add_entry(L"JAS39C", {"ac=j39c"});
-            add_entry(L"Mig-21Bis", {"ac=m21b"});
-            add_entry(L"Mirage 2000", {"ac=mr2k"});
-            add_entry(L"Rafale M", {"ac=rflm"});
-            add_entry(L"Su-24MP", {"ac=su24"});
-            add_entry(L"Su-25", {"ac=su25"});
-            add_entry(L"Su-34", {"ac=su34"});
-            add_entry(L"Tornado GR4", {"ac=tnd4"});
-            add_entry(L"YF23", {"ac=yf23"});
-            add_entry(L"FA44", {"ac=fa44"});
-        }
+            roles = {"fighter", "multirole", "attacker", "bomber"};
+        else
+            roles = {"fighter", "multirole"};
+
+        m_title = L"AIRCRAFT";
+        const auto planes = game::get_aircraft_ids(roles);
+        for (auto &p: planes)
+            add_entry(game::get_aircraft_name(p), {"ac="+p});
 
         /*
         //helicopters are not yet supported
@@ -490,15 +465,12 @@ void menu::set_screen(const std::string &screen)
         send_sub_events(m_entries.back());
 
         add_entry(L"Aircraft: ", {""}, "ac", {"update_ac","viewer_update_ac"});
-        add_sub_entry(L"F-14D", "f14d");
-        add_sub_entry(L"Su-33", "su33");
-        add_sub_entry(L"B-01B", "b01b");
-        add_sub_entry(L"AH-64", "ah64");
-        add_sub_entry(L"Mi-24", "mi24");
+        const auto planes = game::get_aircraft_ids({"fighter", "multirole", "attacker", "bomber"});
+        for (auto &p: planes)
+            add_sub_entry(game::get_aircraft_name(p), p);
+
         //add_sub_entry(L"MH-60", "mh60");
         //add_sub_entry(L"AC-130", "a130");
-        //ToDo
-        
 
         add_entry(L"Color: ", {""}, "color", {"viewer_update_color"});
 

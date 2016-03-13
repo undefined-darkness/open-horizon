@@ -27,8 +27,10 @@ public:
         int count;
     };
 
-    struct aircraft_weapons
+    struct aircraft
     {
+        std::wstring name;
+        std::string role;
         weapon missile;
         std::vector<weapon> special;
     };
@@ -40,7 +42,7 @@ public:
         return info;
     }
 
-    aircraft_weapons *get_aircraft_weapons(const char *name)
+    aircraft *get_aircraft_weapons(const char *name)
     {
         if (!name)
             return 0;
@@ -52,6 +54,18 @@ public:
             return 0;
 
         return &a->second;
+    }
+
+    const std::vector<std::string> &get_aircraft_ids(const std::string &role)
+    {
+        for (auto &l: m_lists)
+        {
+            if (l.first == role)
+                return l.second;
+        }
+
+        const static std::vector<std::string> empty;
+        return empty;
     }
 
 private:
@@ -67,7 +81,13 @@ private:
 
         for (pugi::xml_node ac = root.child("aircraft"); ac; ac = ac.next_sibling("aircraft"))
         {
-            aircraft_weapons &a = m_aircrafts[ac.attribute("id").as_string("")];
+            auto id = ac.attribute("id").as_string("");
+            aircraft &a = m_aircrafts[id];
+            a.role = ac.attribute("role").as_string("");
+            if (!a.role.empty())
+                aircraft_ids(a.role).push_back(id);
+            const std::string name = ac.attribute("name").as_string("");
+            a.name = std::wstring(name.begin(), name.end());
 
             for (pugi::xml_node wpn = ac.first_child(); wpn; wpn = wpn.next_sibling())
             {
@@ -85,7 +105,21 @@ private:
         }
     }
 
-    std::map<std::string, aircraft_weapons> m_aircrafts;
+    std::vector<std::string> &aircraft_ids(const std::string &role)
+    {
+        for (auto &l: m_lists)
+        {
+            if (l.first == role)
+                return l.second;
+        }
+
+        m_lists.push_back({role, {}});
+        return m_lists.back().second;
+    }
+
+
+    std::map<std::string, aircraft> m_aircrafts;
+    std::vector<std::pair<std::string, std::vector<std::string> > > m_lists;
 };
 
 wpn_missile_params::wpn_missile_params(std::string id, std::string model)
@@ -103,6 +137,34 @@ wpn_missile_params::wpn_missile_params(std::string id, std::string model)
     lockon_count = param.get_float(lockon + "lockonNum");
     lockon_air = param.get_int(lockon + "target_air") > 0;
     lockon_ground = param.get_int(lockon + "target_grd") > 0;
+}
+
+//------------------------------------------------------------
+
+std::vector<std::string> get_aircraft_ids(const std::vector<std::string> &roles)
+{
+    std::vector<std::string> planes;
+    for (auto &r: roles)
+    {
+        auto &l = weapon_information::get().get_aircraft_ids(r);
+        planes.insert(planes.end(), l.begin(), l.end());
+    }
+
+    return planes;
+}
+
+//------------------------------------------------------------
+
+const std::wstring &get_aircraft_name(const std::string &id)
+{
+    auto *a = weapon_information::get().get_aircraft_weapons(id.c_str());
+    if(!a)
+    {
+        static std::wstring invalid;
+        return invalid;
+    }
+
+    return a->name;
 }
 
 //------------------------------------------------------------
