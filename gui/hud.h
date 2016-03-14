@@ -30,6 +30,8 @@ public:
     void set_locks_count(int count);
     void set_lock(int idx, bool locked, bool active);
     void set_mgun(bool visible) { m_mgun = visible; }
+    void set_saam_circle(bool visible, float angle);
+    void set_saam(bool locked, bool tracking) { m_saam_locked = locked; m_saam_tracking = tracking; }
     void change_radar() { m_show_map = !m_show_map; }
 
     void clear_alerts() { m_alerts.clear(); }
@@ -83,6 +85,11 @@ private:
     std::wstring m_missiles_name;
     ivalue m_missiles_count;
     bvalue m_mgun;
+    bvalue m_saam_visible;
+    bvalue m_saam_locked;
+    bvalue m_saam_tracking;
+
+    std::vector<nya_math::vec2> m_saam_mesh;
 
 private:
     bool m_common_loaded;

@@ -114,7 +114,14 @@ void hud::draw(const render &r)
     {
         //m_common.draw(r, 215, proj_pos.x, proj_pos.y, green);
         m_common.draw(r, m_mgun ? 141 : 2, proj_pos.x, proj_pos.y, green);
-        //ToDo
+
+        if (m_saam_visible)
+        {
+            render::transform t;
+            t.x = proj_pos.x;
+            t.y = proj_pos.y;
+            r.draw(m_saam_mesh, m_saam_tracking ? red : green, t, m_saam_locked);
+        }
     }
 
     for (int i = 0; i < (int)m_locks.size(); ++i)
@@ -322,6 +329,24 @@ void hud::set_lock(int idx, bool locked, bool active)
 
     m_locks[idx].active = active;
     m_locks[idx].locked = locked;
+}
+
+//------------------------------------------------------------
+
+void hud::set_saam_circle(bool visible, float angle)
+{
+    m_saam_visible = visible;
+
+    const float radius = sinf(angle) * 800.0f;
+    const int num_segments = int(radius * 0.75f);
+    for(int i = 0; i < num_segments; ++i)
+    {
+        const float a = 2.0f * nya_math::constants::pi * float(i) / float(num_segments);
+        const nya_math::vec2 p(radius * cosf(a), radius * sinf(a));
+        m_saam_mesh.push_back(p);
+    }
+
+    m_saam_mesh.push_back(m_saam_mesh.front());
 }
 
 //------------------------------------------------------------

@@ -132,7 +132,12 @@ wpn_missile_params::wpn_missile_params(std::string id, std::string model)
     auto &param = get_arms_param();
 
     lockon_range = param.get_float(lockon + "range");
-    lockon_angle_cos = cosf(param.get_float(lockon + "angle") * nya_math::constants::pi / 180.0f);
+    float lon_angle = param.get_float(lockon + "angle") * 0.5f * nya_math::constants::pi / 180.0f;
+
+    if (id == "SAAM")
+        lon_angle *= 0.3f; // I dunno
+
+    lockon_angle_cos = cosf(lon_angle);
     lockon_reload = param.get_float(lockon + "reload");
     lockon_count = param.get_float(lockon + "lockonNum");
     lockon_air = param.get_int(lockon + "target_air") > 0;
@@ -536,12 +541,15 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 for (int i = 0; i < lock_count; ++i)
                     h.set_lock(i, false, true);
                 h.set_missiles_count(special_count);
+                if (special.id == "SAAM")
+                    h.set_saam_circle(true, acosf(special.lockon_angle_cos));
             }
             else
             {
                 h.set_missiles(missile.id.c_str(), 0);
                 h.set_locks_count(0);
                 h.set_missiles_count(missile_count);
+                h.set_saam_circle(false, 0.0f);
             }
         }
     }
@@ -757,6 +765,23 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     targets.erase(std::remove_if(targets.begin(), targets.end(), [](target_lock &t){ return t.target_plane.expired()
                                  || t.target_plane.lock()->hp <= 0; }), targets.end());
 
+
+    const bool is_saam = special_weapon && special.id == "SAAM";
+    bool saam_locked = false;
+
+    if (is_saam && !targets.empty() && !targets.begin()->target_plane.expired())
+    {
+        auto p = targets.begin()->target_plane.lock();
+        auto target_dir = p->get_pos() - me->get_pos();
+        const float dist = target_dir.length();
+
+        if (dist < special.lockon_range)
+        {
+            const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
+            saam_locked = c > special.lockon_angle_cos;
+        }
+    }
+
     //cockpit animations and hud
 
     const float aoa = acosf(nya_math::vec3::dot(nya_math::vec3::normalize(phys->vel), dir));
@@ -774,6 +799,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         h.set_yaw(phys->rot.get_euler().y);
         h.set_speed(speed);
         h.set_alt(phys->pos.y);
+        h.set_saam(saam_locked, false);
 
         proj_dir.y = 0.0f;
         h.clear_alerts();

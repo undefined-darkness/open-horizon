@@ -74,7 +74,12 @@ void render::init()
     m_lines_mesh.set_vertex_data(line_verts, sizeof(line_verts[0]), elements_per_batch);
     m_lines_mesh.set_vertices(0, 2);
     m_lines_mesh.set_tc(0, 2*4, 3);
-    m_lines_mesh.set_element_type(nya_render::vbo::line_strip);
+    m_lines_mesh.set_element_type(nya_render::vbo::lines);
+
+    m_lines_loop_mesh.set_vertex_data(line_verts, sizeof(line_verts[0]), elements_per_batch);
+    m_lines_loop_mesh.set_vertices(0, 2);
+    m_lines_loop_mesh.set_tc(0, 2*4, 3);
+    m_lines_loop_mesh.set_element_type(nya_render::vbo::line_strip);
 
     auto &pass = m_material.get_pass(m_material.add_pass(nya_scene::material::default_pass));
     pass.set_shader(nya_scene::shader("shaders/ui.nsh"));
@@ -146,7 +151,7 @@ void render::draw(const std::vector<rect_pair> &elements, const nya_scene::textu
 
 //------------------------------------------------------------
 
-void render::draw(const std::vector<nya_math::vec2> &elements, const nya_math::vec4 &color, const transform &t) const
+void render::draw(const std::vector<nya_math::vec2> &elements, const nya_math::vec4 &color, const transform &t, bool loop) const
 {
     if (elements.empty())
         return;
@@ -174,9 +179,18 @@ void render::draw(const std::vector<nya_math::vec2> &elements, const nya_math::v
         }
 
         m_material.internal().set(nya_scene::material::default_pass);
-        m_lines_mesh.bind();
-        m_lines_mesh.draw((unsigned int)count);
-        m_lines_mesh.unbind();
+        if (loop)
+        {
+            m_lines_loop_mesh.bind();
+            m_lines_loop_mesh.draw((unsigned int)count);
+            m_lines_loop_mesh.unbind();
+        }
+        else
+        {
+            m_lines_mesh.bind();
+            m_lines_mesh.draw((unsigned int)count);
+            m_lines_mesh.unbind();
+        }
         m_material.internal().unset();
     }
 

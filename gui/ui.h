@@ -46,7 +46,7 @@ public:
     void draw(const std::vector<rect_pair> &elements, const nya_scene::texture &tex,
               const nya_math::vec4 &color = nya_math::vec4(1.0, 1.0, 1.0, 1.0), const transform &t = transform()) const;
     void draw(const std::vector<nya_math::vec2> &elements,
-              const nya_math::vec4 &color = nya_math::vec4(1.0, 1.0, 1.0, 1.0), const transform &t = transform()) const;
+              const nya_math::vec4 &color = nya_math::vec4(1.0, 1.0, 1.0, 1.0), const transform &t = transform(), bool loop = true) const;
 public:
     int get_width(bool real = false) const { return real ? m_width : 1366; }
     int get_height(bool real = false) const { return real ? m_height : 768; }
@@ -59,6 +59,7 @@ private:
     int m_width, m_height;
     nya_render::vbo m_quads_mesh;
     nya_render::vbo m_lines_mesh;
+    nya_render::vbo m_lines_loop_mesh;
     nya_scene::material m_material;
     mutable nya_scene::material::param_proxy m_color;
     mutable nya_scene::material::param_array_proxy m_tr;
