@@ -113,8 +113,15 @@ void hud::draw(const render &r)
     if (get_project_pos(r, m_project_pos, proj_pos))
     {
         //m_common.draw(r, 215, proj_pos.x, proj_pos.y, green);
-        m_common.draw(r, 2, proj_pos.x, proj_pos.y, green);
+        m_common.draw(r, m_mgun ? 141 : 2, proj_pos.x, proj_pos.y, green);
         //ToDo
+    }
+
+    for (int i = 0; i < (int)m_locks.size(); ++i)
+    {
+        const auto &l = m_locks[i];
+        const int pos_x = (i - (int)m_locks.size() / 2 + 0.5f) * 16;
+        m_aircraft.draw(r, l.active ? 418 : 423, r.get_width()/2 + pos_x, r.get_height()/2 + 30, l.locked ? red : green);
     }
 
     //targets
@@ -254,6 +261,10 @@ void hud::draw(const render &r)
     m_aircraft.draw(r, m_missiles_icon + 401, r.get_width() - 110, r.get_height() - 60, green);
     m_aircraft.draw(r, m_missiles_icon + 406, r.get_width() - 110, r.get_height() - 60, green);
 
+    m_fonts.draw_text(r, m_missiles_name.c_str(), "NowGE20", r.get_width() - 190, r.get_height() - 120, green);
+    swprintf(buf, sizeof(buf), L"%d", m_missiles_count);
+    m_fonts.draw_text(r, buf, "ZurichXCnBT52", r.get_width() - 145 - m_fonts.get_text_width(buf, "ZurichXCnBT52"), r.get_height() - 103, green);
+
     if (!m_alerts.empty())
     {
         alert_color.w = anim;
@@ -279,8 +290,38 @@ void hud::draw(const render &r)
 
 void hud::set_missiles(const char *id, int icon)
 {
-    //ToDo
+    if (id && id[0] == '_')
+        ++id;
+
+    if (id)
+    {
+        std::string id_str(id);
+        if (id_str == "MISSILE")
+            id_str = "MSL";
+        if (id_str.length() < 4)
+            id_str = " " + id_str;
+        m_missiles_name = std::wstring(id_str.begin(), id_str.end());
+    }
+
     m_missiles_icon = icon;
+}
+
+//------------------------------------------------------------
+
+void hud::set_locks_count(int count)
+{
+    m_locks.resize(count);
+}
+
+//------------------------------------------------------------
+
+void hud::set_lock(int idx, bool locked, bool active)
+{
+    if (idx < 0 || idx >= (int)m_locks.size())
+        return;
+
+    m_locks[idx].active = active;
+    m_locks[idx].locked = locked;
 }
 
 //------------------------------------------------------------

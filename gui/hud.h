@@ -25,7 +25,11 @@ public:
     void set_speed(int value) { m_speed = value; }
     void set_alt(int value) { m_alt = value; }
     void set_missiles(const char *id, int icon);
+    void set_missiles_count(int count) { m_missiles_count = count; }
     void set_missile_reload(int idx, float value);
+    void set_locks_count(int count);
+    void set_lock(int idx, bool locked, bool active);
+    void set_mgun(bool visible) { m_mgun = visible; }
     void change_radar() { m_show_map = !m_show_map; }
 
     void clear_alerts() { m_alerts.clear(); }
@@ -72,7 +76,13 @@ private:
 
     std::vector<target> m_targets;
 
+    struct lock { bool locked = false, active = false; };
+    std::vector<lock> m_locks;
+
     ivalue m_anim_time;
+    std::wstring m_missiles_name;
+    ivalue m_missiles_count;
+    bvalue m_mgun;
 
 private:
     bool m_common_loaded;

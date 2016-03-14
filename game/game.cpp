@@ -215,9 +215,6 @@ plane_ptr world::add_plane(const char *name, int color, bool player, net_plane_p
 
     p->hp = p->max_hp = int(p->phys->params.misc.maxHp);
 
-    if (player)
-        m_hud.load(name, m_render_world.get_location_name());
-
     time_t now = time(NULL);
     struct tm *tm_now = localtime(&now);
     p->render->set_time(tm_now->tm_sec + tm_now->tm_min * 60 + tm_now->tm_hour * 60 * 60); //ToDo
@@ -229,10 +226,22 @@ plane_ptr world::add_plane(const char *name, int color, bool player, net_plane_p
         {
             p->render->load_special(wi->special[0].model.c_str(), m_render_world.get_location_params());
             p->special = wpn_missile_params(wi->special[0].id, wi->special[0].model);
+            p->special_max_count = wi->special[0].count;
         }
 
         p->render->load_missile(wi->missile.model.c_str(), m_render_world.get_location_params());
         p->missile = wpn_missile_params(wi->missile.id, wi->missile.model);
+        p->missile_max_count = wi->missile.count;
+    }
+
+    p->missile_count = p->missile_max_count;
+    p->special_count = p->special_max_count;
+
+    if (player)
+    {
+        m_hud.load(name, m_render_world.get_location_name());
+        m_hud.set_missiles(p->missile.id.c_str(), 0);
+        m_hud.set_missiles_count(p->missile_count);
     }
 
     if (m_network)
@@ -520,9 +529,20 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         if (player)
         {
             if (special_weapon)
+            {
                 h.set_missiles(special.id.c_str(), 1); //ToDo: idx
+                const int lock_count = special.lockon_count > 2 ? (int)special.lockon_count : 2;
+                h.set_locks_count(lock_count);
+                for (int i = 0; i < lock_count; ++i)
+                    h.set_lock(i, false, true);
+                h.set_missiles_count(special_count);
+            }
             else
+            {
                 h.set_missiles(missile.id.c_str(), 0);
+                h.set_locks_count(0);
+                h.set_missiles_count(missile_count);
+            }
         }
     }
 
@@ -567,6 +587,11 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                         m->phys->rot = render->get_special_mount_rot(special_mount_idx);
                         m->phys->vel = phys->vel;
                         m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0)); //ToDo
+/*
+                        //ToDo
+                        if (!targets.empty() && targets.front().locked)
+                            m->target = targets.front().target_plane;
+*/
                     }
                 }
             }
@@ -691,6 +716,22 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
                 if (special_weapon) //ToDo
                 {
+                    if (!special.lockon_air)
+                        continue;
+/*
+                    if (dist > special.lockon_range)
+                        fp->locked = false;
+                    else
+                    {
+                        const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
+                        if (c < special.lockon_angle_cos)
+                            fp->locked = false;
+                        else if (fp != targets.begin())
+                            fp->locked = false;
+                        else
+                            fp->locked = true;
+                    }
+*/
                 }
                 else
                 {
@@ -757,6 +798,8 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 h.add_target(m->phys->pos, m->phys->rot.get_euler().y, gui::hud::target_missile, gui::hud::select_not);
         }
 
+        bool hud_mgun = controls.mgun;
+
         for (int i = 0; i < w.get_planes_count(); ++i)
         {
             auto p = w.get_plane(i);
@@ -779,7 +822,12 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 if (first_target != targets.end())
                 {
                     if (p == first_target->target_plane.lock())
+                    {
                         select = gui::hud::select_current;
+                        const float gun_range = 1500.0f;
+                        if ((p->get_pos() - get_pos()).length_sq() < gun_range * gun_range)
+                            hud_mgun = true;
+                    }
                     else if (++first_target != targets.end() && p == first_target->target_plane.lock())
                         select = gui::hud::select_next;
                 }
@@ -794,6 +842,8 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
             h.add_target(p->get_pos(), p->get_rot().get_euler().y, target, select);
         }
+
+        h.set_mgun(hud_mgun);
 
         if (special_weapon)
         {

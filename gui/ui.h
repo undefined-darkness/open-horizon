@@ -78,6 +78,7 @@ public:
 public:
     //returns width of drawn text
     int draw_text(const render &r, const wchar_t *text, const char *font, int x, int y, const nya_math::vec4 &color) const;
+    int get_text_width(const wchar_t *text, const char *font) const;
 
 private:
     struct acf_font_header

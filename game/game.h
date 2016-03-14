@@ -96,11 +96,13 @@ struct plane: public object
     ivalue missile_cooldown[2];
     std::vector<ivalue> missile_mount_cooldown;
     ivalue missile_mount_idx;
+    ivalue missile_count, missile_max_count;
 
     wpn_missile_params special;
     ivalue special_cooldown[2];
     std::vector<ivalue> special_mount_cooldown;
     ivalue special_mount_idx;
+    ivalue special_count, special_max_count;
 
     std::vector<nya_math::vec3> alert_dirs;
 

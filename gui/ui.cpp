@@ -382,6 +382,38 @@ int fonts::draw_text(const render &r, const wchar_t *text, const char *font_name
 
 //------------------------------------------------------------
 
+int fonts::get_text_width(const wchar_t *text, const char *font_name) const
+{
+    if(!text || !font_name)
+        return 0;
+
+    const auto f = std::find_if(m_fonts.begin(), m_fonts.end(), [font_name](const font &fnt) { return fnt.name == font_name; });
+    if (f == m_fonts.end())
+        return 0;
+
+    int width = 0;
+    for (const wchar_t *c = text; *c; ++c)
+    {
+        rect_pair e;
+        auto fc = f->chars.find(*c);
+        if (fc == f->chars.end())
+            continue;
+
+        width += fc->second.xadvance;
+
+        kern_key kk;
+        kk.c[0] = *c;
+        kk.c[1] = *(c+1);
+        auto k = f->kerning.find(kk.key);
+        if (k != f->kerning.end())
+            width += k->second;
+    }
+
+    return width;
+}
+
+//------------------------------------------------------------
+
 bool tiles::load(const char *name)
 {
     fhm_file m;
