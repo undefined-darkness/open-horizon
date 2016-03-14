@@ -543,6 +543,11 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 h.set_missiles_count(special_count);
                 if (special.id == "SAAM")
                     h.set_saam_circle(true, acosf(special.lockon_angle_cos));
+                else if (special.id == "MGP")
+                {
+                    h.set_locks_count(0);
+                    h.set_mgp_icon(true);
+                }
             }
             else
             {
@@ -550,6 +555,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 h.set_locks_count(0);
                 h.set_missiles_count(missile_count);
                 h.set_saam_circle(false, 0.0f);
+                h.set_mgp_icon(false);
             }
         }
     }
@@ -569,37 +575,40 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     {
         if (special_weapon)
         {
-            if (!render->has_special_bay() || render->is_special_bay_opened())
+            if (special.id != "MGP")
             {
-                if ((special_cooldown[0] <=0 || special_cooldown[1] <= 0) && render->get_special_mount_count() > 0)
+                if (!render->has_special_bay() || render->is_special_bay_opened())
                 {
-                    if (count == 1)
+                    if ((special_cooldown[0] <=0 || special_cooldown[1] <= 0) && render->get_special_mount_count() > 0)
                     {
-                        if (special_cooldown[0] <= 0)
-                            special_cooldown[0] = special_cooldown_time;
-                        else if (special_cooldown[1] <= 0)
-                            special_cooldown[1] = special_cooldown_time;
-                    }
-                    else
-                        special_cooldown[0] = special_cooldown[1] = special_cooldown_time;
+                        if (count == 1)
+                        {
+                            if (special_cooldown[0] <= 0)
+                                special_cooldown[0] = special_cooldown_time;
+                            else if (special_cooldown[1] <= 0)
+                                special_cooldown[1] = special_cooldown_time;
+                        }
+                        else
+                            special_cooldown[0] = special_cooldown[1] = special_cooldown_time;
 
-                    special_mount_cooldown.resize(render->get_special_mount_count());
+                        special_mount_cooldown.resize(render->get_special_mount_count());
 
-                    for (int i = 0; i < count; ++i)
-                    {
-                        auto m = w.add_missile(special.id.c_str(), render->get_special_model());
-                        special_mount_idx = ++special_mount_idx % render->get_special_mount_count();
-                        special_mount_cooldown[special_mount_idx] = special_cooldown_time;
-                        render->set_special_visible(special_mount_idx, false);
-                        m->phys->pos = render->get_special_mount_pos(special_mount_idx) + pos_fix;
-                        m->phys->rot = render->get_special_mount_rot(special_mount_idx);
-                        m->phys->vel = phys->vel;
-                        m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0)); //ToDo
-/*
-                        //ToDo
-                        if (!targets.empty() && targets.front().locked)
-                            m->target = targets.front().target_plane;
-*/
+                        for (int i = 0; i < count; ++i)
+                        {
+                            auto m = w.add_missile(special.id.c_str(), render->get_special_model());
+                            special_mount_idx = ++special_mount_idx % render->get_special_mount_count();
+                            special_mount_cooldown[special_mount_idx] = special_cooldown_time;
+                            render->set_special_visible(special_mount_idx, false);
+                            m->phys->pos = render->get_special_mount_pos(special_mount_idx) + pos_fix;
+                            m->phys->rot = render->get_special_mount_rot(special_mount_idx);
+                            m->phys->vel = phys->vel;
+                            m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0)); //ToDo
+    /*
+                            //ToDo
+                            if (!targets.empty() && targets.front().locked)
+                                m->target = targets.front().target_plane;
+    */
+                        }
                     }
                 }
             }
@@ -800,6 +809,9 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         h.set_speed(speed);
         h.set_alt(phys->pos.y);
         h.set_saam(saam_locked, false);
+
+        if (special_weapon && special.id == "MGP")
+            h.set_mgp(controls.missile);
 
         proj_dir.y = 0.0f;
         h.clear_alerts();

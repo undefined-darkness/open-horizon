@@ -122,7 +122,12 @@ void hud::draw(const render &r)
             t.y = proj_pos.y;
             r.draw(m_saam_mesh, m_saam_tracking ? red : green, t, m_saam_locked);
         }
+
+        if (m_mgp)
+            m_common.draw(r, 145, proj_pos.x, proj_pos.y, green);
     }
+
+    //small lock icons
 
     for (int i = 0; i < (int)m_locks.size(); ++i)
     {
@@ -130,6 +135,9 @@ void hud::draw(const render &r)
         const int pos_x = (i - (int)m_locks.size() / 2 + 0.5f) * 16;
         m_aircraft.draw(r, l.active ? 418 : 423, r.get_width()/2 + pos_x, r.get_height()/2 + 30, l.locked ? red : green);
     }
+
+    if (m_mgp_icon)
+        m_aircraft.draw(r, 417, r.get_width()/2, r.get_height()/2 + 30, green);
 
     //targets
 
@@ -336,8 +344,11 @@ void hud::set_lock(int idx, bool locked, bool active)
 void hud::set_saam_circle(bool visible, float angle)
 {
     m_saam_visible = visible;
+    if (!visible)
+        return;
 
     const float radius = sinf(angle) * 800.0f;
+    m_saam_mesh.clear();
     const int num_segments = int(radius * 0.75f);
     for(int i = 0; i < num_segments; ++i)
     {
@@ -346,7 +357,8 @@ void hud::set_saam_circle(bool visible, float angle)
         m_saam_mesh.push_back(p);
     }
 
-    m_saam_mesh.push_back(m_saam_mesh.front());
+    if (!m_saam_mesh.empty())
+        m_saam_mesh.push_back(m_saam_mesh.front());
 }
 
 //------------------------------------------------------------
