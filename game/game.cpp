@@ -575,6 +575,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
     const bool is_mgp = special.id == "MGP";
     const bool is_ecm = special.id == "ECM";
+    const bool is_qaam = special.id == "QAAM";
     const bool is_Xaam = special.lockon_count > 2;
 
     if (controls.missile != last_controls.missile)
@@ -585,60 +586,71 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             {
                 render->set_mgp_fire(controls.missile);
             }
-            else if (is_ecm)
-            {
-                //ToDo
-            }
             else if (controls.missile)
             {
                 if (!render->has_special_bay() || render->is_special_bay_opened())
                 {
                     if ((special_cooldown[0] <=0 || special_cooldown[1] <= 0) && render->get_special_mount_count() > 0)
                     {
-                        if (count == 1)
+                        if (is_ecm)
                         {
-                            if (special_cooldown[0] <= 0)
-                            {
-                                special_cooldown[0] = special_cooldown_time;
-                                if (player)
-                                    h.set_lock(0, false, false);
-                            }
-                            else if (special_cooldown[1] <= 0)
-                            {
-                                special_cooldown[1] = special_cooldown_time;
-                                if (player)
-                                    h.set_lock(1, false, false);
-                            }
+                            //ToDo
+                        }
+                        else if (special.id == "ADMM")
+                        {
+                            //ToDo
+                        }
+                        else if (special.id == "EML")
+                        {
+                            //ToDo
                         }
                         else
-                            special_cooldown[0] = special_cooldown[1] = special_cooldown_time;
-
-                        special_mount_cooldown.resize(render->get_special_mount_count());
-
-                        std::vector<w_ptr<plane> > locked_targets;
-                        for (auto &t: targets)
                         {
-                            for (int j = 0; j < t.locked; ++j)
-                                locked_targets.push_back(t.target_plane);
-                            t.locked = 0;
-                        }
+                            if (count == 1)
+                            {
+                                if (special_cooldown[0] <= 0)
+                                {
+                                    special_cooldown[0] = special_cooldown_time;
+                                    if (player)
+                                        h.set_lock(0, false, false);
+                                }
+                                else if (special_cooldown[1] <= 0)
+                                {
+                                    special_cooldown[1] = special_cooldown_time;
+                                    if (player)
+                                        h.set_lock(1, false, false);
+                                }
+                            }
+                            else
+                                special_cooldown[0] = special_cooldown[1] = special_cooldown_time;
 
-                        for (int i = 0; i < count; ++i)
-                        {
-                            auto m = w.add_missile(special.id.c_str(), render->get_special_model());
-                            special_mount_idx = ++special_mount_idx % render->get_special_mount_count();
-                            special_mount_cooldown[special_mount_idx] = special_cooldown_time;
-                            render->set_special_visible(special_mount_idx, false);
-                            m->phys->pos = render->get_special_mount_pos(special_mount_idx) + pos_fix;
-                            m->phys->rot = render->get_special_mount_rot(special_mount_idx);
-                            m->phys->vel = phys->vel;
-                            m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0)); //ToDo
+                            special_mount_cooldown.resize(render->get_special_mount_count());
 
-                            if (i < (int)locked_targets.size())
-                                m->target = locked_targets[i];
+                            std::vector<w_ptr<plane> > locked_targets;
+                            for (auto &t: targets)
+                            {
+                                for (int j = 0; j < t.locked; ++j)
+                                    locked_targets.push_back(t.target_plane);
+                                t.locked = 0;
+                            }
 
-                            if (player && count > 1)
-                                h.set_lock(i, false, false);
+                            for (int i = 0; i < count; ++i)
+                            {
+                                auto m = w.add_missile(special.id.c_str(), render->get_special_model());
+                                special_mount_idx = ++special_mount_idx % render->get_special_mount_count();
+                                special_mount_cooldown[special_mount_idx] = special_cooldown_time;
+                                render->set_special_visible(special_mount_idx, false);
+                                m->phys->pos = render->get_special_mount_pos(special_mount_idx) + pos_fix;
+                                m->phys->rot = render->get_special_mount_rot(special_mount_idx);
+                                m->phys->vel = phys->vel;
+                                m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0)); //ToDo
+
+                                if (i < (int)locked_targets.size())
+                                    m->target = locked_targets[i];
+
+                                if (player && count > 1)
+                                    h.set_lock(i, false, false);
+                            }
                         }
                     }
                 }
@@ -688,7 +700,30 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     }
 
     for (auto &m: missile_cooldown) if (m > 0) m -= dt;
-    for (auto &s: special_cooldown) if (s > 0) s -= dt;
+
+    for (int i = 0; i < 2; ++i)
+    {
+        auto &s = special_cooldown[i];
+
+        if (s > 0)
+        {
+            s -= dt;
+
+            if (player && special_weapon && s <= 0)
+            {
+                if (is_Xaam)
+                {
+                    if (i == 0)
+                    {
+                        for (int j = 0; j < (int)special_mount_cooldown.size(); ++j)
+                            h.set_lock(j, false, true);
+                    }
+                }
+                else
+                    h.set_lock(i, false, true);
+            }
+        }
+    }
 
     for (int i = 0; i < (int)missile_mount_cooldown.size(); ++i)
     {
@@ -707,11 +742,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
         special_mount_cooldown[i] -= dt;
         if (special_mount_cooldown[i] < 0)
-        {
             render->set_special_visible(i, true);
-            if (player && special_weapon)
-                h.set_lock(i, false, true);
-        }
     }
 
     if (controls.mgun != last_controls.mgun)
@@ -781,7 +812,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
                 if (special_weapon)
                 {
-                    if (!special.lockon_air || !fp->locked)
+                    if (!is_Xaam || !fp->locked)
                         continue;
 
                     int count = fp->locked;
@@ -832,60 +863,97 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     const bool is_saam = special_weapon && special.id == "SAAM";
     bool saam_locked = false;
 
-    if (is_saam && !targets.empty() && !targets.begin()->target_plane.expired())
+    if (special_weapon)
     {
-        auto p = targets.begin()->target_plane.lock();
-        auto target_dir = p->get_pos() - me->get_pos();
-        const float dist = target_dir.length();
-
-        if (dist < special.lockon_range)
+        if (!targets.empty() && !targets.begin()->target_plane.expired())
         {
-            const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
-            saam_locked = c > special.lockon_angle_cos;
-        }
-    }
-
-    if (special_weapon && is_Xaam && special_cooldown[0] <= 0)
-    {
-        lock_timer += dt;
-        if (lock_timer > special.lockon_reload)
-        {
-            lock_timer %= special.lockon_reload;
-
-            int lockon_count = 0;
-            for (auto &t: targets)
-                lockon_count += t.locked;
-
-            if (lockon_count < special.lockon_count)
+            if (is_saam)
             {
-                for (int min_lock = 0; min_lock < special.lockon_count; ++min_lock)
+                auto p = targets.begin()->target_plane.lock();
+                auto target_dir = p->get_pos() - me->get_pos();
+                const float dist = target_dir.length();
+
+                if (dist < special.lockon_range)
                 {
-                    bool found = false;
-                    for (auto &t: targets)
+                    const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
+                    saam_locked = c > special.lockon_angle_cos;
+                }
+            }
+            else if (is_qaam && !targets.begin()->locked)
+            {
+                const bool ready0 = special_cooldown[0] <=0;
+                const bool ready1 = special_cooldown[1] <=0;
+
+                if (ready0 || ready1)
+                {
+                    auto p = targets.begin()->target_plane.lock();
+                    auto target_dir = p->get_pos() - me->get_pos();
+                    const float dist = target_dir.length();
+
+                    const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
+                    if (c > special.lockon_angle_cos)
                     {
-                        if (t.locked > min_lock)
-                            continue;
+                        lock_timer += dt;
+                        if (lock_timer > special.lockon_reload)
+                        {
+                            lock_timer %= special.lockon_reload;
 
-                        auto p = t.target_plane.lock();
-                        auto target_dir = p->get_pos() - me->get_pos();
-                        const float dist = target_dir.length();
-                        if (dist > special.lockon_range)
-                            continue;
+                            targets.begin()->locked = 1;
 
-                        const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
-                        if (c < special.lockon_angle_cos)
-                            continue;
-
-                        if (player)
-                            h.set_lock(lockon_count, true, true);
-
-                        ++t.locked;
-                        found = true;
-                        break;
+                            if (player)
+                                h.set_lock(ready0 ? 0 : 1, true, true);
+                        }
                     }
+                    else
+                        lock_timer = 0;
+                }
+            }
+        }
+        else
+            lock_timer = 0;
 
-                    if (found)
-                        break;
+        if (is_Xaam && special_cooldown[0] <= 0)
+        {
+            lock_timer += dt;
+            if (lock_timer > special.lockon_reload)
+            {
+                lock_timer %= special.lockon_reload;
+
+                int lockon_count = 0;
+                for (auto &t: targets)
+                    lockon_count += t.locked;
+
+                if (lockon_count < special.lockon_count)
+                {
+                    for (int min_lock = 0; min_lock < special.lockon_count; ++min_lock)
+                    {
+                        bool found = false;
+                        for (auto &t: targets)
+                        {
+                            if (t.locked > min_lock)
+                                continue;
+
+                            auto p = t.target_plane.lock();
+                            auto target_dir = p->get_pos() - me->get_pos();
+                            const float dist = target_dir.length();
+                            if (dist > special.lockon_range)
+                                continue;
+
+                            const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
+                            if (c < special.lockon_angle_cos)
+                                continue;
+
+                            if (player)
+                                h.set_lock(lockon_count, true, true);
+
+                            ++t.locked;
+                            found = true;
+                            break;
+                        }
+
+                        if (found)
+                            break;
+                    }
                 }
             }
         }
