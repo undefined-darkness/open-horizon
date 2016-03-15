@@ -91,6 +91,7 @@ struct plane: public object
     bvalue need_fire_missile;
     ivalue rocket_bay_time;
     ivalue mgun_fire_update;
+    ivalue mgp_fire_update;
 
     wpn_missile_params missile;
     ivalue missile_cooldown[2];
@@ -109,7 +110,7 @@ struct plane: public object
     struct target_lock
     {
         w_ptr<plane> target_plane;
-        bvalue locked;
+        ivalue locked;
     };
 
     std::list<target_lock> targets;

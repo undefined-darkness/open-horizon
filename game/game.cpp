@@ -568,11 +568,17 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
     const auto dir = phys->rot.rotate(nya_math::vec3(0.0f, 0.0f, 1.0f));
 
-    if (controls.missile && controls.missile != last_controls.missile)
+    const bool is_mgp = special.id == "MGP";
+
+    if (controls.missile != last_controls.missile)
     {
         if (special_weapon)
         {
-            if (special.id != "MGP")
+            if (is_mgp)
+            {
+                render->set_mgp_fire(controls.missile);
+            }
+            else if (controls.missile)
             {
                 if (!render->has_special_bay() || render->is_special_bay_opened())
                 {
@@ -602,7 +608,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                             m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0)); //ToDo
     /*
                             //ToDo
-                            if (!targets.empty() && targets.front().locked)
+                            if (!targets.empty() && targets.front().locked > 0)
                                 m->target = targets.front().target_plane;
     */
                         }
@@ -610,7 +616,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 }
             }
         }
-        else
+        else if (controls.missile)
         {
             rocket_bay_time = 3000;
             render->set_missile_bay(true);
@@ -638,7 +644,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             m->phys->vel = phys->vel;
 
             m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0));
-            if (!targets.empty() && targets.front().locked)
+            if (!targets.empty() && targets.front().locked > 0)
                 m->target = targets.front().target_plane;
         }
     }
@@ -698,6 +704,19 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         }
     }
 
+    if (is_mgp && controls.missile)
+    {
+        mgp_fire_update += dt;
+        const int mgp_update_time = 150;
+        if (mgp_fire_update > mgp_update_time)
+        {
+            mgp_fire_update %= mgp_update_time;
+
+            for (int i = 0; i < render->get_special_mount_count(); ++i) //ToDo
+                w.spawn_bullet("MGP", render->get_special_mount_pos(i) + pos_fix, dir);
+        }
+    }
+
     plane_ptr me;
     for (int i = 0; i < w.get_planes_count(); ++i) //ugly
     {
@@ -734,16 +753,16 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                         continue;
 /*
                     if (dist > special.lockon_range)
-                        fp->locked = false;
+                        fp->locked = 0;
                     else
                     {
                         const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
                         if (c < special.lockon_angle_cos)
                             fp->locked = false;
                         else if (fp != targets.begin())
-                            fp->locked = false;
+                            fp->locked = 0;
                         else
-                            fp->locked = true;
+                            fp->locked = 1;
                     }
 */
                 }
@@ -755,11 +774,11 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                     {
                         const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
                         if (c < missile.lockon_angle_cos)
-                            fp->locked = false;
+                            fp->locked = 0;
                         else if (fp != targets.begin())
-                            fp->locked = false;
+                            fp->locked = 0;
                         else
-                            fp->locked = true;
+                            fp->locked = 1;
                     }
                 }
             }
@@ -871,7 +890,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 if (fp == targets.end())
                     continue;
 
-                if (fp->locked)
+                if (fp->locked > 0)
                     target = gui::hud::target_air_lock;
             }
 

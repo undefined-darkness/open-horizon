@@ -442,7 +442,7 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     }
 
     m_mguns.clear();
-    const int mgun_bone = m_mesh.find_bone_idx(0, "wgnn");
+    const int mgun_bone = m_mesh.get_bone_idx(0, "wgnn");
     if (mgun_bone >= 0)
     {
         mgun m;
@@ -494,6 +494,19 @@ void aircraft::load_missile(const char *name, const location_params &params)
 void aircraft::load_special(const char *name, const location_params &params)
 {
     m_special.load((std::string("w_") + name).c_str(), params);
+
+    m_mgps.clear();
+    if (strncmp(name, "gpd", 3) == 0)
+    {
+        int time_off = 0;
+        for (auto &s: m_special_mount)
+        {
+            mgun g;
+            g.bone_idx = s.bone_idx;
+            g.flash.update(nya_math::vec3(), nya_math::vec3(), (++time_off) * 100);
+            m_mgps.push_back(g);
+        }
+    }
 }
 
 //------------------------------------------------------------
@@ -519,6 +532,7 @@ void aircraft::set_dead(bool dead)
     if (m_dead)
     {
         m_fire_mgun = false;
+        m_fire_mgp = false;
         m_fire_trail = fire_trail(5.0f);
     }
 }
@@ -858,6 +872,13 @@ void aircraft::update(int dt)
         for (auto &m: m_mguns)
             m.flash.update(m_mesh.get_bone_pos(0, m.bone_idx), dir, dt);
     }
+
+    if (m_fire_mgp)
+    {
+        auto dir = get_rot().rotate(vec3(0.0f, 0.0f, 1.0f));
+        for (auto &m: m_mgps)
+            m.flash.update(m_mesh.get_bone_pos(0, m.bone_idx) + dir * 1.5f, dir, dt);
+    }
 }
 
 //------------------------------------------------------------
@@ -954,6 +975,12 @@ void aircraft::draw_mgun_flash(const scene &s)
     if (m_fire_mgun)
     {
         for (auto &m: m_mguns)
+            s.get_part_renderer().draw(m.flash);
+    }
+
+    if (m_fire_mgp)
+    {
+        for (auto &m: m_mgps)
             s.get_part_renderer().draw(m.flash);
     }
 }
