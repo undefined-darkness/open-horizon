@@ -177,8 +177,9 @@ void hud::draw(const render &r)
 
         if (t.t == target_air_lock)
         {
+            const bool is_special = !m_locks.empty();
             color = red;
-            m_common.draw(r, 100, proj_pos.x, proj_pos.y, red);
+            m_common.draw(r, is_special ? 101 : 100, proj_pos.x, proj_pos.y, red);
         }
 
         if (t.t == target_air_ally)
