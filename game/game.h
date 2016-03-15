@@ -114,6 +114,7 @@ struct plane: public object
     };
 
     std::list<target_lock> targets;
+    ivalue lock_timer;
 
     void reset_state();
     void set_pos(const vec3 &pos) { if (phys) phys->pos = pos; }

@@ -18,7 +18,7 @@ public:
     void update(int dt);
 
     void set_location(const char *location_name);
-    void set_hide(bool value) { m_hide = value; }
+    void set_hide(bool value);
     void set_project_pos(const nya_math::vec3 &pos) { m_project_pos = pos; }
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; }
     void set_yaw(float yaw) { m_yaw = yaw; }

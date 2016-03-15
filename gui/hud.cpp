@@ -61,6 +61,21 @@ void hud::set_location(const char *location_name)
 
 //------------------------------------------------------------
 
+void hud::set_hide(bool value)
+{
+    if(!value && value !=m_hide)
+    {
+        //hud reset state
+
+        for (auto &l: m_locks)
+            l.active = true, l.locked = false;
+    }
+
+    m_hide = value;
+}
+
+//------------------------------------------------------------
+
 void hud::update(int dt)
 {
     m_anim_time += dt;

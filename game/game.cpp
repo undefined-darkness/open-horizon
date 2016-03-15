@@ -132,16 +132,19 @@ wpn_missile_params::wpn_missile_params(std::string id, std::string model)
     auto &param = get_arms_param();
 
     lockon_range = param.get_float(lockon + "range");
-    float lon_angle = param.get_float(lockon + "angle") * 0.5f * nya_math::constants::pi / 180.0f;
-
-    if (id == "SAAM")
-        lon_angle *= 0.3f; // I dunno
-
-    lockon_angle_cos = cosf(lon_angle);
-    lockon_reload = param.get_float(lockon + "reload");
+    lockon_reload = param.get_float(lockon + "reload") * 1000;
     lockon_count = param.get_float(lockon + "lockonNum");
     lockon_air = param.get_int(lockon + "target_air") > 0;
     lockon_ground = param.get_int(lockon + "target_grd") > 0;
+
+    float lon_angle = param.get_float(lockon + "angle") * 0.5f * nya_math::constants::pi / 180.0f;
+
+    //I dunno
+    if (id == "SAAM")
+        lon_angle *= 0.3f;
+    lockon_reload /= 10;
+
+    lockon_angle_cos = cosf(lon_angle);
 }
 
 //------------------------------------------------------------
@@ -542,6 +545,8 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 h.set_locks(lock_count, 0);
                 for (int i = 0; i < lock_count; ++i)
                     h.set_lock(i, false, true);
+                for (int i = 0; i < (int)special_mount_cooldown.size(); ++i)
+                    h.set_lock(i, false, special_mount_cooldown[i] < 0);
                 h.set_missiles_count(special_count);
                 if (special.id == "SAAM")
                     h.set_saam_circle(true, acosf(special.lockon_angle_cos));
@@ -569,6 +574,8 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     const auto dir = phys->rot.rotate(nya_math::vec3(0.0f, 0.0f, 1.0f));
 
     const bool is_mgp = special.id == "MGP";
+    const bool is_ecm = special.id == "ECM";
+    const bool is_Xaam = special.lockon_count > 2;
 
     if (controls.missile != last_controls.missile)
     {
@@ -577,6 +584,10 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             if (is_mgp)
             {
                 render->set_mgp_fire(controls.missile);
+            }
+            else if (is_ecm)
+            {
+                //ToDo
             }
             else if (controls.missile)
             {
@@ -587,14 +598,30 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                         if (count == 1)
                         {
                             if (special_cooldown[0] <= 0)
+                            {
                                 special_cooldown[0] = special_cooldown_time;
+                                if (player)
+                                    h.set_lock(0, false, false);
+                            }
                             else if (special_cooldown[1] <= 0)
+                            {
                                 special_cooldown[1] = special_cooldown_time;
+                                if (player)
+                                    h.set_lock(1, false, false);
+                            }
                         }
                         else
                             special_cooldown[0] = special_cooldown[1] = special_cooldown_time;
 
                         special_mount_cooldown.resize(render->get_special_mount_count());
+
+                        std::vector<w_ptr<plane> > locked_targets;
+                        for (auto &t: targets)
+                        {
+                            for (int j = 0; j < t.locked; ++j)
+                                locked_targets.push_back(t.target_plane);
+                            t.locked = 0;
+                        }
 
                         for (int i = 0; i < count; ++i)
                         {
@@ -606,11 +633,12 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                             m->phys->rot = render->get_special_mount_rot(special_mount_idx);
                             m->phys->vel = phys->vel;
                             m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0)); //ToDo
-    /*
-                            //ToDo
-                            if (!targets.empty() && targets.front().locked > 0)
-                                m->target = targets.front().target_plane;
-    */
+
+                            if (i < (int)locked_targets.size())
+                                m->target = locked_targets[i];
+
+                            if (player && count > 1)
+                                h.set_lock(i, false, false);
                         }
                     }
                 }
@@ -679,7 +707,11 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
         special_mount_cooldown[i] -= dt;
         if (special_mount_cooldown[i] < 0)
+        {
             render->set_special_visible(i, true);
+            if (player && special_weapon)
+                h.set_lock(i, false, true);
+        }
     }
 
     if (controls.mgun != last_controls.mgun)
@@ -747,24 +779,31 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 if (fp == targets.end())
                     fp = targets.insert(targets.end(), {p, false});
 
-                if (special_weapon) //ToDo
+                if (special_weapon)
                 {
-                    if (!special.lockon_air)
+                    if (!special.lockon_air || !fp->locked)
                         continue;
-/*
+
+                    int count = fp->locked;
+
                     if (dist > special.lockon_range)
                         fp->locked = 0;
                     else
                     {
                         const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
                         if (c < special.lockon_angle_cos)
-                            fp->locked = false;
-                        else if (fp != targets.begin())
                             fp->locked = 0;
-                        else
-                            fp->locked = 1;
                     }
-*/
+
+                    int lockon_count = 0;
+                    for (auto &t: targets)
+                        lockon_count += t.locked;
+
+                    if (player)
+                    {
+                        for (int i = 0; i < count; ++i)
+                            h.set_lock(i + lockon_count, false, true);
+                    }
                 }
                 else
                 {
@@ -790,7 +829,6 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     targets.erase(std::remove_if(targets.begin(), targets.end(), [](target_lock &t){ return t.target_plane.expired()
                                  || t.target_plane.lock()->hp <= 0; }), targets.end());
 
-
     const bool is_saam = special_weapon && special.id == "SAAM";
     bool saam_locked = false;
 
@@ -804,6 +842,52 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         {
             const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
             saam_locked = c > special.lockon_angle_cos;
+        }
+    }
+
+    if (special_weapon && is_Xaam && special_cooldown[0] <= 0)
+    {
+        lock_timer += dt;
+        if (lock_timer > special.lockon_reload)
+        {
+            lock_timer %= special.lockon_reload;
+
+            int lockon_count = 0;
+            for (auto &t: targets)
+                lockon_count += t.locked;
+
+            if (lockon_count < special.lockon_count)
+            {
+                for (int min_lock = 0; min_lock < special.lockon_count; ++min_lock)
+                {
+                    bool found = false;
+                    for (auto &t: targets)
+                    {
+                        if (t.locked > min_lock)
+                            continue;
+
+                        auto p = t.target_plane.lock();
+                        auto target_dir = p->get_pos() - me->get_pos();
+                        const float dist = target_dir.length();
+                        if (dist > special.lockon_range)
+                            continue;
+
+                        const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
+                        if (c < special.lockon_angle_cos)
+                            continue;
+
+                        if (player)
+                            h.set_lock(lockon_count, true, true);
+
+                        ++t.locked;
+                        found = true;
+                        break;
+                    }
+
+                    if (found)
+                        break;
+                }
+            }
         }
     }
 
@@ -826,7 +910,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         h.set_alt(phys->pos.y);
         h.set_saam(saam_locked, false);
 
-        if (special_weapon && special.id == "MGP")
+        if (special_weapon && is_mgp)
             h.set_mgp(controls.missile);
 
         proj_dir.y = 0.0f;
