@@ -112,6 +112,8 @@ void hud::draw(const render &r)
     nya_math::vec2 proj_pos;
     if (get_project_pos(r, m_project_pos, proj_pos))
     {
+        proj_pos.x -= 1.0f;
+
         //m_common.draw(r, 215, proj_pos.x, proj_pos.y, green);
         m_common.draw(r, m_mgun ? 141 : 2, proj_pos.x, proj_pos.y, green);
 
@@ -132,12 +134,9 @@ void hud::draw(const render &r)
     for (int i = 0; i < (int)m_locks.size(); ++i)
     {
         const auto &l = m_locks[i];
-        const int pos_x = (i - (int)m_locks.size() / 2 + 0.5f) * 16;
-        m_aircraft.draw(r, l.active ? 418 : 423, r.get_width()/2 + pos_x, r.get_height()/2 + 30, l.locked ? red : green);
+        const int pos_x = (i - (int)m_locks.size() / 2 + (m_locks.size() % 2 ? 0.0f : 0.5f)) * 16;
+        m_aircraft.draw(r, l.active ? m_lock_icon_active : m_lock_icon, r.get_width()/2 + pos_x, r.get_height()/2 + 30, l.locked ? red : green);
     }
-
-    if (m_mgp_icon)
-        m_aircraft.draw(r, 417, r.get_width()/2, r.get_height()/2 + 30, green);
 
     //targets
 
@@ -313,6 +312,7 @@ void hud::set_missiles(const char *id, int icon)
         std::string id_str(id);
         if (id_str == "MISSILE")
             id_str = "MSL";
+
         if (id_str.length() < 4)
             id_str = " " + id_str;
         m_missiles_name = std::wstring(id_str.begin(), id_str.end());
@@ -323,9 +323,12 @@ void hud::set_missiles(const char *id, int icon)
 
 //------------------------------------------------------------
 
-void hud::set_locks_count(int count)
+void hud::set_locks(int count, int icon)
 {
     m_locks.resize(count);
+
+    m_lock_icon_active = 417 + icon;
+    m_lock_icon = 422 + icon;
 }
 
 //------------------------------------------------------------

@@ -27,12 +27,11 @@ public:
     void set_missiles(const char *id, int icon);
     void set_missiles_count(int count) { m_missiles_count = count; }
     void set_missile_reload(int idx, float value);
-    void set_locks_count(int count);
+    void set_locks(int count, int icon);
     void set_lock(int idx, bool locked, bool active);
     void set_mgun(bool visible) { m_mgun = visible; }
     void set_saam_circle(bool visible, float angle);
     void set_saam(bool locked, bool tracking) { m_saam_locked = locked; m_saam_tracking = tracking; }
-    void set_mgp_icon(bool active) { m_mgp_icon = active; if (!active) m_mgp = false; }
     void set_mgp(bool active) { m_mgp = active; }
     void change_radar() { m_show_map = !m_show_map; }
 
@@ -82,6 +81,7 @@ private:
 
     struct lock { bool locked = false, active = false; };
     std::vector<lock> m_locks;
+    ivalue m_lock_icon, m_lock_icon_active;
 
     ivalue m_anim_time;
     std::wstring m_missiles_name;

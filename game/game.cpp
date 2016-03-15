@@ -536,26 +536,23 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             if (special_weapon)
             {
                 h.set_missiles(special.id.c_str(), 1); //ToDo: idx
-                const int lock_count = special.lockon_count > 2 ? (int)special.lockon_count : 2;
-                h.set_locks_count(lock_count);
+                int lock_count = special.lockon_count > 2 ? (int)special.lockon_count : 2;
+                if (special.id == "MGP" || special.id == "ECM")
+                    lock_count = 1;
+                h.set_locks(lock_count, 0);
                 for (int i = 0; i < lock_count; ++i)
                     h.set_lock(i, false, true);
                 h.set_missiles_count(special_count);
                 if (special.id == "SAAM")
                     h.set_saam_circle(true, acosf(special.lockon_angle_cos));
-                else if (special.id == "MGP")
-                {
-                    h.set_locks_count(0);
-                    h.set_mgp_icon(true);
-                }
             }
             else
             {
                 h.set_missiles(missile.id.c_str(), 0);
-                h.set_locks_count(0);
+                h.set_locks(0, 0);
                 h.set_missiles_count(missile_count);
                 h.set_saam_circle(false, 0.0f);
-                h.set_mgp_icon(false);
+                h.set_mgp(false);
             }
         }
     }
