@@ -534,6 +534,9 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         else
             special_weapon = !special_weapon;
 
+        if (!saam_missile.expired())
+            saam_missile.lock()->target.reset();
+
         if (player)
         {
             if (special_weapon)
@@ -577,6 +580,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     const bool is_ecm = special.id == "ECM";
     const bool is_qaam = special.id == "QAAM";
     const bool is_Xaam = special.lockon_count > 2;
+    const bool is_saam = special.id == "SAAM";
 
     if (controls.missile != last_controls.missile)
     {
@@ -650,6 +654,13 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
                                 if (player && count > 1)
                                     h.set_lock(i, false, false);
+
+                                if (is_saam)
+                                {
+                                    if (!saam_missile.expired())
+                                        saam_missile.lock()->target.reset(); //one at a time
+                                    saam_missile = m;
+                                }
                             }
                         }
                     }
@@ -860,7 +871,6 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     targets.erase(std::remove_if(targets.begin(), targets.end(), [](target_lock &t){ return t.target_plane.expired()
                                  || t.target_plane.lock()->hp <= 0; }), targets.end());
 
-    const bool is_saam = special_weapon && special.id == "SAAM";
     bool saam_locked = false;
 
     if (special_weapon)
@@ -878,6 +888,8 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                     const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
                     saam_locked = c > special.lockon_angle_cos;
                 }
+
+                targets.begin()->locked = saam_locked ? 1 : 0;
             }
             else if (is_qaam && !targets.begin()->locked)
             {
@@ -911,6 +923,15 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         }
         else
             lock_timer = 0;
+
+        if (!saam_missile.expired())
+        {
+            auto m = saam_missile.lock();
+            if (saam_locked)
+                m->target = targets.begin()->target_plane;
+            else
+                m->target.reset();
+        }
 
         if (is_Xaam && special_cooldown[0] <= 0)
         {
@@ -976,7 +997,16 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         h.set_yaw(phys->rot.get_euler().y);
         h.set_speed(speed);
         h.set_alt(phys->pos.y);
-        h.set_saam(saam_locked, false);
+
+        if (is_saam)
+        {
+            const bool tracking = saam_locked && !saam_missile.expired();
+            h.set_saam(saam_locked, tracking);
+
+            int idx = special_cooldown[0] <=0 ? 0 : 1;
+            if (special_cooldown[idx] <=0)
+                h.set_lock(idx, saam_locked, true);
+        }
 
         if (special_weapon && is_mgp)
             h.set_mgp(controls.missile);
@@ -990,6 +1020,9 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         {
             if (targets.size() > 1)
             {
+                if (!is_Xaam)
+                    targets.front().locked = 0;
+
                 targets.push_back(targets.front());
                 targets.pop_front();
             }
@@ -1101,6 +1134,8 @@ void plane::take_damage(int damage, world &w)
     {
         render->set_dead(true);
         w.spawn_explosion(get_pos(), 0, 30.0f);
+        if (!saam_missile.expired())
+            saam_missile.lock()->target.reset();
     }
 }
 

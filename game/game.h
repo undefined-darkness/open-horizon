@@ -80,6 +80,10 @@ struct wpn_missile_params
 
 //------------------------------------------------------------
 
+struct missile;
+
+//------------------------------------------------------------
+
 struct plane: public object
 {
     net_plane_ptr net;
@@ -115,6 +119,8 @@ struct plane: public object
 
     std::list<target_lock> targets;
     ivalue lock_timer;
+
+    w_ptr<game::missile> saam_missile;
 
     void reset_state();
     void set_pos(const vec3 &pos) { if (phys) phys->pos = pos; }
