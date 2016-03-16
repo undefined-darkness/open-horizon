@@ -84,7 +84,7 @@ struct missile;
 
 //------------------------------------------------------------
 
-struct plane: public object
+struct plane: public object, public std::enable_shared_from_this<plane>
 {
     net_plane_ptr net;
     plane_controls controls;
@@ -130,6 +130,7 @@ struct plane: public object
     vec3 get_dir() { static vec3 fw(0.0, 0.0, 1.0); return get_rot().rotate(fw); }
     void select_target(const object_ptr &o);
     void update(int dt, world &w, gui::hud &h, bool player);
+    bool is_ecm_active() const { return special.id=="ECM" && special_cooldown[0] > 0;}
 
     virtual void take_damage(int damage, world &w) override;
 };
@@ -143,6 +144,7 @@ struct missile: public object
     phys::missile_ptr phys;
     renderer::missile_ptr render;
     ivalue time;
+    w_ptr<plane> owner;
     w_ptr<plane> target;
     fvalue homing_angle_cos;
 

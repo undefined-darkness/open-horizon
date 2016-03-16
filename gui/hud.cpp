@@ -54,9 +54,25 @@ void hud::load(const char *aircraft_name, const char *location_name)
 void hud::set_location(const char *location_name)
 {
     m_location = tiles();
+    m_map_offset.set(0.0f, 0.0f);
+    m_map_scale = 1.0/150.0f;
 
-    if (location_name && location_name[0])
-        m_location.load(("Hud/mission/hudMission_" + std::string(location_name) + ".fhm").c_str());
+    if (!location_name || !location_name[0])
+        return;
+
+    std::string name(location_name);
+
+    if (name == "ms30")
+    {
+        name = "on_cap02";
+        m_map_scale = 1.0/60.0f;
+        m_map_offset.set(-5000.0f, -3000.0f);
+    }
+
+    if (name == "ms06")
+        m_map_offset.y = 10000.0f;
+
+    m_location.load(("Hud/mission/hudMission_" + name + ".fhm").c_str());
 }
 
 //------------------------------------------------------------
@@ -204,11 +220,11 @@ void hud::draw(const render &r)
     if (m_show_map)
     {
         const int map_center_x = 250, map_center_y = r.get_height()-250;
-        float s = 1.0/150.0f;
 
         m_location.draw(r, 350, map_center_x, map_center_y, white);
 
-        m_common.draw(r, 181, map_center_x + m_pos.x * s, map_center_y + m_pos.z * s, green, nya_math::constants::pi - m_yaw);
+        m_common.draw(r, 181, map_center_x + (m_pos.x - m_map_offset.x) * m_map_scale,
+                      map_center_y + (m_pos.z - m_map_offset.y) * m_map_scale, green, nya_math::constants::pi - m_yaw);
     }
     else
     {
@@ -230,6 +246,21 @@ void hud::draw(const render &r)
         bg[0].r.w = frame_half_size * 2;
         bg[0].r.h = frame_half_size * 2;
         r.draw(bg, shared::get_white_texture(), nya_math::vec4(0.0f, 0.02f, 0.0f, 0.5f));
+
+        for (auto &e: m_ecms)
+        {
+            auto d = nya_math::vec2::rotate(nya_math::vec2(m_pos.x - e.x, m_pos.z - e.z), m_yaw);
+            const float len = d.length();
+            if (len > radar_range)
+                continue;
+
+            if (len > 0.01f)
+                d *= float(radar_radius) / radar_range;
+
+            const float scale = radar_range > 1000 ? 0.6f : 1.6f;
+            m_common.draw(r, radar_range > 5000 ? 207 : 208, radar_center_x + d.x, radar_center_y + d.y, green, 0.0f, scale);
+        }
+
         r.draw(radar_frame, green);
 
         m_common.draw(r, 214, radar_center_x, radar_center_y, green); //circle

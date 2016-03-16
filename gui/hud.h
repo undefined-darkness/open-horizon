@@ -56,6 +56,9 @@ public:
     void clear_targets() { m_targets.clear(); }
     void add_target(const nya_math::vec3 &pos, float yaw, target_type target, select_type select);
 
+    void clear_ecm() { m_ecms.clear(); }
+    void add_ecm(const nya_math::vec3 &pos) { m_ecms.push_back(pos); }
+
     hud(): m_common_loaded(false), m_hide(false) {}
 
 private:
@@ -78,6 +81,8 @@ private:
     };
 
     std::vector<target> m_targets;
+
+    std::vector<nya_math::vec3> m_ecms;
 
     struct lock { bool locked = false, active = false; };
     std::vector<lock> m_locks;
@@ -102,6 +107,8 @@ private:
     tiles m_common;
     tiles m_aircraft;
     tiles m_location;
+    nya_math::vec2 m_map_offset;
+    float m_map_scale = 1.0f;
 };
 
 //------------------------------------------------------------

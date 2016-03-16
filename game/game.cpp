@@ -374,6 +374,9 @@ void world::update(int dt)
 
 bool world::is_ally(const plane_ptr &a, const plane_ptr &b)
 {
+    if (a == b)
+        return true;
+
     if (!m_ally_handler)
         return false;
 
@@ -452,7 +455,6 @@ void plane::select_target(const object_ptr &o)
 void plane::update(int dt, world &w, gui::hud &h, bool player)
 {
     const int missile_cooldown_time = 3500;
-    const int special_cooldown_time = 7000;
 
     if (net)
     {
@@ -582,6 +584,8 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     const bool is_Xaam = special.lockon_count > 2;
     const bool is_saam = special.id == "SAAM";
 
+    const int special_cooldown_time = is_ecm ? 9000 : 7000;
+
     if (controls.missile != last_controls.missile)
     {
         if (special_weapon)
@@ -598,7 +602,12 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                     {
                         if (is_ecm)
                         {
-                            //ToDo
+                            if (special_cooldown[0] <= 0)
+                            {
+                                special_cooldown[0] = special_cooldown_time;
+                                if (player)
+                                    h.set_lock(0, false, false);
+                            }
                         }
                         else if (special.id == "ADMM")
                         {
@@ -641,6 +650,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                             for (int i = 0; i < count; ++i)
                             {
                                 auto m = w.add_missile(special.id.c_str(), render->get_special_model());
+                                m->owner = shared_from_this();
                                 special_mount_idx = ++special_mount_idx % render->get_special_mount_count();
                                 special_mount_cooldown[special_mount_idx] = special_cooldown_time;
                                 render->set_special_visible(special_mount_idx, false);
@@ -687,6 +697,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 missile_cooldown[1] = missile_cooldown_time;
 
             auto m = w.add_missile(missile.id.c_str(), render->get_missile_model());
+            m->owner = shared_from_this();
             missile_mount_idx = ++missile_mount_idx % render->get_missile_mount_count();
             missile_mount_cooldown[missile_mount_idx] = missile_cooldown_time;
             render->set_missile_visible(missile_mount_idx, false);
@@ -791,16 +802,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         }
     }
 
-    plane_ptr me;
-    for (int i = 0; i < w.get_planes_count(); ++i) //ugly
-    {
-        auto p = w.get_plane(i);
-        if (p.operator->() == this)
-        {
-            me = p;
-            break;
-        }
-    }
+    const plane_ptr &me = shared_from_this();
 
     for (int i = 0; i < w.get_planes_count(); ++i)
     {
@@ -980,6 +982,27 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         }
     }
 
+    if (is_ecm_active())
+    {
+        //ToDo: jam planes
+
+        for (int i = 0; i < w.get_missiles_count(); ++i)
+        {
+            auto m = w.get_missile(i);
+            if (!m)
+                continue;
+
+            if (!m->owner.expired() && w.is_ally(me, m->owner.lock()))
+                continue;
+
+            const float ecm_dist = 500.0f;
+            if ((get_pos() - m->phys->pos).length_sq() > ecm_dist * ecm_dist)
+                continue;
+
+            m->target.reset();
+        }
+    }
+
     //cockpit animations and hud
 
     const float aoa = acosf(nya_math::vec3::dot(nya_math::vec3::normalize(phys->vel), dir));
@@ -1029,6 +1052,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         }
 
         h.clear_targets();
+        h.clear_ecm();
 
         for (int i = 0; i < w.get_missiles_count(); ++i)
         {
@@ -1042,6 +1066,10 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         for (int i = 0; i < w.get_planes_count(); ++i)
         {
             auto p = w.get_plane(i);
+
+            if (p->is_ecm_active())
+                h.add_ecm(p->get_pos());
+
             if (me == p)
                 continue;
 

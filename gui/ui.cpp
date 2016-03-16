@@ -643,11 +643,12 @@ int tiles::get_id(int idx)
 
 //------------------------------------------------------------
 
-void tiles::draw(const render &r, int id, int x, int y, const nya_math::vec4 &color, float yaw)
+void tiles::draw(const render &r, int id, int x, int y, const nya_math::vec4 &color, float yaw, float scale)
 {
     render::transform t;
     t.x = float(x), t.y = float(y);
     t.yaw = yaw;
+    t.sx = t.sy = scale;
 
     auto it = m_hud_map.find(id);
     if (it == m_hud_map.end())

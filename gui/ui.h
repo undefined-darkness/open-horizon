@@ -140,7 +140,7 @@ class tiles
 {
 public:
     bool load(const char *name);
-    void draw(const render &r, int id, int x, int y, const nya_math::vec4 &color, float yaw = 0.0f);
+    void draw(const render &r, int id, int x, int y, const nya_math::vec4 &color, float yaw = 0.0f, float scale = 1.0f);
     int get_count() { return (int)m_hud.size(); }
     int get_id(int idx);
     void set_progress(int id, int sub_idx, float value);
