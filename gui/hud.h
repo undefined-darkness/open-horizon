@@ -33,6 +33,7 @@ public:
     void set_saam_circle(bool visible, float angle);
     void set_saam(bool locked, bool tracking) { m_saam_locked = locked; m_saam_tracking = tracking; }
     void set_mgp(bool active) { m_mgp = active; }
+    void set_jammed(bool active) { m_jammed = active; }
     void change_radar() { m_show_map = !m_show_map; }
 
     void clear_alerts() { m_alerts.clear(); }
@@ -97,6 +98,7 @@ private:
     bvalue m_saam_tracking;
     bvalue m_mgp_icon;
     bvalue m_mgp;
+    bvalue m_jammed;
 
     std::vector<nya_math::vec2> m_saam_mesh;
 

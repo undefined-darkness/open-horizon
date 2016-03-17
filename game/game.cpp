@@ -455,6 +455,7 @@ void plane::select_target(const object_ptr &o)
 void plane::update(int dt, world &w, gui::hud &h, bool player)
 {
     const int missile_cooldown_time = 3500;
+    const float ecm_dist = 800.0f;
 
     if (net)
     {
@@ -802,8 +803,9 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         }
     }
 
-    const plane_ptr &me = shared_from_this();
+    bool jammed = false;
 
+    const plane_ptr &me = shared_from_this();
     for (int i = 0; i < w.get_planes_count(); ++i)
     {
         auto p = w.get_plane(i);
@@ -820,6 +822,13 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.target_plane.lock(); });
             if (dist < 12000.0f) //ToDo
             {
+                if (p->is_ecm_active() && dist < ecm_dist)
+                {
+                    jammed = true;
+                    targets.clear();
+                    break;
+                }
+
                 if (fp == targets.end())
                     fp = targets.insert(targets.end(), {p, false});
 
@@ -984,8 +993,6 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
     if (is_ecm_active())
     {
-        //ToDo: jam planes
-
         for (int i = 0; i < w.get_missiles_count(); ++i)
         {
             auto m = w.get_missile(i);
@@ -995,7 +1002,6 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             if (!m->owner.expired() && w.is_ally(me, m->owner.lock()))
                 continue;
 
-            const float ecm_dist = 500.0f;
             if ((get_pos() - m->phys->pos).length_sq() > ecm_dist * ecm_dist)
                 continue;
 
@@ -1020,6 +1026,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         h.set_yaw(phys->rot.get_euler().y);
         h.set_speed(speed);
         h.set_alt(phys->pos.y);
+        h.set_jammed(jammed);
 
         if (is_saam)
         {

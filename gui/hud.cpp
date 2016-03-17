@@ -112,6 +112,10 @@ void hud::draw(const render &r)
     const auto red = nya_math::vec4(200,0,0,255)/255.0;
     const auto blue = nya_math::vec4(100,200,200,255)/255.0;
 
+    nya_math::vec2 jam_glitch;
+    if (m_jammed)
+        jam_glitch.set((rand() % 2000 - 1000) * 0.005f, (rand() % 2000 - 1000) * 0.005f);
+
     auto alert_color = green;
     if (!m_alerts.empty())
         alert_color = red;
@@ -144,6 +148,9 @@ void hud::draw(const render &r)
     if (get_project_pos(r, m_project_pos, proj_pos))
     {
         proj_pos.x -= 1.0f;
+
+        if (m_jammed)
+            proj_pos += jam_glitch;
 
         //m_common.draw(r, 215, proj_pos.x, proj_pos.y, green);
         m_common.draw(r, m_mgun ? 141 : 2, proj_pos.x, proj_pos.y, green);
@@ -231,7 +238,7 @@ void hud::draw(const render &r)
         //radar
 
         const int radar_range = min_enemy_range < 1000 ? 1000 : ( min_enemy_range < 5000 ? 5000 : 15000);
-        const int radar_center_x = 185, radar_center_y = r.get_height()-140, radar_radius = 75;
+        const int radar_center_x = 185 + jam_glitch.x, radar_center_y = r.get_height()-140 + jam_glitch.y, radar_radius = 75;
         const int frame_half_size = radar_radius + 5;
 
         static std::vector<nya_math::vec2> radar_frame(5);
