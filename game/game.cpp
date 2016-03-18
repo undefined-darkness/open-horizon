@@ -834,7 +834,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
                 if (special_weapon)
                 {
-                    if (!is_Xaam || !fp->locked)
+                    if (!fp->locked)
                         continue;
 
                     int count = fp->locked;
@@ -848,14 +848,25 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                             fp->locked = 0;
                     }
 
-                    int lockon_count = 0;
-                    for (auto &t: targets)
-                        lockon_count += t.locked;
-
                     if (player)
                     {
-                        for (int i = 0; i < count; ++i)
-                            h.set_lock(i + lockon_count, false, true);
+                        if (is_Xaam)
+                        {
+                            int lockon_count = 0;
+                            for (auto &t: targets)
+                                lockon_count += t.locked;
+
+                            for (int i = 0; i < count; ++i)
+                                h.set_lock(i + lockon_count, false, true);
+                        }
+                        else
+                        {
+                            const bool ready0 = special_cooldown[0] <=0;
+                            const bool ready1 = special_cooldown[1] <=0;
+
+                            if (ready0 || ready1)
+                                h.set_lock(ready0 ? 0 : 1, false, true);
+                        }
                     }
                 }
                 else
@@ -902,7 +913,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
                 targets.begin()->locked = saam_locked ? 1 : 0;
             }
-            else if (is_qaam && !targets.begin()->locked)
+            else if (is_qaam)
             {
                 const bool ready0 = special_cooldown[0] <=0;
                 const bool ready1 = special_cooldown[1] <=0;
@@ -913,19 +924,24 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                     auto target_dir = p->get_pos() - me->get_pos();
                     const float dist = target_dir.length();
 
-                    const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
-                    if (c > special.lockon_angle_cos)
+                    if (dist < special.lockon_range)
                     {
-                        lock_timer += dt;
-                        if (lock_timer > special.lockon_reload)
+                        const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
+                        if (c > special.lockon_angle_cos)
                         {
-                            lock_timer %= special.lockon_reload;
+                            lock_timer += dt;
+                            if (lock_timer > special.lockon_reload)
+                            {
+                                lock_timer %= special.lockon_reload;
 
-                            targets.begin()->locked = 1;
+                                targets.begin()->locked = 1;
 
-                            if (player)
-                                h.set_lock(ready0 ? 0 : 1, true, true);
+                                if (player)
+                                    h.set_lock(ready0 ? 0 : 1, true, true);
+                            }
                         }
+                        else
+                            lock_timer = 0;
                     }
                     else
                         lock_timer = 0;
