@@ -27,6 +27,7 @@ protected:
     };
 
     bool is_ally(const plane_ptr &a, const plane_ptr &b);
+    void on_kill(const plane_ptr &k, const plane_ptr &v);
 
     typedef std::pair<vec3, quat> respawn_point;
     respawn_point get_respawn_point(team t);
@@ -43,6 +44,7 @@ protected:
     plane_ptr m_player;
     std::map<plane_ptr, tdm_plane> m_planes;
     std::vector<ai> m_bots;
+    ivalue m_score[2];
 };
 
 //------------------------------------------------------------

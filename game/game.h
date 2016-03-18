@@ -181,6 +181,10 @@ public:
     typedef std::function<bool(const plane_ptr &a, const plane_ptr &b)> is_ally_handler;
     void set_ally_handler(is_ally_handler &handler) { m_ally_handler = handler; }
 
+    void on_kill(const plane_ptr &a, const plane_ptr &b);
+    typedef std::function<void(const plane_ptr &k, const plane_ptr &v)> on_kill_handler;
+    void set_on_kill_handler(on_kill_handler &handler) { m_on_kill_handler = handler; }
+
     gui::hud &get_hud() { return m_hud; }
 
     void update(int dt);
@@ -204,6 +208,7 @@ private:
     phys::world m_phys_world;
 
     is_ally_handler m_ally_handler;
+    on_kill_handler m_on_kill_handler;
 
 private:
     network_interface *m_network;

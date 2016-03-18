@@ -16,6 +16,9 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
     world::is_ally_handler fia = std::bind(&team_deathmatch::is_ally, this, std::placeholders::_1, std::placeholders::_2);
     m_world.set_ally_handler(fia);
 
+    world::on_kill_handler fok = std::bind(&team_deathmatch::on_kill, this, std::placeholders::_1, std::placeholders::_2);
+    m_world.set_on_kill_handler(fok);
+
     for (int t = 0; t < 2; ++t)
     {
         m_respawn_points[t].resize(players_count / 2);
@@ -76,6 +79,8 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
             p->set_rot(rp.second);
         }
     }
+
+    m_world.get_hud().set_team_score(0, 0);
 }
 
 //------------------------------------------------------------
@@ -134,6 +139,26 @@ team_deathmatch::respawn_point team_deathmatch::get_respawn_point(team t)
 bool team_deathmatch::is_ally(const plane_ptr &a, const plane_ptr &b)
 {
     return m_planes[a].t == m_planes[b].t;
+}
+
+//------------------------------------------------------------
+
+void team_deathmatch::on_kill(const plane_ptr &k, const plane_ptr &v)
+{
+    if (!v)
+        return;
+
+    const bool ally = is_ally(m_player, v);
+
+    if (k)
+    {
+        if (!is_ally(k, v))
+            ++m_score[ally ? team_enemies : team_ally];
+    }
+    else
+        --m_score[ally ? team_ally : team_enemies];
+
+    m_world.get_hud().set_team_score(m_score[team_ally], m_score[team_enemies]);
 }
 
 //------------------------------------------------------------

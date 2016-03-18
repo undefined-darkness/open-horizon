@@ -326,8 +326,12 @@ void world::update(int dt)
 
         if (!b) //hit ground
         {
-            p->take_damage(9000, *this);
-            p->render->set_hide(true);
+            if (p->hp > 0)
+            {
+                p->take_damage(9000, *this);
+                on_kill(plane_ptr(), p);
+                p->render->set_hide(true);
+            }
         }
     });
 
@@ -381,6 +385,14 @@ bool world::is_ally(const plane_ptr &a, const plane_ptr &b)
         return false;
 
     return m_ally_handler(a, b);
+}
+
+//------------------------------------------------------------
+
+void world::on_kill(const plane_ptr &k, const plane_ptr &v)
+{
+    if (m_on_kill_handler)
+        m_on_kill_handler(k, v);
 }
 
 //------------------------------------------------------------
@@ -1211,7 +1223,14 @@ void missile::update(int dt, world &w)
             //if (vec3::normalize(target.lock()->phys->vel) * dir.normalize() < -0.5)  //direct shoot
             //    missile_damage *= 3;
 
-            target.lock()->take_damage(missile_damage, w);
+            auto t = target.lock();
+            if (t->hp > 0)
+            {
+                t->take_damage(missile_damage, w);
+                if (t->hp <= 0)
+                    w.on_kill(owner.lock(), t);
+            }
+
             w.spawn_explosion(phys->pos, 0, 10.0);
         }
 
