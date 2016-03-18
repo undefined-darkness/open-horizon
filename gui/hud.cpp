@@ -9,6 +9,11 @@
 namespace gui
 {
 
+const nya_math::vec4 hud::white = nya_math::vec4(255,255,255,255)/255.0;
+const nya_math::vec4 hud::green = nya_math::vec4(103,223,144,255)/255.0;
+const nya_math::vec4 hud::red = nya_math::vec4(200,0,0,255)/255.0;
+const nya_math::vec4 hud::blue = nya_math::vec4(100,200,200,255)/255.0;
+
 //------------------------------------------------------------
 
 inline bool get_project_pos(const render &r, const nya_math::vec3 &pos, nya_math::vec2 &result)
@@ -107,11 +112,6 @@ void hud::draw(const render &r)
 
     const float anim = fabsf(m_anim_time / 500.0f - 1.0);
 
-    const auto white = nya_math::vec4(255,255,255,255)/255.0;
-    const auto green = nya_math::vec4(103,223,144,255)/255.0;
-    const auto red = nya_math::vec4(200,0,0,255)/255.0;
-    const auto blue = nya_math::vec4(100,200,200,255)/255.0;
-
     nya_math::vec2 jam_glitch;
     if (m_jammed)
         jam_glitch.set((rand() % 2000 - 1000) * 0.005f, (rand() % 2000 - 1000) * 0.005f);
@@ -129,7 +129,7 @@ void hud::draw(const render &r)
     m_fonts.draw_text(r, buf, "OCRB15", r.get_width()/2 + 158, r.get_height()/2 - 8, alert_color);
 
     swprintf(buf, sizeof(buf), L"pos   %ld   %ld   %ld", long(m_pos.x),long(m_pos.y),long(m_pos.z));
-    m_fonts.draw_text(r, buf, "Zurich14", 20, 20, green);
+    m_fonts.draw_text(r, buf, "Zurich14", 20, r.get_height() - 20, green);
 
     m_common.draw(r, 10, r.get_width()/2 - 150, r.get_height()/2, alert_color);
     m_common.draw(r, 16, r.get_width()/2 + 150, r.get_height()/2, alert_color);
@@ -351,7 +351,81 @@ void hud::draw(const render &r)
             m_common.draw(r, 170, r.get_width()/2, r.get_height()/2, red, ar + a);
     }
 
+    if (m_show_team_score)
+    {
+        const int h = 0; //r.get_height() - 70
+        m_fonts.draw_text(r, m_team_score[0].c_str(), "ZurichXCnBT52", r.get_width()/2 - 30 - m_fonts.get_text_width(m_team_score[0].c_str(), "ZurichXCnBT52"), h, blue);
+        m_fonts.draw_text(r, m_team_score[1].c_str(), "ZurichXCnBT52", r.get_width()/2 + 30, h, red);
+    }
+
+    int scores_y = 5;
+    for (auto &s: m_scores)
+    {
+        int pos = 10;
+        wchar_t buf[16];
+        swprintf(buf, sizeof(buf), L"%2d", s.place);
+        m_fonts.draw_text(r, buf, "Zurich14", pos, scores_y, green);
+        pos += 30;
+        m_fonts.draw_text(r, s.name.c_str(), "Zurich14", pos, scores_y, green);
+        pos += 200 - m_fonts.get_text_width(s.value.c_str(), "Zurich14");
+        m_fonts.draw_text(r, s.value.c_str(), "Zurich14", pos, scores_y, green);
+        scores_y += 20;
+    }
+
+    for (auto &t: m_texts)
+        m_fonts.draw_text(r, t.t.c_str(), t.f.c_str(), t.x, t.y, green);
+
     //Zurich12 -23 14 -111 20 -105 30 -96 BD30Outline -113 BD20Outline -26 BD22Outline -18 OCRB15 -33
+}
+
+//------------------------------------------------------------
+
+void hud::clear_scores()
+{
+    m_show_team_score = false;
+    m_scores.clear();
+}
+
+//------------------------------------------------------------
+
+void hud::set_team_score(int allies, int enemies)
+{
+    m_show_team_score = true;
+    m_team_score[0] = std::to_wstring(allies);
+    m_team_score[1] = std::to_wstring(enemies);
+}
+
+//------------------------------------------------------------
+
+void hud::set_score(int line, int place, const std::wstring &name, const std::wstring &value)
+{
+    if (line < 0)
+        return;
+
+    if (line >= (int)m_texts.size())
+        m_scores.resize(line + 1);
+
+    auto &s = m_scores[line];
+    s.place = place;
+    s.name = name;
+    s.value = value;
+}
+
+//------------------------------------------------------------
+
+void hud::add_text(int idx, const std::wstring &text, const std::string &font, int x, int y, const nya_math::vec4 &color)
+{
+    if (idx < 0)
+        return;
+
+    if (idx >= (int)m_texts.size())
+        m_texts.resize(idx + 1);
+
+    auto &t = m_texts[idx];
+    t.t = text;
+    t.f = font;
+    t.x = x, t.y = y;
+    t.c = color;
 }
 
 //------------------------------------------------------------

@@ -36,6 +36,10 @@ public:
     void set_jammed(bool active) { m_jammed = active; }
     void change_radar() { m_show_map = !m_show_map; }
 
+    void clear_scores();
+    void set_team_score(int allies, int enemies);
+    void set_score(int line, int place, const std::wstring &name, const std::wstring &value);
+
     void clear_alerts() { m_alerts.clear(); }
     void add_alert(float v) { m_alerts.push_back(v); }
 
@@ -60,7 +64,16 @@ public:
     void clear_ecm() { m_ecms.clear(); }
     void add_ecm(const nya_math::vec3 &pos) { m_ecms.push_back(pos); }
 
+    void clear_texts() { m_texts.clear(); }
+    void add_text(int idx, const std::wstring &text, const std::string &font, int x, int y, const nya_math::vec4 &color);
+
     hud(): m_common_loaded(false), m_hide(false) {}
+
+public:
+    const static nya_math::vec4 white;
+    const static nya_math::vec4 green;
+    const static nya_math::vec4 red;
+    const static nya_math::vec4 blue;
 
 private:
     nya_math::vec3 m_project_pos;
@@ -101,6 +114,26 @@ private:
     bvalue m_jammed;
 
     std::vector<nya_math::vec2> m_saam_mesh;
+
+    struct score_line
+    {
+        int place = 0;
+        std::wstring name, value;
+    };
+
+    std::vector<score_line> m_scores;
+    bvalue m_show_team_score;
+    std::wstring m_team_score[2];
+
+    struct text
+    {
+        std::wstring t;
+        std::string f;
+        int x = 0, y = 0;
+        nya_math::vec4 c;
+    };
+
+    std::vector<text> m_texts;
 
 private:
     bool m_common_loaded;
