@@ -576,6 +576,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 h.set_missiles_count(missile_count);
                 h.set_saam_circle(false, 0.0f);
                 h.set_mgp(false);
+                render->set_mgp_fire(false);
             }
         }
     }
@@ -802,19 +803,6 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         }
     }
 
-    if (is_mgp && controls.missile)
-    {
-        mgp_fire_update += dt;
-        const int mgp_update_time = 150;
-        if (mgp_fire_update > mgp_update_time)
-        {
-            mgp_fire_update %= mgp_update_time;
-
-            for (int i = 0; i < render->get_special_mount_count(); ++i) //ToDo
-                w.spawn_bullet("MGP", render->get_special_mount_pos(i) + pos_fix, dir);
-        }
-    }
-
     bool jammed = false;
 
     const plane_ptr &me = shared_from_this();
@@ -999,6 +987,19 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                             break;
                     }
                 }
+            }
+        }
+
+        if (is_mgp && controls.missile)
+        {
+            mgp_fire_update += dt;
+            const int mgp_update_time = 150;
+            if (mgp_fire_update > mgp_update_time)
+            {
+                mgp_fire_update %= mgp_update_time;
+
+                for (int i = 0; i < render->get_special_mount_count(); ++i) //ToDo
+                    w.spawn_bullet("MGP", render->get_special_mount_pos(i) + pos_fix, dir);
             }
         }
     }
