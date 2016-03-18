@@ -122,6 +122,8 @@ private:
     std::vector<std::pair<std::string, std::vector<std::string> > > m_lists;
 };
 
+//------------------------------------------------------------
+
 wpn_missile_params::wpn_missile_params(std::string id, std::string model)
 {
     const std::string lockon = "." + id + ".lockon.";
@@ -223,6 +225,8 @@ plane_ptr world::add_plane(const char *name, int color, bool player, net_plane_p
 
     p->hp = p->max_hp = int(p->phys->params.misc.maxHp);
 
+    p->hit_radius = name[0] == 'b' ? 12.0f : 7.0f;
+
     time_t now = time(NULL);
     struct tm *tm_now = localtime(&now);
     p->render->set_time(tm_now->tm_sec + tm_now->tm_min * 60 + tm_now->tm_hour * 60 * 60); //ToDo
@@ -271,9 +275,37 @@ void world::spawn_explosion(const nya_math::vec3 &pos, int damage, float radius)
 
 //------------------------------------------------------------
 
-void world::spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_math::vec3 &dir)
+inline bool line_sphere_intersect(const vec3 &start, const vec3 &end, const vec3 &sp_center, const float sp_radius)
 {
-    m_phys_world.spawn_bullet(type, pos, dir);
+    const vec3 diff = end - start;
+    const float len = nya_math::clamp(diff.dot(sp_center - start) / diff.length_sq(), 0.0f, 1.0f);
+    const vec3 inter_pt = start + len  * diff;
+    return (inter_pt - sp_center).length_sq() <= sp_radius * sp_radius;
+}
+
+//------------------------------------------------------------
+
+void world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, const plane_ptr &owner)
+{
+    vec3 r;
+    const bool hit_world = m_phys_world.spawn_bullet(type, pos, dir, r);
+    for (auto &p: m_planes)
+    {
+        if (p->hp <= 0 || is_ally(owner, p))
+            continue;
+
+        if (line_sphere_intersect(pos, r, p->get_pos(), p->hit_radius))
+        {
+            p->take_damage(60, *this);
+            if (p->hp <= 0)
+                on_kill(owner, p);
+        }
+    }
+
+    if (hit_world)
+    {
+        //ToDo: spark
+    }
 }
 
 //------------------------------------------------------------
@@ -348,7 +380,7 @@ void world::update(int dt)
         }
     });
 
-    m_phys_world.update_bullets(dt, [this](const phys::object_ptr &a, const phys::object_ptr &b) {});
+    m_phys_world.update_bullets(dt);
 
     for (auto &p: m_planes)
         p->update(dt, *this, m_hud, p->render == m_render_world.get_player_aircraft());
@@ -790,6 +822,8 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             render->set_mgun_fire(false);
     }
 
+    const plane_ptr &me = shared_from_this();
+
     if (controls.mgun && render->is_mgun_ready())
     {
         mgun_fire_update += dt;
@@ -799,13 +833,12 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
             mgun_fire_update %= mgun_update_time;
 
             for (int i = 0; i < render->get_mguns_count(); ++i)
-                w.spawn_bullet("MG", render->get_mgun_pos(i) + pos_fix, dir);
+                w.spawn_bullet("MG", render->get_mgun_pos(i) + pos_fix, dir, me);
         }
     }
 
     bool jammed = false;
 
-    const plane_ptr &me = shared_from_this();
     for (int i = 0; i < w.get_planes_count(); ++i)
     {
         auto p = w.get_plane(i);
@@ -1015,7 +1048,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 mgp_fire_update %= mgp_update_time;
 
                 for (int i = 0; i < render->get_special_mount_count(); ++i) //ToDo
-                    w.spawn_bullet("MGP", render->get_special_mount_pos(i) + pos_fix, dir);
+                    w.spawn_bullet("MGP", render->get_special_mount_pos(i) + pos_fix, dir, me);
             }
         }
     }

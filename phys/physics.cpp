@@ -158,7 +158,7 @@ missile_ptr world::add_missile(const char *name)
 
 //------------------------------------------------------------
 
-void world::spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_math::vec3 &dir)
+bool world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, vec3 &result_pos)
 {
     bullet b;
     b.pos = pos;
@@ -198,19 +198,18 @@ void world::spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_
     }
 
     if (hit)
-    {
         b.time *= min_result;
-        auto p = pos + to_dir * min_result;
-
-        //get_debug_draw().add_point(p, nya_math::vec4(1.0f, 0.5f, 0.2f, 1.0f));
-    }
 
     m_bullets.push_back(b);
+
+    result_pos = pos + to_dir * min_result;
+
+    return hit;
 }
 
 //------------------------------------------------------------
 
-void world::update_planes(int dt, hit_hunction on_hit)
+void world::update_planes(int dt, const hit_hunction &on_hit)
 {
     m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p){ return p.use_count() <= 1; }), m_planes.end());
     for (auto &p: m_planes)
@@ -272,7 +271,7 @@ void world::update_planes(int dt, hit_hunction on_hit)
 
 //------------------------------------------------------------
 
-void world::update_missiles(int dt, hit_hunction on_hit)
+void world::update_missiles(int dt, const hit_hunction &on_hit)
 {
     m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m){ return m.use_count() <= 1; }), m_missiles.end());
     for (auto &m: m_missiles)
@@ -318,7 +317,7 @@ void world::update_missiles(int dt, hit_hunction on_hit)
 
 //------------------------------------------------------------
 
-void world::update_bullets(int dt, hit_hunction on_hit)
+void world::update_bullets(int dt)
 {
     m_bullets.erase(std::remove_if(m_bullets.begin(), m_bullets.end(), [](const bullet &b){ return b.time < 0; }), m_bullets.end());
 

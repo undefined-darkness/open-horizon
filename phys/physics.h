@@ -91,8 +91,7 @@ typedef ptr<missile> missile_ptr;
 
 struct bullet
 {
-    nya_math::vec3 pos;
-    nya_math::vec3 vel;
+    vec3 pos, vel;
     int time;
 };
 
@@ -106,11 +105,11 @@ public:
     plane_ptr add_plane(const char *name, bool add_to_world);
     missile_ptr add_missile(const char *name);
 
-    void spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_math::vec3 &dir);
+    bool spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, vec3 &result);
 
-    void update_planes(int dt, hit_hunction on_hit);
-    void update_missiles(int dt, hit_hunction on_hit);
-    void update_bullets(int dt, hit_hunction on_hit);
+    void update_planes(int dt, const hit_hunction &on_hit);
+    void update_missiles(int dt, const hit_hunction &on_hit);
+    void update_bullets(int dt);
 
     const std::vector<bullet> &get_bullets() const { return m_bullets; }
 

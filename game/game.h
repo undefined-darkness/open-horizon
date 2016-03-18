@@ -109,6 +109,8 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     ivalue special_mount_idx;
     ivalue special_count, special_max_count;
 
+    fvalue hit_radius;
+
     std::vector<nya_math::vec3> alert_dirs;
 
     struct target_lock
@@ -166,8 +168,8 @@ public:
     missile_ptr add_missile(const char *id, const char *model);
     missile_ptr add_missile(const char *id, const renderer::model &m);
 
-    void spawn_explosion(const nya_math::vec3 &pos, int damage, float radius);
-    void spawn_bullet(const char *type, const nya_math::vec3 &pos, const nya_math::vec3 &dir);
+    void spawn_explosion(const vec3 &pos, int damage, float radius);
+    void spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, const plane_ptr &owner);
 
     int get_planes_count() const { return (int)m_planes.size(); }
     plane_ptr get_plane(int idx);
