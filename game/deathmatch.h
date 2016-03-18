@@ -21,6 +21,8 @@ public:
     deathmatch(world &w): game_mode(w) {}
 
 private:
+    void on_kill(const plane_ptr &k, const plane_ptr &v);
+
     typedef std::pair<vec3, quat> respawn_point;
     respawn_point get_respawn_point();
 
@@ -29,6 +31,7 @@ private:
 
     struct dm_plane
     {
+        ivalue score;
         ivalue respawn_time;
     };
 

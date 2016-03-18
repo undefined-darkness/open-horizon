@@ -50,22 +50,26 @@ void hud::load(const char *aircraft_name, const char *location_name)
     if (aircraft_name && aircraft_name[0])
         m_aircraft.load(("Hud/aircraft/hudAircraft_" + std::string(aircraft_name) + ".fhm").c_str());
 
-    if (location_name && location_name[0])
-        m_location.load(("Hud/mission/hudMission_" + std::string(location_name) + ".fhm").c_str());
+    set_location(location_name);
 }
 
 //------------------------------------------------------------
 
 void hud::set_location(const char *location_name)
 {
-    m_location = tiles();
-    m_map_offset.set(0.0f, 0.0f);
-    m_map_scale = 1.0/150.0f;
-
     if (!location_name || !location_name[0])
+    {
+        m_location = tiles();
+        m_map_offset.set(0.0f, 0.0f);
+        m_map_scale = 1.0/150.0f;
+        m_location_name.clear();
         return;
+    }
 
     std::string name(location_name);
+    if (m_location_name == name)
+        return;
+    m_location_name = name;
 
     if (name == "ms30")
     {
@@ -361,14 +365,18 @@ void hud::draw(const render &r)
     int scores_y = 5;
     for (auto &s: m_scores)
     {
-        int pos = 10;
-        wchar_t buf[16];
-        swprintf(buf, sizeof(buf), L"%2d", s.place);
-        m_fonts.draw_text(r, buf, "Zurich14", pos, scores_y, green);
-        pos += 30;
-        m_fonts.draw_text(r, s.name.c_str(), "Zurich14", pos, scores_y, green);
-        pos += 200 - m_fonts.get_text_width(s.value.c_str(), "Zurich14");
-        m_fonts.draw_text(r, s.value.c_str(), "Zurich14", pos, scores_y, green);
+        if (s.place >= 0)
+        {
+            int pos = 10;
+            wchar_t buf[16];
+            swprintf(buf, sizeof(buf), L"%2d", s.place);
+            m_fonts.draw_text(r, buf, "Zurich14", pos, scores_y, green);
+            pos += 30;
+            m_fonts.draw_text(r, s.name.c_str(), "Zurich14", pos, scores_y, green);
+            pos += 200 - m_fonts.get_text_width(s.value.c_str(), "Zurich14");
+            m_fonts.draw_text(r, s.value.c_str(), "Zurich14", pos, scores_y, green);
+        }
+
         scores_y += 20;
     }
 
@@ -409,6 +417,16 @@ void hud::set_score(int line, int place, const std::wstring &name, const std::ws
     s.place = place;
     s.name = name;
     s.value = value;
+}
+
+//------------------------------------------------------------
+
+void hud::remove_score(int line)
+{
+    if (line < 0 || line >= (int)m_texts.size())
+        return;
+
+    m_scores[line].place = -1;
 }
 
 //------------------------------------------------------------

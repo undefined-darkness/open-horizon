@@ -39,6 +39,7 @@ public:
     void clear_scores();
     void set_team_score(int allies, int enemies);
     void set_score(int line, int place, const std::wstring &name, const std::wstring &value);
+    void remove_score(int line);
 
     void clear_alerts() { m_alerts.clear(); }
     void add_alert(float v) { m_alerts.push_back(v); }
@@ -117,7 +118,7 @@ private:
 
     struct score_line
     {
-        int place = 0;
+        int place = -1;
         std::wstring name, value;
     };
 
@@ -142,6 +143,7 @@ private:
     tiles m_common;
     tiles m_aircraft;
     tiles m_location;
+    std::string m_location_name;
     nya_math::vec2 m_map_offset;
     float m_map_scale = 1.0f;
 };

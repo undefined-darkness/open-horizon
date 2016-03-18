@@ -153,12 +153,52 @@ void team_deathmatch::on_kill(const plane_ptr &k, const plane_ptr &v)
     if (k)
     {
         if (!is_ally(k, v))
+        {
             ++m_score[ally ? team_enemies : team_ally];
+            ++m_planes[k].score;
+        }
     }
     else
+    {
         --m_score[ally ? team_ally : team_enemies];
+        --m_planes[v].score;
+    }
 
     m_world.get_hud().set_team_score(m_score[team_ally], m_score[team_enemies]);
+
+    typedef std::pair<int, plane_ptr> score_e;
+    std::vector<score_e> score_table;
+    for (auto &p: m_planes)
+        score_table.push_back({p.second.score, p.first});
+    std::sort(score_table.rbegin(), score_table.rend());
+    size_t pidx = std::find_if(score_table.begin(), score_table.end(), [this](score_e &p){ return p.second == m_player; }) - score_table.begin();
+
+    auto &h = m_world.get_hud();
+    if (pidx == 0)
+    {
+        h.set_score(0, 1, L"Player", std::to_wstring(score_table[0].first));
+
+        if (score_table.size() > 1)
+            h.set_score(1, 2, L"Bot", std::to_wstring(score_table[1].first));
+        else
+            h.remove_score(1);
+
+        if (score_table.size() > 2)
+            h.set_score(2, 3, L"Bot", std::to_wstring(score_table[2].first));
+        else
+            h.remove_score(2);
+    }
+    else
+    {
+        const int place = (int)pidx + 1;
+        h.set_score(0, place - 1, L"Bot", std::to_wstring(score_table[pidx - 1].first));
+        h.set_score(1, place, L"Player", std::to_wstring(score_table[pidx].first));
+
+        if (score_table.size() > pidx + 1)
+            h.set_score(2, place + 1, L"Bot", std::to_wstring(score_table[pidx + 1].first));
+        else
+            h.remove_score(2);
+    }
 }
 
 //------------------------------------------------------------
