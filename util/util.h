@@ -281,6 +281,25 @@ inline void find_data(nya_resources::resources_provider &rp, float *f, size_t co
 
 //------------------------------------------------------------
 
+inline bool write_file(const char *name, const void *buf, size_t size)
+{
+    if (!name || !buf)
+        return false;
+
+    FILE *f = fopen(name, "wb");
+    if (!f)
+    {
+        printf("unable to write file %s", name);
+        return false;
+    }
+
+    const bool r = fwrite(buf, size, 1, f) == size;
+    fclose(f);
+    return r;
+}
+
+//------------------------------------------------------------
+
 struct debug_variable
 {
     static int get() { return *value(); }
