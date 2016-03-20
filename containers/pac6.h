@@ -15,7 +15,7 @@ typedef unsigned __int32 uint32_t;
 
 //------------------------------------------------------------
 
-class cdp_file
+class pac6_file
 {
 public:
     bool open(const char *name);
@@ -24,18 +24,18 @@ public:
     int get_files_count() const { return int(m_entries.size()); }
     uint32_t get_file_size(int idx) const;
 
-    bool read_file_data(int idx, void *data) const;
-    bool read_file_data(int idx, void *data, uint32_t size, uint32_t offset = 0) const;
-
 private:
     struct entry
     {
+        unsigned char tome;
+        bool compressed;
         uint32_t offset;
         uint32_t size;
+        uint32_t unpacked_size;
     };
 
     std::vector<entry> m_entries;
-    nya_resources::resource_data *m_data = 0;
+    std::vector<nya_resources::resource_data *> m_data;
 };
 
 //------------------------------------------------------------

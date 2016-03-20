@@ -2,20 +2,20 @@
 // open horizon -- undefined_darkness@outlook.com
 //
 
-#include "cdp.h"
+#include "pac5.h"
 #include <assert.h>
 
 //------------------------------------------------------------
 
-bool cdp_file::open(const char *name)
+bool pac5_file::open(const char *name)
 {
     close();
     if (!name)
         return false;
 
-    if (!nya_resources::check_extension(name, ".CDP"))
+    if (!nya_resources::check_extension(name, ".PAC"))
     {
-        nya_resources::log()<<"invalid extension, should be .CDP\n";
+        nya_resources::log()<<"invalid extension, should be .PAC\n";
         return false;
     }
 
@@ -37,26 +37,33 @@ bool cdp_file::open(const char *name)
     m_data = nya_resources::get_resources_provider().access(name);
     if (!m_data)
     {
-        nya_resources::log()<<"unable to open .CDP file\n";
+        nya_resources::log()<<"unable to open .PAC file\n";
         return false;
     }
 
     size_t offset = 0;
-    m_entries.resize(tbls.size() / 2);
+    const auto count = tbls[offset++];
+    const auto unknown_zero = tbls[offset++];
+    assert(unknown_zero == 0);
+
+    m_entries.resize(count);
     for (auto &e: m_entries)
     {
-        e.offset = tbls[offset++] * 2048;
+        e.offset = tbls[offset++];
         e.size = tbls[offset++];
 
         assert(e.offset + e.size <= m_data->get_size());
     }
+
+    for (auto &e: m_entries)
+        e.unpacked_size = tbls[offset++];
 
     return true;
 }
 
 //------------------------------------------------------------
 
-void cdp_file::close()
+void pac5_file::close()
 {
     if (m_data)
         m_data->release();
@@ -65,33 +72,12 @@ void cdp_file::close()
 
 //------------------------------------------------------------
 
-uint32_t cdp_file::get_file_size(int idx) const
+uint32_t pac5_file::get_file_size(int idx) const
 {
     if (idx < 0 || idx >= get_files_count())
         return 0;
 
-    return m_entries[idx].size;
-}
-
-//------------------------------------------------------------
-
-bool cdp_file::read_file_data(int idx, void *data) const
-{
-    return read_file_data(idx, data, get_file_size(idx));
-}
-
-//------------------------------------------------------------
-
-bool cdp_file::read_file_data(int idx, void *data, uint32_t size, uint32_t offset) const
-{
-    if (idx < 0 || idx >= get_files_count() || !m_data || !data)
-        return false;
-
-    const auto &e = m_entries[idx];
-    if (offset + size > e.size)
-        return false;
-
-    return m_data->read_chunk(data, size, e.offset + offset);
+    return m_entries[idx].unpacked_size;
 }
 
 //------------------------------------------------------------
