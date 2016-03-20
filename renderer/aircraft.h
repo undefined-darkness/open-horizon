@@ -38,6 +38,8 @@ public:
     nya_math::quat get_rot() { return m_mesh.get_rot(); }
     nya_math::vec3 get_bone_pos(const char *name);
 
+    nya_math::vec3 get_wing_offset();
+
     void set_damage(float value) { m_damage = value; }
     float get_damage() const { return m_damage; }
     void set_dead(bool dead);
@@ -164,6 +166,9 @@ private:
     std::vector<mgun> m_mgps;
     bool m_fire_mgun = false;
     bool m_fire_mgp = false;
+
+    nya_math::vec3 m_wing_off;
+    nya_math::vec3 m_wing_sw_off;
 };
 
 //------------------------------------------------------------

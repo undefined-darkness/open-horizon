@@ -55,6 +55,9 @@ struct plane: public object
     fvalue thrust_time;
     vec3 rot_speed;
 
+    vec3 nose_offset;
+    vec3 wing_offset;
+
     plane_controls controls;
     plane_params params;
     //col_mesh mesh;
@@ -129,13 +132,13 @@ private:
     struct instance
     {
         int mesh_idx = -1;
-        nya_math::vec3 pos;
+        vec3 pos;
         float yaw_s, yaw_c = 0.0f;
         nya_math::aabb bbox;
 
     public:
-        nya_math::vec3 transform(const nya_math::vec3 &v) const;
-        nya_math::vec3 transform_inv(const nya_math::vec3 &v) const;
+        vec3 transform(const vec3 &v) const;
+        vec3 transform_inv(const vec3 &v) const;
     };
 
     std::vector<instance> m_instances;

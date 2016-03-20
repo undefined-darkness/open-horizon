@@ -217,36 +217,56 @@ void world::update_planes(int dt, const hit_hunction &on_hit)
         p->update(dt);
 
         const auto pt = p->pos + p->vel * (dt * 0.001f);
+        const auto pt_nose = pt + p->rot.rotate(p->nose_offset);
+
+        auto wing_offset2 = p->wing_offset;
+        wing_offset2.x = -wing_offset2.x; //will not work for AD-1, lol
+        const auto pt_wing = pt + p->rot.rotate(p->wing_offset);
+        const auto pt_wing2 = pt + p->rot.rotate(wing_offset2);
+
+        const float r = nya_math::max(p->nose_offset.length(), p->wing_offset.length()) * 1.5;
+
+        nya_math::aabb box;
+        box.origin = pt;
+        box.delta.set(r, r, r);
 
         bool hit = pt.y < get_height(pt.x, pt.z) + 5.0f;
         if (!hit)
         {
-            //ToDo: get plane's structure gauge points
-
             static std::vector<int> insts;
-            if (m_qtree.get_objects(pt, insts))
+            if (m_qtree.get_objects(box, insts))
             {
                 for (auto &i:insts)
                 {
                     const auto &mi = m_instances[i];
+                    const auto &m = m_meshes[mi.mesh_idx];
 
-                    auto lpt = mi.transform_inv(pt), lpf = mi.transform_inv(p->pos);
-                    auto &m = m_meshes[mi.mesh_idx];
-                    if (!m.bbox.test_intersect(lpt))
+                    /*
+                    box.origin = mi.transform_inv(pt);
+                    if (!m.bbox.test_intersect(box))
                         continue;
+                    */
 
-                    if(!m.trace(lpf, lpt))
-                        continue;
+                    auto lpt = mi.transform_inv(pt_nose), lpf = mi.transform_inv(p->pos);
+                    if (m.trace(lpf, lpt))
+                    {
+                        hit = true;
+                        break;
+                    }
 
-                    hit = true;
-                    break;
+                    auto lwt = mi.transform_inv(pt_wing), lwt2 = mi.transform_inv(pt_wing2);
+
+                    if (m.trace(lwt, lwt2) || m.trace(lwt2, lwt)) //trace fails near from point
+                    {
+                        hit = true;
+                        break;
+                    }
                 }
             }
         }
 
         if (hit)
         {
-            //p->rot = quat(-0.5, p->rot.get_euler().y, 0.0);
             p->vel = vec3();
 
             if (on_hit)
@@ -533,12 +553,12 @@ void missile::update(int dt)
         //ToDo: non-ideal rotation (clamp aoa)
 
         const float eps=1.0e-6f;
-        const nya_math::vec3 v=nya_math::vec3::normalize(target_dir);
+        const vec3 v=vec3::normalize(target_dir);
         const float xz_sqdist=v.x*v.x+v.z*v.z;
 
         const float new_yaw=(xz_sqdist>eps*eps)? (atan2(v.x,v.z)) : rot.get_euler().y;
         const float new_pitch=(fabsf(v.y)>eps)? (-atan2(v.y,sqrtf(xz_sqdist))) : 0.0f;
-        rot = nya_math::quat(new_pitch, new_yaw, 0.0);
+        rot = quat(new_pitch, new_yaw, 0.0);
 
         vec3 forward = rot.rotate(vec3(0.0, 0.0, 1.0));
 
@@ -559,16 +579,16 @@ void missile::update(int dt)
 
 //------------------------------------------------------------
 
-nya_math::vec3 world::instance::transform(const nya_math::vec3 &v) const
+vec3 world::instance::transform(const vec3 &v) const
 {
-    return nya_math::vec3(yaw_c*v.x+yaw_s*v.z, v.y, yaw_c*v.z-yaw_s*v.x) + pos;
+    return vec3(yaw_c*v.x+yaw_s*v.z, v.y, yaw_c*v.z-yaw_s*v.x) + pos;
 }
 
 //------------------------------------------------------------
 
-nya_math::vec3 world::instance::transform_inv(const nya_math::vec3 &v) const
+vec3 world::instance::transform_inv(const vec3 &v) const
 {
-    nya_math::vec3 r = v - pos;
+    vec3 r = v - pos;
     r.set(yaw_c*r.x-yaw_s*r.z, r.y, yaw_s*r.x+yaw_c*r.z);
     return r;
 }

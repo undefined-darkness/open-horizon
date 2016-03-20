@@ -222,6 +222,7 @@ plane_ptr world::add_plane(const char *name, int color, bool player, net_plane_p
     p->phys = m_phys_world.add_plane(name, add_to_world);
 
     p->render = m_render_world.add_aircraft(name, color, player);
+    p->phys->nose_offset = p->render->get_bone_pos("clv1");
 
     p->hp = p->max_hp = int(p->phys->params.misc.maxHp);
 
@@ -563,6 +564,8 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     render->set_wing_sweep(speed >  phys->params.move.speed.speedCruising + 250 ? 1.0 : -1.0);
 
     render->set_intake_ramp(phys->thrust_time >= phys->params.move.accel.thrustMinWait ? 1.0 : -1.0);
+
+    phys->wing_offset = render->get_wing_offset();
 
     //weapons
 

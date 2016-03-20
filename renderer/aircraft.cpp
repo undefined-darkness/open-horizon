@@ -98,6 +98,7 @@ public:
 
         std::string name_str(name);
         std::transform(name_str.begin(), name_str.end(), name_str.begin(), ::tolower);
+
         for (auto &i: m_infos)
         {
             if (i.name == name_str)
@@ -395,6 +396,14 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     m_mesh.set_relative_anim_time(0, 'rudr', 0.5);
     m_mesh.set_relative_anim_time(0, 'rudn', 0.5);
 
+
+    m_mesh.set_relative_anim_time(0, 'vwgn', 1.0);
+    m_mesh.update(0);
+    m_wing_sw_off = get_bone_pos("clh2");
+    m_mesh.set_relative_anim_time(0, 'vwgn', 0.0);
+    m_mesh.update(0);
+    m_wing_off = get_bone_pos("clh2");
+
     //ToDo: su24 spll splr
 
     //m_mesh.set_anim_speed(0, 'vctn', 0.5);
@@ -648,6 +657,13 @@ void aircraft::set_canard(float value)
     m_mesh.set_anim_speed(0, 'cndl', (value * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'cndl')) * anim_speed_k);
     m_mesh.set_anim_speed(0, 'cndr', (value * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'cndr')) * anim_speed_k);
     m_mesh.set_anim_speed(0, 'cndn', (value * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'cndn')) * anim_speed_k);
+}
+
+//------------------------------------------------------------
+
+nya_math::vec3 aircraft::get_wing_offset()
+{
+    return nya_math::vec3::lerp(m_wing_off, m_wing_sw_off, m_mesh.get_relative_anim_time(0, 'vwgn'));
 }
 
 //------------------------------------------------------------
