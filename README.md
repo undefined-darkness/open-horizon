@@ -13,6 +13,8 @@ Requires resource files from the original game.
 
 [Downloads](http://zxstudio.org/blog/open-horizon-downloads/)
 
+[Resources research progress](https://github.com/undefined-darkness/open-horizon/wiki/Resources-research-progress)
+
 [Build instructions](https://github.com/undefined-darkness/open-horizon/wiki/Build-instructions)
 
 ![Open Horizon screenshot](http://zxstudio.org/blog/wp-content/uploads/2015/04/open-horizon-progress-report-01.png)
