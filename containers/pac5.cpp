@@ -3,6 +3,7 @@
 //
 
 #include "pac5.h"
+#include "memory/tmp_buffer.h"
 #include <assert.h>
 
 //------------------------------------------------------------
@@ -78,6 +79,84 @@ uint32_t pac5_file::get_file_size(int idx) const
         return 0;
 
     return m_entries[idx].unpacked_size;
+}
+
+//------------------------------------------------------------
+
+static bool uncompress_ulz2(const uint8_t *in_data, uint32_t in_size, uint8_t *out_data)
+{
+    struct ulz_header
+    {
+        char sign[4];
+        uint32_t size;
+        uint32_t pos;
+        uint32_t count_pos;
+    };
+
+    ulz_header h = *(const ulz_header *)in_data;
+    if (memcmp(h.sign, "Ulz\x1a", 4) != 0)
+        return false;
+
+    const uint32_t type = h.size >> 24;
+    if (type != 2)
+        return false;
+
+    const uint16_t c1 = (uint16_t)((h.pos & 0xFF000000) >> 24);
+    const uint16_t c2 = (uint16_t)((1 << (uint32_t)c1) + 0xFFFF);
+    h.size &= 0x00FFFFFF;
+    h.pos &= 0x00FFFFFF;
+
+    const int *flags = (int *)(in_data + sizeof(ulz_header));
+    int flag = *flags, flag_upd = 0;
+
+    const uint16_t *counts = (uint16_t *)(in_data + h.count_pos);
+
+    in_data += h.pos;
+
+    while (h.size)
+    {
+        if (!flag_upd--)
+        {
+            flag = *flags++;
+            flag_upd = 31;
+        }
+
+        const bool is_comp = flag >= 0;
+        flag <<= 1;
+
+        if (!is_comp)
+        {
+            *out_data++ = *in_data++, --h.size;
+            continue;
+        }
+
+        const uint16_t c = *counts++;
+        const uint32_t t_pos = (c & c2) + 1;
+        const uint32_t count = (c >> c1) + 3;
+        if (count > h.size)
+            return false;
+
+        auto *tmp = out_data - t_pos;
+        for (uint32_t j = 0; j < count; j++)
+            *out_data++ = tmp[j];
+
+        h.size -= count;
+    }
+
+    return true;
+}
+
+//------------------------------------------------------------
+
+bool pac5_file::read_file_data(int idx, void *data) const
+{
+    if (idx < 0 || idx >= get_files_count() || !data)
+        return false;
+
+    auto &e = m_entries[idx];
+    nya_memory::tmp_buffer_scoped buf(e.size);
+    m_data->read_chunk(buf.get_data(), e.size, e.offset);
+    return uncompress_ulz2((uint8_t *)buf.get_data(), e.size, (uint8_t *)data);
 }
 
 //------------------------------------------------------------

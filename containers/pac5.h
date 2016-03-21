@@ -24,6 +24,8 @@ public:
     int get_files_count() const { return int(m_entries.size()); }
     uint32_t get_file_size(int idx) const;
 
+    bool read_file_data(int idx, void *data) const;
+
 private:
     struct entry
     {

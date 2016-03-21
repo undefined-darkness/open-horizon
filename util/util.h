@@ -289,7 +289,7 @@ inline bool write_file(const char *name, const void *buf, size_t size)
     FILE *f = fopen(name, "wb");
     if (!f)
     {
-        printf("unable to write file %s", name);
+        printf("unable to write file %s\n", name);
         return false;
     }
 
