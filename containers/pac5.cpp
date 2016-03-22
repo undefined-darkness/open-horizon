@@ -47,6 +47,8 @@ bool pac5_file::open(const char *name)
     const auto unknown_zero = tbls[offset++];
     assert(unknown_zero == 0);
 
+    assert(offset + count * 2 <= tbls.size());
+
     m_entries.resize(count);
     for (auto &e: m_entries)
     {
@@ -56,9 +58,21 @@ bool pac5_file::open(const char *name)
         assert(e.offset + e.size <= m_data->get_size());
     }
 
+    if (offset == tbls.size())
+    {
+        for (auto &e: m_entries)
+            e.unpacked_size = e.size;
+
+        m_compressed = false;
+        return true;
+    }
+
+    assert(offset + count <= tbls.size());
+
     for (auto &e: m_entries)
         e.unpacked_size = tbls[offset++];
 
+    m_compressed = true;
     return true;
 }
 
@@ -154,8 +168,13 @@ bool pac5_file::read_file_data(int idx, void *data) const
         return false;
 
     auto &e = m_entries[idx];
+    if (!m_compressed)
+        return m_data->read_chunk(data, e.size, e.offset);
+
     nya_memory::tmp_buffer_scoped buf(e.size);
-    m_data->read_chunk(buf.get_data(), e.size, e.offset);
+    if (!m_data->read_chunk(buf.get_data(), e.size, e.offset))
+        return false;
+
     return uncompress_ulz2((uint8_t *)buf.get_data(), e.size, (uint8_t *)data);
 }
 

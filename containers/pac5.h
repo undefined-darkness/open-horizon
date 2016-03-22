@@ -36,6 +36,7 @@ private:
 
     std::vector<entry> m_entries;
     nya_resources::resource_data *m_data = 0;
+    bool m_compressed = false;
 };
 
 //------------------------------------------------------------
