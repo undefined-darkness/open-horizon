@@ -3,7 +3,7 @@
 //
 
 #include "dpl.h"
-#include "keys.h"
+#include "decrypt.h"
 #include "memory/tmp_buffer.h"
 #include "memory/memory_reader.h"
 #include "resources/resources.h"

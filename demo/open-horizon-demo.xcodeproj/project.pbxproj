@@ -168,7 +168,7 @@
 		F5C6D3851AF9694D006FB7E6 /* demo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = demo.cpp; sourceTree = SOURCE_ROOT; };
 		F5C6D3881AF969A5006FB7E6 /* dpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dpl.cpp; sourceTree = "<group>"; };
 		F5C6D3891AF969A5006FB7E6 /* dpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dpl.h; sourceTree = "<group>"; };
-		F5C6D38A1AF969A5006FB7E6 /* keys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = keys.h; sourceTree = "<group>"; };
+		F5C6D38A1AF969A5006FB7E6 /* decrypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = decrypt.h; sourceTree = "<group>"; };
 		F5C6D38B1AF969A5006FB7E6 /* dpl_provider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dpl_provider.h; sourceTree = "<group>"; };
 		F5C6D38C1AF969A5006FB7E6 /* fhm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fhm.cpp; sourceTree = "<group>"; };
 		F5C6D38D1AF969A5006FB7E6 /* fhm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fhm.h; sourceTree = "<group>"; };
@@ -376,12 +376,12 @@
 			children = (
 				F50D9C921C9E946B00A56812 /* cdp.cpp */,
 				F50D9C931C9E946B00A56812 /* cdp.h */,
+				F5C6D38A1AF969A5006FB7E6 /* decrypt.h */,
 				F5C6D3881AF969A5006FB7E6 /* dpl.cpp */,
 				F5C6D3891AF969A5006FB7E6 /* dpl.h */,
 				F5C6D38B1AF969A5006FB7E6 /* dpl_provider.h */,
 				F5C6D38C1AF969A5006FB7E6 /* fhm.cpp */,
 				F5C6D38D1AF969A5006FB7E6 /* fhm.h */,
-				F5C6D38A1AF969A5006FB7E6 /* keys.h */,
 				F50D9C971C9F2E5700A56812 /* pac5.cpp */,
 				F50D9C981C9F2E5700A56812 /* pac5.h */,
 				F50D9C991C9F2E5700A56812 /* pac6.cpp */,
