@@ -3,14 +3,14 @@
 //
 
 #include "dpl.h"
-#include "dpl_keys.h"
+#include "keys.h"
 #include "memory/tmp_buffer.h"
 #include "memory/memory_reader.h"
 #include "resources/resources.h"
 #include <assert.h>
-#include <zlib.h>
 #include <stdint.h>
 #include "util/util.h"
+#include "util/zip.h"
 
 //------------------------------------------------------------
 
@@ -146,32 +146,6 @@ uint32_t dpl_file::get_file_size(int idx) const
 
 //------------------------------------------------------------
 
-static bool unzip(const void *from, size_t from_size, void *to, size_t to_size)
-{
-    z_stream infstream;
-    infstream.zalloc = Z_NULL;
-    infstream.zfree = Z_NULL;
-    infstream.opaque = Z_NULL;
-    infstream.avail_in = (uInt)from_size;
-    infstream.next_in = (Bytef *)from;
-    infstream.avail_out = (uInt)to_size;
-    infstream.next_out = (Bytef *)to;
-
-    inflateInit2(&infstream, -MAX_WBITS);
-
-    const int result = inflate(&infstream, Z_NO_FLUSH);
-    if (result != Z_OK && result != Z_STREAM_END)
-        return false;
-
-    if (infstream.total_in != from_size || infstream.total_out != to_size)
-        return false;
-
-    inflateEnd(&infstream);
-    return true;
-}
-
-//------------------------------------------------------------
-
 bool dpl_file::read_file_data(int idx, void *data) const
 {
     if (!data || idx < 0 || idx >= (int)m_infos.size())
@@ -215,10 +189,7 @@ bool dpl_file::read_file_data(int idx, void *data) const
         if (!r.check_remained(header.packed_size))
             return false;
 
-        auto keys = get_dpl_key(e.key);
-        for (size_t i = 0; i < header.packed_size; ++i)
-            buf_from[i] ^= keys[i % 8];
-
+        decrypt(buf_from, header.packed_size, e.key);
         const bool success=unzip(buf_from, header.packed_size, buf_out, header.unpacked_size);
         if (!success)
         {

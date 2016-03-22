@@ -3,6 +3,8 @@
 //
 
 #include "pac6.h"
+#include "keys.h"
+#include "util/zip.h"
 #include "util/util.h"
 
 //------------------------------------------------------------
@@ -105,6 +107,32 @@ uint32_t pac6_file::get_file_size(int idx) const
         return 0;
 
     return m_entries[idx].unpacked_size;
+}
+
+//------------------------------------------------------------
+
+bool pac6_file::read_file_data(int idx, void *data) const
+{
+    if (idx < 0 || idx >= get_files_count() || !data)
+        return false;
+
+    auto &e = m_entries[idx];
+
+    if (!e.compressed)
+    {
+        if (!m_data[e.tome]->read_chunk(data, e.size, e.offset))
+            return false;
+
+        decrypt(data, e.size, idx % 256);
+        return true;
+    }
+
+    nya_memory::tmp_buffer_scoped buf(e.size);
+    if (!m_data[e.tome]->read_chunk(buf.get_data(), e.size, e.offset))
+        return false;
+
+    decrypt(buf.get_data(), e.size, idx % 256);
+    return unzip(buf.get_data(), e.size, data, e.unpacked_size);
 }
 
 //------------------------------------------------------------

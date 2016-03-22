@@ -168,7 +168,7 @@
 		F5C6D3851AF9694D006FB7E6 /* demo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = demo.cpp; sourceTree = SOURCE_ROOT; };
 		F5C6D3881AF969A5006FB7E6 /* dpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dpl.cpp; sourceTree = "<group>"; };
 		F5C6D3891AF969A5006FB7E6 /* dpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dpl.h; sourceTree = "<group>"; };
-		F5C6D38A1AF969A5006FB7E6 /* dpl_keys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dpl_keys.h; sourceTree = "<group>"; };
+		F5C6D38A1AF969A5006FB7E6 /* keys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = keys.h; sourceTree = "<group>"; };
 		F5C6D38B1AF969A5006FB7E6 /* dpl_provider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dpl_provider.h; sourceTree = "<group>"; };
 		F5C6D38C1AF969A5006FB7E6 /* fhm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fhm.cpp; sourceTree = "<group>"; };
 		F5C6D38D1AF969A5006FB7E6 /* fhm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = fhm.h; sourceTree = "<group>"; };
@@ -184,6 +184,7 @@
 		F5C6D39D1AF96A08006FB7E6 /* shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shaders; path = ../resources/shaders; sourceTree = "<group>"; };
 		F5C6D3A11AF96B4B006FB7E6 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = ../util/util.h; sourceTree = "<group>"; };
 		F5C724A41C8F124700EF0A7B /* simd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = simd.h; path = ../util/simd.h; sourceTree = "<group>"; };
+		F5CB42051CA1F14100F725CE /* zip.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = zip.h; path = ../util/zip.h; sourceTree = "<group>"; };
 		F5D7969F19B3432C006269F0 /* pugixml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pugixml.cpp; path = "../deps/pugixml-1.4/src/pugixml.cpp"; sourceTree = "<group>"; };
 		F5D796A019B3432C006269F0 /* pugiconfig.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugiconfig.hpp; path = "../deps/pugixml-1.4/src/pugiconfig.hpp"; sourceTree = "<group>"; };
 		F5D796A119B3432C006269F0 /* pugixml.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugixml.hpp; path = "../deps/pugixml-1.4/src/pugixml.hpp"; sourceTree = "<group>"; };
@@ -365,6 +366,7 @@
 				F5C724A41C8F124700EF0A7B /* simd.h */,
 				F5C6D3A11AF96B4B006FB7E6 /* util.h */,
 				F5C6D37D1AF968E7006FB7E6 /* xml.h */,
+				F5CB42051CA1F14100F725CE /* zip.h */,
 			);
 			name = util;
 			sourceTree = "<group>";
@@ -376,10 +378,10 @@
 				F50D9C931C9E946B00A56812 /* cdp.h */,
 				F5C6D3881AF969A5006FB7E6 /* dpl.cpp */,
 				F5C6D3891AF969A5006FB7E6 /* dpl.h */,
-				F5C6D38A1AF969A5006FB7E6 /* dpl_keys.h */,
 				F5C6D38B1AF969A5006FB7E6 /* dpl_provider.h */,
 				F5C6D38C1AF969A5006FB7E6 /* fhm.cpp */,
 				F5C6D38D1AF969A5006FB7E6 /* fhm.h */,
+				F5C6D38A1AF969A5006FB7E6 /* keys.h */,
 				F50D9C971C9F2E5700A56812 /* pac5.cpp */,
 				F50D9C981C9F2E5700A56812 /* pac5.h */,
 				F50D9C991C9F2E5700A56812 /* pac6.cpp */,
