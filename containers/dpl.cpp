@@ -178,13 +178,14 @@ bool dpl_file::read_file_data(int idx, void *data) const
     {
         header = r.read<block_header>();
         assume(header.unknown_323 == 323);
-        assert(header.idx == curr_idx++);
 
         if (m_byte_order)
         {
             for (uint32_t j = 1; j < sizeof(header) / 4; ++j)
                 ((uint32_t *)&header)[j] = swap_bytes(((uint32_t *)&header)[j]);
         }
+
+        assert(header.idx == curr_idx++);
 
         uint8_t *buf_from = (uint8_t *)r.get_data();
         if (!r.check_remained(header.packed_size))
