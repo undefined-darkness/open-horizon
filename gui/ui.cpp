@@ -6,7 +6,6 @@
 #include "containers/fhm.h"
 #include "renderer/shared.h"
 #include <algorithm>
-#include "util/half.h"
 #include "render/platform_specific_gl.h"
 
 #ifdef min
