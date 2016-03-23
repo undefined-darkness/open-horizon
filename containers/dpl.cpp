@@ -29,7 +29,7 @@ bool dpl_file::open(const char *name)
     {
         char sign[4];
         uint32_t byte_order_20101010;
-        uint32_t flags;
+        uint32_t timestamp;
         uint32_t infos_count;
         uint32_t infos_size;
     } header;
@@ -42,16 +42,14 @@ bool dpl_file::open(const char *name)
     if (m_byte_order)
     {
         header.byte_order_20101010 = swap_bytes(header.byte_order_20101010);
-        header.flags = swap_bytes(header.flags);
+        header.timestamp = swap_bytes(header.timestamp);
         header.infos_count = swap_bytes(header.infos_count);
         header.infos_size = swap_bytes(header.infos_size);
     }
 
     assert(header.byte_order_20101010 == 20101010);
 
-    m_archieved = header.flags == 2011101108 || header.flags == 2011080301 || header.flags == 2013091901;
-    if (!m_archieved && header.flags != 2011082201)
-        return false;
+    m_archieved = header.timestamp != 2011082201; //ToDo?
 
     nya_memory::tmp_buffer_scoped buf(header.infos_size);
     m_data->read_chunk(buf.get_data(), buf.get_size(), sizeof(header));
@@ -96,7 +94,7 @@ bool dpl_file::open(const char *name)
         }
 
         assert(h.byte_order_20101010 == 20101010);
-        assert(h.flags == header.flags);
+        assume(h.timestamp == header.timestamp);
         //assert(e.idx == (m_archieved ? i+10000 : i));
         assert(e.offset+e.size <= (uint64_t)m_data->get_size());
         //assert(e.arch_unknown_16 == (m_archieved ? 16 : 0));
@@ -178,6 +176,8 @@ bool dpl_file::read_file_data(int idx, void *data) const
     while (r.check_remained(sizeof(header)))
     {
         header = r.read<block_header>();
+        assume(header.unknown_323 == 323);
+        assume(header.idx == idx || !header.idx);
 
         if (m_byte_order)
         {

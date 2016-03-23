@@ -33,7 +33,7 @@ public:
     {
         char sign[4];
         uint32_t byte_order_20101010;
-        uint32_t flags;
+        uint32_t timestamp;
         uint32_t unknown_struct_count;
 
         uint32_t unknown;
