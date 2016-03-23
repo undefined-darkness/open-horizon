@@ -163,7 +163,8 @@ bool dpl_file::read_file_data(int idx, void *data) const
 
     struct block_header
     {
-        uint16_t unknown_323; //323 or 143h
+        uint8_t sign;
+        uint8_t type;
         uint16_t idx;
         uint32_t unknown;
         uint32_t unpacked_size;
@@ -177,8 +178,9 @@ bool dpl_file::read_file_data(int idx, void *data) const
     while (r.check_remained(sizeof(header)))
     {
         header = r.read<block_header>();
-        const bool archieved = header.unknown_323 == 323;
-        assume(archieved || header.unknown_323 == 579);
+        const bool archieved = header.type == 1;
+        assume(header.sign == 'C');
+        assume(archieved || header.type == 2);
         assume(archieved || header.packed_size == header.unpacked_size);
 
         if (m_byte_order)
