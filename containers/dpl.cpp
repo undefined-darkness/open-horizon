@@ -173,11 +173,12 @@ bool dpl_file::read_file_data(int idx, void *data) const
     char *buf_out = (char *)data;
 
     nya_memory::memory_reader r(buf.get_data(), buf.get_size());
+    uint16_t curr_idx = 0;
     while (r.check_remained(sizeof(header)))
     {
         header = r.read<block_header>();
         assume(header.unknown_323 == 323);
-        assume(header.idx == idx || !header.idx);
+        assert(header.idx == curr_idx++);
 
         if (m_byte_order)
         {
