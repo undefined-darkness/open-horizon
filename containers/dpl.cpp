@@ -177,10 +177,13 @@ bool dpl_file::read_file_data(int idx, void *data) const
     while (r.check_remained(sizeof(header)))
     {
         header = r.read<block_header>();
-        assume(header.unknown_323 == 323);
+        const bool archieved = header.unknown_323 == 323;
+        assume(archieved || header.unknown_323 == 579);
+        assume(archieved || header.packed_size == header.unpacked_size);
 
         if (m_byte_order)
         {
+            header.idx = swap_bytes(header.idx);
             for (uint32_t j = 1; j < sizeof(header) / 4; ++j)
                 ((uint32_t *)&header)[j] = swap_bytes(((uint32_t *)&header)[j]);
         }
@@ -192,14 +195,13 @@ bool dpl_file::read_file_data(int idx, void *data) const
             return false;
 
         decrypt(buf_from, header.packed_size, e.key);
-        const bool success=unzip(buf_from, header.packed_size, buf_out, header.unpacked_size);
-        if (!success)
+        if (archieved)
         {
-            if (header.packed_size != header.unpacked_size)
+            if (!unzip(buf_from, header.packed_size, buf_out, header.unpacked_size))
                 return false;
-
-            memcpy(buf_out, buf_from, header.packed_size);
         }
+        else
+            memcpy(buf_out, buf_from, header.packed_size);
 
         buf_out += header.unpacked_size;
         r.skip(header.packed_size);
