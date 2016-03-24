@@ -13,6 +13,14 @@ namespace game
 {
 //------------------------------------------------------------
 
+namespace
+{
+    const int missile_cooldown_time = 3500;
+    const float ecm_dist = 800.0f;
+}
+
+//------------------------------------------------------------
+
 namespace { const static params::text_params &get_arms_param() { static params::text_params ap("Arms/ArmsParam.txt"); return ap; } }
 
 //------------------------------------------------------------
@@ -479,6 +487,7 @@ void plane::reset_state()
     for (auto &c: special_cooldown) c = 0;
     special_mount_cooldown.clear();
     special_mount_idx = 0;
+    jammed = false;
 }
 
 //------------------------------------------------------------
@@ -497,11 +506,108 @@ void plane::select_target(const object_ptr &o)
 
 //------------------------------------------------------------
 
+void plane::update_targets(world &w)
+{
+    const plane_ptr &me = shared_from_this();
+    jammed = false;
+
+    //ToDo
+
+    for (int i = 0; i < w.get_planes_count(); ++i)
+    {
+        auto p = w.get_plane(i);
+        if (me == p)
+            continue;
+
+        if (p->hp <= 0)
+            continue;
+
+        if (!w.is_ally(me, p))
+        {
+            auto target_dir = p->get_pos() - me->get_pos();
+            const float dist = target_dir.length();
+            auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.target_plane.lock(); });
+            if (dist < 12000.0f) //ToDo
+            {
+                if (p->is_ecm_active() && dist < ecm_dist)
+                {
+                    jammed = true;
+                    targets.clear();
+                    break;
+                }
+
+                if (fp == targets.end())
+                    fp = targets.insert(targets.end(), {p, false});
+
+                if (special_weapon_selected)
+                {
+                    if (!fp->locked)
+                        continue;
+
+                    int count = fp->locked;
+
+                    if (dist > special.lockon_range)
+                        fp->locked = 0;
+                    else
+                    {
+                        const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
+                        if (c < special.lockon_angle_cos)
+                            fp->locked = 0;
+                    }
+
+                    //ToDo: somewhere else
+/*
+                    if (player)
+                    {
+                        if (is_Xaam)
+                        {
+                            int lockon_count = 0;
+                            for (auto &t: targets)
+                                lockon_count += t.locked;
+
+                            for (int i = 0; i < count; ++i)
+                                h.set_lock(i + lockon_count, false, true);
+                        }
+                        else
+                        {
+                            const bool ready0 = special_cooldown[0] <=0;
+                            const bool ready1 = special_cooldown[1] <=0;
+
+                            if (ready0 || ready1)
+                                h.set_lock(ready0 ? 0 : 1, false, true);
+                        }
+                    }
+*/
+                }
+                else
+                {
+                    if (dist > missile.lockon_range)
+                        fp->locked = false;
+                    else
+                    {
+                        const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
+                        if (c < missile.lockon_angle_cos)
+                            fp->locked = 0;
+                        else if (fp != targets.begin())
+                            fp->locked = 0;
+                        else
+                            fp->locked = 1;
+                    }
+                }
+            }
+            else if (fp != targets.end())
+                fp = targets.erase(fp);
+        }
+    }
+
+    targets.erase(std::remove_if(targets.begin(), targets.end(), [](target_lock &t){ return t.target_plane.expired()
+        || t.target_plane.lock()->hp <= 0; }), targets.end());
+}
+
+//------------------------------------------------------------
+
 void plane::update(int dt, world &w, gui::hud &h, bool player)
 {
-    const int missile_cooldown_time = 3500;
-    const float ecm_dist = 800.0f;
-
     if (net)
     {
         if (net->source)
@@ -573,23 +679,23 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
     {
         if (render->has_special_bay())
         {
-            if (!special_weapon && render->is_special_bay_closed())
-                special_weapon = true;
+            if (!special_weapon_selected && render->is_special_bay_closed())
+                special_weapon_selected = true;
 
-            if (special_weapon && render->is_special_bay_opened())
-                special_weapon = false;
+            if (special_weapon_selected && render->is_special_bay_opened())
+                special_weapon_selected = false;
 
-            render->set_special_bay(special_weapon);
+            render->set_special_bay(special_weapon_selected);
         }
         else
-            special_weapon = !special_weapon;
+            special_weapon_selected = !special_weapon_selected;
 
         if (!saam_missile.expired())
             saam_missile.lock()->target.reset();
 
         if (player)
         {
-            if (special_weapon)
+            if (special_weapon_selected)
             {
                 h.set_missiles(special.id.c_str(), 1); //ToDo: idx
                 int lock_count = special.lockon_count > 2 ? (int)special.lockon_count : 2;
@@ -637,7 +743,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
     if (controls.missile != last_controls.missile)
     {
-        if (special_weapon)
+        if (special_weapon_selected)
         {
             if (is_mgp)
             {
@@ -780,7 +886,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         {
             s -= dt;
 
-            if (player && special_weapon && s <= 0)
+            if (player && special_weapon_selected && s <= 0)
             {
                 if (is_Xaam)
                 {
@@ -840,98 +946,11 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         }
     }
 
-    bool jammed = false;
-
-    for (int i = 0; i < w.get_planes_count(); ++i)
-    {
-        auto p = w.get_plane(i);
-        if (me == p)
-            continue;
-
-        if (p->hp <= 0)
-            continue;
-
-        if (!w.is_ally(me, p))
-        {
-            auto target_dir = p->get_pos() - me->get_pos();
-            const float dist = target_dir.length();
-            auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.target_plane.lock(); });
-            if (dist < 12000.0f) //ToDo
-            {
-                if (p->is_ecm_active() && dist < ecm_dist)
-                {
-                    jammed = true;
-                    targets.clear();
-                    break;
-                }
-
-                if (fp == targets.end())
-                    fp = targets.insert(targets.end(), {p, false});
-
-                if (special_weapon)
-                {
-                    if (!fp->locked)
-                        continue;
-
-                    int count = fp->locked;
-
-                    if (dist > special.lockon_range)
-                        fp->locked = 0;
-                    else
-                    {
-                        const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
-                        if (c < special.lockon_angle_cos)
-                            fp->locked = 0;
-                    }
-
-                    if (player)
-                    {
-                        if (is_Xaam)
-                        {
-                            int lockon_count = 0;
-                            for (auto &t: targets)
-                                lockon_count += t.locked;
-
-                            for (int i = 0; i < count; ++i)
-                                h.set_lock(i + lockon_count, false, true);
-                        }
-                        else
-                        {
-                            const bool ready0 = special_cooldown[0] <=0;
-                            const bool ready1 = special_cooldown[1] <=0;
-
-                            if (ready0 || ready1)
-                                h.set_lock(ready0 ? 0 : 1, false, true);
-                        }
-                    }
-                }
-                else
-                {
-                    if (dist > missile.lockon_range)
-                        fp->locked = false;
-                    else
-                    {
-                        const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
-                        if (c < missile.lockon_angle_cos)
-                            fp->locked = 0;
-                        else if (fp != targets.begin())
-                            fp->locked = 0;
-                        else
-                            fp->locked = 1;
-                    }
-                }
-            }
-            else if (fp != targets.end())
-                fp = targets.erase(fp);
-        }
-    }
-
-    targets.erase(std::remove_if(targets.begin(), targets.end(), [](target_lock &t){ return t.target_plane.expired()
-                                 || t.target_plane.lock()->hp <= 0; }), targets.end());
+    update_targets(w);
 
     bool saam_locked = false;
 
-    if (special_weapon)
+    if (special_weapon_selected)
     {
         if (!targets.empty() && !targets.begin()->target_plane.expired())
         {
@@ -1103,7 +1122,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
                 h.set_lock(idx, saam_locked, true);
         }
 
-        if (special_weapon && is_mgp)
+        if (special_weapon_selected && is_mgp)
             h.set_mgp(controls.missile);
 
         proj_dir.y = 0.0f;
@@ -1184,7 +1203,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
         h.set_mgun(hud_mgun);
 
-        if (special_weapon)
+        if (special_weapon_selected)
         {
             if (count == 1)
             {

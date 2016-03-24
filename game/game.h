@@ -91,11 +91,12 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     plane_controls last_controls;
     phys::plane_ptr phys;
     renderer::aircraft_ptr render;
-    bvalue special_weapon;
+    bvalue special_weapon_selected;
     bvalue need_fire_missile;
     ivalue rocket_bay_time;
     ivalue mgun_fire_update;
     ivalue mgp_fire_update;
+    bvalue jammed;
 
     wpn_missile_params missile;
     ivalue missile_cooldown[2];
@@ -135,6 +136,9 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     bool is_ecm_active() const { return special.id=="ECM" && special_cooldown[0] > 0;}
 
     virtual void take_damage(int damage, world &w) override;
+
+private:
+    void update_targets(world &w);
 };
 
 typedef ptr<plane> plane_ptr;
