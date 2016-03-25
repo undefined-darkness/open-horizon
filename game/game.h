@@ -64,18 +64,20 @@ struct plane_controls: public phys::plane_controls
 
 //------------------------------------------------------------
 
-struct wpn_missile_params
+struct wpn_params
 {
     std::string id, model;
     fvalue lockon_range;
     fvalue lockon_angle_cos;
-    ivalue lockon_reload;
+    ivalue lockon_time;
     ivalue lockon_count;
     bvalue lockon_air;
     bvalue lockon_ground;
+    fvalue action_range;
+    ivalue reload_time;
 
-    wpn_missile_params() {}
-    wpn_missile_params(std::string id, std::string model);
+    wpn_params() {}
+    wpn_params(std::string id, std::string model);
 };
 
 //------------------------------------------------------------
@@ -92,19 +94,20 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     phys::plane_ptr phys;
     renderer::aircraft_ptr render;
     bvalue special_weapon_selected;
+    bvalue special_weapon_was_selected;
     bvalue need_fire_missile;
     ivalue rocket_bay_time;
     ivalue mgun_fire_update;
     ivalue mgp_fire_update;
     bvalue jammed;
 
-    wpn_missile_params missile;
+    wpn_params missile;
     ivalue missile_cooldown[2];
     std::vector<ivalue> missile_mount_cooldown;
     ivalue missile_mount_idx;
     ivalue missile_count, missile_max_count;
 
-    wpn_missile_params special;
+    wpn_params special;
     ivalue special_cooldown[2];
     std::vector<ivalue> special_mount_cooldown;
     ivalue special_mount_idx;
@@ -143,6 +146,9 @@ struct plane: public object, public std::enable_shared_from_this<plane>
 private:
     void update_targets(world &w);
     void update_render();
+    void update_weapons_hud();
+    bool is_mg_bay_ready();
+    bool is_special_bay_ready();
 };
 
 typedef ptr<plane> plane_ptr;

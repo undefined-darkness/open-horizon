@@ -36,6 +36,8 @@ public:
     void set_jammed(bool active) { m_jammed = active; }
     void change_radar() { m_show_map = !m_show_map; }
 
+    bool is_special_selected() const { return m_missiles_icon > 0; }
+
     void clear_scores();
     void set_team_score(int allies, int enemies);
     void set_score(int line, int place, const std::wstring &name, const std::wstring &value);

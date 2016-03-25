@@ -13,18 +13,7 @@ namespace game
 {
 //------------------------------------------------------------
 
-namespace
-{
-    const float meps_to_kmph = 3.6f;
-}
-
-//------------------------------------------------------------
-
-namespace
-{
-    const int missile_cooldown_time = 3500;
-    const float ecm_dist = 800.0f;
-}
+namespace { const float meps_to_kmph = 3.6f; }
 
 //------------------------------------------------------------
 
@@ -139,9 +128,11 @@ private:
 
 //------------------------------------------------------------
 
-wpn_missile_params::wpn_missile_params(std::string id, std::string model)
+wpn_params::wpn_params(std::string id, std::string model)
 {
+    const std::string action = "." + id + ".action.";
     const std::string lockon = "." + id + ".lockon.";
+    const std::string lockon_dfm = "." + id + ".lockon_dfm.";
 
     this->id = id;
     this->model = model;
@@ -149,18 +140,17 @@ wpn_missile_params::wpn_missile_params(std::string id, std::string model)
     auto &param = get_arms_param();
 
     lockon_range = param.get_float(lockon + "range");
-    lockon_reload = param.get_float(lockon + "reload") * 1000;
+    lockon_time = param.get_int(lockon_dfm + "timeLockon") * 1000;
     lockon_count = param.get_float(lockon + "lockonNum");
     lockon_air = param.get_int(lockon + "target_air") > 0;
     lockon_ground = param.get_int(lockon + "target_grd") > 0;
+    action_range = param.get_int(action + "range");
+    reload_time = param.get_float(lockon + "reload") * 1000;
 
     float lon_angle = param.get_float(lockon + "angle") * 0.5f * nya_math::constants::pi / 180.0f;
-
     //I dunno
     if (id == "SAAM")
         lon_angle *= 0.3f;
-    lockon_reload /= 10;
-
     lockon_angle_cos = cosf(lon_angle);
 }
 
@@ -253,12 +243,12 @@ plane_ptr world::add_plane(const char *name, int color, bool player, net_plane_p
         if (!wi->special.empty())
         {
             p->render->load_special(wi->special[0].model.c_str(), m_render_world.get_location_params());
-            p->special = wpn_missile_params(wi->special[0].id, wi->special[0].model);
+            p->special = wpn_params(wi->special[0].id, wi->special[0].model);
             p->special_max_count = wi->special[0].count;
         }
 
         p->render->load_missile(wi->missile.model.c_str(), m_render_world.get_location_params());
-        p->missile = wpn_missile_params(wi->missile.id, wi->missile.model);
+        p->missile = wpn_params(wi->missile.id, wi->missile.model);
         p->missile_max_count = wi->missile.count;
     }
 
@@ -540,7 +530,7 @@ void plane::update_targets(world &w)
             auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.target_plane.lock(); });
             if (dist < 12000.0f) //ToDo
             {
-                if (p->is_ecm_active() && dist < ecm_dist)
+                if (p->is_ecm_active() && dist < special.action_range)
                 {
                     jammed = true;
                     targets.clear();
@@ -651,6 +641,27 @@ void plane::update_render()
 
     const float aoa = acosf(nya_math::vec3::dot(nya_math::vec3::normalize(phys->vel), get_dir()));
     render->set_aoa(aoa);
+
+    render->set_special_bay(special_weapon_selected);
+    render->set_mgp_fire(special_weapon_selected && controls.missile);
+    render->set_mgun_fire(is_mg_bay_ready() && controls.mgun);
+}
+
+//------------------------------------------------------------
+
+bool plane::is_mg_bay_ready()
+{
+    return render->is_mgun_ready();
+}
+
+//------------------------------------------------------------
+
+bool plane::is_special_bay_ready()
+{
+    if (!render->has_special_bay())
+        return true;
+
+    return special_weapon_selected ? render->is_special_bay_opened() : render->is_special_bay_closed();
 }
 
 //------------------------------------------------------------
@@ -690,56 +701,18 @@ void plane::update(int dt, world &w)
         return;
 
     phys->wing_offset = render->get_wing_offset();
-/*
+
     //weapons
 
-    if (controls.change_weapon && controls.change_weapon != last_controls.change_weapon)
+    if (controls.change_weapon && controls.change_weapon != last_controls.change_weapon && is_special_bay_ready())
     {
-        if (render->has_special_bay())
-        {
-            if (!special_weapon_selected && render->is_special_bay_closed())
-                special_weapon_selected = true;
-
-            if (special_weapon_selected && render->is_special_bay_opened())
-                special_weapon_selected = false;
-
-            render->set_special_bay(special_weapon_selected);
-        }
-        else
-            special_weapon_selected = !special_weapon_selected;
+        special_weapon_selected = !special_weapon_selected;
 
         if (!saam_missile.expired())
             saam_missile.lock()->target.reset();
-
-        if (player)
-        {
-            if (special_weapon_selected)
-            {
-                h.set_missiles(special.id.c_str(), 1); //ToDo: idx
-                int lock_count = special.lockon_count > 2 ? (int)special.lockon_count : 2;
-                if (special.id == "MGP" || special.id == "ECM")
-                    lock_count = 1;
-                h.set_locks(lock_count, 0);
-                for (int i = 0; i < lock_count; ++i)
-                    h.set_lock(i, false, true);
-                for (int i = 0; i < (int)special_mount_cooldown.size(); ++i)
-                    h.set_lock(i, false, special_mount_cooldown[i] < 0);
-                h.set_missiles_count(special_count);
-                if (special.id == "SAAM")
-                    h.set_saam_circle(true, acosf(special.lockon_angle_cos));
-            }
-            else
-            {
-                h.set_missiles(missile.id.c_str(), 0);
-                h.set_locks(0, 0);
-                h.set_missiles_count(missile_count);
-                h.set_saam_circle(false, 0.0f);
-                h.set_mgp(false);
-                render->set_mgp_fire(false);
-            }
-        }
     }
 
+/*
     int count = 1;
     if (!special.id.empty())
     {
@@ -1205,39 +1178,6 @@ void plane::update(int dt, world &w)
         }
 
         h.set_mgun(hud_mgun);
-
-        if (special_weapon_selected)
-        {
-            if (count == 1)
-            {
-                h.set_missile_reload(0, 1.0f - float(special_cooldown[0]) / special_cooldown_time);
-                h.set_missile_reload(1, 1.0f - float(special_cooldown[1]) / special_cooldown_time);
-            }
-            else
-            {
-                float value = 1.0f - float(special_cooldown[0]) / special_cooldown_time;
-                for (int i = 0; i < count; ++i)
-                    h.set_missile_reload(i, value);
-            }
-        }
-        else
-        {
-            h.set_missile_reload(0, 1.0f - float(missile_cooldown[0]) / missile_cooldown_time);
-            h.set_missile_reload(1, 1.0f - float(missile_cooldown[1]) / missile_cooldown_time);
-        }
-
-        if (controls.change_camera && controls.change_camera != last_controls.change_camera)
-        {
-            switch (render->get_camera_mode())
-            {
-                case renderer::aircraft::camera_mode_third: render->set_camera_mode(renderer::aircraft::camera_mode_cockpit); break;
-                case renderer::aircraft::camera_mode_cockpit: render->set_camera_mode(renderer::aircraft::camera_mode_first); break;
-                case renderer::aircraft::camera_mode_first: render->set_camera_mode(renderer::aircraft::camera_mode_third); break;
-            }
-        }
-
-        if (controls.change_radar && controls.change_radar != last_controls.change_radar)
-            h.change_radar();
     }
 */
     last_controls = controls;
@@ -1261,6 +1201,74 @@ void plane::update_hud(world &w, gui::hud &h)
     h.set_speed(phys->vel.length() * meps_to_kmph);
     h.set_alt(phys->pos.y);
     h.set_jammed(jammed);
+
+    //update weapoms icons
+
+    if (special_weapon_selected != h.is_special_selected())
+    {
+        if (special_weapon_selected)
+        {
+            h.set_missiles(special.id.c_str(), 1); //ToDo: idx
+            int lock_count = special.lockon_count > 2 ? (int)special.lockon_count : 2;
+            if (special.id == "MGP" || special.id == "ECM")
+                lock_count = 1;
+            h.set_locks(lock_count, 0);
+            for (int i = 0; i < lock_count; ++i)
+                h.set_lock(i, false, true);
+            for (int i = 0; i < (int)special_mount_cooldown.size(); ++i)
+                h.set_lock(i, false, special_mount_cooldown[i] < 0);
+            h.set_missiles_count(special_count);
+            if (special.id == "SAAM")
+                h.set_saam_circle(true, acosf(special.lockon_angle_cos));
+        }
+        else
+        {
+            h.set_missiles(missile.id.c_str(), 0);
+            h.set_locks(0, 0);
+            h.set_missiles_count(missile_count);
+            h.set_saam_circle(false, 0.0f);
+            h.set_mgp(false);
+        }
+    }
+
+    //update reload icons
+
+    if (special_weapon_selected)
+    {
+        if (special.lockon_count > 1)
+        {
+            float value = 1.0f - float(special_cooldown[0]) / special.reload_time;
+            for (int i = 0; i < special.lockon_count; ++i)
+                h.set_missile_reload(i, value);
+        }
+        else
+        {
+            h.set_missile_reload(0, 1.0f - float(special_cooldown[0]) / special.reload_time);
+            h.set_missile_reload(1, 1.0f - float(special_cooldown[1]) / special.reload_time);
+        }
+    }
+    else
+    {
+        h.set_missile_reload(0, 1.0f - float(missile_cooldown[0]) / missile.reload_time);
+        h.set_missile_reload(1, 1.0f - float(missile_cooldown[1]) / missile.reload_time);
+    }
+
+    //controls
+
+    if (controls.change_radar && controls.change_radar != last_controls.change_radar)
+        h.change_radar();
+
+    //should it be there ?
+
+    if (controls.change_camera && controls.change_camera != last_controls.change_camera)
+    {
+        switch (render->get_camera_mode())
+        {
+            case renderer::aircraft::camera_mode_third: render->set_camera_mode(renderer::aircraft::camera_mode_cockpit); break;
+            case renderer::aircraft::camera_mode_cockpit: render->set_camera_mode(renderer::aircraft::camera_mode_first); break;
+            case renderer::aircraft::camera_mode_first: render->set_camera_mode(renderer::aircraft::camera_mode_third); break;
+        }
+    }
 }
 
 //------------------------------------------------------------
