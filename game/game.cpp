@@ -15,6 +15,13 @@ namespace game
 
 namespace
 {
+    const float meps_to_kmph = 3.6f;
+}
+
+//------------------------------------------------------------
+
+namespace
+{
     const int missile_cooldown_time = 3500;
     const float ecm_dist = 800.0f;
 }
@@ -263,6 +270,7 @@ plane_ptr world::add_plane(const char *name, int color, bool player, net_plane_p
         m_hud.load(name, m_render_world.get_location_name());
         m_hud.set_missiles(p->missile.id.c_str(), 0);
         m_hud.set_missiles_count(p->missile_count);
+        m_player = p;
     }
 
     if (m_network)
@@ -392,7 +400,10 @@ void world::update(int dt)
     m_phys_world.update_bullets(dt);
 
     for (auto &p: m_planes)
-        p->update(dt, *this, m_hud, p->render == m_render_world.get_player_aircraft());
+        p->update(dt, *this);
+
+    if (!m_player.expired())
+        m_player.lock()->update_hud(*this, m_hud);
 
     for (auto &m: m_missiles)
         m->update(dt, *this);
@@ -606,7 +617,45 @@ void plane::update_targets(world &w)
 
 //------------------------------------------------------------
 
-void plane::update(int dt, world &w, gui::hud &h, bool player)
+void plane::update_render()
+{
+    render->set_hide(hp <= 0);
+    if (hp <= 0)
+        return;
+
+    render->set_pos(phys->pos);
+    render->set_rot(phys->rot);
+
+    render->set_damage(max_hp ? float(max_hp-hp) / max_hp : 0.0);
+
+    const float speed = phys->vel.length() * meps_to_kmph;
+    const float speed_k = nya_math::max((phys->params.move.speed.speedMax - speed) / phys->params.move.speed.speedMax, 0.1f);
+
+    render->set_speed(speed);
+
+    const float el = nya_math::clamp(-controls.rot.z - controls.rot.x, -1.0f, 1.0f) * speed_k;
+    const float er = nya_math::clamp(controls.rot.z - controls.rot.x, -1.0f, 1.0f) * speed_k;
+    render->set_elev(el, er);
+
+    const float rl = nya_math::clamp(-controls.rot.y + controls.brake, -1.0f, 1.0f) * speed_k;
+    const float rr = nya_math::clamp(-controls.rot.y - controls.brake, -1.0f, 1.0f) * speed_k;
+    render->set_rudder(rl, rr, -controls.rot.y);
+
+    render->set_aileron(-controls.rot.z * speed_k, controls.rot.z * speed_k);
+    render->set_canard(controls.rot.x * speed_k);
+    render->set_brake(controls.brake);
+    render->set_flaperon(speed < phys->params.move.speed.speedCruising - 100 ? -1.0 : 1.0);
+    render->set_wing_sweep(speed >  phys->params.move.speed.speedCruising + 250 ? 1.0 : -1.0);
+
+    render->set_intake_ramp(phys->thrust_time >= phys->params.move.accel.thrustMinWait ? 1.0 : -1.0);
+
+    const float aoa = acosf(nya_math::vec3::dot(nya_math::vec3::normalize(phys->vel), get_dir()));
+    render->set_aoa(aoa);
+}
+
+//------------------------------------------------------------
+
+void plane::update(int dt, world &w)
 {
     if (net)
     {
@@ -635,44 +684,13 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
     const auto pos_fix = phys->pos - render->get_pos(); //skeleton is not updated yet
 
-    render->set_pos(phys->pos);
-    render->set_rot(phys->rot);
-
-    render->set_damage(max_hp ? float(max_hp-hp) / max_hp : 0.0);
+    update_render();
 
     if (hp <= 0)
-    {
-        if (player)
-            h.set_hide(true);
         return;
-    }
-
-    render->set_hide(false);
-
-    //aircraft animations
-
-    const float meps_to_kmph = 3.6f;
-    const float speed = phys->vel.length() * meps_to_kmph;
-    const float speed_k = nya_math::max((phys->params.move.speed.speedMax - speed) / phys->params.move.speed.speedMax, 0.1f);
-
-    const float el = nya_math::clamp(-controls.rot.z - controls.rot.x, -1.0f, 1.0f) * speed_k;
-    const float er = nya_math::clamp(controls.rot.z - controls.rot.x, -1.0f, 1.0f) * speed_k;
-    render->set_elev(el, er);
-
-    const float rl = nya_math::clamp(-controls.rot.y + controls.brake, -1.0f, 1.0f) * speed_k;
-    const float rr = nya_math::clamp(-controls.rot.y - controls.brake, -1.0f, 1.0f) * speed_k;
-    render->set_rudder(rl, rr, -controls.rot.y);
-
-    render->set_aileron(-controls.rot.z * speed_k, controls.rot.z * speed_k);
-    render->set_canard(controls.rot.x * speed_k);
-    render->set_brake(controls.brake);
-    render->set_flaperon(speed < phys->params.move.speed.speedCruising - 100 ? -1.0 : 1.0);
-    render->set_wing_sweep(speed >  phys->params.move.speed.speedCruising + 250 ? 1.0 : -1.0);
-
-    render->set_intake_ramp(phys->thrust_time >= phys->params.move.accel.thrustMinWait ? 1.0 : -1.0);
 
     phys->wing_offset = render->get_wing_offset();
-
+/*
     //weapons
 
     if (controls.change_weapon && controls.change_weapon != last_controls.change_weapon)
@@ -1095,23 +1113,8 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
     //cockpit animations and hud
 
-    const float aoa = acosf(nya_math::vec3::dot(nya_math::vec3::normalize(phys->vel), dir));
-    render->set_aoa(aoa);
-
-    if (player)
+    if (player) //ToDo
     {
-        h.set_hide(false);
-
-        render->set_speed(speed);
-
-        auto proj_dir = dir * 1000.0f;
-        h.set_project_pos(phys->pos + proj_dir);
-        h.set_pos(phys->pos);
-        h.set_yaw(phys->rot.get_euler().y);
-        h.set_speed(speed);
-        h.set_alt(phys->pos.y);
-        h.set_jammed(jammed);
-
         if (is_saam)
         {
             const bool tracking = saam_locked && !saam_missile.expired();
@@ -1119,7 +1122,7 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
 
             int idx = special_cooldown[0] <=0 ? 0 : 1;
             if (special_cooldown[idx] <=0)
-                h.set_lock(idx, saam_locked, true);
+            h.set_lock(idx, saam_locked, true);
         }
 
         if (special_weapon_selected && is_mgp)
@@ -1236,9 +1239,28 @@ void plane::update(int dt, world &w, gui::hud &h, bool player)
         if (controls.change_radar && controls.change_radar != last_controls.change_radar)
             h.change_radar();
     }
-
+*/
     last_controls = controls;
     alert_dirs.clear();
+}
+
+//------------------------------------------------------------
+
+void plane::update_hud(world &w, gui::hud &h)
+{
+    h.set_hide(hp <= 0);
+    if (hp <= 0)
+        return;
+
+    auto dir = get_dir();
+
+    auto proj_dir = dir * 1000.0f;
+    h.set_project_pos(phys->pos + proj_dir);
+    h.set_pos(phys->pos);
+    h.set_yaw(phys->rot.get_euler().y);
+    h.set_speed(phys->vel.length() * meps_to_kmph);
+    h.set_alt(phys->pos.y);
+    h.set_jammed(jammed);
 }
 
 //------------------------------------------------------------

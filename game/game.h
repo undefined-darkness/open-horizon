@@ -118,6 +118,8 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     {
         w_ptr<plane> target_plane;
         ivalue locked;
+        fvalue dist;
+        fvalue cos;
     };
 
     std::list<target_lock> targets;
@@ -132,13 +134,15 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     const quat &get_rot() { if (phys) return phys->rot; static quat r; return r; }
     vec3 get_dir() { static vec3 fw(0.0, 0.0, 1.0); return get_rot().rotate(fw); }
     void select_target(const object_ptr &o);
-    void update(int dt, world &w, gui::hud &h, bool player);
+    void update(int dt, world &w);
+    void update_hud(world &w, gui::hud &h);
     bool is_ecm_active() const { return special.id=="ECM" && special_cooldown[0] > 0;}
 
     virtual void take_damage(int damage, world &w) override;
 
 private:
     void update_targets(world &w);
+    void update_render();
 };
 
 typedef ptr<plane> plane_ptr;
@@ -202,12 +206,12 @@ public:
     world(renderer::world &w, gui::hud &h): m_render_world(w), m_hud(h), m_network(0) {}
 
 private:
-    void update_plane(plane_ptr &p);
     plane_ptr get_plane(const phys::object_ptr &o);
     missile_ptr get_missile(const phys::object_ptr &o);
 
 private:
     std::vector<plane_ptr> m_planes;
+    w_ptr<plane> m_player;
     std::vector<missile_ptr> m_missiles;
     renderer::world &m_render_world;
     gui::hud &m_hud;
