@@ -140,11 +140,11 @@ wpn_params::wpn_params(std::string id, std::string model)
     auto &param = get_arms_param();
 
     lockon_range = param.get_float(lockon + "range");
-    lockon_time = param.get_int(lockon_dfm + "timeLockon") * 1000;
+    lockon_time = param.get_float(lockon_dfm + "timeLockon") * 1000;
     lockon_count = param.get_float(lockon + "lockonNum");
     lockon_air = param.get_int(lockon + "target_air") > 0;
     lockon_ground = param.get_int(lockon + "target_grd") > 0;
-    action_range = param.get_int(action + "range");
+    action_range = param.get_float(action + "range");
     reload_time = param.get_float(lockon + "reload") * 1000;
 
     float lon_angle = param.get_float(lockon + "angle") * 0.5f * nya_math::constants::pi / 180.0f;
@@ -648,6 +648,8 @@ void plane::update(int dt, world &w)
 
     phys->wing_offset = render->get_wing_offset();
 
+    update_targets(w);
+
     //switch weapons
 
     if (controls.change_weapon && controls.change_weapon != last_controls.change_weapon && is_special_bay_ready())
@@ -658,6 +660,7 @@ void plane::update(int dt, world &w)
             saam_missile.lock()->target.reset();
 
         missile_bay_time = 0;
+        need_fire_missile = false;
     }
 
     //mgun
@@ -689,6 +692,8 @@ void plane::update(int dt, world &w)
             render->set_missile_visible(i, true);
     }
 
+    for (auto &s: special_cooldown) if (s > 0) s -= dt;
+
     for (int i = 0; i < (int)special_mount_cooldown.size(); ++i)
     {
         if (special_mount_cooldown[i] < 0)
@@ -719,17 +724,12 @@ void plane::update(int dt, world &w)
         }
     }
 
-    //targets
-    
-    update_targets(w);
-
     //weapons
-
-    if (controls.missile && !special_weapon_selected)
-        missile_bay_time = 3000;
 
     if (missile_bay_time > 0)
         missile_bay_time -= dt;
+
+    const bool want_fire = controls.missile && controls.missile != last_controls.missile;
 
     if (special_weapon_selected)
     {
@@ -743,6 +743,56 @@ void plane::update(int dt, world &w)
 
                 for (int i = 0; i < render->get_special_mount_count(); ++i)
                     w.spawn_bullet("MGP", render->get_special_mount_pos(i) + pos_fix, dir, me);
+            }
+        }
+
+        if (want_fire && special.id == "ECM")
+        {
+            if (special_cooldown[0] <= 0 && is_special_bay_ready())
+                special_cooldown[0] = special.reload_time;
+        }
+
+        if (special.id == "ADMM")
+        {
+            //ToDo
+        }
+
+        if (want_fire && special.id == "EML")
+        {
+            //ToDo
+        }
+    }
+    else
+    {
+        if (!targets.empty())
+            targets.front().locked = targets.front().can_lock(missile);
+
+        if (want_fire)
+            need_fire_missile = true, missile_bay_time = 3000;
+
+        if (need_fire_missile && render->is_missile_ready())
+        {
+            need_fire_missile = false;
+            missile_mount_cooldown.resize(render->get_missile_mount_count());
+            if ((missile_cooldown[0] <=0 || missile_cooldown[1] <= 0) && render->get_missile_mount_count() > 0)
+            {
+                if (missile_cooldown[0] <= 0)
+                    missile_cooldown[0] = missile.reload_time;
+                else if (missile_cooldown[1] <= 0)
+                    missile_cooldown[1] = missile.reload_time;
+
+                auto m = w.add_missile(missile.id.c_str(), render->get_missile_model());
+                m->owner = shared_from_this();
+                missile_mount_idx = ++missile_mount_idx % render->get_missile_mount_count();
+                missile_mount_cooldown[missile_mount_idx] = missile.reload_time;
+                render->set_missile_visible(missile_mount_idx, false);
+                m->phys->pos = render->get_missile_mount_pos(missile_mount_idx) + pos_fix;
+                m->phys->rot = render->get_missile_mount_rot(missile_mount_idx);
+                m->phys->vel = phys->vel;
+
+                m->phys->target_dir = m->phys->rot.rotate(vec3(0.0f, 0.0f, 1.0f));
+                if (!targets.empty() && targets.front().locked > 0)
+                    m->target = targets.front().target_plane;
             }
         }
     }
@@ -867,7 +917,7 @@ void plane::update(int dt, world &w)
                 {
                     if ((special_cooldown[0] <=0 || special_cooldown[1] <= 0) && render->get_special_mount_count() > 0)
                     {
-                        if (is_ecm)
+                        if (count == 1)
                         {
                             if (special_cooldown[0] <= 0)
                             {
@@ -875,100 +925,54 @@ void plane::update(int dt, world &w)
                                 if (player)
                                     h.set_lock(0, false, false);
                             }
-                        }
-                        else if (special.id == "ADMM")
-                        {
-                            //ToDo
-                        }
-                        else if (special.id == "EML")
-                        {
-                            //ToDo
+                            else if (special_cooldown[1] <= 0)
+                            {
+                                special_cooldown[1] = special_cooldown_time;
+                                if (player)
+                                    h.set_lock(1, false, false);
+                            }
                         }
                         else
+                            special_cooldown[0] = special_cooldown[1] = special_cooldown_time;
+
+                        special_mount_cooldown.resize(render->get_special_mount_count());
+
+                        std::vector<w_ptr<plane> > locked_targets;
+                        for (auto &t: targets)
                         {
-                            if (count == 1)
+                            for (int j = 0; j < t.locked; ++j)
+                                locked_targets.push_back(t.target_plane);
+                            t.locked = 0;
+                        }
+
+                        for (int i = 0; i < count; ++i)
+                        {
+                            auto m = w.add_missile(special.id.c_str(), render->get_special_model());
+                            m->owner = shared_from_this();
+                            special_mount_idx = ++special_mount_idx % render->get_special_mount_count();
+                            special_mount_cooldown[special_mount_idx] = special_cooldown_time;
+                            render->set_special_visible(special_mount_idx, false);
+                            m->phys->pos = render->get_special_mount_pos(special_mount_idx) + pos_fix;
+                            m->phys->rot = render->get_special_mount_rot(special_mount_idx);
+                            m->phys->vel = phys->vel;
+                            m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0)); //ToDo
+
+                            if (i < (int)locked_targets.size())
+                                m->target = locked_targets[i];
+
+                            if (player && count > 1)
+                                h.set_lock(i, false, false);
+
+                            if (is_saam)
                             {
-                                if (special_cooldown[0] <= 0)
-                                {
-                                    special_cooldown[0] = special_cooldown_time;
-                                    if (player)
-                                        h.set_lock(0, false, false);
-                                }
-                                else if (special_cooldown[1] <= 0)
-                                {
-                                    special_cooldown[1] = special_cooldown_time;
-                                    if (player)
-                                        h.set_lock(1, false, false);
-                                }
-                            }
-                            else
-                                special_cooldown[0] = special_cooldown[1] = special_cooldown_time;
-
-                            special_mount_cooldown.resize(render->get_special_mount_count());
-
-                            std::vector<w_ptr<plane> > locked_targets;
-                            for (auto &t: targets)
-                            {
-                                for (int j = 0; j < t.locked; ++j)
-                                    locked_targets.push_back(t.target_plane);
-                                t.locked = 0;
-                            }
-
-                            for (int i = 0; i < count; ++i)
-                            {
-                                auto m = w.add_missile(special.id.c_str(), render->get_special_model());
-                                m->owner = shared_from_this();
-                                special_mount_idx = ++special_mount_idx % render->get_special_mount_count();
-                                special_mount_cooldown[special_mount_idx] = special_cooldown_time;
-                                render->set_special_visible(special_mount_idx, false);
-                                m->phys->pos = render->get_special_mount_pos(special_mount_idx) + pos_fix;
-                                m->phys->rot = render->get_special_mount_rot(special_mount_idx);
-                                m->phys->vel = phys->vel;
-                                m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0)); //ToDo
-
-                                if (i < (int)locked_targets.size())
-                                    m->target = locked_targets[i];
-
-                                if (player && count > 1)
-                                    h.set_lock(i, false, false);
-
-                                if (is_saam)
-                                {
-                                    if (!saam_missile.expired())
-                                        saam_missile.lock()->target.reset(); //one at a time
-                                    saam_missile = m;
-                                }
+                                if (!saam_missile.expired())
+                                    saam_missile.lock()->target.reset(); //one at a time
+                                saam_missile = m;
                             }
                         }
                     }
                 }
             }
-        }
-    }
-
-    if (need_fire_missile && render->is_missile_ready())
-    {
-        need_fire_missile = false;
-        missile_mount_cooldown.resize(render->get_missile_mount_count());
-        if ((missile_cooldown[0] <=0 || missile_cooldown[1] <= 0) && render->get_missile_mount_count() > 0)
-        {
-            if (missile_cooldown[0] <= 0)
-                missile_cooldown[0] = missile_cooldown_time;
-            else if (missile_cooldown[1] <= 0)
-                missile_cooldown[1] = missile_cooldown_time;
-
-            auto m = w.add_missile(missile.id.c_str(), render->get_missile_model());
-            m->owner = shared_from_this();
-            missile_mount_idx = ++missile_mount_idx % render->get_missile_mount_count();
-            missile_mount_cooldown[missile_mount_idx] = missile_cooldown_time;
-            render->set_missile_visible(missile_mount_idx, false);
-            m->phys->pos = render->get_missile_mount_pos(missile_mount_idx) + pos_fix;
-            m->phys->rot = render->get_missile_mount_rot(missile_mount_idx);
-            m->phys->vel = phys->vel;
-
-            m->phys->target_dir = m->phys->rot.rotate(vec3(0.0, 0.0, 1.0));
-            if (!targets.empty() && targets.front().locked > 0)
-                m->target = targets.front().target_plane;
         }
     }
 
