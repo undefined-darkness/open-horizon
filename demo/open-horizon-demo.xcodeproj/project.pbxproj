@@ -19,6 +19,7 @@
 		F50DADAC1C3047D5000DD3EA /* hangar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50DADAA1C3047D5000DD3EA /* hangar.cpp */; };
 		F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53304C61B09DEC300D8C3C7 /* menu.cpp */; };
 		F5696AAA1B1136B100C7BFC9 /* joystick.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5696AA11B10E3F800C7BFC9 /* joystick.xml */; };
+		F572C1F11CA715AC00AB1D1F /* poc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F572C1EF1CA715AC00AB1D1F /* poc.cpp */; };
 		F578323E1AFBE859005FE829 /* ui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F578323C1AFBE859005FE829 /* ui.cpp */; };
 		F57832401AFC20B7005FE829 /* aircrafts.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F578323F1AFC20B1005FE829 /* aircrafts.xml */; };
 		F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E51F19048D4A00C3590A /* libnya_engine.a */; };
@@ -119,6 +120,8 @@
 		F53304C71B09DEC300D8C3C7 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = menu.h; path = ../gui/menu.h; sourceTree = "<group>"; };
 		F561C5FA1AFD24E900D8DD14 /* half.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = half.h; path = ../util/half.h; sourceTree = "<group>"; };
 		F5696AA11B10E3F800C7BFC9 /* joystick.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = joystick.xml; path = ../resources/joystick.xml; sourceTree = "<group>"; };
+		F572C1EF1CA715AC00AB1D1F /* poc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = poc.cpp; sourceTree = "<group>"; };
+		F572C1F01CA715AC00AB1D1F /* poc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = poc.h; sourceTree = "<group>"; };
 		F578323C1AFBE859005FE829 /* ui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ui.cpp; path = ../gui/ui.cpp; sourceTree = "<group>"; };
 		F578323D1AFBE859005FE829 /* ui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui.h; path = ../gui/ui.h; sourceTree = "<group>"; };
 		F578323F1AFC20B1005FE829 /* aircrafts.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = aircrafts.xml; path = ../resources/aircrafts.xml; sourceTree = "<group>"; };
@@ -386,6 +389,8 @@
 				F50D9C981C9F2E5700A56812 /* pac5.h */,
 				F50D9C991C9F2E5700A56812 /* pac6.cpp */,
 				F50D9C9A1C9F2E5700A56812 /* pac6.h */,
+				F572C1EF1CA715AC00AB1D1F /* poc.cpp */,
+				F572C1F01CA715AC00AB1D1F /* poc.h */,
 				F5C6D38E1AF969A5006FB7E6 /* qdf.cpp */,
 				F5C6D38F1AF969A5006FB7E6 /* qdf.h */,
 				F5C6D3901AF969A5006FB7E6 /* qdf_provider.h */,
@@ -523,6 +528,7 @@
 				F5C6D3921AF969A5006FB7E6 /* fhm.cpp in Sources */,
 				F50D9C9B1C9F2E5700A56812 /* pac5.cpp in Sources */,
 				F5DC44881C7CD9AF00F68115 /* mesh.cpp in Sources */,
+				F572C1F11CA715AC00AB1D1F /* poc.cpp in Sources */,
 				F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */,
 				F50D9C9C1C9F2E5700A56812 /* pac6.cpp in Sources */,
 				F578323E1AFBE859005FE829 /* ui.cpp in Sources */,

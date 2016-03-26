@@ -9,7 +9,6 @@
 
 bool fhm_file::open(const char *name)
 {
-    //printf("\n\nfhm %s\n", name);
     return open(nya_resources::get_resources_provider().access(name));
 }
 
@@ -110,7 +109,7 @@ void fhm_file::close()
 
 //------------------------------------------------------------
 
-size_t fhm_file::get_chunk_offset(int idx) const
+uint32_t fhm_file::get_chunk_offset(int idx) const
 {
     if (idx < 0 || idx >= int(m_chunks.size()))
         return 0;
@@ -120,7 +119,7 @@ size_t fhm_file::get_chunk_offset(int idx) const
 
 //------------------------------------------------------------
 
-size_t fhm_file::get_chunk_size(int idx) const
+uint32_t fhm_file::get_chunk_size(int idx) const
 {
     if (idx < 0 || idx >= int(m_chunks.size()))
         return 0;
@@ -140,7 +139,7 @@ bool fhm_file::read_chunk_data(int idx, void *data) const
 
 //------------------------------------------------------------
 
-unsigned int fhm_file::get_chunk_type(int idx) const
+uint32_t fhm_file::get_chunk_type(int idx) const
 {
     if (idx < 0 || idx >= int(m_chunks.size()))
         return 0;

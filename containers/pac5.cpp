@@ -83,6 +83,7 @@ void pac5_file::close()
     if (m_data)
         m_data->release();
     m_entries.clear();
+    m_data = 0;
 }
 
 //------------------------------------------------------------
