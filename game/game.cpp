@@ -818,6 +818,55 @@ void plane::update(int dt, world &w)
             }
         }
 
+        if (special.lockon_count > 1)
+        {
+            lock_timer += dt;
+            if (can_fire)
+            {
+                for (auto &t: targets) if (!t.can_lock(special)) t.locked = 0;
+
+                if (lock_timer > special.lockon_time)
+                {
+                    if (special.lockon_time)
+                        lock_timer %= special.lockon_time;
+
+                    int lockon_count = 0;
+                    for (auto &t: targets)
+                    {
+                        if (!t.can_lock(special))
+                            t.locked = 0;
+
+                        lockon_count += t.locked;
+                    }
+
+                    if (lockon_count < special.lockon_count)
+                    {
+                        for (int min_lock = 0; min_lock < special.lockon_count; ++min_lock)
+                        {
+                            bool found = false;
+                            for (auto &t: targets)
+                            {
+                                if (t.locked > min_lock)
+                                    continue;
+
+                                if (!t.can_lock(special))
+                                    continue;
+
+                                ++t.locked;
+                                found = true;
+                                break;
+                            }
+
+                            if (found)
+                                break;
+                        }
+                    }
+                }
+            }
+            else
+                lock_timer = 0;
+        }
+
         if (need_fire && special.lockon_count > 0 && render->get_special_mount_count() > 0)
         {
             if (special.lockon_count > 1)
@@ -893,55 +942,6 @@ void plane::update(int dt, world &w)
             }
         }
     }
-
-/*
-        if (is_Xaam && special_cooldown[0] <= 0)
-        {
-            lock_timer += dt;
-            if (lock_timer > special.lockon_reload)
-            {
-                lock_timer %= special.lockon_reload;
-
-                int lockon_count = 0;
-                for (auto &t: targets)
-                    lockon_count += t.locked;
-
-                if (lockon_count < special.lockon_count)
-                {
-                    for (int min_lock = 0; min_lock < special.lockon_count; ++min_lock)
-                    {
-                        bool found = false;
-                        for (auto &t: targets)
-                        {
-                            if (t.locked > min_lock)
-                                continue;
-
-                            auto p = t.target_plane.lock();
-                            auto target_dir = p->get_pos() - me->get_pos();
-                            const float dist = target_dir.length();
-                            if (dist > special.lockon_range)
-                                continue;
-
-                            const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
-                            if (c < special.lockon_angle_cos)
-                                continue;
-
-                            if (player)
-                                h.set_lock(lockon_count, true, true);
-
-                            ++t.locked;
-                            found = true;
-                            break;
-                        }
-
-                        if (found)
-                            break;
-                    }
-                }
-            }
-        }
-    }
-*/
 
     //target selection
 
