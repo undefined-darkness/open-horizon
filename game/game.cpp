@@ -479,7 +479,7 @@ void plane::reset_state()
     render->set_special_visible(-1, true);
 
     need_fire_missile = false;
-    rocket_bay_time = 0;
+    missile_bay_time = 0;
 
     for (auto &c: missile_cooldown) c = 0;
     missile_mount_cooldown.clear();
@@ -642,9 +642,12 @@ void plane::update_render()
     const float aoa = acosf(nya_math::vec3::dot(nya_math::vec3::normalize(phys->vel), get_dir()));
     render->set_aoa(aoa);
 
+    render->set_missile_bay(missile_bay_time > 0);
     render->set_special_bay(special_weapon_selected);
-    render->set_mgp_fire(special_weapon_selected && controls.missile);
+    render->set_mgun_bay(controls.mgun);
+
     render->set_mgun_fire(is_mg_bay_ready() && controls.mgun);
+    render->set_mgp_fire(special_weapon_selected && controls.missile && special.id == "MGP");
 }
 
 //------------------------------------------------------------
@@ -693,6 +696,8 @@ void plane::update(int dt, world &w)
         }
     }
 
+    const plane_ptr &me = shared_from_this();
+    const auto dir = get_dir();
     const auto pos_fix = phys->pos - render->get_pos(); //skeleton is not updated yet
 
     update_render();
@@ -702,7 +707,7 @@ void plane::update(int dt, world &w)
 
     phys->wing_offset = render->get_wing_offset();
 
-    //weapons
+    //switch weapons
 
     if (controls.change_weapon && controls.change_weapon != last_controls.change_weapon && is_special_bay_ready())
     {
@@ -710,7 +715,80 @@ void plane::update(int dt, world &w)
 
         if (!saam_missile.expired())
             saam_missile.lock()->target.reset();
+
+        missile_bay_time = 0;
     }
+
+    //mgun
+
+    if (controls.mgun && render->is_mgun_ready())
+    {
+        mgun_fire_update += dt;
+        const int mgun_update_time = 150;
+        if (mgun_fire_update > mgun_update_time)
+        {
+            mgun_fire_update %= mgun_update_time;
+
+            for (int i = 0; i < render->get_mguns_count(); ++i)
+                w.spawn_bullet("MG", render->get_mgun_pos(i) + pos_fix, dir, me);
+        }
+    }
+
+    //reload
+
+    for (auto &m: missile_cooldown) if (m > 0) m -= dt;
+
+    for (int i = 0; i < (int)missile_mount_cooldown.size(); ++i)
+    {
+        if (missile_mount_cooldown[i] < 0)
+            continue;
+
+        missile_mount_cooldown[i] -= dt;
+        if (missile_mount_cooldown[i] < 0)
+            render->set_missile_visible(i, true);
+    }
+
+    for (int i = 0; i < (int)special_mount_cooldown.size(); ++i)
+    {
+        if (special_mount_cooldown[i] < 0)
+            continue;
+
+        special_mount_cooldown[i] -= dt;
+        if (special_mount_cooldown[i] < 0)
+            render->set_special_visible(i, true);
+    }
+
+    //ecm
+
+    if (is_ecm_active())
+    {
+        for (int i = 0; i < w.get_missiles_count(); ++i)
+        {
+            auto m = w.get_missile(i);
+            if (!m)
+                continue;
+
+            if (!m->owner.expired() && w.is_ally(me, m->owner.lock()))
+                continue;
+
+            if ((get_pos() - m->phys->pos).length_sq() > special.action_range * special.action_range)
+                continue;
+
+            m->target.reset();
+        }
+    }
+
+    //targets
+    
+    update_targets(w);
+
+    //missiles
+
+    if (controls.missile && !special_weapon_selected)
+        missile_bay_time = 3000;
+
+    if (missile_bay_time > 0)
+        missile_bay_time -= dt;
 
 /*
     int count = 1;
@@ -736,11 +814,7 @@ void plane::update(int dt, world &w)
     {
         if (special_weapon_selected)
         {
-            if (is_mgp)
-            {
-                render->set_mgp_fire(controls.missile);
-            }
-            else if (controls.missile)
+            if (controls.missile)
             {
                 if (!render->has_special_bay() || render->is_special_bay_opened())
                 {
@@ -823,12 +897,6 @@ void plane::update(int dt, world &w)
                 }
             }
         }
-        else if (controls.missile)
-        {
-            rocket_bay_time = 3000;
-            render->set_missile_bay(true);
-            need_fire_missile = true;
-        }
     }
 
     if (need_fire_missile && render->is_missile_ready())
@@ -857,18 +925,6 @@ void plane::update(int dt, world &w)
         }
     }
 
-    if (rocket_bay_time > 0)
-    {
-        rocket_bay_time -= dt;
-        if (rocket_bay_time <= 0)
-        {
-            render->set_missile_bay(false);
-            rocket_bay_time = 0;
-        }
-    }
-
-    for (auto &m: missile_cooldown) if (m > 0) m -= dt;
-
     for (int i = 0; i < 2; ++i)
     {
         auto &s = special_cooldown[i];
@@ -892,52 +948,6 @@ void plane::update(int dt, world &w)
             }
         }
     }
-
-    for (int i = 0; i < (int)missile_mount_cooldown.size(); ++i)
-    {
-        if (missile_mount_cooldown[i] < 0)
-            continue;
-
-        missile_mount_cooldown[i] -= dt;
-        if (missile_mount_cooldown[i] < 0)
-            render->set_missile_visible(i, true);
-    }
-
-    for (int i = 0; i < (int)special_mount_cooldown.size(); ++i)
-    {
-        if (special_mount_cooldown[i] < 0)
-            continue;
-
-        special_mount_cooldown[i] -= dt;
-        if (special_mount_cooldown[i] < 0)
-            render->set_special_visible(i, true);
-    }
-
-    if (controls.mgun != last_controls.mgun)
-    {
-        render->set_mgun_bay(controls.mgun);
-        if (controls.mgun && render->is_mgun_ready())
-            render->set_mgun_fire(true);
-        else
-            render->set_mgun_fire(false);
-    }
-
-    const plane_ptr &me = shared_from_this();
-
-    if (controls.mgun && render->is_mgun_ready())
-    {
-        mgun_fire_update += dt;
-        const int mgun_update_time = 150;
-        if (mgun_fire_update > mgun_update_time)
-        {
-            mgun_fire_update %= mgun_update_time;
-
-            for (int i = 0; i < render->get_mguns_count(); ++i)
-                w.spawn_bullet("MG", render->get_mgun_pos(i) + pos_fix, dir, me);
-        }
-    }
-
-    update_targets(w);
 
     bool saam_locked = false;
 
@@ -1066,46 +1076,10 @@ void plane::update(int dt, world &w)
         }
     }
 
-    if (is_ecm_active())
-    {
-        for (int i = 0; i < w.get_missiles_count(); ++i)
-        {
-            auto m = w.get_missile(i);
-            if (!m)
-                continue;
-
-            if (!m->owner.expired() && w.is_ally(me, m->owner.lock()))
-                continue;
-
-            if ((get_pos() - m->phys->pos).length_sq() > ecm_dist * ecm_dist)
-                continue;
-
-            m->target.reset();
-        }
-    }
-
     //cockpit animations and hud
 
     if (player) //ToDo
     {
-        if (is_saam)
-        {
-            const bool tracking = saam_locked && !saam_missile.expired();
-            h.set_saam(saam_locked, tracking);
-
-            int idx = special_cooldown[0] <=0 ? 0 : 1;
-            if (special_cooldown[idx] <=0)
-            h.set_lock(idx, saam_locked, true);
-        }
-
-        if (special_weapon_selected && is_mgp)
-            h.set_mgp(controls.missile);
-
-        proj_dir.y = 0.0f;
-        h.clear_alerts();
-        for(auto &a: alert_dirs)
-            h.add_alert(-proj_dir.angle(nya_math::vec3(a.x, 0.0, a.z)));
-
         if (controls.change_target && controls.change_target != last_controls.change_target)
         {
             if (targets.size() > 1)
@@ -1192,9 +1166,8 @@ void plane::update_hud(world &w, gui::hud &h)
     if (hp <= 0)
         return;
 
-    auto dir = get_dir();
-
-    auto proj_dir = dir * 1000.0f;
+    const auto dir = get_dir();
+    const auto proj_dir = dir * 1000.0f;
     h.set_project_pos(phys->pos + proj_dir);
     h.set_pos(phys->pos);
     h.set_yaw(phys->rot.get_euler().y);
@@ -1202,7 +1175,26 @@ void plane::update_hud(world &w, gui::hud &h)
     h.set_alt(phys->pos.y);
     h.set_jammed(jammed);
 
-    //update weapoms icons
+    //missile alerts
+
+    h.clear_alerts();
+    for(auto &a: alert_dirs)
+        h.add_alert(-nya_math::vec2(dir.x, dir.z).angle(nya_math::vec2(a.x, a.z)));
+
+    //update weapon reticle
+
+    if (special.id == "SAAM")
+    {
+        const bool saam_locked = false; //ToDo
+
+        h.set_saam(saam_locked, saam_locked && !saam_missile.expired());
+        h.set_lock(0, saam_locked && special_cooldown[0] <= 0, special_cooldown[0] <= 0);
+        h.set_lock(1, saam_locked && special_cooldown[0] > 0, special_cooldown[1] <= 0);
+    }
+    else if (special.id == "MGP")
+        h.set_mgp(special_weapon_selected && controls.missile);
+
+    //update weapon icons
 
     if (special_weapon_selected != h.is_special_selected())
     {
