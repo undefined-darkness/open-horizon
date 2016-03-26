@@ -510,99 +510,40 @@ void plane::select_target(const object_ptr &o)
 void plane::update_targets(world &w)
 {
     const plane_ptr &me = shared_from_this();
+    const vec3 dir = get_dir();
     jammed = false;
-
-    //ToDo
 
     for (int i = 0; i < w.get_planes_count(); ++i)
     {
         auto p = w.get_plane(i);
-        if (me == p)
+
+        if (w.is_ally(me, p))
             continue;
 
-        if (p->hp <= 0)
-            continue;
+        auto target_dir = p->get_pos() - me->get_pos();
+        const float dist = target_dir.length();
+        auto t = std::find_if(targets.begin(), targets.end(), [p](target_lock &t) { return p == t.target_plane.lock(); });
 
-        if (!w.is_ally(me, p))
+        if (dist > 12000.0f || p->hp <= 0)
         {
-            auto target_dir = p->get_pos() - me->get_pos();
-            const float dist = target_dir.length();
-            auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.target_plane.lock(); });
-            if (dist < 12000.0f) //ToDo
-            {
-                if (p->is_ecm_active() && dist < special.action_range)
-                {
-                    jammed = true;
-                    targets.clear();
-                    break;
-                }
-
-                if (fp == targets.end())
-                    fp = targets.insert(targets.end(), {p, false});
-
-                if (special_weapon_selected)
-                {
-                    if (!fp->locked)
-                        continue;
-
-                    int count = fp->locked;
-
-                    if (dist > special.lockon_range)
-                        fp->locked = 0;
-                    else
-                    {
-                        const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
-                        if (c < special.lockon_angle_cos)
-                            fp->locked = 0;
-                    }
-
-                    //ToDo: somewhere else
-/*
-                    if (player)
-                    {
-                        if (is_Xaam)
-                        {
-                            int lockon_count = 0;
-                            for (auto &t: targets)
-                                lockon_count += t.locked;
-
-                            for (int i = 0; i < count; ++i)
-                                h.set_lock(i + lockon_count, false, true);
-                        }
-                        else
-                        {
-                            const bool ready0 = special_cooldown[0] <=0;
-                            const bool ready1 = special_cooldown[1] <=0;
-
-                            if (ready0 || ready1)
-                                h.set_lock(ready0 ? 0 : 1, false, true);
-                        }
-                    }
-*/
-                }
-                else
-                {
-                    if (dist > missile.lockon_range)
-                        fp->locked = false;
-                    else
-                    {
-                        const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
-                        if (c < missile.lockon_angle_cos)
-                            fp->locked = 0;
-                        else if (fp != targets.begin())
-                            fp->locked = 0;
-                        else
-                            fp->locked = 1;
-                    }
-                }
-            }
-            else if (fp != targets.end())
-                fp = targets.erase(fp);
+            if (t != targets.end())
+                targets.erase(t);
+            continue;
         }
-    }
 
-    targets.erase(std::remove_if(targets.begin(), targets.end(), [](target_lock &t){ return t.target_plane.expired()
-        || t.target_plane.lock()->hp <= 0; }), targets.end());
+        if (p->is_ecm_active() && dist < p->special.action_range)
+        {
+            jammed = true;
+            targets.clear();
+            break;
+        }
+
+        if (t == targets.end())
+            t = targets.insert(targets.end(), {p, false});
+
+        t->dist = dist;
+        t->cos = target_dir.dot(dir) / dist;
+    }
 }
 
 //------------------------------------------------------------
@@ -697,8 +638,8 @@ void plane::update(int dt, world &w)
     }
 
     const plane_ptr &me = shared_from_this();
-    const auto dir = get_dir();
-    const auto pos_fix = phys->pos - render->get_pos(); //skeleton is not updated yet
+    const vec3 dir = get_dir();
+    const vec3 pos_fix = phys->pos - render->get_pos(); //skeleton is not updated yet
 
     update_render();
 
@@ -782,7 +723,7 @@ void plane::update(int dt, world &w)
     
     update_targets(w);
 
-    //missiles
+    //weapons
 
     if (controls.missile && !special_weapon_selected)
         missile_bay_time = 3000;
@@ -790,6 +731,112 @@ void plane::update(int dt, world &w)
     if (missile_bay_time > 0)
         missile_bay_time -= dt;
 
+    if (special_weapon_selected)
+    {
+        if (controls.missile && special.id == "MGP")
+        {
+            mgp_fire_update += dt;
+            const int mgp_update_time = 150;
+            if (mgp_fire_update > mgp_update_time)
+            {
+                mgp_fire_update %= mgp_update_time;
+
+                for (int i = 0; i < render->get_special_mount_count(); ++i)
+                    w.spawn_bullet("MGP", render->get_special_mount_pos(i) + pos_fix, dir, me);
+            }
+        }
+    }
+
+/*
+    for (int i = 0; i < w.get_planes_count(); ++i)
+    {
+        auto p = w.get_plane(i);
+        if (me == p)
+            continue;
+
+        if (p->hp <= 0)
+            continue;
+
+        if (!w.is_ally(me, p))
+        {
+            auto target_dir = p->get_pos() - me->get_pos();
+            const float dist = target_dir.length();
+            auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.target_plane.lock(); });
+            if (dist < 12000.0f) //ToDo
+            {
+                if (p->is_ecm_active() && dist < special.action_range)
+                {
+                    jammed = true;
+                    targets.clear();
+                    break;
+                }
+
+                if (fp == targets.end())
+                    fp = targets.insert(targets.end(), {p, false});
+
+                if (special_weapon_selected)
+                {
+                    if (!fp->locked)
+                        continue;
+
+                    int count = fp->locked;
+
+                    if (dist > special.lockon_range)
+                        fp->locked = 0;
+                    else
+                    {
+                        const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
+                        if (c < special.lockon_angle_cos)
+                            fp->locked = 0;
+                    }
+
+                    //ToDo: somewhere else
+
+                    if (player)
+                    {
+                        if (is_Xaam)
+                        {
+                            int lockon_count = 0;
+                            for (auto &t: targets)
+                                lockon_count += t.locked;
+
+                            for (int i = 0; i < count; ++i)
+                                h.set_lock(i + lockon_count, false, true);
+                        }
+                        else
+                        {
+                            const bool ready0 = special_cooldown[0] <=0;
+                            const bool ready1 = special_cooldown[1] <=0;
+                            
+                            if (ready0 || ready1)
+                                h.set_lock(ready0 ? 0 : 1, false, true);
+                        }
+                    }
+                }
+                else
+                {
+                    if (dist > missile.lockon_range)
+                        fp->locked = false;
+                    else
+                    {
+                        const float c = target_dir.dot(me->get_rot().rotate(nya_math::vec3(0.0, 0.0, 1.0))) / dist;
+                        if (c < missile.lockon_angle_cos)
+                            fp->locked = 0;
+                        else if (fp != targets.begin())
+                            fp->locked = 0;
+                        else
+                            fp->locked = 1;
+                    }
+                }
+            }
+            else if (fp != targets.end())
+                fp = targets.erase(fp);
+        }
+    }
+    
+    targets.erase(std::remove_if(targets.begin(), targets.end(), [](target_lock &t){ return t.target_plane.expired()
+        || t.target_plane.lock()->hp <= 0; }), targets.end());
+*/
 /*
     int count = 1;
     if (!special.id.empty())
@@ -1061,99 +1108,23 @@ void plane::update(int dt, world &w)
                 }
             }
         }
-
-        if (is_mgp && controls.missile)
-        {
-            mgp_fire_update += dt;
-            const int mgp_update_time = 150;
-            if (mgp_fire_update > mgp_update_time)
-            {
-                mgp_fire_update %= mgp_update_time;
-
-                for (int i = 0; i < render->get_special_mount_count(); ++i) //ToDo
-                    w.spawn_bullet("MGP", render->get_special_mount_pos(i) + pos_fix, dir, me);
-            }
-        }
-    }
-
-    //cockpit animations and hud
-
-    if (player) //ToDo
-    {
-        if (controls.change_target && controls.change_target != last_controls.change_target)
-        {
-            if (targets.size() > 1)
-            {
-                if (!is_Xaam)
-                    targets.front().locked = 0;
-
-                targets.push_back(targets.front());
-                targets.pop_front();
-            }
-        }
-
-        h.clear_targets();
-        h.clear_ecm();
-
-        for (int i = 0; i < w.get_missiles_count(); ++i)
-        {
-            auto m = w.get_missile(i);
-            if (m)
-                h.add_target(m->phys->pos, m->phys->rot.get_euler().y, gui::hud::target_missile, gui::hud::select_not);
-        }
-
-        bool hud_mgun = controls.mgun;
-
-        for (int i = 0; i < w.get_planes_count(); ++i)
-        {
-            auto p = w.get_plane(i);
-
-            if (p->is_ecm_active())
-                h.add_ecm(p->get_pos());
-
-            if (me == p)
-                continue;
-
-            auto select = gui::hud::select_not;
-            auto target = gui::hud::target_air;
-
-            if (w.is_ally(me, p))
-            {
-                if (p->hp <= 0)
-                    continue;
-
-                target = gui::hud::target_air_ally;
-            }
-            else
-            {
-                auto first_target = targets.begin();
-                if (first_target != targets.end())
-                {
-                    if (p == first_target->target_plane.lock())
-                    {
-                        select = gui::hud::select_current;
-                        const float gun_range = 1500.0f;
-                        if ((p->get_pos() - get_pos()).length_sq() < gun_range * gun_range)
-                            hud_mgun = true;
-                    }
-                    else if (++first_target != targets.end() && p == first_target->target_plane.lock())
-                        select = gui::hud::select_next;
-                }
-
-                auto fp = std::find_if(targets.begin(), targets.end(), [p](target_lock &t){ return p == t.target_plane.lock(); });
-                if (fp == targets.end())
-                    continue;
-
-                if (fp->locked > 0)
-                    target = gui::hud::target_air_lock;
-            }
-
-            h.add_target(p->get_pos(), p->get_rot().get_euler().y, target, select);
-        }
-
-        h.set_mgun(hud_mgun);
     }
 */
+
+    //target selection
+
+    if (controls.change_target && controls.change_target != last_controls.change_target)
+    {
+        if (targets.size() > 1)
+        {
+            if (!special_weapon_selected || special.lockon_count == 1)
+                targets.front().locked = 0;
+
+            targets.push_back(targets.front());
+            targets.pop_front();
+        }
+    }
+
     last_controls = controls;
     alert_dirs.clear();
 }
@@ -1193,6 +1164,10 @@ void plane::update_hud(world &w, gui::hud &h)
     }
     else if (special.id == "MGP")
         h.set_mgp(special_weapon_selected && controls.missile);
+
+    const float gun_range = 1500.0f;
+    const bool hud_mgun = controls.mgun || (!targets.empty() && targets.front().dist < gun_range);
+    h.set_mgun(hud_mgun);
 
     //update weapon icons
 
@@ -1243,6 +1218,46 @@ void plane::update_hud(world &w, gui::hud &h)
     {
         h.set_missile_reload(0, 1.0f - float(missile_cooldown[0]) / missile.reload_time);
         h.set_missile_reload(1, 1.0f - float(missile_cooldown[1]) / missile.reload_time);
+    }
+
+    //radar and hud targets
+
+    h.clear_targets();
+
+    for (int i = 0; i < w.get_missiles_count(); ++i)
+    {
+        auto m = w.get_missile(i);
+        if (m)
+            h.add_target(m->phys->pos, m->phys->rot.get_euler().y, gui::hud::target_missile, gui::hud::select_not);
+    }
+
+    const plane_ptr &me = shared_from_this();
+
+    int t_idx = 0;
+    for (auto &t: targets)
+    {
+        auto p = t.target_plane.lock();
+        auto type = t.locked > 0 ? gui::hud::target_air_lock : gui::hud::target_air;
+        auto select = ++t_idx == 1 ? gui::hud::select_current : (t_idx == 2 ? gui::hud::select_next : gui::hud::select_not);
+        h.add_target(p->get_pos(), p->get_rot().get_euler().y, type, select);
+    }
+
+    h.clear_ecm();
+
+    for (int i = 0; i < w.get_planes_count(); ++i)
+    {
+        auto p = w.get_plane(i);
+
+        if (p->is_ecm_active())
+            h.add_ecm(p->get_pos());
+
+        if (!w.is_ally(me, p) || me == p)
+            continue;
+
+        if (p->hp <= 0)
+            continue;
+
+        h.add_target(p->get_pos(), p->get_rot().get_euler().y, gui::hud::target_air_ally, gui::hud::select_not);
     }
 
     //controls
