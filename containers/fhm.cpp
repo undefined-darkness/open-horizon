@@ -140,7 +140,7 @@ bool fhm_file::read_chunks_info(size_t base_offset, int nesting, int &group)
         if (c.size >= 4)
             m_data->read_chunk(&c.type, 4, c.offset);
 
-        //for(int j=0;j<nested;++j) printf("\t"); printf("chunk %d %d %.4s %d\n", nested, g, (char *)&c.type, c.type);
+        //for(int j=0;j<nesting;++j) printf("-/"); printf("chunk %d %d %d %.4s %d\n", (uint32_t)m_chunks.size(), nesting, g, (char *)&c.type, c.type);
 
         m_chunks.push_back(c);
 
