@@ -374,6 +374,9 @@ void world::update(int dt)
         }
     });
 
+    for (auto &p: m_planes)
+        p->alert_dirs.clear();
+
     for (auto &m: m_missiles)
         m->update_homing(dt);
 
@@ -674,6 +677,9 @@ void plane::update(int dt, world &w)
     {
         special_weapon_selected = !special_weapon_selected;
 
+        for (auto &t: targets)
+            t.locked = 0;
+
         if (!saam_missile.expired())
             saam_missile.lock()->target.reset();
 
@@ -958,7 +964,6 @@ void plane::update(int dt, world &w)
     }
 
     last_controls = controls;
-    alert_dirs.clear();
 }
 
 //------------------------------------------------------------
@@ -1137,6 +1142,8 @@ void missile::update_homing(int dt)
         phys->target_dir = target_dir;
         t->alert_dirs.push_back(diff);
     }
+    else
+        target.reset();
 }
 
 //------------------------------------------------------------
