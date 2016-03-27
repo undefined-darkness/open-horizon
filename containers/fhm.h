@@ -27,8 +27,6 @@ public:
     bool read_chunk_data(int idx, void *data) const;
     uint32_t get_chunk_offset(int idx) const;
 
-    fhm_file(): m_data(0) {}
-
 public:
     struct fhm_header
     {
@@ -46,7 +44,7 @@ public:
         uint32_t unknown_pot;
         uint32_t unknown_pot2;
 
-        bool check_sign() const { return memcmp(sign, "FHM", 3) == 0; }
+        bool check_sign() const { return memcmp(sign, "FHM", 3) == 0 && (sign[3] == 0 || sign[3] == 1); }
         bool wrong_byte_order() const { return byte_order_20101010 != 20101010; }
     };
 
@@ -62,7 +60,8 @@ private:
 
     std::vector<chunk> m_chunks;
 
-    nya_resources::resource_data *m_data;
+    nya_resources::resource_data *m_data = 0;
+    bool m_byte_order = false;
 };
 
 //------------------------------------------------------------

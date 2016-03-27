@@ -80,6 +80,8 @@ bool dpl_file::open(const char *name)
 
         assert(h.check_sign());
 
+        m_infos[i].header = h;
+
         const bool byte_order = h.wrong_byte_order();
         assert(byte_order == m_byte_order);
         if (byte_order)
@@ -93,7 +95,7 @@ bool dpl_file::open(const char *name)
             std::swap(((uint32_t *)&e.offset)[0], ((uint32_t *)&e.offset)[1]);
         }
 
-        assert(h.byte_order_20101010 == 20101010);
+        assert(!h.wrong_byte_order());
         assume(h.timestamp == header.timestamp);
         //assert(e.idx == (m_archieved ? i+10000 : i));
         assert(e.offset+e.size <= (uint64_t)m_data->get_size());
@@ -111,7 +113,6 @@ bool dpl_file::open(const char *name)
             assert(s.idx <= h.unknown_struct_count);
         }
 
-        m_infos[i].header = h;
         m_infos[i].offset = e.offset;
         m_infos[i].size = e.size;
         m_infos[i].unpacked_size = m_archieved ? h.size + sizeof(fhm_file::fhm_header) : e.size;
