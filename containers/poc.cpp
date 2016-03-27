@@ -66,10 +66,18 @@ bool poc_file::init(const uint32_t *offsets, uint32_t count, uint32_t size)
     {
         auto &e = m_entries[i];
         e.offset = offsets[i];
-        if (i > 0)
-            m_entries[i - 1].size = e.offset - m_entries[i - 1].offset;
+        e.size = 0;
+        if (!e.offset)
+            continue;
 
-        assert(e.offset <= size);
+        for (size_t j = i + 1; j < m_entries.size(); ++j)
+        {
+            if (!offsets[j])
+                continue;
+
+            e.size = offsets[j] - e.offset;
+            break;
+        }
     }
 
     if (!m_entries.empty())
@@ -81,6 +89,8 @@ bool poc_file::init(const uint32_t *offsets, uint32_t count, uint32_t size)
         e.type = 0;
         if (e.size >= sizeof(uint32_t))
             read_chunk_data(idx++, &e.type, sizeof(uint32_t));
+
+        assert(e.offset + e.size <= size);
     }
 
     return true;
