@@ -987,7 +987,7 @@ void plane::update_hud(world &w, gui::hud &h)
 
     h.clear_alerts();
     for(auto &a: alert_dirs)
-        h.add_alert(-nya_math::vec2(dir.x, dir.z).angle(nya_math::vec2(a.x, a.z)));
+        h.add_alert(-nya_math::vec2(dir.x, dir.z).angle(nya_math::vec2(a.x, a.z)).get_rad());
 
     //update weapon reticle and lock icons
 

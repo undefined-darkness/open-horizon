@@ -260,7 +260,7 @@ void hud::draw(const render &r)
 
         for (auto &e: m_ecms)
         {
-            auto d = nya_math::vec2::rotate(nya_math::vec2(m_pos.x - e.x, m_pos.z - e.z), m_yaw);
+            auto d = nya_math::vec2::rotate(nya_math::vec2(m_pos.x - e.x, m_pos.z - e.z), (float)m_yaw);
             const float len = d.length();
             if (len > radar_range)
                 continue;
@@ -284,7 +284,7 @@ void hud::draw(const render &r)
             m_common.draw(r, 213, radar_center_x, radar_center_y, green);
         m_common.draw(r, 183, radar_center_x, radar_center_y, green); //my aircraft
 
-        auto north_vec = -nya_math::vec2::rotate(nya_math::vec2(0.0f, radar_radius - 5.0f), m_yaw);
+        auto north_vec = -nya_math::vec2::rotate(nya_math::vec2(0.0f, radar_radius - 5.0f), (float)m_yaw);
         m_fonts.draw_text(r, L"N", "Zurich14", radar_center_x + north_vec.x - 4, radar_center_y + north_vec.y - 8, green);
         m_fonts.draw_text(r, L"S", "Zurich14", radar_center_x - north_vec.x - 3, radar_center_y - north_vec.y - 8, green);
         m_fonts.draw_text(r, L"E", "Zurich14", radar_center_x - north_vec.y - 3, radar_center_y + north_vec.x - 8, green);
@@ -300,7 +300,7 @@ void hud::draw(const render &r)
 
         for (auto &t: m_targets)
         {
-            auto d = nya_math::vec2::rotate(nya_math::vec2(m_pos.x - t.pos.x, m_pos.z - t.pos.z), m_yaw);
+            auto d = nya_math::vec2::rotate(nya_math::vec2(m_pos.x - t.pos.x, m_pos.z - t.pos.z), (float)m_yaw);
             const float len = d.length();
             if (len > radar_range)
                 continue;
