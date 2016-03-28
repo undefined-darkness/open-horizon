@@ -1157,15 +1157,22 @@ void missile::update(int dt, world &w)
 
     if (!target.expired())
     {
-        auto dir = target.lock()->get_pos() - phys->pos;
-        if (dir.length() < 6.0) //proximity detonation
+        auto t = target.lock();
+        bool hit = line_sphere_intersect(phys->pos, phys->pos + phys->vel * (dt * 0.001f), t->get_pos(), t->hit_radius * 0.5f);
+
+        if (!hit)
+        {
+            auto dir = t->get_pos() - phys->pos;
+            hit = dir.length() < 5.0; //proximity detonation
+        }
+
+        if(hit)
         {
             int missile_damage = 80; //ToDo
             time = 0;
             //if (vec3::normalize(target.lock()->phys->vel) * dir.normalize() < -0.5)  //direct shoot
             //    missile_damage *= 3;
 
-            auto t = target.lock();
             if (t->hp > 0)
             {
                 t->take_damage(missile_damage, w);
@@ -1176,7 +1183,7 @@ void missile::update(int dt, world &w)
             w.spawn_explosion(phys->pos, 0, 10.0);
         }
 
-        if (target.lock()->hp < 0)
+        if (t->hp < 0)
             target.reset();
     }
 

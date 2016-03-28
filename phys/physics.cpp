@@ -550,28 +550,32 @@ void missile::update(int dt)
             accel_started = true;
         }
 
-        //ToDo: non-ideal rotation (clamp aoa)
-
         const float eps=1.0e-6f;
         const vec3 v=vec3::normalize(target_dir);
         const float xz_sqdist=v.x*v.x+v.z*v.z;
 
-        const float new_yaw=(xz_sqdist>eps*eps)? (atan2(v.x,v.z)) : rot.get_euler().y;
-        const float new_pitch=(fabsf(v.y)>eps)? (-atan2(v.y,sqrtf(xz_sqdist))) : 0.0f;
-        rot = quat(new_pitch, new_yaw, 0.0);
+        auto pyr = rot.get_euler();
 
-        vec3 forward = rot.rotate(vec3(0.0, 0.0, 1.0));
+        const nya_math::angle_rad new_yaw=(xz_sqdist>eps*eps)? (atan2(v.x,v.z)) : pyr.y;
+        const nya_math::angle_rad new_pitch=(fabsf(v.y)>eps)? (-atan2(v.y,sqrtf(xz_sqdist))) : 0.0f;
 
-        vel += forward * accel * kdt;
-        float speed = vel.length();
-        if (speed > max_speed)
+        nya_math::angle_rad yaw_diff = new_yaw - pyr.y;
+        nya_math::angle_rad pitch_diff = new_pitch - pyr.x;
+
+        if (rot_max > eps)
         {
-            vel = vel * (max_speed / speed);
-            speed = max_speed;
+            const nya_math::angle_rad angle_clamp = rot_max * kdt;
+            yaw_diff.normalize().clamp(-angle_clamp, angle_clamp);
+            pitch_diff.normalize().clamp(-angle_clamp, angle_clamp);
         }
 
-        vel = vec3::lerp(vel, forward * speed, nya_math::min(5.0 * kdt, 1.0));
+        rot = quat(pyr.x + pitch_diff, pyr.y + yaw_diff, 0.0f);
 
+        float speed = vel.length() + accel * kdt;
+        if (speed > max_speed)
+            speed = max_speed;
+
+        vel = rot.rotate(vec3(0.0, 0.0, speed));
     }
 
     pos += vel * kdt;
