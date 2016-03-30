@@ -12,6 +12,8 @@
 		F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52519048E5000C3590A /* OpenGL.framework */; };
 		F503E52919048E7300C3590A /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52819048E7300C3590A /* IOKit.framework */; };
 		F504CB1E1C5B9FA200FBB72D /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F504CB1C1C5B9FA200FBB72D /* network.cpp */; };
+		F50B755E1CABD1410004E04F /* platform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50B755C1CABD1410004E04F /* platform.cpp */; };
+		F50B75611CABD3590004E04F /* controls.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50B755F1CABD3590004E04F /* controls.cpp */; };
 		F50BFC621C53BBCB000B8500 /* sky.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50BFC601C53BBCB000B8500 /* sky.cpp */; };
 		F50D9C941C9E946B00A56812 /* cdp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50D9C921C9E946B00A56812 /* cdp.cpp */; };
 		F50D9C9B1C9F2E5700A56812 /* pac5.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50D9C971C9F2E5700A56812 /* pac5.cpp */; };
@@ -106,6 +108,10 @@
 		F504CB1C1C5B9FA200FBB72D /* network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network.cpp; path = ../game/network.cpp; sourceTree = "<group>"; };
 		F504CB1D1C5B9FA200FBB72D /* network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network.h; path = ../game/network.h; sourceTree = "<group>"; };
 		F504CB231C62942E00FBB72D /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = config.h; path = ../util/config.h; sourceTree = "<group>"; };
+		F50B755C1CABD1410004E04F /* platform.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = platform.cpp; path = ../util/platform.cpp; sourceTree = "<group>"; };
+		F50B755D1CABD1410004E04F /* platform.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = platform.h; path = ../util/platform.h; sourceTree = "<group>"; };
+		F50B755F1CABD3590004E04F /* controls.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = controls.cpp; path = ../util/controls.cpp; sourceTree = "<group>"; };
+		F50B75601CABD3590004E04F /* controls.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = controls.h; path = ../util/controls.h; sourceTree = "<group>"; };
 		F50BFC601C53BBCB000B8500 /* sky.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sky.cpp; path = ../renderer/sky.cpp; sourceTree = "<group>"; };
 		F50BFC611C53BBCB000B8500 /* sky.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sky.h; path = ../renderer/sky.h; sourceTree = "<group>"; };
 		F50D9C921C9E946B00A56812 /* cdp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cdp.cpp; sourceTree = "<group>"; };
@@ -364,8 +370,12 @@
 			isa = PBXGroup;
 			children = (
 				F504CB231C62942E00FBB72D /* config.h */,
+				F50B755F1CABD3590004E04F /* controls.cpp */,
+				F50B75601CABD3590004E04F /* controls.h */,
 				F561C5FA1AFD24E900D8DD14 /* half.h */,
 				F5C6D37C1AF968E7006FB7E6 /* params.h */,
+				F50B755C1CABD1410004E04F /* platform.cpp */,
+				F50B755D1CABD1410004E04F /* platform.h */,
 				F5C724A41C8F124700EF0A7B /* simd.h */,
 				F5C6D3A11AF96B4B006FB7E6 /* util.h */,
 				F5C6D37D1AF968E7006FB7E6 /* xml.h */,
@@ -532,6 +542,7 @@
 				F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */,
 				F50D9C9C1C9F2E5700A56812 /* pac6.cpp in Sources */,
 				F578323E1AFBE859005FE829 /* ui.cpp in Sources */,
+				F50B755E1CABD1410004E04F /* platform.cpp in Sources */,
 				F59AB5A91AFA4F1800137527 /* fhm_mesh.cpp in Sources */,
 				F59AB5AE1AFA4F1800137527 /* location.cpp in Sources */,
 				F5C6D3931AF969A5006FB7E6 /* qdf.cpp in Sources */,
@@ -541,6 +552,7 @@
 				F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */,
 				F59AB5B71AFA7D1600137527 /* plane_camera.cpp in Sources */,
 				F5C6D39A1AF969BE006FB7E6 /* plane_params.cpp in Sources */,
+				F50B75611CABD3590004E04F /* controls.cpp in Sources */,
 				F5C6D3991AF969BE006FB7E6 /* physics.cpp in Sources */,
 				F59AB5B41AFA799B00137527 /* lens_flare.cpp in Sources */,
 				F59AB5AD1AFA4F1800137527 /* shared.cpp in Sources */,
