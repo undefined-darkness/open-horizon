@@ -4,6 +4,7 @@
 
 #include "pac5.h"
 #include "memory/tmp_buffer.h"
+#include <string.h>
 #include <assert.h>
 
 //------------------------------------------------------------

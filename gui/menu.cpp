@@ -5,7 +5,7 @@
 #include "menu.h"
 #include "util/config.h"
 #include "renderer/aircraft.h"
-#include "game.h"
+#include "game/game.h"
 
 namespace gui
 {

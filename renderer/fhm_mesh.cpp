@@ -344,14 +344,14 @@ void fhm_mesh::set_material(int lod_idx, const fhm_materials::material &m, const
         for (int k = 0; k < g.second; ++k, ++rg_idx)
         {
             const auto &r = m.render_groups[g.first + k];
-            const auto &p = m.params;
+            const auto &ps = m.params;
 
             auto &m = l.mesh.modify_material(idx++);
             m.get_default_pass().set_shader(nya_scene::shader(shader));
 
-            assert(r < p.size());
+            assert(r < ps.size());
 
-            for (auto &p: p[r])
+            for (auto &p: ps[r])
             {
                 if (p.first.find("HASH") != std::string::npos)
                     continue;

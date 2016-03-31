@@ -3,6 +3,7 @@
 //
 
 #include "poc.h"
+#include <string.h>
 #include <assert.h>
 
 //------------------------------------------------------------
