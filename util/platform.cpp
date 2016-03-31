@@ -119,8 +119,7 @@ std::string platform::open_folder_dialog()
     [panel setCanChooseDirectories:YES];
     [panel setCanChooseFiles:NO];
     [panel setFloatingPanel:YES];
-    NSInteger result = [panel runModalForDirectory:NSHomeDirectory() file:nil
-                                             types:fileTypes];
+    NSInteger result = [panel runModalForDirectory:NSHomeDirectory() file:nil types:fileTypes] == NSOKButton;
     if(result == NSOKButton)
     {
         NSArray *urls = [panel URLs];
@@ -132,7 +131,7 @@ std::string platform::open_folder_dialog()
     }
 #else
 
-    //ToDo: detect qt and load dynamically?
+    //ToDo: zenity
 
 #endif
 
@@ -141,9 +140,23 @@ std::string platform::open_folder_dialog()
 
 //------------------------------------------------------------
 
-bool platform::open_msgbox(std::string caption, std::string message)
+bool platform::show_msgbox(std::string caption, std::string message)
 {
+#ifdef __WIN32
+
     //ToDo
+
+#elif __APPLE__
+    NSAlert *alert = [[NSAlert alloc] init];
+    [alert setMessageText: [NSString stringWithUTF8String:message.c_str()]];
+    [alert addButtonWithTitle: @"OK"];
+    [alert addButtonWithTitle: @"Cancel"];
+    return [alert runModal] == NSAlertFirstButtonReturn;
+#else
+
+    //ToDo: zenity
+
+#endif
 
     return false;
 }

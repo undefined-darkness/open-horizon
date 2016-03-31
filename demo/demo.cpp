@@ -37,11 +37,21 @@ int main(void)
     chdir(nya_system::get_app_path());
 #endif
 
+    config::register_var("acah_path", "");
+
     qdf_resources_provider qdfp;
-    if (!qdfp.open_archive("datafile.qdf"))
+    if (!qdfp.open_archive((config::get_var("acah_path") + "datafile.qdf").c_str()))
     {
-        printf("unable to open datafile.qdf");
-        return 0;
+        if (platform::show_msgbox("Open Horizon", "You a runing Open Horizon outside of the Assault Horizon folder. "
+                                                  "You are ok to do so, but please specify path to the Assault Horizon folder. "
+                                                  "This will be saved automatically."))
+        {
+            config::set_var("acah_path", platform::open_folder_dialog());
+            if (!qdfp.open_archive((config::get_var("acah_path") + "datafile.qdf").c_str()))
+                return 0;
+        }
+        else
+            return 0;
     }
 
     class target_resource_provider: public nya_resources::resources_provider

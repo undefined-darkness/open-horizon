@@ -20,8 +20,6 @@ public:
     bool should_terminate();
     void end_frame();
     bool was_pressed(int key);
-    std::string open_folder_dialog();
-    bool open_msgbox(std::string caption, std::string message);
 
     bool get_key(int key);
     bool get_mouse_lbtn();
@@ -33,6 +31,9 @@ public:
 
     typedef std::function<void(char c)> key_callback;
     void set_keyboard_callback(key_callback &k);
+
+    static std::string open_folder_dialog();
+    static bool show_msgbox(std::string caption, std::string message);
 
     platform(): m_window(0) {}
 
