@@ -5,6 +5,7 @@
 #include "platform.h"
 #include "GLFW/glfw3.h"
 #include "render/render.h"
+#include "string.h"
 
 #ifdef __APPLE__
     #include <Cocoa/Cocoa.h>
@@ -130,9 +131,14 @@ std::string platform::open_folder_dialog()
         return std::string([url path].UTF8String) + "/";
     }
 #else
-
-    //ToDo: zenity
-
+    char path[1024];
+    FILE *f = popen("zenity --file-selection --directory", "r");
+    if(!f)
+        return "";
+    fgets(path, sizeof(path), f);
+    fclose(f);
+    path[strlen(path)-1] = '/';
+    return path;
 #endif
 
     return "";
@@ -153,9 +159,11 @@ bool platform::show_msgbox(std::string caption, std::string message)
     [alert addButtonWithTitle: @"Cancel"];
     return [alert runModal] == NSAlertFirstButtonReturn;
 #else
-
-    //ToDo: zenity
-
+    FILE *f = popen(("zenity --warning --text=\"" + message + "\"").c_str(), "r");
+    if(!f)
+        return false;
+    fclose(f);
+    return true;
 #endif
 
     return false;

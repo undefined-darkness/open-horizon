@@ -42,9 +42,9 @@ int main(void)
     qdf_resources_provider qdfp;
     if (!qdfp.open_archive((config::get_var("acah_path") + "datafile.qdf").c_str()))
     {
-        if (platform::show_msgbox("Open Horizon", "You are running Open Horizon outside of the Assault Horizon folder. "
-                                                  "You are ok to do so, but please specify the path to the Assault Horizon folder. "
-                                                  "This will be saved automatically."))
+        if (platform::show_msgbox("Open Horizon", "You are running Open Horizon outside of the Assault Horizon folder.\n"
+                                                  "Please specify the path to the Assault Horizon folder.\n"
+                                                  "It will be saved automatically."))
         {
             config::set_var("acah_path", platform::open_folder_dialog());
             if (!qdfp.open_archive((config::get_var("acah_path") + "datafile.qdf").c_str()))
