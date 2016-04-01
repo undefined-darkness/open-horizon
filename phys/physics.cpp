@@ -41,9 +41,7 @@ void world::set_location(const char *name)
 {
     m_heights.clear();
     m_meshes.clear();
-
-    const int size = 64000;
-    m_qtree = nya_math::quadtree(-size, -size, size * 2, size * 2, 10);
+    m_qtree = nya_math::quadtree();
 
     fhm_file fhm;
     if (!fhm.open((std::string("Map/") + name + ".fhm").c_str()))
@@ -96,27 +94,16 @@ void world::set_location(const char *name)
             inst.yaw_c = cosf(yaw);
             inst.bbox = nya_math::aabb(m_meshes[i].bbox, inst.pos,
                                        nya_math::quat(0.0f, yaw, 0.0f), nya_math::vec3(1.0f, 1.0f, 1.0f));
-            m_qtree.add_object(inst.bbox, int(off+j));
-
-            /*
-            auto &m = m_meshes[i];
-            for (auto &s: m.m_shapes)
-            {
-                for(auto &pl: s.pls)
-                {
-                    for(int i = 0; i < 4; ++i)
-                    {
-                        auto p = nya_math::vec3(((float *)&pl.p.x)[i],((float *)&pl.p.y)[i],((float *)&pl.p.z)[i]);
-                        get_debug_draw().add_point(inst.transform(p));
-                    }
-                }
-            }
-            */
-            //get_debug_draw().add_aabb(inst.bbox);
         }
     }
 
     fhm.close();
+
+    const int size = 64000;
+    m_qtree = nya_math::quadtree(-size, -size, size * 2, size * 2, 10);
+
+    for(int i=0;i<(int)m_instances.size();++i)
+        m_qtree.add_object(m_instances[i].bbox, i);
 }
 
 //------------------------------------------------------------
