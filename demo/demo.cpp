@@ -2,8 +2,6 @@
 // open horizon -- undefined_darkness@outlook.com
 //
 
-#include "GLFW/glfw3.h"
-
 #include "containers/qdf_provider.h"
 #include "containers/dpl_provider.h"
 
@@ -25,7 +23,10 @@
 #include <thread>
 #include <chrono>
 
+#include "GLFW/glfw3.h"
+
 #ifdef _WIN32
+    #undef APIENTRY
     #include <windows.h>
     int main();
     int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) { return main(); }
