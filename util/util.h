@@ -112,7 +112,7 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
 
         if (substruct_size)
         {
-            static int k = 0, count = 0;
+            static size_t k = 0, count = 0;
             if (++k >= substruct_size) { k = 0; prnt("%d\n", count++); }
         }
     }

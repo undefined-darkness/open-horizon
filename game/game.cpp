@@ -560,7 +560,11 @@ void plane::update_targets(world &w)
         }
 
         if (t == targets.end())
-            t = targets.insert(targets.end(), {p, false});
+        {
+            target_lock l;
+            l.target_plane = p;
+            t = targets.insert(targets.end(), l);
+        }
 
         t->dist = dist;
         t->cos = target_dir.dot(dir) / dist;

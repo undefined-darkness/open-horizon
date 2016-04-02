@@ -6,6 +6,7 @@
 
 #include "scene/mesh.h"
 #include <assert.h>
+#include <stdint.h>
 
 //------------------------------------------------------------
 
@@ -65,7 +66,7 @@ public:
     }
 
     int get_lods_count() const { return (int)m_lods.size(); }
-    nya_scene::mesh &get_mesh(int lod_idx) { assert(lod_idx>=0 && lod_idx < m_lods.size()); return m_lods[lod_idx].mesh; }
+    nya_scene::mesh &get_mesh(int lod_idx) { assert(lod_idx>=0 && lod_idx < (int)m_lods.size()); return m_lods[lod_idx].mesh; }
 
 protected:
     bool read_mnt(memory_reader &reader, fhm_mnt &mnt);
