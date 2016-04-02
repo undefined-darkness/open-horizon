@@ -59,7 +59,7 @@
       <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/asio/asio/include/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2013_debug/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -80,7 +80,7 @@
       <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/asio/asio/include/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>

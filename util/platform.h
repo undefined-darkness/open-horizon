@@ -33,7 +33,7 @@ public:
     void set_keyboard_callback(key_callback &k);
 
     static std::string open_folder_dialog();
-    static bool show_msgbox(std::string caption, std::string message);
+    static bool show_msgbox(std::string message);
 
     platform(): m_window(0) {}
 

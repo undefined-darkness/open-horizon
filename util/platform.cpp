@@ -7,6 +7,11 @@
 #include "render/render.h"
 #include "string.h"
 
+#ifdef _WIN32
+    #include <windows.h>
+    #include <shlobj.h>
+#endif
+
 #ifdef __APPLE__
     #include <Cocoa/Cocoa.h>
 #endif
@@ -110,9 +115,16 @@ bool platform::was_pressed(int key)
 std::string platform::open_folder_dialog()
 {
 #ifdef _WIN32
+    BROWSEINFO bi = {0};
+    const LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
+    if (!pidl)
+        return "";
 
-    //ToDo
-
+    char path[MAX_PATH] = "";
+    if (SHGetPathFromIDListA(pidl, path))
+        strcat(path, "\\");
+    CoTaskMemFree(pidl);
+    return path;
 #elif __APPLE__
     NSArray *fileTypes = [NSArray arrayWithObjects:nil];
     NSOpenPanel * panel = [NSOpenPanel openPanel];
@@ -130,6 +142,7 @@ std::string platform::open_folder_dialog()
         NSURL *url = [urls objectAtIndex:0];
         return std::string([url path].UTF8String) + "/";
     }
+    return "";
 #else
     char path[1024];
     FILE *f = popen("zenity --file-selection --directory", "r");
@@ -140,18 +153,14 @@ std::string platform::open_folder_dialog()
     path[strlen(path)-1] = '/';
     return path;
 #endif
-
-    return "";
 }
 
 //------------------------------------------------------------
 
-bool platform::show_msgbox(std::string caption, std::string message)
+bool platform::show_msgbox(std::string message)
 {
 #ifdef _WIN32
-
-    //ToDo
-
+    return MessageBoxA(0, message.c_str(), "Open Horizon", MB_OK | MB_ICONINFORMATION) == IDOK;
 #elif __APPLE__
     NSAlert *alert = [[NSAlert alloc] init];
     [alert setMessageText: [NSString stringWithUTF8String:message.c_str()]];
@@ -165,8 +174,6 @@ bool platform::show_msgbox(std::string caption, std::string message)
     fclose(f);
     return true;
 #endif
-
-    return false;
 }
 
 //------------------------------------------------------------
