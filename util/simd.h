@@ -8,7 +8,7 @@
 
 //------------------------------------------------------------
 
-struct float4: public nya_math::simd_vec4
+struct align16 float4 : public nya_math::simd_vec4
 {
     float4 (): float4(_mm_set1_ps(0)) {}
     float4 (__m128 v): nya_math::simd_vec4 (v) {}
@@ -30,7 +30,7 @@ struct float4: public nya_math::simd_vec4
 
 //------------------------------------------------------------
 
-struct vec3_float4 //four vec3, optimized for simd
+struct align16 vec3_float4 //four vec3, optimized for simd
 {
     float4 x, y, z;
 

@@ -6,6 +6,7 @@
 
 #include "math/frustum.h"
 #include "util/simd.h"
+#include "memory/align_alloc.h"
 #include <vector>
 
 namespace phys
@@ -24,7 +25,7 @@ public:
 
 private:
     struct pl { vec3_float4 p, lv, rv, v; };
-    struct shape { std::vector<pl> pls; };
+    struct shape { std::vector<pl, nya_memory::aligned_allocator<pl,16> > pls; };
     std::vector<shape> m_shapes;
 };
 
