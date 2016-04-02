@@ -8,12 +8,7 @@
 
 #include "resources/resources.h"
 #include <vector>
-
-//------------------------------------------------------------
-
-#ifdef _WIN32
-typedef unsigned __int32 uint32_t;
-#endif
+#include <stdint.h>
 
 //------------------------------------------------------------
 

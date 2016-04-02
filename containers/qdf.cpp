@@ -61,7 +61,7 @@ bool qdf_archive::open(const char *name)
     fread(&fi_buf[0], header.file_info_total_size, 1, arch);
 
     m_fis.resize(header.file_info_count);
-    for (int i = 0, offset = 0; i < header.file_info_count; ++i)
+    for (unsigned int i = 0, offset = 0; i < header.file_info_count; ++i)
     {
         qdf_file_info &info = m_fis[i];
 		info.offset_to_info = offset + sizeof(header);

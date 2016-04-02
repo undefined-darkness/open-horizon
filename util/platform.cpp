@@ -109,7 +109,7 @@ bool platform::was_pressed(int key)
 
 std::string platform::open_folder_dialog()
 {
-#ifdef __WIN32
+#ifdef _WIN32
 
     //ToDo
 
@@ -148,7 +148,7 @@ std::string platform::open_folder_dialog()
 
 bool platform::show_msgbox(std::string caption, std::string message)
 {
-#ifdef __WIN32
+#ifdef _WIN32
 
     //ToDo
 

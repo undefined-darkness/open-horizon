@@ -159,7 +159,7 @@ bool poc_file::read_chunk_data(int idx, void *data, uint32_t size, uint32_t offs
     if (m_data)
         return m_data->read_chunk(data, size, e.offset + offset);
 
-    return memcpy(data, m_raw_data + e.offset + offset, size);
+    return memcpy(data, m_raw_data + e.offset + offset, size) != 0;
 }
 
 //------------------------------------------------------------

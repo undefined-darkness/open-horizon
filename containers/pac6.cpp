@@ -48,7 +48,7 @@ bool pac6_file::open(const char *name)
     assert(tomes_count < 10);
 
     m_data.resize(tomes_count);
-    for (int i = 0; i < tomes_count; ++i)
+    for (unsigned int i = 0; i < tomes_count; ++i)
     {
         std::string name_str(name);
         assert(name_str.length() > strlen("0.PAC"));
