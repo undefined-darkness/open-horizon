@@ -27,7 +27,7 @@ void main()
 
     gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 
-    gl_Position.z = min(gl_Position.z / gl_Position.w, 1.0 - 1e-7) * gl_Position.w;
+    gl_Position.z = min(gl_Position.z / gl_Position.w, 1.0 - 2e-7) * gl_Position.w;
 }
 
 @fragment
