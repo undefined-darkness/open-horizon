@@ -401,8 +401,12 @@ void plane::reset_state()
 {
     thrust_time = 0.0;
     rot_speed = vec3();
-    vel = rot.rotate(vec3(0.0, 0.0, 1.0)) * params.move.speed.speedCruising * kmph_to_meps;
+    vel = rot.rotate(vec3::forward()) * params.move.speed.speedCruising * kmph_to_meps;
 }
+
+//------------------------------------------------------------
+
+float plane::get_speed_kmh() { return vel.length() * meps_to_kmph; }
 
 //------------------------------------------------------------
 
@@ -440,34 +444,31 @@ void plane::update(int dt)
 
     //get axis
 
-    vec3 up(0.0, 1.0, 0.0);
-    vec3 forward(0.0, 0.0, 1.0);
-    vec3 right(1.0, 0.0, 0.0);
-    forward = rot.rotate(forward);
-    up = rot.rotate(up);
-    right = rot.rotate(right);
+    vec3 forward = rot.rotate(vec3::forward());
+    vec3 up = rot.rotate(vec3::up());
+    vec3 right = rot.rotate(vec3::right());
 
     //rotation
 
     float high_g_turn = 1.0f + controls.brake * 0.5;
-    rot = rot * quat(vec3(0.0, 0.0, 1.0), rot_speed.z * kdt * d2r * 0.7);
-    rot = rot * quat(vec3(0.0, 1.0, 0.0), rot_speed.y * kdt * d2r * 0.12);
-    rot = rot * quat(vec3(1.0, 0.0, 0.0), rot_speed.x * kdt * d2r * (0.13 + 0.05 * (1.0f - fabsf(up.y)))
+    rot = rot * quat(vec3::forward(), rot_speed.z * kdt * d2r * 0.7);
+    rot = rot * quat(vec3::up(), rot_speed.y * kdt * d2r * 0.12);
+    rot = rot * quat(vec3::right(), rot_speed.x * kdt * d2r * (0.13 + 0.05 * (1.0f - fabsf(up.y)))
                                * high_g_turn * (rot_speed.x < 0 ? 1.0f : 1.0f * params.rot.pitchUpDownR));
 
     //nose goes down while upside-down
 
     const vec3 rot_grav = params.rotgraph.rotGravR.get(speed_arg);
-    rot = rot * quat(vec3(1.0, 0.0, 0.0), -(1.0 - up.y) * kdt * d2r * rot_grav.x * 0.5f);
-    rot = rot * quat(vec3(0.0, 1.0, 0.0), -right.y * kdt * d2r * rot_grav.y * 0.5f);
+    rot = rot * quat(vec3::right(), -(1.0 - up.y) * kdt * d2r * rot_grav.x * 0.5f);
+    rot = rot * quat(vec3::up(), -right.y * kdt * d2r * rot_grav.y * 0.5f);
 
     //nose goes down during stall
 
     if (speed < params.move.speed.speedStall)
     {
         float stallRotSpeed = params.rot.rotStallR * kdt * d2r * 10.0f;
-        rot = rot * quat(vec3(1.0, 0.0, 0.0), up.y * stallRotSpeed);
-        rot = rot * quat(vec3(0.0, 1.0, 0.0), -right.y * stallRotSpeed);
+        rot = rot * quat(vec3::right(), up.y * stallRotSpeed);
+        rot = rot * quat(vec3::up(), -right.y * stallRotSpeed);
     }
 
     //adjust throttle to fit cruising speed

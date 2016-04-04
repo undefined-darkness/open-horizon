@@ -136,7 +136,7 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     void set_rot(const quat &rot) { if (phys) phys->rot = rot; }
     const vec3 &get_pos() { if (phys) return phys->pos; static vec3 p; return p; }
     const quat &get_rot() { if (phys) return phys->rot; static quat r; return r; }
-    vec3 get_dir() { static vec3 fw(0.0, 0.0, 1.0); return get_rot().rotate(fw); }
+    vec3 get_dir() { return get_rot().rotate(vec3::forward()); }
     void select_target(const object_ptr &o);
     void update(int dt, world &w);
     void update_hud(world &w, gui::hud &h);

@@ -13,9 +13,14 @@ void ai::update(const world &w, int dt)
     if (m_plane.expired())
         return;
 
+    const float kdt = dt * 0.001f;
+
     auto p = m_plane.lock();
 
+    vec3 next_pos = p->phys->pos + p->phys->vel * kdt;
+
     p->controls.mgun = false;
+    p->controls.brake = 0.0f;
 
     if (m_state == state_pursuit)
     {
@@ -54,6 +59,16 @@ void ai::update(const world &w, int dt)
         }
     }
 
+    //evade ground
+    const float minimal_height = 600.0f + w.get_height(next_pos.x, next_pos.z);
+    if (next_pos.y < minimal_height && p->get_dir().y < 0.0f)
+    {
+        if (p->phys->get_speed_kmh() > 700.0f)
+            p->controls.brake = 1.0f;
+
+        p->controls.rot.x = vec3::up().dot(p->phys->rot.rotate(vec3::up())) < 0.0f ? 1.0f : -1.0f;
+    }
+
     if (!p->targets.empty() && p->targets.front().locked)
     {
         p->controls.missile = !p->controls.missile;
@@ -86,9 +101,11 @@ void ai::go_to(const vec3 &pos, int dt)
     if (m_plane.expired())
         return;
 
+    const float kdt = dt * 0.001f;
+
     auto p = m_plane.lock();
 
-    vec3 next_pos = p->phys->pos + p->phys->vel * (dt * 0.001f);
+    vec3 next_pos = p->phys->pos + p->phys->vel * kdt;
 
     vec3 target_diff = pos - next_pos;
     vec3 target_dir = vec3::normalize(target_diff);
@@ -102,10 +119,6 @@ void ai::go_to(const vec3 &pos, int dt)
         p->controls.rot.x = 1.0f;
     else
         p->controls.rot.x = 0.0f;
-
-    const float minimal_height = 200.0f;
-    if (p->phys->pos.y + p->phys->vel.y * dt < minimal_height && dir.y < 0.0f)
-        p->controls.rot.x = -1.0f;
 
     auto dir_normal = vec3::cross(p->get_dir(), target_dir);
 

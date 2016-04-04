@@ -13,10 +13,6 @@ namespace game
 {
 //------------------------------------------------------------
 
-namespace { const float meps_to_kmph = 3.6f; }
-
-//------------------------------------------------------------
-
 namespace { const static params::text_params &get_arms_param() { static params::text_params ap("Arms/ArmsParam.txt"); return ap; } }
 
 //------------------------------------------------------------
@@ -584,7 +580,7 @@ void plane::update_render()
 
     render->set_damage(max_hp ? float(max_hp-hp) / max_hp : 0.0);
 
-    const float speed = phys->vel.length() * meps_to_kmph;
+    const float speed = phys->get_speed_kmh();
     const float speed_k = nya_math::max((phys->params.move.speed.speedMax - speed) / phys->params.move.speed.speedMax, 0.1f);
 
     render->set_speed(speed);
@@ -983,7 +979,7 @@ void plane::update_hud(world &w, gui::hud &h)
     h.set_project_pos(phys->pos + proj_dir);
     h.set_pos(phys->pos);
     h.set_yaw(phys->rot.get_euler().y);
-    h.set_speed(phys->vel.length() * meps_to_kmph);
+    h.set_speed(phys->get_speed_kmh());
     h.set_alt(phys->pos.y);
     h.set_jammed(jammed);
 
@@ -1137,7 +1133,7 @@ void missile::update_homing(int dt)
     if (target.expired())
         return;
 
-    const vec3 dir = phys->rot.rotate(vec3(0.0, 0.0, 1.0));
+    const vec3 dir = phys->rot.rotate(vec3::forward());
     auto t = target.lock();
     auto diff = t->get_pos() - phys->pos;
     const vec3 target_dir = (diff + (t->phys->vel - phys->vel) * dt * 0.001f).normalize();
