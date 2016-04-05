@@ -44,6 +44,7 @@
 		F5A2A2E51B05466C009765C1 /* deathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E11B05466C009765C1 /* deathmatch.cpp */; };
 		F5A2A2E61B05466C009765C1 /* free_flight.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E21B05466C009765C1 /* free_flight.cpp */; };
 		F5A2A2E71B05466C009765C1 /* team_deathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E31B05466C009765C1 /* team_deathmatch.cpp */; };
+		F5BE29E71CB39B3200345699 /* cpk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5BE29E51CB39B3200345699 /* cpk.cpp */; };
 		F5C3B6FE1B2C809000479524 /* particles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A334691B23688F00F3C9FC /* particles.cpp */; };
 		F5C6D3861AF9694D006FB7E6 /* demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D3851AF9694D006FB7E6 /* demo.cpp */; };
 		F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D3881AF969A5006FB7E6 /* dpl.cpp */; };
@@ -172,6 +173,8 @@
 		F5A2A2E81B0546EF009765C1 /* deathmatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = deathmatch.h; path = ../game/deathmatch.h; sourceTree = "<group>"; };
 		F5A334691B23688F00F3C9FC /* particles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particles.cpp; path = ../renderer/particles.cpp; sourceTree = "<group>"; };
 		F5A3346A1B23688F00F3C9FC /* particles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particles.h; path = ../renderer/particles.h; sourceTree = "<group>"; };
+		F5BE29E51CB39B3200345699 /* cpk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cpk.cpp; sourceTree = "<group>"; };
+		F5BE29E61CB39B3200345699 /* cpk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpk.h; sourceTree = "<group>"; };
 		F5C6D37C1AF968E7006FB7E6 /* params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = params.h; path = ../util/params.h; sourceTree = "<group>"; };
 		F5C6D37D1AF968E7006FB7E6 /* xml.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = xml.h; path = ../util/xml.h; sourceTree = "<group>"; };
 		F5C6D3851AF9694D006FB7E6 /* demo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = demo.cpp; sourceTree = SOURCE_ROOT; };
@@ -389,6 +392,8 @@
 			children = (
 				F50D9C921C9E946B00A56812 /* cdp.cpp */,
 				F50D9C931C9E946B00A56812 /* cdp.h */,
+				F5BE29E51CB39B3200345699 /* cpk.cpp */,
+				F5BE29E61CB39B3200345699 /* cpk.h */,
 				F5C6D38A1AF969A5006FB7E6 /* decrypt.h */,
 				F5C6D3881AF969A5006FB7E6 /* dpl.cpp */,
 				F5C6D3891AF969A5006FB7E6 /* dpl.h */,
@@ -566,6 +571,7 @@
 				F5C3B6FE1B2C809000479524 /* particles.cpp in Sources */,
 				F59AB5B11AFA4FEC00137527 /* world.cpp in Sources */,
 				F50BFC621C53BBCB000B8500 /* sky.cpp in Sources */,
+				F5BE29E71CB39B3200345699 /* cpk.cpp in Sources */,
 				F59AB5A71AFA4F1800137527 /* scene.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
