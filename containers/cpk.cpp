@@ -9,6 +9,7 @@
 //------------------------------------------------------------
 
 #include "cpk.h"
+#include "memory/invalid_object.h"
 #include "util/util.h"
 #include <assert.h>
 
@@ -53,9 +54,25 @@ cri_utf_table::cri_utf_table(const void *data, size_t size)
     {
         column_flags[i] = r.read<uint8_t>();
         if (!column_flags[i])
-            r.skip(3), column_flags[i] = r.read<uint8_t>();
+        {
+            r.skip(3);
+            column_flags[i] = r.read<uint8_t>();
+        }
 
-        auto off = swap_bytes(r.read<uint32_t>()) + header.strings_offset;
+        auto off = swap_bytes(r.read<uint32_t>());
+        if (off >= table_size) //unknown special case
+        {
+            columns.clear();
+            return;
+/*
+            r.seek(r.get_offset()-3);
+            column_flags[i] = r.read<uint8_t>();
+            off = swap_bytes(r.read<uint32_t>());
+*/
+        }
+
+
+        off += header.strings_offset;
         assert(off < table_size);
         const char *name = (char *)data + off;
         assert(name);
@@ -80,8 +97,17 @@ cri_utf_table::cri_utf_table(const void *data, size_t size)
             };
 
             auto storage = column_flags[i] & STORAGE_MASK;
-            if (storage != STORAGE_PERROW) //ToDo
+            if (storage == STORAGE_CONSTANT && j > 0)
+            {
+                columns[i].values[j] = columns[i].values[0];
                 continue;
+            }
+
+            if (storage != STORAGE_PERROW && !(storage == STORAGE_CONSTANT && j == 0))
+            {
+                assume(storage == STORAGE_ZERO); //ToDo
+                continue;
+            }
 
             columns[i].values.resize(header.num_rows);
             auto &v = columns[i].values[j];
@@ -119,16 +145,58 @@ cri_utf_table::cri_utf_table(const void *data, size_t size)
                 {
                     v.type = type_data;
                     auto off = swap_bytes(r.read<uint32_t>()) + header.data_offset;
-                    auto size = swap_bytes(r.read<uint32_t>());
-                    assert(off + size < table_size);
-                    v.d.resize(size);
+                    auto sz = swap_bytes(r.read<uint32_t>());
+                    assert(off + sz <= size);
+                    v.d.resize(sz);
                     memcpy(v.d.data(), (char *)data + off, v.d.size());
                 }
                 break;
-
             }
         }
     }
+}
+
+//------------------------------------------------------------
+
+const cri_utf_table::value &cri_utf_table::get_value(const std::string &name, unsigned int row) const
+{
+    for (auto &c: columns)
+    {
+        if (c.name != name)
+            continue;
+
+        if (row < c.values.size())
+            return c.values[row];
+
+        break;
+    }
+
+    return nya_memory::invalid_object<value>();
+}
+
+//------------------------------------------------------------
+
+void cri_utf_table::debug_print() const
+{
+    for (auto &c: columns)
+    {
+        printf("%s", c.name.c_str());
+
+        for (auto &v: c.values)
+        {
+            switch (v.type)
+            {
+                case type_uint: printf(" %llu", v.u); break;
+                case type_float: printf(" %f", v.f); break;
+                case type_string: printf(" <%s>", v.s.c_str()); break;
+                case type_data: printf(" <data %ldb>", v.d.size()); break;
+            }
+        }
+
+        printf("\n");
+    }
+
+    printf("\n");
 }
 
 //------------------------------------------------------------
@@ -162,12 +230,35 @@ bool cpk_file::open(const char *name)
         return false;
     }
 
-    nya_memory::tmp_buffer_scoped buf(header.table_size);
-    m_data->read_chunk(buf.get_data(), header.table_size, sizeof(header));
-
+    nya_memory::tmp_buffer_ref buf(header.table_size);
+    m_data->read_chunk(buf.get_data(), buf.get_size(), sizeof(header));
     cri_utf_table table(buf.get_data(), buf.get_size());
+    buf.free();
 
-    //ToDo
+    //table.debug_print();
+
+    auto content_offset = table.get_value("ContentOffset").u;
+    auto content_size = table.get_value("ContentSize").u;
+
+    auto itoc_offset = table.get_value("ItocOffset").u;
+    auto itoc_size = table.get_value("ItocSize").u;
+
+    if (itoc_size <= sizeof(cpk_header))
+        return false;
+
+    buf.allocate(itoc_size);
+    m_data->read_chunk(buf.get_data(), buf.get_size(), itoc_offset);
+    cri_utf_table itoc(buf.get_data(sizeof(cpk_header)), buf.get_size() - sizeof(cpk_header));
+    buf.free();
+    //itoc.debug_print();
+
+    auto &datal_buf = itoc.get_value("DataL").d;
+    cri_utf_table datal(datal_buf.data(), datal_buf.size());
+    //datal.debug_print();
+
+    auto &datah_buf = itoc.get_value("DataH").d;
+    cri_utf_table datah(datah_buf.data(), datah_buf.size());
+    //datah.debug_print();
 
     return true;
 }

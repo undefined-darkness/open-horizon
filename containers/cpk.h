@@ -40,7 +40,10 @@ struct cri_utf_table
 
     std::vector<column> columns;
 
-public:
+    const value &get_value(const std::string &name, unsigned int row = 0) const;
+
+    void debug_print() const;
+
     cri_utf_table(const void *data, size_t size);
 };
 
