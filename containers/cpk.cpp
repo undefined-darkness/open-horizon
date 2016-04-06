@@ -214,12 +214,24 @@ bool cpk_file::open(const char *name)
     if (!name)
         return false;
 
-    m_data = nya_resources::get_resources_provider().access(name);
-    if (!m_data)
+    auto data = nya_resources::get_resources_provider().access(name);
+    if (!data)
     {
         nya_resources::log() << "unable to open cpk file " << name << "\n";
         return false;
     }
+
+    return open(data);
+}
+
+//------------------------------------------------------------
+
+bool cpk_file::open(nya_resources::resource_data *data)
+{
+    close();
+    m_data = data;
+    if (!m_data)
+        return false;
 
     struct cpk_header
     {

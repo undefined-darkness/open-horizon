@@ -56,6 +56,7 @@ class cpk_file
 {
 public:
     bool open(const char *name);
+    bool open(nya_resources::resource_data *data);
     void close();
 
     int get_files_count() const { return int(m_entries.size()); }
