@@ -15,6 +15,55 @@
 
 //------------------------------------------------------------
 
+inline void read_value(nya_memory::memory_reader &r, int type, cri_utf_table::value &v, uint32_t strings_offset, uint32_t data_offset)
+{
+    v.type = cri_utf_table::type_uint;
+    assert(type < 9 || type == 0xA || type == 0xB);
+    switch (type)
+    {
+        case 0: case 1: v.u = r.read<uint8_t>(); break;
+        case 2: case 3: v.u = swap_bytes(r.read<uint16_t>()); break;
+        case 4: case 5: v.u = swap_bytes(r.read<uint32_t>()); break;
+        case 6: case 7: r.skip(4); v.u = swap_bytes(r.read<uint32_t>()); break;
+
+        case 8:
+        {
+            auto u = swap_bytes(r.read<uint32_t>());
+            v.type = cri_utf_table::type_float;
+            v.f = *(float *)(&u);
+        }
+        break;
+
+        case 0xA:
+        {
+            v.type = cri_utf_table::type_string;
+            auto off = swap_bytes(r.read<uint32_t>()) + strings_offset;
+            auto prev_off = r.get_offset();
+            r.seek(off);
+            assert(r.get_data());
+            v.s = (char *)r.get_data();
+            r.seek(prev_off);
+        }
+        break;
+
+        case 0xB:
+        {
+            v.type = cri_utf_table::type_data;
+            auto off = swap_bytes(r.read<uint32_t>()) + data_offset;
+            auto sz = swap_bytes(r.read<uint32_t>());
+            auto prev_off = r.get_offset();
+            r.seek(off);
+            assert(r.get_data());
+            v.d.resize(sz);
+            memcpy(v.d.data(), r.get_data(), v.d.size());
+            r.seek(prev_off);
+        }
+        break;
+    }
+}
+
+//------------------------------------------------------------
+
 cri_utf_table::cri_utf_table(const void *data, size_t size)
 {
     nya_memory::memory_reader r(data, size);
@@ -50,6 +99,19 @@ cri_utf_table::cri_utf_table(const void *data, size_t size)
     std::vector<uint8_t> column_flags(header.num_colums);
     columns.resize(header.num_colums);
 
+    num_rows = (int)header.num_rows;
+
+    enum
+    {
+        STORAGE_MASK = 0xf0,
+        STORAGE_NONE = 0x00,
+        STORAGE_ZERO = 0x10,
+        STORAGE_CONSTANT = 0x30,
+        STORAGE_PERROW = 0x50,
+
+        TYPE_MASK = 0x0f
+    };
+
     for (uint32_t i = 0; i < header.num_colums; ++i)
     {
         column_flags[i] = r.read<uint8_t>();
@@ -60,23 +122,19 @@ cri_utf_table::cri_utf_table(const void *data, size_t size)
         }
 
         auto off = swap_bytes(r.read<uint32_t>());
-        if (off >= table_size) //unknown special case
-        {
-            columns.clear();
-            return;
-/*
-            r.seek(r.get_offset()-3);
-            column_flags[i] = r.read<uint8_t>();
-            off = swap_bytes(r.read<uint32_t>());
-*/
-        }
-
 
         off += header.strings_offset;
         assert(off < table_size);
         const char *name = (char *)data + off;
         assert(name);
         columns[i].name = name;
+
+        if ((column_flags[i] & STORAGE_MASK) == STORAGE_CONSTANT)
+        {
+            value v;
+            read_value(r, column_flags[i] & TYPE_MASK, v, header.strings_offset, header.data_offset);
+            columns[i].values.resize(header.num_rows, v);
+        }
     }
 
     for (uint32_t j = 0; j < header.num_rows; ++j)
@@ -85,81 +143,23 @@ cri_utf_table::cri_utf_table(const void *data, size_t size)
 
         for (uint32_t i = 0; i < header.num_colums; ++i)
         {
-            enum
-            {
-                STORAGE_MASK = 0xf0,
-                STORAGE_NONE = 0x00,
-                STORAGE_ZERO = 0x10,
-                STORAGE_CONSTANT = 0x30,
-                STORAGE_PERROW = 0x50,
-
-                TYPE_MASK = 0x0f
-            };
-
             auto storage = column_flags[i] & STORAGE_MASK;
-            if (storage == STORAGE_CONSTANT && j > 0)
-            {
-                columns[i].values[j] = columns[i].values[0];
+            if (storage != STORAGE_PERROW)
                 continue;
-            }
-
-            if (storage != STORAGE_PERROW && !(storage == STORAGE_CONSTANT && j == 0))
-            {
-                assume(storage == STORAGE_ZERO); //ToDo
-                continue;
-            }
 
             columns[i].values.resize(header.num_rows);
-            auto &v = columns[i].values[j];
-            v.type = type_uint;
-
-            auto type = column_flags[i] & TYPE_MASK;
-            assert(type < 9 || type == 0xA || type == 0xB);
-            switch (type)
-            {
-                case 0: case 1: v.u = r.read<uint8_t>(); break;
-                case 2: case 3: v.u = swap_bytes(r.read<uint16_t>()); break;
-                case 4: case 5: v.u = swap_bytes(r.read<uint32_t>()); break;
-                case 6: case 7: v.u = swap_bytes(r.read<uint64_t>()); break;
-
-                case 8:
-                {
-                    auto u = swap_bytes(r.read<uint32_t>());
-                    v.type = type_float;
-                    v.f = *(float *)(&u);
-                }
-                break;
-
-                case 0xA:
-                {
-                    v.type = type_string;
-                    auto off = swap_bytes(r.read<uint32_t>()) + header.strings_offset;
-                    assert(off < table_size);
-                    const char *name = (char *)data + off;
-                    assert(name);
-                    v.s = name;
-                }
-                break;
-
-                case 0xB:
-                {
-                    v.type = type_data;
-                    auto off = swap_bytes(r.read<uint32_t>()) + header.data_offset;
-                    auto sz = swap_bytes(r.read<uint32_t>());
-                    assert(off + sz <= size);
-                    v.d.resize(sz);
-                    memcpy(v.d.data(), (char *)data + off, v.d.size());
-                }
-                break;
-            }
+            read_value(r, column_flags[i] & TYPE_MASK, columns[i].values[j], header.strings_offset, header.data_offset);
         }
     }
 }
 
 //------------------------------------------------------------
 
-const cri_utf_table::value &cri_utf_table::get_value(const std::string &name, unsigned int row) const
+const cri_utf_table::value &cri_utf_table::get_value(const std::string &name, int row) const
 {
+    if (name.empty() || row < 0)
+        return nya_memory::invalid_object<value>();
+
     for (auto &c: columns)
     {
         if (c.name != name)
@@ -234,11 +234,11 @@ bool cpk_file::open(const char *name)
     m_data->read_chunk(buf.get_data(), buf.get_size(), sizeof(header));
     cri_utf_table table(buf.get_data(), buf.get_size());
     buf.free();
-
     //table.debug_print();
 
     auto content_offset = table.get_value("ContentOffset").u;
-    auto content_size = table.get_value("ContentSize").u;
+    //auto content_size = table.get_value("ContentSize").u;
+    auto align = table.get_value("Align").u;
 
     auto itoc_offset = table.get_value("ItocOffset").u;
     auto itoc_size = table.get_value("ItocSize").u;
@@ -252,13 +252,37 @@ bool cpk_file::open(const char *name)
     buf.free();
     //itoc.debug_print();
 
-    auto &datal_buf = itoc.get_value("DataL").d;
-    cri_utf_table datal(datal_buf.data(), datal_buf.size());
-    //datal.debug_print();
+    const std::vector<char> *data_buf[2] = {&(itoc.get_value("DataL").d), &(itoc.get_value("DataH").d)};
+    for (auto &d: data_buf)
+    {
+        cri_utf_table data(d->data(), d->size());
+        //data.debug_print();
 
-    auto &datah_buf = itoc.get_value("DataH").d;
-    cri_utf_table datah(datah_buf.data(), datah_buf.size());
-    //datah.debug_print();
+        for (int i = 0; i < data.num_rows; ++i)
+        {
+            entry e;
+            e.id = (uint32_t)data.get_value("ID", i).u;
+            e.size = (uint32_t)data.get_value("FileSize", i).u;
+            assert(e.size == (uint32_t)data.get_value("ExtractSize", i).u); //ToDo?
+            m_entries.push_back(e);
+        }
+    }
+
+    std::sort(m_entries.begin(), m_entries.end(), [](entry &a, entry &b){ return a.id < b.id; });
+
+    uint32_t offset = (uint32_t)content_offset;
+    uint32_t idx = 0;
+    for (auto &e: m_entries)
+    {
+        assume(e.id == idx++);
+
+        e.offset = offset;
+        offset += e.size;
+        if (align > 0 && (e.size % align))
+            offset += (align - (e.size % align));
+
+        assert(e.offset + e.size <= m_data->get_size());
+    }
 
     return true;
 }
@@ -269,7 +293,39 @@ void cpk_file::close()
 {
     if (m_data)
         m_data->release();
+    m_entries.clear();
     m_data = 0;
+}
+
+//------------------------------------------------------------
+
+uint32_t cpk_file::get_file_size(int idx) const
+{
+    if (idx < 0 || idx >= get_files_count())
+        return 0;
+
+    return m_entries[idx].size;
+}
+
+//------------------------------------------------------------
+
+bool cpk_file::read_file_data(int idx, void *data) const
+{
+    return read_file_data(idx, data, get_file_size(idx));
+}
+
+//------------------------------------------------------------
+
+bool cpk_file::read_file_data(int idx, void *data, uint32_t size, uint32_t offset) const
+{
+    if (idx < 0 || idx >= get_files_count() || !m_data || !data)
+        return false;
+
+    const auto &e = m_entries[idx];
+    if (offset + size > e.size)
+        return false;
+
+    return m_data->read_chunk(data, size, e.offset + offset);
 }
 
 //------------------------------------------------------------
