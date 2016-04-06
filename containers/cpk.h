@@ -38,6 +38,7 @@ struct cri_utf_table
         std::vector<value> values;
     };
 
+    std::string name;
     std::vector<column> columns;
     int num_rows = 0;
 
@@ -45,6 +46,7 @@ struct cri_utf_table
 
     void debug_print() const;
 
+    cri_utf_table() {}
     cri_utf_table(const void *data, size_t size);
 };
 

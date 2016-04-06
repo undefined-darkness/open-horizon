@@ -51,6 +51,9 @@ inline void read_value(nya_memory::memory_reader &r, int type, cri_utf_table::va
             v.type = cri_utf_table::type_data;
             auto off = swap_bytes(r.read<uint32_t>()) + data_offset;
             auto sz = swap_bytes(r.read<uint32_t>());
+            if (!sz)
+                break;
+
             auto prev_off = r.get_offset();
             r.seek(off);
             assert(r.get_data());
@@ -96,6 +99,9 @@ cri_utf_table::cri_utf_table(const void *data, size_t size)
     header.strings_offset += utf_hoff;
     header.data_offset += utf_hoff;
 
+    const char *table_name = (char *)data + header.strings_offset + header.table_name;
+    name = table_name ? table_name : "";
+
     std::vector<uint8_t> column_flags(header.num_colums);
     columns.resize(header.num_colums);
 
@@ -124,7 +130,7 @@ cri_utf_table::cri_utf_table(const void *data, size_t size)
         auto off = swap_bytes(r.read<uint32_t>());
 
         off += header.strings_offset;
-        assert(off < table_size);
+        assert(off < table_size + utf_hoff);
         const char *name = (char *)data + off;
         assert(name);
         columns[i].name = name;
@@ -178,6 +184,7 @@ const cri_utf_table::value &cri_utf_table::get_value(const std::string &name, in
 
 void cri_utf_table::debug_print() const
 {
+    printf("table: %s\n", name.c_str());
     for (auto &c: columns)
     {
         printf("%s", c.name.c_str());
