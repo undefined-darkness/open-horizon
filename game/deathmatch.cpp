@@ -46,13 +46,14 @@ void deathmatch::start(const char *plane, int color, int special, const char *lo
         plane_ptr p;
         if (is_player)
         {
-            m_player = p = m_world.add_plane(plane, color, is_player);
+            p = m_world.add_plane(plane, color, is_player);
         }
         else
         {
             ai b;
             const char *plane_name = planes[plane_idx = (plane_idx + 1) % planes.size()].c_str(); //ToDo
             p = m_world.add_plane(plane_name, 0, is_player);
+            p->set_name("BOT");
             b.set_plane(p);
             m_bots.push_back(b);
         }
@@ -69,8 +70,8 @@ void deathmatch::start(const char *plane, int color, int special, const char *lo
 
 void deathmatch::update(int dt, const plane_controls &player_controls)
 {
-    if (m_player && m_player->hp > 0)
-        m_player->controls = player_controls;
+    if (m_world.get_player()->hp > 0)
+        m_world.get_player()->controls = player_controls;
 
     for (auto &b: m_bots)
         b.update(m_world, dt);
@@ -103,8 +104,8 @@ void deathmatch::update(int dt, const plane_controls &player_controls)
 void deathmatch::end()
 {
     m_planes.clear();
-    m_player.reset();
 }
+
 //------------------------------------------------------------
 
 deathmatch::respawn_point deathmatch::get_respawn_point()
@@ -129,38 +130,30 @@ void deathmatch::on_kill(const plane_ptr &k, const plane_ptr &v)
     else
         --m_planes[v].score;
 
-    typedef std::pair<int, plane_ptr> score_e;
     std::vector<score_e> score_table;
     for (auto &p: m_planes)
         score_table.push_back({p.second.score, p.first});
+    update_score_table(score_table);
+}
+
+//------------------------------------------------------------
+
+void deathmatch::update_score_table(std::vector<score_e> &score_table)
+{
     std::sort(score_table.rbegin(), score_table.rend());
-    size_t pidx = std::find_if(score_table.begin(), score_table.end(), [this](score_e &p){ return p.second == m_player; }) - score_table.begin();
+    size_t pidx = std::find_if(score_table.begin(), score_table.end(), [this](score_e &p){ return p.second == m_world.get_player(); }) - score_table.begin();
 
     auto &h = m_world.get_hud();
-    if (pidx == 0)
-    {
-        h.set_score(0, 1, L"Player", std::to_wstring(score_table[0].first));
 
-        if (score_table.size() > 1)
-            h.set_score(1, 2, L"Bot", std::to_wstring(score_table[1].first));
-        else
-            h.remove_score(1);
+    const int score_table_size = 4;
 
-        if (score_table.size() > 2)
-            h.set_score(2, 3, L"Bot", std::to_wstring(score_table[2].first));
-        else
-            h.remove_score(2);
-    }
-    else
+    const int start_idx = pidx > 0 ? (int)pidx - 1 : 0;
+    for (int i = start_idx; i < start_idx + score_table_size; ++i)
     {
-        const int place = (int)pidx + 1;
-        h.set_score(0, place - 1, L"Bot", std::to_wstring(score_table[pidx - 1].first));
-        h.set_score(1, place, L"Player", std::to_wstring(score_table[pidx].first));
-        
-        if (score_table.size() > pidx + 1)
-            h.set_score(2, place + 1, L"Bot", std::to_wstring(score_table[pidx + 1].first));
+        if (score_table.size() > i)
+            h.set_score(i - start_idx, i + 1, score_table[i].second->player_name, std::to_wstring(score_table[i].first));
         else
-            h.remove_score(2);
+            h.remove_score(i);
     }
 }
 

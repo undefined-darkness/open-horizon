@@ -20,8 +20,11 @@ public:
 
     deathmatch(world &w): game_mode(w) {}
 
-private:
+protected:
     void on_kill(const plane_ptr &k, const plane_ptr &v);
+
+    typedef std::pair<int, plane_ptr> score_e;
+    void update_score_table(std::vector<score_e> &score_table);
 
     typedef std::pair<vec3, quat> respawn_point;
     respawn_point get_respawn_point();
@@ -29,16 +32,9 @@ private:
     std::vector<respawn_point> m_respawn_points;
     ivalue m_last_respawn;
 
-    struct dm_plane
-    {
-        ivalue score;
-        ivalue respawn_time;
-    };
-
-    plane_ptr m_player;
+    struct dm_plane { ivalue score, respawn_time; };
     std::map<plane_ptr, dm_plane> m_planes;
     std::vector<ai> m_bots;
-
 };
 
 //------------------------------------------------------------

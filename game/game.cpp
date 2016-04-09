@@ -6,6 +6,7 @@
 #include "math/scalar.h"
 #include "util/util.h"
 #include "util/xml.h"
+#include "util/config.h"
 #include <algorithm>
 #include <time.h>
 
@@ -271,6 +272,7 @@ plane_ptr world::add_plane(const char *name, int color, bool player, net_plane_p
         m_hud.set_missiles(p->missile.id.c_str(), 0);
         m_hud.set_missiles_count(p->missile_count);
         m_player = p;
+        p->set_name(config::get_var("name"));
     }
 
     if (m_network)
@@ -520,6 +522,17 @@ void plane::reset_state()
     special_mount_cooldown.clear();
     special_mount_idx = 0;
     jammed = false;
+}
+
+//------------------------------------------------------------
+
+void plane::set_name(std::string name)
+{
+    if (name.empty())
+        player_name.clear();
+
+    std::transform(name.begin() + 1, name.end(), name.begin() + 1, ::tolower);
+    player_name = std::wstring(name.begin(), name.end());
 }
 
 //------------------------------------------------------------
@@ -1090,7 +1103,7 @@ void plane::update_hud(world &w, gui::hud &h)
     {
         auto m = w.get_missile(i);
         if (m)
-            h.add_target(L"", m->phys->pos, m->phys->rot.get_euler().y, gui::hud::target_missile, gui::hud::select_not);
+            h.add_target(m->phys->pos, m->phys->rot.get_euler().y, gui::hud::target_missile, gui::hud::select_not);
     }
 
     const plane_ptr &me = shared_from_this();
@@ -1101,7 +1114,7 @@ void plane::update_hud(world &w, gui::hud &h)
         auto p = t.target_plane.lock();
         auto type = t.locked > 0 ? gui::hud::target_air_lock : gui::hud::target_air;
         auto select = ++t_idx == 1 ? gui::hud::select_current : (t_idx == 2 ? gui::hud::select_next : gui::hud::select_not);
-        h.add_target(p->name, p->get_pos(), p->get_rot().get_euler().y, type, select);
+        h.add_target(p->name, p->player_name, p->get_pos(), p->get_rot().get_euler().y, type, select);
     }
 
     h.clear_ecm();
@@ -1119,7 +1132,7 @@ void plane::update_hud(world &w, gui::hud &h)
         if (p->hp <= 0)
             continue;
 
-        h.add_target(p->name, p->get_pos(), p->get_rot().get_euler().y, gui::hud::target_air_ally, gui::hud::select_not);
+        h.add_target(p->name, p->player_name, p->get_pos(), p->get_rot().get_euler().y, gui::hud::target_air_ally, gui::hud::select_not);
     }
 }
 
@@ -1151,7 +1164,7 @@ void missile::update_homing(int dt)
     auto t = target.lock();
     auto diff = t->get_pos() - phys->pos;
     const vec3 target_dir = (diff + (t->phys->vel - phys->vel) * dt * 0.001f).normalize();
-    if (dir.dot(target_dir) > homing_angle_cos)
+    if (dir.dot(target_dir) > homing_angle_cos || t->hp <= 0)
     {
         phys->target_dir = target_dir;
         t->alert_dirs.push_back(diff);

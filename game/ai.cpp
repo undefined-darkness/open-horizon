@@ -189,7 +189,7 @@ void ai::find_best_target()
 
 //------------------------------------------------------------
 
-void ai::set_follow(plane_ptr &p, const vec3 &formation_offset)
+void ai::set_follow(const plane_ptr &p, const vec3 &formation_offset)
 {
     //ToDo
 }

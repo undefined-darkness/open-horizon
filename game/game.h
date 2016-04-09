@@ -89,6 +89,7 @@ struct missile;
 struct plane: public object, public std::enable_shared_from_this<plane>
 {
     std::wstring name;
+    std::wstring player_name;
 
     net_plane_ptr net;
     plane_controls controls;
@@ -143,6 +144,7 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     void update(int dt, world &w);
     void update_hud(world &w, gui::hud &h);
     bool is_ecm_active() const { return special.id=="ECM" && special_cooldown[0] > 0;}
+    void set_name(std::string name);
 
     virtual void take_damage(int damage, world &w) override;
 
@@ -190,6 +192,7 @@ public:
 
     int get_planes_count() const { return (int)m_planes.size(); }
     plane_ptr get_plane(int idx);
+    plane_ptr get_player() { return m_player.lock(); }
 
     int get_missiles_count() const { return (int)m_missiles.size(); }
     missile_ptr get_missile(int idx);

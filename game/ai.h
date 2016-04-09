@@ -13,8 +13,8 @@ namespace game
 class ai
 {
 public:
-    void set_plane(plane_ptr &p) { m_plane = p; }
-    void set_follow(plane_ptr &p, const vec3 &formation_offset);
+    void set_plane(const plane_ptr &p) { m_plane = p; }
+    void set_follow(const plane_ptr &p, const vec3 &formation_offset);
     void update(const world &w, int dt);
     void reset_state() { m_state = state_wander; }
 
