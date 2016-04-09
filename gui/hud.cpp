@@ -221,11 +221,16 @@ void hud::draw(const render &r)
         if (t.s != select_not)
             m_common.draw(r, t.s == select_current ? 117 : 116, proj_pos.x, proj_pos.y, color);
 
-        if (t.t != target_air_ally && !is_far)
+        if (is_far)
+            continue;
+
+        if (t.t != target_air_ally)
         {
             swprintf(buf, sizeof(buf), L"%d", range);
-            m_fonts.draw_text(r, buf, "Zurich14", proj_pos.x + 17, proj_pos.y - 25, color);
+            m_fonts.draw_text(r, buf, "Zurich14", proj_pos.x + 17, proj_pos.y - 27, color);
         }
+
+        m_fonts.draw_text(r, t.name.c_str(), "Zurich14", proj_pos.x + 17, proj_pos.y - 15, color);
     }
 
     if (m_show_map)
@@ -519,9 +524,9 @@ void hud::set_missile_reload(int idx, float value)
 
 //------------------------------------------------------------
 
-void hud::add_target(const nya_math::vec3 &pos, float yaw, target_type target, select_type select)
+void hud::add_target(const std::wstring &name, const nya_math::vec3 &pos, float yaw, target_type target, select_type select)
 {
-    m_targets.push_back({pos, yaw, target, select});
+    m_targets.push_back({name, pos, yaw, target, select});
 }
 
 //------------------------------------------------------------

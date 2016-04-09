@@ -30,6 +30,7 @@ public:
     struct aircraft
     {
         std::wstring name;
+        std::wstring short_name;
         std::string role;
         weapon missile;
         std::vector<weapon> special;
@@ -88,6 +89,17 @@ private:
                 aircraft_ids(a.role).push_back(id);
             const std::string name = ac.attribute("name").as_string("");
             a.name = std::wstring(name.begin(), name.end());
+            const std::string short_name = ac.attribute("short_name").as_string("");
+            if (short_name.empty())
+            {
+                auto sp = a.name.find(' ');
+                if (sp == std::wstring::npos)
+                    a.short_name = a.name;
+                else
+                    a.short_name = a.name.substr(0, sp);
+            }
+            else
+                a.short_name = std::wstring(short_name.begin(), short_name.end());
 
             for (pugi::xml_node wpn = ac.first_child(); wpn; wpn = wpn.next_sibling())
             {
@@ -236,6 +248,8 @@ plane_ptr world::add_plane(const char *name, int color, bool player, net_plane_p
     auto wi = weapon_information::get().get_aircraft_weapons(name);
     if (wi)
     {
+        p->name = wi->short_name;
+
         if (!wi->special.empty())
         {
             p->render->load_special(wi->special[0].model.c_str(), m_render_world.get_location_params());
@@ -1076,7 +1090,7 @@ void plane::update_hud(world &w, gui::hud &h)
     {
         auto m = w.get_missile(i);
         if (m)
-            h.add_target(m->phys->pos, m->phys->rot.get_euler().y, gui::hud::target_missile, gui::hud::select_not);
+            h.add_target(L"", m->phys->pos, m->phys->rot.get_euler().y, gui::hud::target_missile, gui::hud::select_not);
     }
 
     const plane_ptr &me = shared_from_this();
@@ -1087,7 +1101,7 @@ void plane::update_hud(world &w, gui::hud &h)
         auto p = t.target_plane.lock();
         auto type = t.locked > 0 ? gui::hud::target_air_lock : gui::hud::target_air;
         auto select = ++t_idx == 1 ? gui::hud::select_current : (t_idx == 2 ? gui::hud::select_next : gui::hud::select_not);
-        h.add_target(p->get_pos(), p->get_rot().get_euler().y, type, select);
+        h.add_target(p->name, p->get_pos(), p->get_rot().get_euler().y, type, select);
     }
 
     h.clear_ecm();
@@ -1105,7 +1119,7 @@ void plane::update_hud(world &w, gui::hud &h)
         if (p->hp <= 0)
             continue;
 
-        h.add_target(p->get_pos(), p->get_rot().get_euler().y, gui::hud::target_air_ally, gui::hud::select_not);
+        h.add_target(p->name, p->get_pos(), p->get_rot().get_euler().y, gui::hud::target_air_ally, gui::hud::select_not);
     }
 }
 

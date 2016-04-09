@@ -88,6 +88,8 @@ struct missile;
 
 struct plane: public object, public std::enable_shared_from_this<plane>
 {
+    std::wstring name;
+
     net_plane_ptr net;
     plane_controls controls;
     plane_controls last_controls;

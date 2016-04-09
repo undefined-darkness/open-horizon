@@ -117,7 +117,7 @@ int main()
     config::register_var("screen_height", "562");
 
     platform platform;
-    if (!platform.init(config::get_var_int("screen_width"), config::get_var_int("screen_height"), "Open Horizon 4th demo"))
+    if (!platform.init(config::get_var_int("screen_width"), config::get_var_int("screen_height"), "Open Horizon 5th demo"))
         return -1;
 
     std::vector<joystick_config> joysticks;

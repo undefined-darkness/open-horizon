@@ -62,7 +62,7 @@ public:
     };
 
     void clear_targets() { m_targets.clear(); }
-    void add_target(const nya_math::vec3 &pos, float yaw, target_type target, select_type select);
+    void add_target(const std::wstring &name, const nya_math::vec3 &pos, float yaw, target_type target, select_type select);
 
     void clear_ecm() { m_ecms.clear(); }
     void add_ecm(const nya_math::vec3 &pos) { m_ecms.push_back(pos); }
@@ -91,6 +91,7 @@ private:
 
     struct target
     {
+        std::wstring name;
         nya_math::vec3 pos;
         float yaw;
         target_type t;

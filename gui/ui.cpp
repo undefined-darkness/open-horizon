@@ -620,7 +620,7 @@ bool tiles::load(const char *name)
             continue;
 
         char *c = (char *)&t;
-        printf("%c%c%c%c %d %d %d %d size %ld\n",c[3],c[2],c[1],c[0],c[3],c[2],c[1],c[0],m.get_chunk_size(i));
+        printf("%c%c%c%c %d %d %d %d size %d\n",c[3],c[2],c[1],c[0],c[3],c[2],c[1],c[0],m.get_chunk_size(i));
         //continue;
 
         print_data(reader);

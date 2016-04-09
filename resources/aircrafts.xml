@@ -113,7 +113,7 @@
     <spc id="LAGM" model="las_j0" count="22"/>
 </aircraft>
 
-<aircraft id="rflm" role="multirole" name="Rafale M">
+<aircraft id="rflm" role="multirole" name="Rafale M" short_name = "Rafale M">
     <msl id="MISSILE" model="msl_f0" count="198"/>
     <spc id="_6AAM" model="xla_e0" count="28"/>
     <spc id="BDM" model="sod_f0" count="18"/>
@@ -169,7 +169,7 @@
     <spc id="ECM" model="ecm_a1" count="8"/>
 </aircraft>
 
-<aircraft id="mr2k" role="multirole" name="Mirage 2000-5">
+<aircraft id="mr2k" role="multirole" name="Mirage 2000-5" short_name = "MIR-2000-5">
     <msl id="MISSILE" model="msl_f0" count="162"/>
     <spc id="_4AAM" model="xma_f0" count="22"/>
     <spc id="_4AGM" model="xag_f0" count="28"/>
