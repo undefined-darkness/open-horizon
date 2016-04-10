@@ -1156,6 +1156,11 @@ void plane::update_hud(world &w, gui::hud &h)
         h.add_target(p->name, p->player_name, p->get_pos(), p->get_rot().get_euler().y, type, select);
     }
 
+    if (!targets.empty())
+        h.set_target_arrow(true, vec3::normalize(targets.front().target_plane.lock()->get_pos() - get_pos()));
+    else
+        h.set_target_arrow(false);
+
     h.clear_ecm();
 
     for (int i = 0; i < w.get_planes_count(); ++i)

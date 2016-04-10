@@ -34,6 +34,7 @@ public:
     void set_saam(bool locked, bool tracking) { m_saam_locked = locked; m_saam_tracking = tracking; }
     void set_mgp(bool active) { m_mgp = active; }
     void set_jammed(bool active) { m_jammed = active; }
+    void set_target_arrow(bool visible, const nya_math::vec3 &dir = nya_math::vec3());
     void change_radar() { m_show_map = !m_show_map; }
 
     bool is_special_selected() const { return m_missiles_icon > 0; }
@@ -93,6 +94,8 @@ private:
     ivalue m_missiles_cross;
     bvalue m_show_map;
     std::vector<float> m_alerts;
+    nya_math::vec3 m_target_arrow_dir;
+    bvalue m_target_arrow_visible;
 
     struct target
     {

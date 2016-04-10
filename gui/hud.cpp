@@ -337,6 +337,49 @@ void hud::draw(const render &r)
         }
     }
 
+    //target arrow
+
+    if (m_target_arrow_visible)
+    {
+        const float proj_scale = 100.0f;
+        const float arrow_length = 3.0f * proj_scale;
+        const float arrow_offset = 5.0f * proj_scale;
+        const float arrow_width = 0.2f * proj_scale;
+
+        const nya_math::vec3 arrow_origin3 = m_project_pos + m_target_arrow_dir * arrow_offset;
+
+        nya_math::vec2 arrow_origin, arrow_end;
+        if(get_project_pos(r, arrow_origin3, arrow_origin) &&
+           get_project_pos(r, arrow_origin3 + m_target_arrow_dir * arrow_length, arrow_end))
+        {
+            const nya_math::vec3 arrow_up3 = nya_math::vec3::normalize(fabsf(m_target_arrow_dir.dot(nya_math::vec3::forward())) < 0.5f ?
+                                                                       nya_math::vec3::cross(m_target_arrow_dir, nya_math::vec3::forward()) :
+                                                                       nya_math::vec3::cross(m_target_arrow_dir, nya_math::vec3::right()));
+
+            const auto arrow_side3 = nya_math::vec3::cross(arrow_up3, m_target_arrow_dir);
+
+            static const float sin60 = sin(nya_math::angle_deg(60.0f));
+            static const float cos60 = cos(nya_math::angle_deg(60.0f));
+
+            const auto arrow_rside3 = arrow_side3 * sin60 - arrow_up3 * cos60;
+            const auto arrow_lside3 = -arrow_side3 * sin60 - arrow_up3 * cos60;
+
+            const auto arrow_back3 = arrow_origin3 - m_target_arrow_dir * arrow_width * 2.0f;
+
+            static std::vector<nya_math::vec2> arrow(8);
+            arrow[0] = arrow_origin;
+            arrow[1] = arrow_end;
+            get_project_pos(r, arrow_back3 + arrow_up3 * arrow_width, arrow[2]);
+            arrow[3] = arrow_origin;
+            get_project_pos(r, arrow_back3 + arrow_rside3 * arrow_width, arrow[4]);
+            arrow[5] = arrow_end;
+            get_project_pos(r, arrow_back3 + arrow_lside3 * arrow_width, arrow[6]);
+            arrow[7] = arrow_origin;
+
+            r.draw(arrow, green);
+        }
+    }
+
     //missiles
 
     m_aircraft.draw(r, m_missiles_icon + 401, r.get_width() - 110, r.get_height() - 60, green);
@@ -513,6 +556,14 @@ void hud::set_lock(int idx, bool locked, bool active)
 
     m_locks[idx].active = active;
     m_locks[idx].locked = locked;
+}
+
+//------------------------------------------------------------
+
+void hud::set_target_arrow(bool visible, const nya_math::vec3 &dir)
+{
+    m_target_arrow_dir = dir;
+    m_target_arrow_visible = visible;
 }
 
 //------------------------------------------------------------
