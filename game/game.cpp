@@ -556,11 +556,15 @@ void plane::reset_state()
     for (auto &c: missile_cooldown) c = 0;
     missile_mount_cooldown.clear();
     missile_mount_idx = 0;
+    missile_count = missile_max_count;
 
     for (auto &c: special_cooldown) c = 0;
     special_mount_cooldown.clear();
     special_mount_idx = 0;
+    special_count = special_max_count;
+
     jammed = false;
+    ecm_time = 0;
 }
 
 //------------------------------------------------------------
@@ -675,7 +679,7 @@ void plane::update_render()
     render->set_mgun_bay(controls.mgun);
 
     render->set_mgun_fire(is_mg_bay_ready() && controls.mgun);
-    render->set_mgp_fire(special_weapon_selected && controls.missile && special.id == "MGP");
+    render->set_mgp_fire(special_weapon_selected && controls.missile && special.id == "MGP" && special_count > 0);
 }
 
 //------------------------------------------------------------
@@ -770,7 +774,23 @@ void plane::update(int dt, world &w)
 
     //reload
 
-    for (auto &m: missile_cooldown) if (m > 0) m -= dt;
+    for(int i = 0; i < 2; ++i)
+    {
+        auto &count = i == 0 ? missile_count : special_count;
+        auto &cd = i == 0 ? missile_cooldown : special_cooldown;
+
+        if (count == 1)
+        {
+            if (cd[0] > 0 && cd[1] > 0)
+            {
+                auto &m = cd[1] < cd[0] ?  cd[1] :  cd[0];
+                if (m > 0)
+                    m -= dt;
+            }
+        }
+        else if (count > 1)
+            for (auto &m: cd) { if (m > 0) m -= dt; }
+    }
 
     for (int i = 0; i < (int)missile_mount_cooldown.size(); ++i)
     {
@@ -778,11 +798,17 @@ void plane::update(int dt, world &w)
             continue;
 
         missile_mount_cooldown[i] -= dt;
-        if (missile_mount_cooldown[i] < 0)
-            render->set_missile_visible(i, true);
-    }
+        if (missile_mount_cooldown[i] >= 0)
+            continue;
 
-    for (auto &s: special_cooldown) if (s > 0) s -= dt;
+        if (missile_count <= 0)
+            continue;
+
+        if (missile_count == 1 && missile_mount_cooldown[i == 0 ? 1 : 0] <= 0)
+            continue;
+
+        render->set_missile_visible(i, true);
+    }
 
     for (int i = 0; i < (int)special_mount_cooldown.size(); ++i)
     {
@@ -790,8 +816,11 @@ void plane::update(int dt, world &w)
             continue;
 
         special_mount_cooldown[i] -= dt;
-        if (special_mount_cooldown[i] < 0)
-            render->set_special_visible(i, true);
+        if (special_mount_cooldown[i] >= 0)
+            continue;
+
+        //ToDo: don't set visible on low ammo
+        render->set_special_visible(i, true);
     }
 
     //ecm
@@ -819,19 +848,23 @@ void plane::update(int dt, world &w)
     if (missile_bay_time > 0)
         missile_bay_time -= dt;
 
+    if (ecm_time > 0)
+        ecm_time -= dt;
+
     const bool want_fire = controls.missile && controls.missile != last_controls.missile;
 
     if (special_weapon_selected)
     {
-        const bool can_fire = (special_cooldown[0] <=0 || special_cooldown[1] <= 0) && is_special_bay_ready();
+        const bool can_fire = (special_cooldown[0] <=0 || special_cooldown[1] <= 0) && is_special_bay_ready() && special_count > 0;
         const bool need_fire = want_fire && can_fire;
 
-        if (controls.missile && special.id == "MGP")
+        if (controls.missile && special.id == "MGP" && special_count > 0)
         {
             mgp_fire_update += dt;
             const int mgp_update_time = 150;
             if (mgp_fire_update > mgp_update_time)
             {
+                --special_count;
                 mgp_fire_update %= mgp_update_time;
 
                 for (int i = 0; i < render->get_special_mount_count(); ++i)
@@ -841,7 +874,8 @@ void plane::update(int dt, world &w)
 
         if (need_fire && special.id == "ECM")
         {
-            special_cooldown[0] = special_cooldown[1] = special.reload_time;
+            ecm_time = special_cooldown[0] = special_cooldown[1] = special.reload_time;
+            --special_count;
         }
 
         if (special.id == "ADMM")
@@ -911,7 +945,7 @@ void plane::update(int dt, world &w)
                         lockon_count += t.locked;
                     }
 
-                    if (lockon_count < special.lockon_count)
+                    if (lockon_count < special.lockon_count && lockon_count < special_count)
                     {
                         for (int min_lock = 0; min_lock < special.lockon_count; ++min_lock)
                         {
@@ -956,11 +990,13 @@ void plane::update(int dt, world &w)
                 t.locked = 0;
             }
 
-            for (int i = 0; i < special.lockon_count; ++i)
+            const int shot_cout = special_count > special.lockon_count ? special.lockon_count : special_count;
+            for (int i = 0; i < shot_cout; ++i)
             {
                 auto m = w.add_missile(special.id.c_str(), render->get_special_model());
                 m->owner = shared_from_this();
-                special_mount_idx = ++special_mount_idx % render->get_special_mount_count();
+
+                special_mount_idx = ++special_mount_idx % (int)special_mount_cooldown.size();
                 special_mount_cooldown[special_mount_idx] = special.reload_time;
                 render->set_special_visible(special_mount_idx, false);
                 m->phys->pos = render->get_special_mount_pos(special_mount_idx) + pos_fix;
@@ -978,6 +1014,8 @@ void plane::update(int dt, world &w)
                     saam_missile = m;
                 }
             }
+
+            special_count -= shot_cout;
         }
     }
     else
@@ -985,7 +1023,7 @@ void plane::update(int dt, world &w)
         if (!targets.empty())
             targets.front().locked = targets.front().can_lock(missile);
 
-        if (want_fire)
+        if (want_fire && missile_count > 0)
             need_fire_missile = true, missile_bay_time = 3000;
 
         if (need_fire_missile && render->is_missile_ready())
@@ -1011,6 +1049,8 @@ void plane::update(int dt, world &w)
                 m->phys->target_dir = m->phys->rot.rotate(vec3(0.0f, 0.0f, 1.0f));
                 if (!targets.empty() && targets.front().locked > 0)
                     m->target = targets.front().target_plane;
+
+                --missile_count;
             }
         }
     }
@@ -1078,8 +1118,10 @@ void plane::update_hud(world &w, gui::hud &h)
             count += t.locked;
 
         for (int i = 0; i < special.lockon_count; ++i)
-            h.set_lock(i, i < count && special_cooldown[0] <= 0, special_cooldown[0] <= 0);
+            h.set_lock(i, i < count && special_cooldown[0] <= 0, special_cooldown[0] <= 0 && i < special_count);
     }
+
+    h.set_missiles_count(special_weapon_selected ? special_count : missile_count);
 
     const float gun_range = 1500.0f;
     const bool hud_mgun = controls.mgun || (!targets.empty() && targets.front().dist < gun_range);
@@ -1098,7 +1140,6 @@ void plane::update_hud(world &w, gui::hud &h)
             if (special.id == "MGP" || special.id == "ECM")
                 lock_count = 1;
             h.set_locks(lock_count, special_weapon_idx);
-            h.set_missiles_count(special_count);
             if (special.id == "SAAM")
                 h.set_saam_circle(true, acosf(special.lockon_angle_cos));
         }
@@ -1106,7 +1147,6 @@ void plane::update_hud(world &w, gui::hud &h)
         {
             h.set_missiles(missile.id.c_str(), 0);
             h.set_locks(0, 0);
-            h.set_missiles_count(missile_count);
             h.set_saam_circle(false, 0.0f);
             h.set_mgp(false);
         }
@@ -1120,7 +1160,7 @@ void plane::update_hud(world &w, gui::hud &h)
         {
             float value = 1.0f - float(special_cooldown[0]) / special.reload_time;
             for (int i = 0; i < special.lockon_count; ++i)
-                h.set_missile_reload(i, value);
+                h.set_missile_reload(i, i < special_count ? value : 0.0f);
         }
         else
         {
@@ -1201,6 +1241,12 @@ void plane::take_damage(int damage, world &w)
 
 void missile::update_homing(int dt, world &w)
 {
+    if (is_saam)
+    {
+        if (owner.lock()->hp <= 0)
+            target.reset();
+    }
+
     if (target.expired())
         return;
 

@@ -102,6 +102,7 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     ivalue mgun_fire_update;
     ivalue mgp_fire_update;
     bvalue jammed;
+    ivalue ecm_time;
 
     wpn_params missile;
     ivalue missile_cooldown[2];
@@ -143,7 +144,7 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     void select_target(const object_ptr &o);
     void update(int dt, world &w);
     void update_hud(world &w, gui::hud &h);
-    bool is_ecm_active() const { return special.id=="ECM" && special_cooldown[0] > 0;}
+    bool is_ecm_active() const { return special.id=="ECM" && ecm_time > 0;}
     void set_name(std::string name);
 
     virtual void take_damage(int damage, world &w) override;
