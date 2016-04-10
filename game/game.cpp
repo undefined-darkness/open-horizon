@@ -18,6 +18,19 @@ namespace { const static params::text_params &get_arms_param() { static params::
 
 //------------------------------------------------------------
 
+namespace
+{
+    enum
+    {
+        popup_priority_miss,
+        popup_priority_hit,
+        popup_priority_assist,
+        popup_priority_destroyed
+    };
+}
+
+//------------------------------------------------------------
+
 class weapon_information
 {
 public:
@@ -1203,8 +1216,17 @@ void missile::update(int dt, world &w)
             if (t->hp > 0)
             {
                 t->take_damage(missile_damage, w);
-                if (t->hp <= 0)
+                const bool destroyed = t->hp <= 0;
+                if (destroyed)
                     w.on_kill(owner.lock(), t);
+
+                if (owner.lock() == w.get_player())
+                {
+                    if (destroyed)
+                        w.get_hud().popup(L"DESTROYED", popup_priority_destroyed);
+                    else
+                        w.get_hud().popup(L"HIT", popup_priority_hit);
+                }
             }
 
             w.spawn_explosion(phys->pos, 0, 10.0);

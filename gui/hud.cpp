@@ -9,10 +9,10 @@
 namespace gui
 {
 
-const nya_math::vec4 hud::white = nya_math::vec4(255,255,255,255)/255.0;
-const nya_math::vec4 hud::green = nya_math::vec4(103,223,144,255)/255.0;
-const nya_math::vec4 hud::red = nya_math::vec4(200,0,0,255)/255.0;
-const nya_math::vec4 hud::blue = nya_math::vec4(100,200,200,255)/255.0;
+const hud::color hud::white = color(255,255,255,255)/255.0;
+const hud::color hud::green = color(103,223,144,255)/255.0;
+const hud::color hud::red = color(200,0,0,255)/255.0;
+const hud::color hud::blue = color(100,200,200,255)/255.0;
 
 //------------------------------------------------------------
 
@@ -105,6 +105,9 @@ void hud::update(int dt)
 {
     m_anim_time += dt;
     m_anim_time = m_anim_time % 1000;
+
+    if (m_popup_time > 0)
+        m_popup_time -= dt;
 }
 
 //------------------------------------------------------------
@@ -140,7 +143,7 @@ void hud::draw(const render &r)
 
     //m_common.debug_draw_tx(r);
     //m_aircraft.debug_draw_tx(r);
-    //m_common.debug_draw(r, debug_variable::get()); static int last_idx = 0; if (last_idx != debug_variable::get()) printf("%d %d\n", debug_variable::get(), m_common.get_id(debug_variable::get())); last_idx = debug_variable::get();
+    //m_common.debug_draw(r, debug_variable::get()); static int last_idx = 0; if (last_idx != debug_variable::get()) printf("idx %d id %d\n", debug_variable::get(), m_common.get_id(debug_variable::get())); last_idx = debug_variable::get();
     //m_aircraft.debug_draw(r, debug_variable::get()); static int last_idx = 0; if (last_idx != debug_variable::get()) printf("%d %d\n", debug_variable::get(), m_aircraft.get_id(debug_variable::get())); last_idx = debug_variable::get();
 
     //m_common.draw(r, 3, green);
@@ -262,7 +265,7 @@ void hud::draw(const render &r)
         bg[0].r.y = radar_center_y - frame_half_size;
         bg[0].r.w = frame_half_size * 2;
         bg[0].r.h = frame_half_size * 2;
-        r.draw(bg, shared::get_white_texture(), nya_math::vec4(0.0f, 0.02f, 0.0f, 0.5f));
+        r.draw(bg, shared::get_white_texture(), color(0.0f, 0.02f, 0.0f, 0.5f));
 
         for (auto &e: m_ecms)
         {
@@ -345,15 +348,18 @@ void hud::draw(const render &r)
 
     if (!m_alerts.empty())
     {
+        const int malert_pos_y = 235;
+
         alert_color.w = anim;
         static std::vector<nya_math::vec2> malert_quad(5);
-        malert_quad[0].x = r.get_width()/2 - 75, malert_quad[0].y = 235;
-        malert_quad[1].x = r.get_width()/2 - 75, malert_quad[1].y = 260;
-        malert_quad[2].x = r.get_width()/2 + 75, malert_quad[2].y = 260;
-        malert_quad[3].x = r.get_width()/2 + 75, malert_quad[3].y = 235;
+        const int malert_width = 150;
+        malert_quad[0].x = (r.get_width() - malert_width) / 2, malert_quad[0].y = malert_pos_y;
+        malert_quad[1].x = (r.get_width() - malert_width) / 2, malert_quad[1].y = malert_pos_y + 25;
+        malert_quad[2].x = (r.get_width() + malert_width) / 2, malert_quad[2].y = malert_pos_y + 25;
+        malert_quad[3].x = (r.get_width() + malert_width) / 2, malert_quad[3].y = malert_pos_y;
         malert_quad[4] = malert_quad[0];
         r.draw(malert_quad, alert_color);
-        m_fonts.draw_text(r, L"MISSILE ALERT", "Zurich20", r.get_width()/2-60, 235, alert_color);
+        m_fonts.draw_text(r, L"MISSILE ALERT", "Zurich20", r.get_width()/2-60, malert_pos_y, alert_color);
 
         const float camera_rot = m_yaw + nya_scene::get_camera().get_rot().get_euler().y + nya_math::constants::pi;
         const float ar = 0.77f - camera_rot;
@@ -389,7 +395,22 @@ void hud::draw(const render &r)
     for (auto &t: m_texts)
         m_fonts.draw_text(r, t.t.c_str(), t.f.c_str(), t.x, t.y, green);
 
-    //Zurich12 -23 14 -111 20 -105 30 -96 BD30Outline -113 BD20Outline -26 BD22Outline -18 OCRB15 -33
+    if (m_popup_time > 0)
+    {
+        const int popup_pos_y = r.get_height() / 2 - 71;
+        const int twidth = m_fonts.get_text_width(m_popup_text.c_str(), "Zurich30");
+
+        static std::vector<nya_math::vec2> popup_quad(5);
+        const int popup_width = twidth + 20;
+        popup_quad[0].x = (r.get_width() - popup_width) / 2, popup_quad[0].y = popup_pos_y;
+        popup_quad[1].x = (r.get_width() - popup_width) / 2, popup_quad[1].y = popup_pos_y + 30;
+        popup_quad[2].x = (r.get_width() + popup_width) / 2, popup_quad[2].y = popup_pos_y + 30;
+        popup_quad[3].x = (r.get_width() + popup_width) / 2, popup_quad[3].y = popup_pos_y;
+        popup_quad[4] = popup_quad[0];
+        r.draw(popup_quad, m_popup_color);
+
+        m_fonts.draw_text(r, m_popup_text.c_str(), "Zurich30", (r.get_width() - twidth)/ 2, popup_pos_y - 2, m_popup_color);
+    }
 }
 
 //------------------------------------------------------------
@@ -437,7 +458,7 @@ void hud::remove_score(int line)
 
 //------------------------------------------------------------
 
-void hud::add_text(int idx, const std::wstring &text, const std::string &font, int x, int y, const nya_math::vec4 &color)
+void hud::add_text(int idx, const std::wstring &text, const std::string &font, int x, int y, const color &c)
 {
     if (idx < 0)
         return;
@@ -449,7 +470,7 @@ void hud::add_text(int idx, const std::wstring &text, const std::string &font, i
     t.t = text;
     t.f = font;
     t.x = x, t.y = y;
-    t.c = color;
+    t.c = c;
 }
 
 //------------------------------------------------------------
@@ -535,6 +556,19 @@ void hud::add_target(const nya_math::vec3 &pos, float yaw, target_type target, s
 void hud::add_target(const std::wstring &name, const std::wstring &player_name, const nya_math::vec3 &pos, float yaw, target_type target, select_type select)
 {
     m_targets.push_back({name, player_name, pos, yaw, target, select});
+}
+
+//------------------------------------------------------------
+
+void hud::popup(const std::wstring &text, int priority, const color &c)
+{
+    if (m_popup_time > 0 && m_popup_priority > priority)
+        return;
+
+    m_popup_text = text;
+    m_popup_time = 3000;
+    m_popup_color = c;
+    m_popup_priority = priority;
 }
 
 //------------------------------------------------------------

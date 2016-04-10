@@ -93,7 +93,7 @@
 
 <!----------------------------------------------------------------------------->
 
-<aircraft id="pkfa" role="multirole" name="PAK-FA">
+<aircraft id="pkfa" role="multirole" name="PAK-FA" short_name = "T-50">
     <msl id="MISSILE" model="msl_r0" count="234"/>
     <spc id="_4AAM" model="xma_r0" count="32"/>
     <spc id="QAAM" model="qaa_r0" count="36"/>
