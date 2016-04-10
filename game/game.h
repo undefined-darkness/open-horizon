@@ -168,8 +168,9 @@ struct missile: public object
     w_ptr<plane> owner;
     w_ptr<plane> target;
     fvalue homing_angle_cos;
+    bvalue is_saam;
 
-    void update_homing(int dt);
+    void update_homing(int dt, world &w);
     void update(int dt, world &w);
     void release();
 };
@@ -208,6 +209,8 @@ public:
     void set_on_kill_handler(on_kill_handler &handler) { m_on_kill_handler = handler; }
 
     gui::hud &get_hud() { return m_hud; }
+    void popup_hit(bool destroyed);
+    void popup_miss();
 
     void update(int dt);
 

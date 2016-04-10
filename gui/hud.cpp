@@ -566,7 +566,7 @@ void hud::popup(const std::wstring &text, int priority, const color &c)
         return;
 
     m_popup_text = text;
-    m_popup_time = 3000;
+    m_popup_time = 2000;
     m_popup_color = c;
     m_popup_priority = priority;
 }

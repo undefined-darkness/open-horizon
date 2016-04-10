@@ -18,19 +18,6 @@ namespace { const static params::text_params &get_arms_param() { static params::
 
 //------------------------------------------------------------
 
-namespace
-{
-    enum
-    {
-        popup_priority_miss,
-        popup_priority_hit,
-        popup_priority_assist,
-        popup_priority_destroyed
-    };
-}
-
-//------------------------------------------------------------
-
 class weapon_information
 {
 public:
@@ -232,6 +219,8 @@ missile_ptr world::add_missile(const char *id, const renderer::model &mdl)
     const std::string pref = "." + std::string(id) + ".action.";
     m->time = param.get_float(pref + "endTime") * 1000;
     m->homing_angle_cos = cosf(param.get_float(".MISSILE.action.hormingAng"));
+    if (strcmp(id, "SAAM") == 0)
+        m->is_saam = true;
 
     m_missiles.push_back(m);
     return m;
@@ -329,8 +318,12 @@ void world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, con
         if (line_sphere_intersect(pos, r, p->get_pos(), p->hit_radius))
         {
             p->take_damage(60, *this);
-            if (p->hp <= 0)
+            const bool destroyed = p->hp <= 0;
+            if (destroyed)
                 on_kill(owner, p);
+
+            if (owner == get_player())
+                popup_hit(destroyed);
         }
     }
 
@@ -403,7 +396,7 @@ void world::update(int dt)
         p->alert_dirs.clear();
 
     for (auto &m: m_missiles)
-        m->update_homing(dt);
+        m->update_homing(dt, *this);
 
     m_phys_world.update_missiles(dt, [this](const phys::object_ptr &a, const phys::object_ptr &b)
     {
@@ -412,6 +405,9 @@ void world::update(int dt)
         {
             this->spawn_explosion(m->phys->pos, 0, 10.0);
             m->time = 0;
+
+            if (m->owner.lock() == get_player() && !m->target.expired())
+                this->popup_miss();
         }
     });
 
@@ -507,6 +503,36 @@ missile_ptr world::get_missile(const phys::object_ptr &o)
     }
 
     return missile_ptr();
+}
+
+//------------------------------------------------------------
+
+namespace
+{
+    enum
+    {
+        popup_priority_miss,
+        popup_priority_hit,
+        popup_priority_assist,
+        popup_priority_destroyed
+    };
+}
+
+//------------------------------------------------------------
+
+void world::popup_hit(bool destroyed)
+{
+    if (destroyed)
+        m_hud.popup(L"DESTROYED", popup_priority_destroyed);
+    else
+        m_hud.popup(L"HIT", popup_priority_hit);
+}
+
+//------------------------------------------------------------
+
+void world::popup_miss()
+{
+    m_hud.popup(L"MISS", popup_priority_miss, gui::hud::red);
 }
 
 //------------------------------------------------------------
@@ -1168,7 +1194,7 @@ void plane::take_damage(int damage, world &w)
 
 //------------------------------------------------------------
 
-void missile::update_homing(int dt)
+void missile::update_homing(int dt, world &w)
 {
     if (target.expired())
         return;
@@ -1183,7 +1209,11 @@ void missile::update_homing(int dt)
         t->alert_dirs.push_back(diff);
     }
     else
+    {
         target.reset();
+        if (!is_saam && owner.lock() == w.get_player())
+            w.popup_miss();
+    }
 }
 
 //------------------------------------------------------------
@@ -1221,12 +1251,7 @@ void missile::update(int dt, world &w)
                     w.on_kill(owner.lock(), t);
 
                 if (owner.lock() == w.get_player())
-                {
-                    if (destroyed)
-                        w.get_hud().popup(L"DESTROYED", popup_priority_destroyed);
-                    else
-                        w.get_hud().popup(L"HIT", popup_priority_hit);
-                }
+                    w.popup_hit(destroyed);
             }
 
             w.spawn_explosion(phys->pos, 0, 10.0);
