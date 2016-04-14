@@ -35,6 +35,7 @@ void missile_trail::update(const nya_math::vec3 &pos, int dt)
         trp.tr.set_count(2);
         trp.tr.set(0, pos);
         trp.tr.set(1, pos);
+        trp.dir.set_count(2);
         return;
     }
 

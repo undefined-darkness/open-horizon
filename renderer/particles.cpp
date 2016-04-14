@@ -27,6 +27,7 @@ void plane_trail::update(const nya_math::vec3 &pos, int dt)
         m_trail_params.tr.set_count(2);
         m_trail_params.tr.set(0, pos);
         m_trail_params.tr.set(1, pos);
+        m_trail_params.dir.set_count(2);
         return;
     }
 
