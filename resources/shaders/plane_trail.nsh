@@ -2,6 +2,7 @@
 
 @uniform pos "tr pos"
 @uniform dir "tr dir"
+@uniform param "tr param"
 
 @all
 
@@ -11,17 +12,18 @@ varying vec2 tc;
 
 uniform vec4 pos[240];
 uniform vec4 dir[240];
-
+uniform vec4 param;
 uniform vec4 camera_pos;
 
 void main()
 {
     vec2 v = gl_Vertex.xy;
     int idx = int(v.y);
-    
-    tc.y = dir[idx].w * 0.005;
-    tc.x = (v.x * 0.5 + 0.5) * 0.25 + 0.25;
-    
+
+    float fade = 5.0;
+    tc.y = min(1.0 - (dir[idx].w - (param.x - fade)) / fade, 1.0);
+    tc.x = v.x;
+
     vec3 p = pos[idx].xyz;
     vec3 diff = camera_pos.xyz - p;
     float width = 0.02 * sqrt(length(diff));
@@ -34,5 +36,6 @@ void main()
 
 void main()
 {
-    gl_FragColor = vec4(vec3(1.0), 0.05);
+    float k = tc.x * tc.x;
+    gl_FragColor = vec4(vec3(1.0), 0.05 * (1.0 - k * k) * tc.y);
 }

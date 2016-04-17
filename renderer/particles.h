@@ -21,7 +21,7 @@ public:
     bool is_full();
 
 private:
-    struct param { nya_scene::material::param_array tr, dir; };
+    struct param { nya_scene::material::param_array tr, dir; float len = 0.0f; };
     param m_trail_params;
 };
 
@@ -153,6 +153,7 @@ private:
     nya_scene::material m_bullet_material;
     nya_render::vbo m_trail_mesh, m_point_mesh;
     mutable nya_scene::material::param_array_proxy m_trail_tr, m_trail_dir;
+    mutable nya_scene::material::param_proxy m_trail_param;
     mutable nya_scene::material::param_array_proxy m_tr_pos, m_tr_tc_rgb, m_tr_tc_a, m_tr_off_rot_asp, m_col, m_b_dir;
     mutable nya_scene::material::param_proxy m_b_color, m_b_tc, m_b_size;
 };

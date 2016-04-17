@@ -34,7 +34,7 @@ void plane_trail::update(const nya_math::vec3 &pos, int dt)
     auto diff = pos - m_trail_params.tr.get(curr_tr_count - 2).xyz();
     const float diff_len = diff.length();
 
-    const float fragment_minimal_len = 1.0f;
+    const float fragment_minimal_len = 5.0f;
     if (diff_len > fragment_minimal_len)
     {
         diff /= diff_len;
@@ -50,7 +50,9 @@ void plane_trail::update(const nya_math::vec3 &pos, int dt)
         diff /= diff_len;
 
     m_trail_params.tr.set(curr_tr_count - 1, pos);
-    m_trail_params.dir.set(curr_tr_count - 1, diff, diff_len + m_trail_params.dir.get(curr_tr_count-2).w);
+
+    m_trail_params.len = diff_len + m_trail_params.dir.get(curr_tr_count-2).w;
+    m_trail_params.dir.set(curr_tr_count - 1, diff, m_trail_params.len);
 }
 
 //------------------------------------------------------------
@@ -178,6 +180,7 @@ void particles_render::init()
 
     m_trail_tr.create();
     m_trail_dir.create();
+    m_trail_param.create();
 
     auto &p = m_trail_material.get_default_pass();
     p.set_shader(nya_scene::shader("shaders/plane_trail.nsh"));
@@ -186,6 +189,7 @@ void particles_render::init()
     p.get_state().cull_face = false;
     m_trail_material.set_param_array(m_trail_material.get_param_idx("tr pos"), m_trail_tr);
     m_trail_material.set_param_array(m_trail_material.get_param_idx("tr dir"), m_trail_dir);
+    m_trail_material.set_param(m_trail_material.get_param_idx("tr param"), m_trail_param);
     m_trail_material.set_texture("diffuse", t);
 
     std::vector<nya_math::vec2> trail_verts(max_trail_points * 2);
@@ -284,6 +288,7 @@ void particles_render::draw(const plane_trail &t) const
 
     m_trail_tr.set(t.m_trail_params.tr);
     m_trail_dir.set(t.m_trail_params.dir);
+    m_trail_param->x = t.m_trail_params.len;
     m_trail_material.internal().set();
     m_trail_mesh.draw(t.m_trail_params.tr.get_count() * 2);
     m_trail_material.internal().unset();
