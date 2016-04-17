@@ -20,6 +20,7 @@
 		F50D9C9C1C9F2E5700A56812 /* pac6.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50D9C991C9F2E5700A56812 /* pac6.cpp */; };
 		F50DADAC1C3047D5000DD3EA /* hangar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50DADAA1C3047D5000DD3EA /* hangar.cpp */; };
 		F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53304C61B09DEC300D8C3C7 /* menu.cpp */; };
+		F538BB0B1CC2B8EA0055F394 /* app_protocol_simple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */; };
 		F5696AAA1B1136B100C7BFC9 /* joystick.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5696AA11B10E3F800C7BFC9 /* joystick.xml */; };
 		F572C1F11CA715AC00AB1D1F /* poc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F572C1EF1CA715AC00AB1D1F /* poc.cpp */; };
 		F578323E1AFBE859005FE829 /* ui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F578323C1AFBE859005FE829 /* ui.cpp */; };
@@ -55,6 +56,13 @@
 		F5C6D39E1AF96A18006FB7E6 /* DATA.PAC.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5C6D39B1AF96A08006FB7E6 /* DATA.PAC.xml */; };
 		F5C6D39F1AF96A18006FB7E6 /* postprocess.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5C6D39C1AF96A08006FB7E6 /* postprocess.txt */; };
 		F5C6D3A01AF96A18006FB7E6 /* shaders in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5C6D39D1AF96A08006FB7E6 /* shaders */; };
+		F5D209F31CC18DA800189814 /* generic_socket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209EC1CC18DA800189814 /* generic_socket.cpp */; };
+		F5D209F41CC18DA800189814 /* ipv4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209ED1CC18DA800189814 /* ipv4.cpp */; };
+		F5D209F51CC18DA800189814 /* ipv6.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209EE1CC18DA800189814 /* ipv6.cpp */; };
+		F5D209F61CC18DA800189814 /* platform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209EF1CC18DA800189814 /* platform.cpp */; };
+		F5D20A091CC1936700189814 /* server_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209F21CC18DA800189814 /* server_udp.cpp */; };
+		F5D20A0B1CC2228100189814 /* server_tcp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209F11CC18DA800189814 /* server_tcp.cpp */; };
+		F5D20A0F1CC235EA00189814 /* client_tcp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D20A0D1CC235EA00189814 /* client_tcp.cpp */; };
 		F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D7969F19B3432C006269F0 /* pugixml.cpp */; };
 		F5DC44881C7CD9AF00F68115 /* mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5DC44861C7CD9AF00F68115 /* mesh.cpp */; };
 		F5DFAD8B19BB248C00786736 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F5DFAD8A19BB248C00786736 /* libz.dylib */; };
@@ -125,6 +133,7 @@
 		F50DADAB1C3047D5000DD3EA /* hangar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hangar.h; path = ../game/hangar.h; sourceTree = "<group>"; };
 		F53304C61B09DEC300D8C3C7 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = menu.cpp; path = ../gui/menu.cpp; sourceTree = "<group>"; };
 		F53304C71B09DEC300D8C3C7 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = menu.h; path = ../gui/menu.h; sourceTree = "<group>"; };
+		F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = app_protocol_simple.cpp; path = ../deps/miso/src/app_protocol_simple.cpp; sourceTree = "<group>"; };
 		F561C5FA1AFD24E900D8DD14 /* half.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = half.h; path = ../util/half.h; sourceTree = "<group>"; };
 		F5696AA11B10E3F800C7BFC9 /* joystick.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = joystick.xml; path = ../resources/joystick.xml; sourceTree = "<group>"; };
 		F572C1EF1CA715AC00AB1D1F /* poc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = poc.cpp; sourceTree = "<group>"; };
@@ -197,6 +206,26 @@
 		F5C6D3A11AF96B4B006FB7E6 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = ../util/util.h; sourceTree = "<group>"; };
 		F5C724A41C8F124700EF0A7B /* simd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = simd.h; path = ../util/simd.h; sourceTree = "<group>"; };
 		F5CB42051CA1F14100F725CE /* zip.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = zip.h; path = ../util/zip.h; sourceTree = "<group>"; };
+		F5D209EC1CC18DA800189814 /* generic_socket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = generic_socket.cpp; path = ../deps/miso/src/generic_socket.cpp; sourceTree = "<group>"; };
+		F5D209ED1CC18DA800189814 /* ipv4.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ipv4.cpp; path = ../deps/miso/src/ipv4.cpp; sourceTree = "<group>"; };
+		F5D209EE1CC18DA800189814 /* ipv6.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ipv6.cpp; path = ../deps/miso/src/ipv6.cpp; sourceTree = "<group>"; };
+		F5D209EF1CC18DA800189814 /* platform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = platform.cpp; path = ../deps/miso/src/platform.cpp; sourceTree = "<group>"; };
+		F5D209F11CC18DA800189814 /* server_tcp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = server_tcp.cpp; path = ../deps/miso/src/server_tcp.cpp; sourceTree = "<group>"; };
+		F5D209F21CC18DA800189814 /* server_udp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = server_udp.cpp; path = ../deps/miso/src/server_udp.cpp; sourceTree = "<group>"; };
+		F5D209FC1CC18DBA00189814 /* ipv4.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ipv4.h; sourceTree = "<group>"; };
+		F5D209FD1CC18DBA00189814 /* ipv6.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ipv6.h; sourceTree = "<group>"; };
+		F5D209FE1CC18DBA00189814 /* platform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = platform.h; sourceTree = "<group>"; };
+		F5D20A011CC18DBA00189814 /* server_interface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = server_interface.h; sourceTree = "<group>"; };
+		F5D20A021CC18DBA00189814 /* server_tcp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = server_tcp.h; sourceTree = "<group>"; };
+		F5D20A031CC18DBA00189814 /* server_udp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = server_udp.h; sourceTree = "<group>"; };
+		F5D20A051CC18DBA00189814 /* generic_socket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = generic_socket.h; sourceTree = "<group>"; };
+		F5D20A061CC18DBA00189814 /* socket.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = socket.h; sourceTree = "<group>"; };
+		F5D20A071CC18DBA00189814 /* utility.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = utility.h; sourceTree = "<group>"; };
+		F5D20A0D1CC235EA00189814 /* client_tcp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = client_tcp.cpp; path = ../deps/miso/src/client_tcp.cpp; sourceTree = "<group>"; };
+		F5D20A121CC2360100189814 /* client_interface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = client_interface.h; sourceTree = "<group>"; };
+		F5D20A131CC2360100189814 /* client_tcp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = client_tcp.h; sourceTree = "<group>"; };
+		F5D20A151CC27C3400189814 /* app_protocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = app_protocol.h; sourceTree = "<group>"; };
+		F5D20A161CC27C3400189814 /* app_protocol_simple.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = app_protocol_simple.h; sourceTree = "<group>"; };
 		F5D7969F19B3432C006269F0 /* pugixml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pugixml.cpp; path = "../deps/pugixml-1.4/src/pugixml.cpp"; sourceTree = "<group>"; };
 		F5D796A019B3432C006269F0 /* pugiconfig.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugiconfig.hpp; path = "../deps/pugixml-1.4/src/pugiconfig.hpp"; sourceTree = "<group>"; };
 		F5D796A119B3432C006269F0 /* pugixml.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugixml.hpp; path = "../deps/pugixml-1.4/src/pugixml.hpp"; sourceTree = "<group>"; };
@@ -428,6 +457,83 @@
 			path = ../phys;
 			sourceTree = "<group>";
 		};
+		F5D209E91CC18D8A00189814 /* miso */ = {
+			isa = PBXGroup;
+			children = (
+				F5D209FA1CC18DBA00189814 /* include */,
+				F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */,
+				F5D20A0D1CC235EA00189814 /* client_tcp.cpp */,
+				F5D209EC1CC18DA800189814 /* generic_socket.cpp */,
+				F5D209ED1CC18DA800189814 /* ipv4.cpp */,
+				F5D209EE1CC18DA800189814 /* ipv6.cpp */,
+				F5D209EF1CC18DA800189814 /* platform.cpp */,
+				F5D209F11CC18DA800189814 /* server_tcp.cpp */,
+				F5D209F21CC18DA800189814 /* server_udp.cpp */,
+			);
+			name = miso;
+			sourceTree = "<group>";
+		};
+		F5D209FA1CC18DBA00189814 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				F5D209FB1CC18DBA00189814 /* miso */,
+			);
+			name = include;
+			path = ../deps/miso/include;
+			sourceTree = "<group>";
+		};
+		F5D209FB1CC18DBA00189814 /* miso */ = {
+			isa = PBXGroup;
+			children = (
+				F5D20A101CC2360100189814 /* client */,
+				F5D209FC1CC18DBA00189814 /* ipv4.h */,
+				F5D209FD1CC18DBA00189814 /* ipv6.h */,
+				F5D209FE1CC18DBA00189814 /* platform.h */,
+				F5D20A141CC27C3400189814 /* protocol */,
+				F5D209FF1CC18DBA00189814 /* server */,
+				F5D20A041CC18DBA00189814 /* socket */,
+				F5D20A071CC18DBA00189814 /* utility.h */,
+			);
+			path = miso;
+			sourceTree = "<group>";
+		};
+		F5D209FF1CC18DBA00189814 /* server */ = {
+			isa = PBXGroup;
+			children = (
+				F5D20A011CC18DBA00189814 /* server_interface.h */,
+				F5D20A021CC18DBA00189814 /* server_tcp.h */,
+				F5D20A031CC18DBA00189814 /* server_udp.h */,
+			);
+			path = server;
+			sourceTree = "<group>";
+		};
+		F5D20A041CC18DBA00189814 /* socket */ = {
+			isa = PBXGroup;
+			children = (
+				F5D20A051CC18DBA00189814 /* generic_socket.h */,
+				F5D20A061CC18DBA00189814 /* socket.h */,
+			);
+			path = socket;
+			sourceTree = "<group>";
+		};
+		F5D20A101CC2360100189814 /* client */ = {
+			isa = PBXGroup;
+			children = (
+				F5D20A121CC2360100189814 /* client_interface.h */,
+				F5D20A131CC2360100189814 /* client_tcp.h */,
+			);
+			path = client;
+			sourceTree = "<group>";
+		};
+		F5D20A141CC27C3400189814 /* protocol */ = {
+			isa = PBXGroup;
+			children = (
+				F5D20A151CC27C3400189814 /* app_protocol.h */,
+				F5D20A161CC27C3400189814 /* app_protocol_simple.h */,
+			);
+			path = protocol;
+			sourceTree = "<group>";
+		};
 		F5D7969C19B342ED006269F0 /* pugixml */ = {
 			isa = PBXGroup;
 			children = (
@@ -441,6 +547,7 @@
 		F5D796A319B34350006269F0 /* deps */ = {
 			isa = PBXGroup;
 			children = (
+				F5D209E91CC18D8A00189814 /* miso */,
 				F5D7969C19B342ED006269F0 /* pugixml */,
 				F503E51919048D4A00C3590A /* nya_engine.xcodeproj */,
 			);
@@ -538,9 +645,12 @@
 				F5A2A2D71AFE3258009765C1 /* missile_trail.cpp in Sources */,
 				F5A2A2E61B05466C009765C1 /* free_flight.cpp in Sources */,
 				F59AB5A81AFA4F1800137527 /* fhm_location.cpp in Sources */,
+				F5D209F51CC18DA800189814 /* ipv6.cpp in Sources */,
 				F5A2A2DC1AFE86E4009765C1 /* hud.cpp in Sources */,
 				F504CB1E1C5B9FA200FBB72D /* network.cpp in Sources */,
+				F5D20A091CC1936700189814 /* server_udp.cpp in Sources */,
 				F5C6D3921AF969A5006FB7E6 /* fhm.cpp in Sources */,
+				F5D209F41CC18DA800189814 /* ipv4.cpp in Sources */,
 				F50D9C9B1C9F2E5700A56812 /* pac5.cpp in Sources */,
 				F5DC44881C7CD9AF00F68115 /* mesh.cpp in Sources */,
 				F572C1F11CA715AC00AB1D1F /* poc.cpp in Sources */,
@@ -549,6 +659,7 @@
 				F578323E1AFBE859005FE829 /* ui.cpp in Sources */,
 				F50B755E1CABD1410004E04F /* platform.cpp in Sources */,
 				F59AB5A91AFA4F1800137527 /* fhm_mesh.cpp in Sources */,
+				F538BB0B1CC2B8EA0055F394 /* app_protocol_simple.cpp in Sources */,
 				F59AB5AE1AFA4F1800137527 /* location.cpp in Sources */,
 				F5C6D3931AF969A5006FB7E6 /* qdf.cpp in Sources */,
 				F50DADAC1C3047D5000DD3EA /* hangar.cpp in Sources */,
@@ -557,11 +668,14 @@
 				F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */,
 				F59AB5B71AFA7D1600137527 /* plane_camera.cpp in Sources */,
 				F5C6D39A1AF969BE006FB7E6 /* plane_params.cpp in Sources */,
+				F5D209F61CC18DA800189814 /* platform.cpp in Sources */,
 				F50B75611CABD3590004E04F /* controls.cpp in Sources */,
 				F5C6D3991AF969BE006FB7E6 /* physics.cpp in Sources */,
 				F59AB5B41AFA799B00137527 /* lens_flare.cpp in Sources */,
 				F59AB5AD1AFA4F1800137527 /* shared.cpp in Sources */,
+				F5D209F31CC18DA800189814 /* generic_socket.cpp in Sources */,
 				F5A2A2E41B05466C009765C1 /* ai.cpp in Sources */,
+				F5D20A0F1CC235EA00189814 /* client_tcp.cpp in Sources */,
 				F5C6D3861AF9694D006FB7E6 /* demo.cpp in Sources */,
 				F59AB5AA1AFA4F1800137527 /* location_params.cpp in Sources */,
 				F5A2A2E71B05466C009765C1 /* team_deathmatch.cpp in Sources */,
@@ -571,6 +685,7 @@
 				F5C3B6FE1B2C809000479524 /* particles.cpp in Sources */,
 				F59AB5B11AFA4FEC00137527 /* world.cpp in Sources */,
 				F50BFC621C53BBCB000B8500 /* sky.cpp in Sources */,
+				F5D20A0B1CC2228100189814 /* server_tcp.cpp in Sources */,
 				F5BE29E71CB39B3200345699 /* cpk.cpp in Sources */,
 				F59AB5A71AFA4F1800137527 /* scene.cpp in Sources */,
 			);
@@ -669,6 +784,7 @@
 					"../deps/glfw-bin/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../deps/miso/include/ ../";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -685,6 +801,7 @@
 					"../deps/glfw-bin/lib",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../deps/miso/include/ ../";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

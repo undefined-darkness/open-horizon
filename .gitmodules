@@ -4,7 +4,6 @@
 [submodule "deps/glfw"]
 	path = deps/glfw
 	url = https://github.com/glfw/glfw
-
-[submodule "deps/asio"]
-	path = deps/asio
-	url = https://github.com/chriskohlhoff/asio
+[submodule "deps/miso"]
+	path = deps/miso
+	url = https://github.com/antze-k/miso

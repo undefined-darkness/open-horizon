@@ -389,7 +389,7 @@ int main()
             last_pause = pause;
 
             bool should_stop = platform.was_pressed(GLFW_KEY_ESCAPE);
-            if (is_client && !client.is_started())
+            if (is_client && !client.is_up())
                 should_stop = true;
 
             if (should_stop)

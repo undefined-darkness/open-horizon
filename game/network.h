@@ -4,19 +4,15 @@
 
 #pragma once
 
-#define ASIO_STANDALONE
-#include "asio.hpp"
-
-using asio::ip::tcp;
-
 #include "util/util.h"
 
 #include "network_data.h"
 
-#include <thread>
-#include <mutex>
-#include <vector>
-#include <deque>
+#include "miso/server/server_tcp.h"
+#include "miso/client/client_tcp.h"
+
+#include <map>
+#include <set>
 #include <string>
 
 namespace game
@@ -56,28 +52,6 @@ private:
 
 //------------------------------------------------------------
 
-class network_messages
-{
-public:
-    void start(tcp::socket *socket);
-    void end();
-    void send_message(const std::string &msg);
-    bool get_message(std::string &msg);
-
-private:
-    void start_read();
-    void read_callback(const asio::error_code& error, std::size_t bytes_transferred);
-    void write_callback(const asio::error_code& error);
-
-private:
-    asio::streambuf m_response;
-    tcp::socket *m_socket = 0;
-    std::mutex m_mutex;
-    std::deque<std::string> m_msgs;
-};
-
-//------------------------------------------------------------
-
 class network_server: public noncopyable, public network_interface
 {
 public:
@@ -86,36 +60,34 @@ public:
 
     bool is_server() const override { return true; }
 
+    int get_players_count() const;
+
     ~network_server();
 
 private:
-    struct client;
-    void new_client_wait();
-    void handle_accept(client* c, asio::error_code err);
-    void accept_thread(short port);
-    void on_send_info(client* c, const asio::error_code & err, size_t bytes);
+    void update() override;
+    void update_post(int dt) override;
 
 private:
-    asio::io_service m_service;
-    tcp::acceptor *m_acceptor = 0;
+    struct client;
+    void process_msg(client &c, const std::string &msg);
+    void remove_client(miso::server_tcp::client_id id);
+
+private:
+    miso::server_tcp m_server;
+    std::string m_header;
+    int m_max_players = 0;
 
     struct client
     {
-        short id = 0;
+        miso::server_tcp::client_id id;
         bool started = false;
-        tcp::socket socket;
-        network_messages messages;
-
-        client(asio::io_service& io_service): socket(io_service) {}
-        ~client() { socket.close(); }
     };
 
-    std::vector<client *> m_clients;
-    std::mutex m_mutex;
-    std::thread m_accept_thread;
-    std::thread m_update_thread;
-    std::string m_header;
-    int m_max_players = 0;
+    std::map<miso::server_tcp::client_id, client> m_clients;
+    std::set<miso::server_tcp::client_id> m_requests;
+
+    std::map<std::pair<miso::server_tcp::client_id, unsigned int>, unsigned int> m_planes_remap;
 };
 
 //------------------------------------------------------------
@@ -128,20 +100,19 @@ public:
 
     void start();
 
-    bool is_started() const { return m_started; }
+    bool is_up() const { return m_client.is_open(); }
 
     const server_info &get_server_info() const;
 
     ~network_client();
 
 private:
-    asio::io_service m_service;
-    tcp::socket *m_socket = 0;
-    std::thread m_thread;
-    std::thread m_update_thread;
+    void update() override;
+    void update_post(int dt) override;
+
+private:
+    miso::client_tcp m_client;
     server_info m_server_info;
-    network_messages m_messages;
-    bool m_started = false;
 };
 
 //------------------------------------------------------------

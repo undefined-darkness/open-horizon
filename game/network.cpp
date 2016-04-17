@@ -3,7 +3,15 @@
 //
 
 #include "network.h"
-#include <iostream>
+#include "miso/socket/socket.h"
+#include "miso/protocol/app_protocol_simple.h"
+#include "miso/ipv4.h"
+
+#include <netdb.h>
+#include <arpa/inet.h>
+
+#include <sstream>
+#include <thread>
 #include <chrono>
 
 //ToDo: send plane data binary via udp and only important commands via tcp
@@ -18,12 +26,13 @@ const char *server_header = "Open-Horizon server";
 
 //------------------------------------------------------------
 
-inline std::string as_string(asio::streambuf &b)
+inline std::string resolve(const std::string &url)
 {
-    std::ostringstream ss;
-    ss << &b;
-    std::string s = ss.str();
-    return std::string(s.c_str());
+    const hostent *hp = gethostbyname(url.c_str());
+    if (!hp || !hp->h_addr_list[0])
+        return "";
+
+    return inet_ntoa(*(in_addr*)(hp -> h_addr_list[0]));
 }
 
 //------------------------------------------------------------
@@ -34,81 +43,52 @@ bool http_get(const char *url, const char *arg, std::string &data)
     if (!url || !arg)
         return false;
 
-    asio::error_code error;
-    asio::io_service io_service;
-
-    // Get a list of endpoints corresponding to the server name.
-    tcp::resolver resolver(io_service);
-    tcp::resolver::query query(url, "http");
-    tcp::resolver::iterator endpoint_iterator = resolver.resolve(query, error);
-    if (error)
+    auto ip = resolve("http://" + std::string(url));
+    miso::socket_sync<miso::tcp> socket;
+    if (!socket.connect(miso::ipv4_address(ip.c_str()), 80))
         return false;
 
-    // Try each endpoint until we successfully establish a connection.
-    tcp::socket socket(io_service);
-    asio::connect(socket, endpoint_iterator, error);
-    if (error)
-        return false;
+    std::string request = "GET " + std::string(arg) + " HTTP/1.0\r\n";
+    request +=  "Host: " + std::string(url) + "\r\n";
+    request += "Accept: */*\r\n";
+    request += "Connection: close\r\n\r\n";
 
-    // Form the request. We specify the "Connection: close" header so that the
-    // server will close the socket after transmitting the response. This will
-    // allow us to treat all data up until the EOF as the content.
-    asio::streambuf request;
-    std::ostream request_stream(&request);
-    request_stream << "GET " << arg << " HTTP/1.0\r\n";
-    request_stream << "Host: " << url << "\r\n";
-    request_stream << "Accept: */*\r\n";
-    request_stream << "Connection: close\r\n\r\n";
-
-    // Send the request.
-    asio::write(socket, request, error);
-    if (error)
-        return false;
-
-    // Read the response status line. The response streambuf will automatically
-    // grow to accommodate the entire line. The growth may be limited by passing
-    // a maximum size to the streambuf constructor.
-    asio::streambuf response;
-    asio::read_until(socket, response, "\r\n", error);
-    if (error)
-        return false;
-
-    // Check that response is OK.
-    std::istream response_stream(&response);
-    std::string http_version;
-    response_stream >> http_version;
-    unsigned int status_code;
-    response_stream >> status_code;
-    std::string status_message;
-    std::getline(response_stream, status_message);
-    if (!response_stream || http_version.substr(0, 5) != "HTTP/") //Invalid response
-        return false;
-
-    if (status_code != 200)
-        return false;
-
-    // Read the response headers, which are terminated by a blank line.
-    asio::read_until(socket, response, "\r\n\r\n", error);
-    if (error)
-        return false;
-
-    // Process the response headers.
-    std::string header, h;
-    while (std::getline(response_stream, h) && h != "\r")
-        header.append(h);
-
-    // Write whatever content we already have to output.
-    if (response.size() > 0)
-        response_stream >> data;
-
-    // Read until EOF, writing data to output as we go.
-    while (!error)
+    if (socket.send(request.c_str(), request.length()) < (int)request.length())
     {
-        asio::read(socket, response, asio::transfer_at_least(1), error);
-        data += as_string(response);
+        socket.close();
+        return false;
     }
 
-    return error == asio::error::eof;
+    std::string response;
+    char buf[4096];
+    int size;
+    while ((size = socket.recv(buf, sizeof(buf))) > 0)
+        response.append(buf, size);
+    socket.close();
+
+    std::istringstream response_stream(response);
+    std::string http_version;
+    response_stream >> http_version;
+    if (http_version.substr(0, 5) != "HTTP/") //invalid response
+        return false;
+
+    unsigned int status_code = 0;
+    response_stream >> status_code;
+
+    if (status_code != 200)
+    {
+        std::string status_message;
+        std::getline(response_stream, status_message);
+        return false;
+    }
+
+    const char *data_end = "\r\n\r\n";
+    const size_t data_pos = response.find(data_end);
+    if (data_pos == std::string::npos)
+        return false;
+
+    data = response.substr(data_pos + strlen(data_end));
+    return true;
 }
 
 //------------------------------------------------------------
@@ -179,16 +159,8 @@ bool servers_list::request_update()
 
     for (auto &l: m_list)
     {
-        asio::error_code error;
-        asio::io_service service;
-        tcp::socket socket(service);
-
-        //asio::connect(socket, tcp::endpoint(asio::ip::address::from_string(l), port), error);
-        if (error)
-            continue;
+        //ToDo: check alive
     }
-
-    //ToDo: check servers
 
     return result;
 }
@@ -216,79 +188,6 @@ bool servers_list::is_ready() const
 void servers_list::get_list(std::vector<std::string> &list) const
 {
     list = m_list;
-}
-
-//------------------------------------------------------------
-
-void network_messages::start(tcp::socket *socket)
-{
-    m_socket = socket;
-    start_read();
-}
-
-//------------------------------------------------------------
-
-void network_messages::end()
-{
-    m_socket = 0;
-}
-
-//------------------------------------------------------------
-
-void network_messages::send_message(const std::string &msg)
-{
-    if (!m_socket)
-        return;
-
-    asio::async_write(*m_socket, asio::buffer(msg), std::bind(&network_messages::write_callback, this, std::placeholders::_1));
-}
-
-//------------------------------------------------------------
-
-bool network_messages::get_message(std::string &msg)
-{
-    bool result = false;
-    m_mutex.lock();
-    if (!m_msgs.empty())
-    {
-        msg = m_msgs.front();
-        m_msgs.pop_front();
-        result = true;
-    }
-    m_mutex.unlock();
-    return result;
-}
-
-//------------------------------------------------------------
-
-void network_messages::start_read()
-{
-    if (!m_socket)
-        return;
-
-    asio::async_read_until(*m_socket,  m_response, '\n', std::bind(&network_messages::read_callback, this, std::placeholders::_1, std::placeholders::_2));
-}
-
-//------------------------------------------------------------
-
-void network_messages::read_callback(const asio::error_code& error, std::size_t bytes_transferred)
-{
-    if (bytes_transferred)
-    {
-        m_mutex.lock();
-        m_msgs.push_back(as_string(m_response));
-        m_mutex.unlock();
-    }
-    
-    start_read();
-}
-
-//------------------------------------------------------------
-
-void network_messages::write_callback(const asio::error_code& error)
-{
-    if (error)
-        printf("write_callback error\n");
 }
 
 //------------------------------------------------------------
@@ -353,7 +252,7 @@ inline void read(std::istringstream &is, network_client::msg_add_plane &m)
 
 bool network_server::open(short port, const char *game_mode, const char *location, int max_players)
 {
-    if (m_acceptor)
+    if (m_server.is_open())
         return false;
 
     if (!game_mode || !location)
@@ -374,177 +273,23 @@ bool network_server::open(short port, const char *game_mode, const char *locatio
 
     m_max_players = max_players;
 
-    try { m_acceptor = new tcp::acceptor(m_service, tcp::endpoint(tcp::v4(), port)); }
-    catch (asio::system_error &e) { return false; }
-
-    new_client_wait();
-    m_accept_thread = std::thread([&]() { try { m_service.run(); } catch (asio::system_error &e) {} });
-
-    m_update_thread = std::thread([&]()
-    {
-        std::string msg;
-        while (m_acceptor) //active
-        {
-            m_msg_mutex.lock();
-            m_mutex.lock();
-
-            for (auto &c: m_clients)
-            {
-                if (c->messages.get_message(msg))
-                {
-                    std::istringstream is(msg);
-                    std::string cmd;
-                    is>>cmd;
-
-                    if (cmd == "plane")
-                    {
-                        unsigned short client_id, plane_id;
-                        is>>client_id, is>>plane_id;
-
-                        for (auto &p: m_planes)
-                        {
-                            if (p.r.client_id == client_id && p.r.plane_id == plane_id)
-                            {
-                                read(is, p.net);
-                                printf("plane %s\n", p.r.name.c_str());
-                                break;
-                            }
-                        }
-                    }
-                    else if (cmd == "add_plane")
-                    {
-                        msg_add_plane ap;
-                        read(is, ap);
-                        m_add_plane_msgs.push_back(ap);
-                        printf("add_plane %s\n", ap.name.c_str());
-                    }
-                    else if (cmd == "start")
-                    {
-                        c->messages.send_message("set_time " + std::to_string(m_time) + "\n");
-                        for (auto &p: m_planes)
-                        {
-                            c->messages.send_message("add_plane " + to_string(p.r) + "\n");
-                            c->started = true;
-                        }
-                    }
-                    else
-                        printf("server received: %s", msg.c_str());
-                }
-
-                if (!c->started)
-                    continue;
-
-                for (auto &r: m_add_plane_requests)
-                    c->messages.send_message("add_plane " + to_string(r) + "\n");
-
-                for (auto &p: m_planes)
-                {
-                    if (p.r.client_id == c->id)
-                        continue;
-
-                    if (p.net.time > p.last_time)
-                    {
-                        c->messages.send_message("plane " + std::to_string(p.r.client_id) + " " +
-                                                 std::to_string(p.r.plane_id) + " "+ to_string(p.net) + "\n");
-                        p.last_time = p.net.time;
-                    }
-                }
-            }
-
-            m_add_plane_requests.clear();
-            m_msg_mutex.unlock();
-            m_mutex.unlock();
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-    });
+    static miso::app_protocol_simple protocol;
+    m_server.set_app_protocol(&protocol);
+    if (!m_server.open_ipv4(port))
+        return false;
 
     return true;
 }
 
 //------------------------------------------------------------
 
-void network_server::new_client_wait()
-{
-    if (!m_acceptor)
-        return;
-
-    client *c = new client(m_service);
-    m_acceptor->async_accept(c->socket, std::bind(&network_server::handle_accept, this, c, std::placeholders::_1));
-}
-
-//------------------------------------------------------------
-
-void network_server::handle_accept(client* c, asio::error_code error)
-{
-    if (!error)
-    {
-        asio::write(c->socket, asio::buffer(m_header), error);
-        if (!error)
-        {
-            asio::streambuf b;
-            asio::read_until(c->socket, b, '\n', error);
-            if (!error)
-            {
-                auto response = as_string(b);
-                if (response == "connect\n")
-                {
-                    int players_count = 0;
-                    m_mutex.lock();
-                    players_count = (int)m_clients.size() + 1; //server is also a player
-                    m_mutex.unlock();
-
-                    if (m_max_players > 0 && players_count >= m_max_players)
-                    {
-                        asio::write(c->socket, asio::buffer("max_players_limit\n"), error);
-                        delete c;
-                        c = 0;
-                    }
-                    else
-                    {
-                        asio::write(c->socket, asio::buffer("connected\n"), error);
-                        if (!error)
-                        {
-                            c->id = m_clients.size() + 1;
-                            c->messages.start(&c->socket);
-                            c->messages.send_message("set_id " + std::to_string(c->id) + '\n');
-                            m_mutex.lock();
-                            m_clients.push_back(c);
-                            m_mutex.unlock();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if (error && c)
-        delete c;
-
-    new_client_wait();
-}
-
-//------------------------------------------------------------
-
 void network_server::close()
 {
-    if (!m_acceptor)
-        return;
-
-    m_mutex.lock();
     for (auto &c: m_clients)
-        c->messages.send_message("disconnect\n");
-    m_mutex.unlock();
+        m_server.send_message(c.first, "disconnect");
 
-    m_service.stop();
-    if (m_accept_thread.joinable())
-        m_accept_thread.join();
-
-    delete m_acceptor;
-    m_acceptor = 0;
-
-    if (m_update_thread.joinable())
-        m_update_thread.join();
+    m_server.close();
+    m_planes.clear();
 }
 
 //------------------------------------------------------------
@@ -556,166 +301,322 @@ network_server::~network_server()
 
 //------------------------------------------------------------
 
+int network_server::get_players_count() const
+{
+    return (int)m_clients.size() + 1; //server is also a player
+}
+
+//------------------------------------------------------------
+
+void network_server::update()
+{
+    m_server.update();
+    for (int i = 0; i < m_server.get_new_client_count(); ++i)
+    {
+        auto id = m_server.get_new_client(i);
+
+        if (!m_server.send_message(id, m_header))
+        {
+            m_server.disconnect_user(id);
+            continue;
+        }
+
+        if (m_max_players > 0 && get_players_count() >= m_max_players)
+        {
+            m_server.send_message(id, "max_players_limit");
+            m_server.disconnect_user(id);
+            continue;
+        }
+
+        m_requests.insert(id);
+    }
+
+    for (int i = 0; i < m_server.get_lost_client_count(); ++i)
+        remove_client(m_server.get_lost_client(i));
+
+    for (size_t i = 0; i < m_server.get_message_count(); ++i)
+    {
+        auto &m = m_server.get_message(i);
+        const auto id = m.first;
+
+        auto c = m_clients.find(id);
+        if (c != m_clients.end())
+        {
+            process_msg(c->second, m.second);
+            continue;
+        }
+
+        auto r = m_requests.find(id);
+        if (r == m_requests.end())
+            continue;
+
+        if (m.second == "connect")
+        {
+            if (m_max_players > 0 && get_players_count() >= m_max_players)
+            {
+                m_server.send_message(id, "max_players_limit");
+                m_server.disconnect_user(id);
+                m_requests.erase(id);
+            }
+            else
+            {
+                m_server.send_message(id, "connected " + std::to_string(id));
+                m_requests.erase(id);
+                client &c = m_clients[id];
+                c.id = id;
+            }
+        }
+    }
+}
+
+//------------------------------------------------------------
+
+void network_server::update_post(int dt)
+{
+    for (auto &c: m_clients)
+    {
+        if (!c.second.started)
+            continue;
+
+        for (auto &p: m_planes)
+        {
+            if (c.first == p.r.client_id)
+                continue;
+
+            m_server.send_message(c.first, "plane " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
+        }
+    }
+
+    if (!m_add_plane_requests.empty())
+    {
+        for (auto &c: m_clients)
+        {
+            if (!c.second.started)
+                continue;
+
+            for (auto &r: m_add_plane_requests)
+            {
+                if (c.first == r.client_id)
+                    continue;
+
+                m_server.send_message(c.first, "add_plane " + to_string(r));
+            }
+        }
+
+        m_add_plane_requests.clear();
+    }
+}
+
+//------------------------------------------------------------
+
+void network_server::process_msg(client &c, const std::string &msg)
+{
+    std::istringstream is(msg);
+    std::string cmd;
+    is>>cmd;
+
+    if (cmd == "plane")
+    {
+        unsigned int plane_id;
+        is>>plane_id;
+
+        auto k = std::make_pair(c.id, plane_id);
+        auto remap_id = m_planes_remap.find(k);
+        if (remap_id != m_planes_remap.end())
+        {
+            for (auto &p: m_planes)
+            {
+                if (p.r.plane_id == remap_id->second)
+                {
+                    read(is, *p.net.get());
+                    break;
+                }
+            }
+        }
+    }
+    else if (cmd == "add_plane")
+    {
+        msg_add_plane ap;
+        read(is, ap);
+        auto new_id = new_plane_id();
+        m_planes_remap[std::make_pair(c.id, ap.plane_id)] = new_id;
+        ap.client_id = c.id;
+        ap.plane_id = new_id;
+        m_add_plane_msgs.push_back(ap);
+
+        for (auto &oc: m_clients)
+        {
+            if(oc.first == c.id)
+                continue;
+
+            m_server.send_message(oc.first, "add_plane " + to_string(ap));
+        }
+    }
+    else if (cmd == "start")
+    {
+        //m_server.send_message(c.id, "set_time " + std::to_string(m_time));
+        for (auto &p: m_planes)
+        {
+            m_server.send_message(c.id, "add_plane " + to_string(p.r));
+            c.started = true;
+        }
+    }
+    else
+        printf("server received: %s", msg.c_str());
+}
+
+//------------------------------------------------------------
+
+void network_server::remove_client(miso::server_tcp::client_id id)
+{
+    //ToDo
+}
+
+//------------------------------------------------------------
+
 bool network_client::connect(const char *address, short port)
 {
-    if (!address || m_socket)
+    if (!address || m_client.is_open())
         return false;
 
-    asio::error_code error;
-
-    m_socket = new tcp::socket(m_service);
-
-    tcp::endpoint ep(asio::ip::address::from_string(address), port);
-    m_socket->connect(ep, error);
-    if (error)
-    {
-        delete m_socket;
-        m_socket = 0;
-        return  false;
-    }
-
-    asio::streambuf b;
-    asio::read_until(*m_socket, b, "\n", error);
-    if (error && error != asio::error::eof)
-    {
-        m_socket->close();
-        delete m_socket;
-        m_socket = 0;
+    static miso::app_protocol_simple protocol;
+    m_client.set_app_protocol(&protocol);
+    if (!m_client.connect_wait(miso::ipv4_address(address), port))
         return false;
-    }
 
-    if (!get_info(as_string(b), m_server_info))
+    bool has_info = false;
+    const int timeout = 2000, interval = 100;
+    for (int i = 0; i < timeout / interval; ++i)
     {
-        m_socket->close();
-        delete m_socket;
-        m_socket = 0;
-        return false;
+        m_client.update();
+        for (size_t j = 0; j < m_client.get_message_count(); ++j)
+        {
+            const std::string &m = m_client.get_message(j);
+            if (!has_info)
+            {
+                if (!get_info(m, m_server_info))
+                {
+                    m_client.disconnect();
+                    return false;
+                }
+
+                has_info = true;
+                m_client.send_message("connect");
+            }
+            else
+            {
+                std::istringstream ss(m);
+                std::string command;
+                ss >> command;
+
+                if (command == "connected")
+                {
+                    ss >> m_id;
+                    return true;
+                }
+
+                m_client.disconnect();
+                return false;
+            }
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
     }
 
-    asio::write(*m_socket, asio::buffer("connect\n"));
-    asio::read_until(*m_socket, b, '\n', error);
-
-    auto response = as_string(b);
-    if (response != "connected\n")
-    {
-        m_socket->close();
-        delete m_socket;
-        m_socket = 0;
-        return false;
-    }
-
-    return true;
+    m_client.disconnect();
+    return false;
 }
 
 //------------------------------------------------------------
 
 void network_client::start()
 {
-    if (!m_socket || m_started)
+    if (!m_client.is_open())
         return;
 
-    m_messages.start(m_socket);
-    m_thread = std::thread([&]() { try { m_service.run(); } catch (asio::system_error &e) {} });
-    m_messages.send_message("start\n");
-    m_started = true;
-    m_update_thread = std::thread([&]()
-    {
-        std::string msg;
-        while (m_started)
-        {
-            m_msg_mutex.lock();
-
-            if (m_messages.get_message(msg))
-            {
-                std::istringstream is(msg);
-                std::string cmd;
-                is>>cmd;
-
-                if (cmd == "plane")
-                {
-                    unsigned short client_id, plane_id;
-                    is>>client_id, is>>plane_id;
-
-                    for (auto &p: m_planes)
-                    {
-                        if (p.r.client_id == client_id && p.r.plane_id == plane_id)
-                        {
-                            read(is, p.net);
-                            break;
-                        }
-                    }
-                }
-                else if (cmd == "add_plane")
-                {
-                    msg_add_plane ap;
-                    read(is, ap);
-                    m_add_plane_msgs.push_back(ap);
-                }
-                else if (cmd == "set_time")
-                {
-                    is>>m_time;
-                }
-                else if (cmd == "set_id")
-                {
-                    is>>m_id;
-                }
-                else if (cmd == "disconnect")
-                {
-                    m_started = false;
-                }
-                else
-                    printf("client received: %s", msg.c_str());
-            }
-
-            if (m_id)
-            {
-                if (!m_add_plane_requests.empty())
-                {
-                    for (auto &r: m_add_plane_requests)
-                        m_messages.send_message("add_plane " + to_string(r) + "\n");
-                    m_add_plane_requests.clear();
-                }
-
-                for (auto &p: m_planes)
-                {
-                    if (!p.net.source)
-                        continue;
-
-                    if (p.net.time > p.last_time)
-                    {
-                        m_messages.send_message("plane " + std::to_string(p.r.client_id) + " " +
-                                                 std::to_string(p.r.plane_id) + " "+ to_string(p.net) + "\n");
-                        p.last_time = p.net.time;
-                    }
-                }
-            }
-
-            m_msg_mutex.unlock();
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-    });
+    m_client.send_message("start");
 }
 
 //------------------------------------------------------------
 
 void network_client::disconnect()
 {
-    if (!m_socket)
+    if (!m_client.is_open())
         return;
 
-    m_messages.send_message("disconnect\n");
-    m_messages.end();
-    m_socket->close();
-    delete m_socket;
-    m_socket = 0;
+    m_client.send_message("disconnect");
+    m_client.disconnect();
+    m_planes.clear();
+}
 
-    m_started = false;
+//------------------------------------------------------------
 
-    if (m_thread.joinable())
-        m_thread.join();
-    if (m_update_thread.joinable())
-        m_update_thread.join();
+void network_client::update()
+{
+    m_client.update();
+
+    for (size_t i = 0; i < m_client.get_message_count(); ++i)
+    {
+        auto &m = m_client.get_message(i);
+
+        std::istringstream is(m);
+        std::string cmd;
+        is>>cmd;
+
+        if (cmd == "plane")
+        {
+            unsigned short plane_id;
+            is>>plane_id;
+
+            for (auto &p: m_planes)
+            {
+                if (p.r.plane_id == plane_id && p.r.client_id != m_id)
+                {
+                    read(is, *p.net.get());
+                    break;
+                }
+            }
+        }
+        else if (cmd == "add_plane")
+        {
+            msg_add_plane ap;
+            read(is, ap);
+            m_add_plane_msgs.push_back(ap);
+        }
+        else if (cmd == "set_time")
+        {
+            is>>m_time;
+        }
+        else if (cmd == "disconnect")
+        {
+            m_client.disconnect();
+        }
+        else
+            printf("client received: %s", m.c_str());
+    }
+}
+
+//------------------------------------------------------------
+
+void network_client::update_post(int dt)
+{
+    for (auto &p: m_planes)
+    {
+        if (!p.net->source)
+            continue;
+
+        m_client.send_message("plane " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
+    }
+
+    if (!m_add_plane_requests.empty())
+    {
+        for (auto &r: m_add_plane_requests)
+        {
+            if (r.client_id == m_id)
+                m_client.send_message("add_plane " + to_string(r));
+        }
+        m_add_plane_requests.clear();
+    }
 }
 
 //------------------------------------------------------------

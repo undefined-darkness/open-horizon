@@ -304,10 +304,10 @@ void menu::set_screen(const std::string &screen)
         add_entry(L"Deathmatch", {"mode=dm", "screen=map_select", "multiplayer=no"});
         add_entry(L"Team deathmatch", {"mode=tdm", "screen=map_select", "multiplayer=no"});
         add_entry(L"Free flight", {"mode=ff", "screen=map_select", "multiplayer=no"});
-/*
         add_entry(L"Multiplayer", {"screen=mp"});
-        add_entry(L"Aircraft viewer", {"mode=none", "screen=ac_view"});
-*/
+
+        //add_entry(L"Aircraft viewer", {"mode=none", "screen=ac_view"});
+
         add_entry(L"Exit", {"exit"});
     }
     else if (screen == "mp")

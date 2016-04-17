@@ -368,7 +368,13 @@ void world::set_location(const char *name)
 void world::update(int dt)
 {
     if (m_network)
+    {
         m_network->update();
+
+        network_interface::msg_add_plane m;
+        while(m_network->get_add_plane_msg(m))
+            add_plane(m.name.c_str(), m.color, false, m_network->add_plane(m));
+    }
 
     m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p)
                                   { return p.use_count() <= 1 && !p->net; }), m_planes.end());
@@ -449,13 +455,7 @@ void world::update(int dt)
     m_render_world.update(dt);
 
     if (m_network)
-    {
         m_network->update_post(dt);
-
-        network_interface::msg_add_plane m;
-        while(m_network->get_add_plane_msg(m))
-            add_plane(m.name.c_str(), m.color, false, m_network->add_plane(m));
-    }
 }
 
 //------------------------------------------------------------
