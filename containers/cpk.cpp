@@ -287,7 +287,7 @@ bool cpk_file::open(nya_resources::resource_data *data)
         }
     }
 
-    std::sort(m_entries.begin(), m_entries.end(), [](entry &a, entry &b){ return a.id < b.id; });
+    std::sort(m_entries.begin(), m_entries.end(), [](const entry &a, const entry &b){ return a.id < b.id; });
 
     uint32_t offset = (uint32_t)content_offset;
     uint32_t idx = 0;
