@@ -7,8 +7,13 @@
 #include "miso/protocol/app_protocol_simple.h"
 #include "miso/ipv4.h"
 
-#include <netdb.h>
-#include <arpa/inet.h>
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+#else
+    #include <netdb.h>
+    #include <arpa/inet.h>
+#endif
 
 #include <sstream>
 #include <thread>
@@ -28,6 +33,16 @@ const char *server_header = "Open-Horizon server";
 
 inline std::string resolve(const std::string &url)
 {
+#ifdef _WIN32
+    static WSADATA wsaData;
+    static bool once = true;
+    if (once)
+    {
+        WSAStartup(MAKEWORD(2, 2), &wsaData);
+        once = false;
+    }
+#endif
+
     const hostent *hp = gethostbyname(url.c_str());
     if (!hp || !hp->h_addr_list[0])
         return "";
