@@ -494,13 +494,15 @@ bool network_client::connect(const char *address, short port)
     if (!address || m_client.is_open())
         return false;
 
+    const int timeout = 2000;
+
     static miso::app_protocol_simple protocol;
     m_client.set_app_protocol(&protocol);
-    if (!m_client.connect_wait(miso::ipv4_address(address), port))
+    if (!m_client.connect_wait(miso::ipv4_address(address), port, timeout))
         return false;
 
     bool has_info = false;
-    const int timeout = 2000, interval = 100;
+    const int interval = 100;
     for (int i = 0; i < timeout / interval; ++i)
     {
         m_client.update();

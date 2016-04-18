@@ -198,7 +198,7 @@ bool world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, vec
 
 void world::update_planes(int dt, const hit_hunction &on_hit)
 {
-    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p){ return p.use_count() <= 1; }), m_planes.end());
+    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p){ return p.unique(); }), m_planes.end());
     for (auto &p: m_planes)
     {
         p->update(dt);
@@ -280,7 +280,7 @@ void world::update_planes(int dt, const hit_hunction &on_hit)
 
 void world::update_missiles(int dt, const hit_hunction &on_hit)
 {
-    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m){ return m.use_count() <= 1; }), m_missiles.end());
+    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m){ return m.unique(); }), m_missiles.end());
     for (auto &m: m_missiles)
     {
         m->update(dt);
