@@ -19,8 +19,6 @@ namespace game
 
 struct net_plane
 {
-    unsigned int time = 0;
-
     nya_math::vec3 pos;
     nya_math::vec3 vel;
     nya_math::quat rot;
@@ -29,6 +27,7 @@ struct net_plane
     float ctrl_brake = 0.0f;
 
     bool source = false;
+    int time_fix = 0;
 
     int hp = 0;
 };

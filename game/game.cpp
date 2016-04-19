@@ -374,6 +374,20 @@ void world::update(int dt)
         network_interface::msg_add_plane m;
         while(m_network->get_add_plane_msg(m))
             add_plane(m.name.c_str(), m.color, false, m_network->add_plane(m));
+
+        for (auto &p: m_planes)
+        {
+            if (p->net->source)
+                continue;
+
+            p->phys->pos = p->net->pos;
+            p->phys->rot = p->net->rot;
+            p->phys->vel = p->net->vel;
+            p->controls.rot = p->net->ctrl_rot;
+            p->controls.brake = p->net->ctrl_brake;
+            p->phys->update(dt + p->net->time_fix);
+            p->hp = p->net->hp;
+        }
     }
 
     m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p)
@@ -455,7 +469,22 @@ void world::update(int dt)
     m_render_world.update(dt);
 
     if (m_network)
+    {
+        for (auto &p: m_planes)
+        {
+            if (!p->net->source)
+                continue;
+
+            p->net->pos = p->phys->pos;
+            p->net->rot = p->phys->rot;
+            p->net->vel = p->phys->vel;
+            p->net->ctrl_rot = p->controls.rot;
+            p->net->ctrl_brake = p->controls.brake;
+            p->net->hp = p->hp;
+        }
+
         m_network->update_post(dt);
+    }
 }
 
 //------------------------------------------------------------
@@ -703,31 +732,6 @@ bool plane::is_special_bay_ready()
 
 void plane::update(int dt, world &w)
 {
-    if (net)
-    {
-        if (net->source)
-        {
-            net->pos = phys->pos;
-            net->rot = phys->rot;
-            net->vel = phys->vel;
-            net->ctrl_rot = controls.rot;
-            net->ctrl_brake = controls.brake;
-            net->hp = hp;
-        }
-        else
-        {
-            //float kdt = (long(w.get_net_time() + dt) - long(net->time)) * 0.001f;
-            float kdt = dt * 0.001f;
-
-            phys->pos = net->pos + net->vel * kdt;
-            phys->rot = net->rot;
-            phys->vel = net->vel;
-            controls.rot = net->ctrl_rot;
-            controls.brake = net->ctrl_brake;
-            hp = net->hp;
-        }
-    }
-
     const plane_ptr &me = shared_from_this();
     const vec3 dir = get_dir();
     const vec3 pos_fix = phys->pos - render->get_pos(); //skeleton is not updated yet

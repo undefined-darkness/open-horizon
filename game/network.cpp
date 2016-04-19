@@ -237,7 +237,7 @@ inline void read(std::istringstream &is, nya_math::quat &q)
 
 inline std::string to_string(const net_plane &n)
 {
-    return std::to_string(n.time) + " " + to_string(n.pos) + " " + to_string(n.vel) + " " + to_string(n.rot) + " "
+    return to_string(n.pos) + " " + to_string(n.vel) + " " + to_string(n.rot) + " "
            + to_string(n.ctrl_rot) + " " + std::to_string(n.ctrl_brake) + " " + std::to_string(n.hp);
 }
 
@@ -245,7 +245,7 @@ inline std::string to_string(const net_plane &n)
 
 inline void read(std::istringstream &is, net_plane &n)
 {
-    is>>n.time, read(is, n.pos), read(is, n.vel), read(is, n.rot),
+    read(is, n.pos), read(is, n.vel), read(is, n.rot),
     read(is, n.ctrl_rot), is>>n.ctrl_brake, is>>n.hp;
 }
 
@@ -326,6 +326,7 @@ int network_server::get_players_count() const
 void network_server::update()
 {
     m_server.update();
+
     for (int i = 0; i < m_server.get_new_client_count(); ++i)
     {
         auto id = m_server.get_new_client(i);
@@ -386,44 +387,6 @@ void network_server::update()
 
 //------------------------------------------------------------
 
-void network_server::update_post(int dt)
-{
-    for (auto &c: m_clients)
-    {
-        if (!c.second.started)
-            continue;
-
-        for (auto &p: m_planes)
-        {
-            if (c.first == p.r.client_id)
-                continue;
-
-            m_server.send_message(c.first, "plane " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
-        }
-    }
-
-    if (!m_add_plane_requests.empty())
-    {
-        for (auto &c: m_clients)
-        {
-            if (!c.second.started)
-                continue;
-
-            for (auto &r: m_add_plane_requests)
-            {
-                if (c.first == r.client_id)
-                    continue;
-
-                m_server.send_message(c.first, "add_plane " + to_string(r));
-            }
-        }
-
-        m_add_plane_requests.clear();
-    }
-}
-
-//------------------------------------------------------------
-
 void network_server::process_msg(client &c, const std::string &msg)
 {
     std::istringstream is(msg);
@@ -432,8 +395,8 @@ void network_server::process_msg(client &c, const std::string &msg)
 
     if (cmd == "plane")
     {
-        unsigned int plane_id;
-        is>>plane_id;
+        unsigned int time, plane_id;
+        is >> time, is >> plane_id;
 
         auto k = std::make_pair(c.id, plane_id);
         auto remap_id = m_planes_remap.find(k);
@@ -443,7 +406,12 @@ void network_server::process_msg(client &c, const std::string &msg)
             {
                 if (p.r.plane_id == remap_id->second)
                 {
+                    if (p.last_time > time)
+                        break;
+
+                    //p.net->time_fix = m_time - time; //ToDo: synchronize time first
                     read(is, *p.net.get());
+                    p.last_time = time;
                     break;
                 }
             }
@@ -469,7 +437,6 @@ void network_server::process_msg(client &c, const std::string &msg)
     }
     else if (cmd == "start")
     {
-        //m_server.send_message(c.id, "set_time " + std::to_string(m_time));
         for (auto &p: m_planes)
         {
             m_server.send_message(c.id, "add_plane " + to_string(p.r));
@@ -477,7 +444,47 @@ void network_server::process_msg(client &c, const std::string &msg)
         }
     }
     else
-        printf("server received: %s", msg.c_str());
+        printf("server received: %s\n", msg.c_str());
+}
+
+//------------------------------------------------------------
+
+void network_server::update_post(int dt)
+{
+    m_time += dt;
+
+    for (auto &c: m_clients)
+    {
+        if (!c.second.started)
+            continue;
+
+        for (auto &p: m_planes)
+        {
+            if (c.first == p.r.client_id)
+                continue;
+
+            m_server.send_message(c.first, "plane " + std::to_string(m_time) + " " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
+        }
+    }
+
+    if (!m_add_plane_requests.empty())
+    {
+        for (auto &c: m_clients)
+        {
+            if (!c.second.started)
+                continue;
+
+            for (auto &r: m_add_plane_requests)
+            {
+                if (c.first == r.client_id)
+                    continue;
+                
+                m_server.send_message(c.first, "add_plane " + to_string(r));
+            }
+        }
+        
+        m_add_plane_requests.clear();
+    }
 }
 
 //------------------------------------------------------------
@@ -578,18 +585,23 @@ void network_client::update()
 
         std::istringstream is(m);
         std::string cmd;
-        is>>cmd;
+        is >> cmd;
 
         if (cmd == "plane")
         {
-            unsigned short plane_id;
-            is>>plane_id;
+            unsigned short time, plane_id;
+            is >> time, is >> plane_id;
 
             for (auto &p: m_planes)
             {
                 if (p.r.plane_id == plane_id && p.r.client_id != m_id)
                 {
+                    if (p.last_time > time)
+                        break;
+
+                    //p.net->time_fix = m_time - time; //ToDo: synchronize time first
                     read(is, *p.net.get());
+                    p.last_time = time;
                     break;
                 }
             }
@@ -600,16 +612,12 @@ void network_client::update()
             read(is, ap);
             m_add_plane_msgs.push_back(ap);
         }
-        else if (cmd == "set_time")
-        {
-            is>>m_time;
-        }
         else if (cmd == "disconnect")
         {
             m_client.disconnect();
         }
         else
-            printf("client received: %s", m.c_str());
+            printf("client received: %s\n", m.c_str());
     }
 }
 
@@ -617,12 +625,14 @@ void network_client::update()
 
 void network_client::update_post(int dt)
 {
+    m_time += dt;
+
     for (auto &p: m_planes)
     {
         if (!p.net->source)
             continue;
 
-        m_client.send_message("plane " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
+        m_client.send_message("plane " + std::to_string(m_time) + " " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
     }
 
     if (!m_add_plane_requests.empty())
