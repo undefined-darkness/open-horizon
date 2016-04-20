@@ -27,7 +27,6 @@ struct net_plane
     float ctrl_brake = 0.0f;
 
     bool source = false;
-    int time_fix = 0;
 
     int hp = 0;
 };

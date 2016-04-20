@@ -414,8 +414,9 @@ void network_server::process_msg(client &c, const std::string &msg)
                     if (p.last_time > time)
                         break;
 
-                    //p.net->time_fix = int(m_time) - int(time); //ToDo
                     read(is, *p.net.get());
+                    const int time_fix = int(m_time - time);
+                    p.net->pos += p.net->vel * (0.001f * time_fix);
                     p.last_time = time;
                     break;
                 }
@@ -481,8 +482,6 @@ void network_server::process_msg(client &c, const std::string &msg)
 
 void network_server::update_post(int dt)
 {
-    m_time += dt;
-
     for (auto &c: m_clients)
     {
         if (!c.second.started)
@@ -493,9 +492,12 @@ void network_server::update_post(int dt)
             if (c.first == p.r.client_id)
                 continue;
 
-            m_server.send_message(c.first, "plane " + std::to_string(m_time) + " " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
+            const auto time = p.net->source ? m_time + dt : m_time;
+            m_server.send_message(c.first, "plane " + std::to_string(time) + " " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
         }
     }
+
+    m_time += dt;
 
     if (!m_add_plane_requests.empty())
     {
@@ -661,8 +663,9 @@ void network_client::update()
                     if (p.last_time > time)
                         break;
 
-                    p.net->time_fix = int(m_time) - int(time);
                     read(is, *p.net.get());
+                    const int time_fix = int(m_time - time);
+                    p.net->pos += p.net->vel * (0.001f * time_fix);
                     p.last_time = time;
                     break;
                 }
