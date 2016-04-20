@@ -662,7 +662,6 @@ void network_client::update()
                         break;
 
                     p.net->time_fix = int(m_time) - int(time);
-                    printf("%d\n", p.net->time_fix);
                     read(is, *p.net.get());
                     p.last_time = time;
                     break;
