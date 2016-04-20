@@ -70,6 +70,7 @@ private:
 
 private:
     struct client;
+    void process_msg(const std::pair<miso::server_tcp::client_id, std::string> &msg);
     void process_msg(client &c, const std::string &msg);
     void remove_client(miso::server_tcp::client_id id);
 

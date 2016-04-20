@@ -271,8 +271,8 @@ int main()
     {
         unsigned long time = nya_system::get_time();
         int dt = int(time - app_time);
-        if (dt > 1000)
-            dt = 1000;
+        //if (dt > 1000)
+        //    dt = 1000;
 
         app_time = time;
 

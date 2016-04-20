@@ -6,6 +6,7 @@
 #include "miso/socket/socket.h"
 #include "miso/protocol/app_protocol_simple.h"
 #include "miso/ipv4.h"
+#include "system/system.h"
 
 #ifdef _WIN32
     #include <winsock2.h>
@@ -351,36 +352,40 @@ void network_server::update()
         remove_client(m_server.get_lost_client(i));
 
     for (size_t i = 0; i < m_server.get_message_count(); ++i)
+        process_msg(m_server.get_message(i));
+}
+
+//------------------------------------------------------------
+
+void network_server::process_msg(const std::pair<miso::server_tcp::client_id, std::string> &msg)
+{
+    const auto id = msg.first;
+
+    auto c = m_clients.find(id);
+    if (c != m_clients.end())
     {
-        auto &m = m_server.get_message(i);
-        const auto id = m.first;
+        process_msg(c->second, msg.second);
+        return;
+    }
 
-        auto c = m_clients.find(id);
-        if (c != m_clients.end())
+    auto r = m_requests.find(id);
+    if (r == m_requests.end())
+        return;
+
+    if (msg.second == "connect")
+    {
+        if (m_max_players > 0 && get_players_count() >= m_max_players)
         {
-            process_msg(c->second, m.second);
-            continue;
+            m_server.send_message(id, "max_players_limit");
+            m_server.disconnect_user(id);
+            m_requests.erase(id);
         }
-
-        auto r = m_requests.find(id);
-        if (r == m_requests.end())
-            continue;
-
-        if (m.second == "connect")
+        else
         {
-            if (m_max_players > 0 && get_players_count() >= m_max_players)
-            {
-                m_server.send_message(id, "max_players_limit");
-                m_server.disconnect_user(id);
-                m_requests.erase(id);
-            }
-            else
-            {
-                m_server.send_message(id, "connected " + std::to_string(id));
-                m_requests.erase(id);
-                client &c = m_clients[id];
-                c.id = id;
-            }
+            m_server.send_message(id, "connected " + std::to_string(id));
+            m_requests.erase(id);
+            client &c = m_clients[id];
+            c.id = id;
         }
     }
 }
@@ -409,7 +414,7 @@ void network_server::process_msg(client &c, const std::string &msg)
                     if (p.last_time > time)
                         break;
 
-                    //p.net->time_fix = m_time - time; //ToDo: synchronize time first
+                    //p.net->time_fix = int(m_time) - int(time); //ToDo
                     read(is, *p.net.get());
                     p.last_time = time;
                     break;
@@ -434,6 +439,31 @@ void network_server::process_msg(client &c, const std::string &msg)
 
             m_server.send_message(oc.first, "add_plane " + to_string(ap));
         }
+    }
+    else if (cmd == "sync_time")
+    {
+        m_server.send_message(c.id, "ready");
+
+        std::vector<std::pair<miso::server_interface::client_id, std::string> > other_messages;
+
+        bool ready = false;
+        while (m_server.is_open() && !ready)
+        {
+            m_server.update();
+            for (int j = 0; j < m_server.get_message_count(); ++j)
+            {
+                auto &m = m_server.get_message(j);
+                if(m.first == c.id && m.second=="sync")
+                    ready = true;
+                else
+                    other_messages.push_back(m);
+            }
+        }
+
+        m_server.send_message(c.id, "time " + std::to_string(m_time));
+
+        for (auto &o: other_messages)
+            process_msg(o);
     }
     else if (cmd == "start")
     {
@@ -558,6 +588,38 @@ void network_client::start()
     if (!m_client.is_open())
         return;
 
+    m_client.send_message("sync_time");
+    bool ready = false;
+    while (m_client.is_connected() && !ready)
+    {
+        m_client.update();
+        for (int j = 0; j < m_client.get_message_count(); ++j)
+        {
+            if(m_client.get_message(j)=="ready")
+                ready = true;
+        }
+    }
+
+    const auto time = nya_system::get_time();
+    m_client.send_message("sync");
+
+    ready = false;
+    while (m_client.is_connected() && !ready)
+    {
+        m_client.update();
+        for (int j = 0; j < m_client.get_message_count(); ++j)
+        {
+            std::istringstream ss(m_client.get_message(j));
+            std::string command;
+            ss >> command;
+            if (command == "time")
+                ss >> m_time, ready = true;
+        }
+    }
+
+    auto ping = nya_system::get_time() - time;
+    m_time += ping / 2; // client->server->client, assume symmetric lag
+
     m_client.send_message("start");
 }
 
@@ -589,7 +651,7 @@ void network_client::update()
 
         if (cmd == "plane")
         {
-            unsigned short time, plane_id;
+            unsigned int time, plane_id;
             is >> time, is >> plane_id;
 
             for (auto &p: m_planes)
@@ -599,7 +661,8 @@ void network_client::update()
                     if (p.last_time > time)
                         break;
 
-                    //p.net->time_fix = m_time - time; //ToDo: synchronize time first
+                    p.net->time_fix = int(m_time) - int(time);
+                    printf("%d\n", p.net->time_fix);
                     read(is, *p.net.get());
                     p.last_time = time;
                     break;

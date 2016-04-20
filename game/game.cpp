@@ -380,12 +380,12 @@ void world::update(int dt)
             if (p->net->source)
                 continue;
 
-            p->phys->pos = p->net->pos;
+            p->phys->pos = p->net->pos + p->net->vel * (0.001f * p->net->time_fix);
             p->phys->rot = p->net->rot;
             p->phys->vel = p->net->vel;
             p->controls.rot = p->net->ctrl_rot;
             p->controls.brake = p->net->ctrl_brake;
-            p->phys->update(dt + p->net->time_fix);
+            p->phys->update(dt);
             p->hp = p->net->hp;
         }
     }
