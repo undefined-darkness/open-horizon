@@ -27,6 +27,15 @@
     <Filter Include="Source Files\util">
       <UniqueIdentifier>{52b22627-1c28-444b-b5cd-1adb605dd3af}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\deps">
+      <UniqueIdentifier>{a1b4d47c-9b23-48f3-807f-555452a98e9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\deps\miso">
+      <UniqueIdentifier>{cb9e545c-b023-4069-81ef-453aecdc2ef2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\deps\pugi">
+      <UniqueIdentifier>{b3ad0bbc-ecc7-4a2d-8c63-ad92f5c7416b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="demo.cpp">
@@ -125,9 +134,6 @@
     <ClCompile Include="../renderer/plane_camera.cpp">
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
-    <ClCompile Include="..\deps\pugixml-1.4\src\pugixml.cpp">
-      <Filter>Source Files\util</Filter>
-    </ClCompile>
     <ClCompile Include="../renderer/scene.cpp">
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
@@ -145,6 +151,36 @@
     </ClCompile>
     <ClCompile Include="..\util\platform.cpp">
       <Filter>Source Files\util</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\pugixml-1.4\src\pugixml.cpp">
+      <Filter>Source Files\deps\pugi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\miso\src\app_protocol_simple.cpp">
+      <Filter>Source Files\deps\miso</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\miso\src\client_tcp.cpp">
+      <Filter>Source Files\deps\miso</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\miso\src\generic_socket.cpp">
+      <Filter>Source Files\deps\miso</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\miso\src\ipv4.cpp">
+      <Filter>Source Files\deps\miso</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\miso\src\ipv6.cpp">
+      <Filter>Source Files\deps\miso</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\miso\src\platform.cpp">
+      <Filter>Source Files\deps\miso</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\miso\src\server_tcp.cpp">
+      <Filter>Source Files\deps\miso</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\miso\src\server_udp.cpp">
+      <Filter>Source Files\deps\miso</Filter>
+    </ClCompile>
+    <ClCompile Include="..\containers\cpk.cpp">
+      <Filter>Source Files\containers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -220,12 +256,6 @@
     <ClInclude Include="../containers/qdf.h">
       <Filter>Source Files\containers</Filter>
     </ClInclude>
-    <ClInclude Include="..\deps\pugixml-1.4\src\pugixml.hpp">
-      <Filter>Source Files\util</Filter>
-    </ClInclude>
-    <ClInclude Include="..\deps\pugixml-1.4\src\pugiconfig.hpp">
-      <Filter>Source Files\util</Filter>
-    </ClInclude>
     <ClInclude Include="../renderer/plane_camera.h">
       <Filter>Source Files\renderer</Filter>
     </ClInclude>
@@ -291,6 +321,18 @@
     </ClInclude>
     <ClInclude Include="..\util\zip.h">
       <Filter>Source Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\deps\pugixml-1.4\src\pugiconfig.hpp">
+      <Filter>Source Files\deps\pugi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\deps\pugixml-1.4\src\pugixml.hpp">
+      <Filter>Source Files\deps\pugi</Filter>
+    </ClInclude>
+    <ClInclude Include="..\deps\miso\src\node_tcp.h">
+      <Filter>Source Files\deps\miso</Filter>
+    </ClInclude>
+    <ClInclude Include="..\containers\cpk.h">
+      <Filter>Source Files\containers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

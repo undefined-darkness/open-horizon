@@ -14,3 +14,5 @@ xcschememanagement.plist
 *.vcproj.*.user
 *.vcxproj.user
 *.opensdf
+*.VC.db
+*.VC.opendb

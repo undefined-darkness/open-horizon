@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,13 +19,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120_xp</PlatformToolset>
+    <PlatformToolset>v140_xp</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -56,13 +56,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WIN32_WINNT=0x0501;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/asio/asio/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/miso/include/</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4018;4244;4305</DisableSpecificWarnings>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2013_debug/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2015_debug/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(SolutionDir)../resources" "$(TargetDir)*" /e
@@ -78,15 +79,16 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WIN32_WINNT=0x0501;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/asio/asio/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/miso/include/</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4018;4244;4305;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2013_release/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2015_release/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(SolutionDir)../resources" "$(TargetDir)*" /e
@@ -95,9 +97,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\containers\cdp.cpp" />
+    <ClCompile Include="..\containers\cpk.cpp" />
     <ClCompile Include="..\containers\pac5.cpp" />
     <ClCompile Include="..\containers\pac6.cpp" />
     <ClCompile Include="..\containers\poc.cpp" />
+    <ClCompile Include="..\deps\miso\src\app_protocol_simple.cpp" />
+    <ClCompile Include="..\deps\miso\src\client_tcp.cpp" />
+    <ClCompile Include="..\deps\miso\src\generic_socket.cpp" />
+    <ClCompile Include="..\deps\miso\src\ipv4.cpp" />
+    <ClCompile Include="..\deps\miso\src\ipv6.cpp" />
+    <ClCompile Include="..\deps\miso\src\platform.cpp" />
+    <ClCompile Include="..\deps\miso\src\server_tcp.cpp" />
+    <ClCompile Include="..\deps\miso\src\server_udp.cpp" />
     <ClCompile Include="..\deps\pugixml-1.4\src\pugixml.cpp" />
     <ClCompile Include="../containers/dpl.cpp" />
     <ClCompile Include="../containers/fhm.cpp" />
@@ -136,12 +147,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\containers\cdp.h" />
+    <ClInclude Include="..\containers\cpk.h" />
     <ClInclude Include="..\containers\decrypt.h" />
     <ClInclude Include="..\containers\dpl_provider.h" />
     <ClInclude Include="..\containers\pac5.h" />
     <ClInclude Include="..\containers\pac6.h" />
     <ClInclude Include="..\containers\poc.h" />
     <ClInclude Include="..\containers\qdf_provider.h" />
+    <ClInclude Include="..\deps\miso\src\node_tcp.h" />
     <ClInclude Include="..\deps\pugixml-1.4\src\pugiconfig.hpp" />
     <ClInclude Include="..\deps\pugixml-1.4\src\pugixml.hpp" />
     <ClInclude Include="../containers/dpl.h" />

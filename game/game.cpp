@@ -781,7 +781,7 @@ void plane::update(int dt, world &w)
     for(int i = 0; i < 2; ++i)
     {
         auto &count = i == 0 ? missile_count : special_count;
-        auto &cd = i == 0 ? missile_cooldown : special_cooldown;
+        auto *cd = i == 0 ? missile_cooldown : special_cooldown;
 
         if (count == 1)
         {
@@ -793,7 +793,10 @@ void plane::update(int dt, world &w)
             }
         }
         else if (count > 1)
-            for (auto &m: cd) { if (m > 0) m -= dt; }
+        {
+            if (cd[0] > 0) cd[0] -= dt;
+            if (cd[1] > 0) cd[1] -= dt;
+        }
     }
 
     for (int i = 0; i < (int)missile_mount_cooldown.size(); ++i)
