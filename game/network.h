@@ -79,6 +79,7 @@ private:
     miso::server_tcp m_server;
     std::string m_header;
     int m_max_players = 0;
+    unsigned int m_last_send_time = 0;
 
     struct client
     {
@@ -115,6 +116,7 @@ private:
 private:
     miso::client_tcp m_client;
     server_info m_server_info;
+    unsigned int m_last_send_time = 0;
 };
 
 //------------------------------------------------------------

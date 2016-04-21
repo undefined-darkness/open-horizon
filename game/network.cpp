@@ -28,7 +28,8 @@ namespace game
 //------------------------------------------------------------
 
 static const int version = 1;
-const char *server_header = "Open-Horizon server";
+static const char *server_header = "Open-Horizon server";
+static const unsigned int net_fps = 25;
 
 //------------------------------------------------------------
 
@@ -495,23 +496,6 @@ void network_server::update_post(int dt)
 {
     m_time += dt;
 
-    for (auto &c: m_clients)
-    {
-        if (!c.second.started)
-            continue;
-
-        for (auto &p: m_planes)
-        {
-            if (c.first == p.r.client_id)
-                continue;
-
-            if (!p.net->source)
-                continue;
-
-            m_server.send_message(c.first, "plane " + std::to_string(m_time) + " " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
-        }
-    }
-
     if (!m_add_plane_requests.empty())
     {
         for (auto &c: m_clients)
@@ -529,6 +513,28 @@ void network_server::update_post(int dt)
         }
         
         m_add_plane_requests.clear();
+    }
+
+    if (m_time - m_last_send_time < 1000 / net_fps)
+        return;
+
+    m_last_send_time = m_time;
+
+    for (auto &c: m_clients)
+    {
+        if (!c.second.started)
+            continue;
+
+        for (auto &p: m_planes)
+        {
+            if (c.first == p.r.client_id)
+                continue;
+
+            if (!p.net->source)
+                continue;
+
+            m_server.send_message(c.first, "plane " + std::to_string(m_time) + " " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
+        }
     }
 }
 
@@ -705,14 +711,6 @@ void network_client::update_post(int dt)
 {
     m_time += dt;
 
-    for (auto &p: m_planes)
-    {
-        if (!p.net->source)
-            continue;
-
-        m_client.send_message("plane " + std::to_string(m_time) + " " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
-    }
-
     if (!m_add_plane_requests.empty())
     {
         for (auto &r: m_add_plane_requests)
@@ -721,6 +719,19 @@ void network_client::update_post(int dt)
                 m_client.send_message("add_plane " + to_string(r));
         }
         m_add_plane_requests.clear();
+    }
+
+    if (m_time - m_last_send_time < 1000 / net_fps)
+        return;
+
+    m_last_send_time = m_time;
+
+    for (auto &p: m_planes)
+    {
+        if (!p.net->source)
+            continue;
+
+        m_client.send_message("plane " + std::to_string(m_time) + " " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
     }
 }
 
