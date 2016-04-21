@@ -59,6 +59,7 @@ public:
     void close();
 
     bool is_server() const override { return true; }
+    bool is_up() const { return m_server.is_open(); }
 
     int get_players_count() const;
 

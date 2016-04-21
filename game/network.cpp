@@ -210,7 +210,9 @@ void servers_list::get_list(std::vector<std::string> &list) const
 
 inline std::string to_string(const nya_math::vec3 &v)
 {
-    return std::to_string(v.x) + " " + std::to_string(v.y) + " " + std::to_string(v.z);
+    std::ostringstream ss;
+    ss << v.x << " " << v.y << " " << v.z;
+    return ss.str();
 }
 
 //------------------------------------------------------------
@@ -238,8 +240,8 @@ inline void read(std::istringstream &is, nya_math::quat &q)
 
 inline std::string to_string(const net_plane &n)
 {
-    return to_string(n.pos) + " " + to_string(n.vel) + " " + to_string(n.rot) + " "
-           + to_string(n.ctrl_rot) + " " + std::to_string(n.ctrl_brake) + " " + std::to_string(n.hp);
+    return to_string(n.pos) + " " + to_string(n.vel) + " " + to_string(n.rot) + " " + to_string(n.ctrl_rot) + " "
+         + std::to_string(n.ctrl_throttle) + " " + std::to_string(n.ctrl_brake);
 }
 
 //------------------------------------------------------------
@@ -247,7 +249,7 @@ inline std::string to_string(const net_plane &n)
 inline void read(std::istringstream &is, net_plane &n)
 {
     read(is, n.pos), read(is, n.vel), read(is, n.rot),
-    read(is, n.ctrl_rot), is>>n.ctrl_brake, is>>n.hp;
+    read(is, n.ctrl_rot), is>>n.ctrl_throttle, is>>n.ctrl_brake;
 }
 
 //------------------------------------------------------------
@@ -416,6 +418,15 @@ void network_server::process_msg(client &c, const std::string &msg)
 
                     read(is, *p.net.get());
                     const int time_fix = int(m_time - time);
+
+                    for (auto &oc: m_clients)
+                    {
+                        if (oc.first == c.id)
+                            continue;
+
+                        m_server.send_message(oc.first, "plane " + std::to_string(time) + " " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
+                    }
+
                     p.net->pos += p.net->vel * (0.001f * time_fix);
                     p.last_time = time;
                     break;
@@ -482,6 +493,8 @@ void network_server::process_msg(client &c, const std::string &msg)
 
 void network_server::update_post(int dt)
 {
+    m_time += dt;
+
     for (auto &c: m_clients)
     {
         if (!c.second.started)
@@ -492,12 +505,12 @@ void network_server::update_post(int dt)
             if (c.first == p.r.client_id)
                 continue;
 
-            const auto time = p.net->source ? m_time + dt : m_time;
-            m_server.send_message(c.first, "plane " + std::to_string(time) + " " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
+            if (!p.net->source)
+                continue;
+
+            m_server.send_message(c.first, "plane " + std::to_string(m_time) + " " + std::to_string(p.r.plane_id) + " "+ to_string(*p.net.get()));
         }
     }
-
-    m_time += dt;
 
     if (!m_add_plane_requests.empty())
     {

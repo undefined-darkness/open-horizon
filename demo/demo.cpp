@@ -163,7 +163,7 @@ int main()
 
     menu.init();
     bool viewer_mode = false;
-    bool is_client = false;
+    bool is_client = false, is_server = false;
 
     gui::menu::on_action on_menu_action = [&](const std::string &event)
     {
@@ -173,7 +173,7 @@ int main()
             auto plane = menu.get_var("ac");
             const int color = atoi(menu.get_var("color").c_str());
 
-            is_client = false;
+            is_client = false, is_server = false;
 
             scene.loading(true);
             nya_render::clear(true, true);
@@ -190,6 +190,7 @@ int main()
                 server.open(port, mode.c_str(), menu.get_var("map").c_str(), menu.get_var_int("max_players"));
                 if (menu.get_var("mp_public") == "true")
                     game::servers_list::register_server(port);
+                is_server = true;
             }
             else if (mp_var == "client")
             {
@@ -384,16 +385,20 @@ int main()
 
         if (active_game_mode)
         {
-            if ((pause && pause != last_pause) || platform.was_pressed(GLFW_KEY_P))
+            if (((pause && pause != last_pause) || platform.was_pressed(GLFW_KEY_P)) && !is_server && !is_client)
                 scene.pause(paused = !paused);
             last_pause = pause;
 
             bool should_stop = platform.was_pressed(GLFW_KEY_ESCAPE);
             if (is_client && !client.is_up())
                 should_stop = true;
+            if (is_server && !server.is_up())
+                should_stop = true;
 
             if (should_stop)
             {
+                if (paused)
+                    scene.pause(paused = !paused);
                 active_game_mode->end();
                 active_game_mode = 0;
                 server.close();
@@ -403,7 +408,7 @@ int main()
             }
         }
 
-        speed10x = platform.get_key(GLFW_KEY_RIGHT_SHIFT);
+        speed10x = platform.get_key(GLFW_KEY_RIGHT_SHIFT) && !is_client && !is_server;
 
         if (controls.change_camera)
             scene.camera.reset_delta_rot();

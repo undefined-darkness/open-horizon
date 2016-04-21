@@ -24,11 +24,10 @@ struct net_plane
     nya_math::quat rot;
 
     nya_math::vec3 ctrl_rot;
+    float ctrl_throttle = 0.0f;
     float ctrl_brake = 0.0f;
 
     bool source = false;
-
-    int hp = 0;
 };
 
 typedef std::shared_ptr<net_plane> net_plane_ptr;

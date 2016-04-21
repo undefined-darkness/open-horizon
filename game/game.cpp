@@ -377,16 +377,16 @@ void world::update(int dt)
 
         for (auto &p: m_planes)
         {
-            if (p->net->source)
+            if (!p->net || p->net->source)
                 continue;
 
             p->phys->pos = p->net->pos;
             p->phys->rot = p->net->rot;
             p->phys->vel = p->net->vel;
             p->controls.rot = p->net->ctrl_rot;
+            p->controls.throttle = p->net->ctrl_throttle;
             p->controls.brake = p->net->ctrl_brake;
             p->phys->update(dt);
-            p->hp = p->net->hp;
         }
     }
 
@@ -472,15 +472,19 @@ void world::update(int dt)
     {
         for (auto &p: m_planes)
         {
-            if (!p->net->source)
+            if (!p->net)
                 continue;
 
             p->net->pos = p->phys->pos;
             p->net->rot = p->phys->rot;
             p->net->vel = p->phys->vel;
+
+            if (!p->net->source)
+                continue;
+
             p->net->ctrl_rot = p->controls.rot;
+            p->net->ctrl_throttle = p->controls.throttle;
             p->net->ctrl_brake = p->controls.brake;
-            p->net->hp = p->hp;
         }
 
         m_network->update_post(dt);
