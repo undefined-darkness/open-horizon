@@ -287,11 +287,12 @@ plane_ptr world::add_plane(const char *name, int color, bool player, net_plane_p
 
 //------------------------------------------------------------
 
-void world::spawn_explosion(const nya_math::vec3 &pos, int damage, float radius)
+void world::spawn_explosion(const nya_math::vec3 &pos, float radius, bool net_src)
 {
-    //ToDo: damage
-
     m_render_world.spawn_explosion(pos, radius);
+
+    if (m_network && net_src)
+        m_network->spawn_explosion(pos, radius);
 }
 
 //------------------------------------------------------------
@@ -379,6 +380,10 @@ void world::update(int dt)
         while(m_network->get_add_plane_msg(m))
             add_plane(m.name.c_str(), m.color, false, m_network->add_plane(m));
 
+        network_interface::msg_explosion me;
+        while(m_network->get_explosion_msg(me))
+            spawn_explosion(me.pos, me.radius, false);
+
         for (auto &p: m_planes)
         {
             if (!p->net || p->net->source)
@@ -443,7 +448,7 @@ void world::update(int dt)
         auto m = this->get_missile(a);
         if (m && m->time > 0)
         {
-            this->spawn_explosion(m->phys->pos, 0, 10.0);
+            this->spawn_explosion(m->phys->pos, 10.0);
             m->time = 0;
 
             if (m->owner.lock() == get_player() && !m->target.expired())
@@ -1265,7 +1270,7 @@ void plane::take_damage(int damage, world &w)
     if (hp <= 0)
     {
         render->set_dead(true);
-        w.spawn_explosion(get_pos(), 0, 30.0f);
+        w.spawn_explosion(get_pos(), 30.0f);
         if (!saam_missile.expired())
             saam_missile.lock()->target.reset();
     }
@@ -1339,7 +1344,7 @@ void missile::update(int dt, world &w)
                     w.popup_hit(destroyed);
             }
 
-            w.spawn_explosion(phys->pos, 0, 10.0);
+            w.spawn_explosion(phys->pos, 10.0);
         }
 
         if (t->hp < 0)

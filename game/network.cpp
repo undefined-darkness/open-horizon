@@ -271,6 +271,20 @@ inline void read(std::istringstream &is, network_client::msg_add_plane &m)
 
 //------------------------------------------------------------
 
+inline std::string to_string(const network_client::msg_explosion &m)
+{
+    return to_string(m.pos) + " " + std::to_string(m.radius);
+}
+
+//------------------------------------------------------------
+
+inline void read(std::istringstream &is, network_client::msg_explosion &m)
+{
+    read(is, m.pos), is >> m.radius;
+}
+
+//------------------------------------------------------------
+
 bool network_server::open(short port, const char *game_mode, const char *location, int max_players)
 {
     if (m_server.is_open())
@@ -437,6 +451,20 @@ void network_server::process_msg(client &c, const std::string &msg)
             }
         }
     }
+    else if (cmd == "explosion")
+    {
+        msg_explosion me;
+        read(is, me);
+        m_explosions.push_back(me);
+
+        for (auto &oc: m_clients)
+        {
+            if (oc.first == c.id)
+                continue;
+
+            m_server.send_message(oc.first, msg);
+        }
+    }
     else if (cmd == "add_plane")
     {
         msg_add_plane ap;
@@ -515,6 +543,20 @@ void network_server::update_post(int dt)
         }
         
         m_add_plane_requests.clear();
+    }
+
+    if (!m_explosion_requests.empty())
+    {
+        for (auto &c: m_clients)
+        {
+            if (!c.second.started)
+                continue;
+
+            for (auto &r: m_explosion_requests)
+                m_server.send_message(c.first, "explosion " + to_string(r));
+        }
+
+        m_explosion_requests.clear();
     }
 
     if (m_time - m_last_send_time < 1000 / net_fps)
@@ -702,6 +744,12 @@ void network_client::update()
                 }
             }
         }
+        else if (cmd == "explosion")
+        {
+            msg_explosion me;
+            read(is, me);
+            m_explosions.push_back(me);
+        }
         else if (cmd == "add_plane")
         {
             msg_add_plane ap;
@@ -737,6 +785,14 @@ void network_client::update_post(int dt)
                 m_client.send_message("add_plane " + to_string(r));
         }
         m_add_plane_requests.clear();
+    }
+
+    if (!m_explosion_requests.empty())
+    {
+        for (auto &r: m_explosion_requests)
+            m_client.send_message("explosion " + to_string(r));
+
+        m_explosion_requests.clear();
     }
 
     if (m_time - m_last_send_time < 1000 / net_fps)

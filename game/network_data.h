@@ -73,6 +73,33 @@ public:
         return false;
     }
 
+public:
+    struct msg_explosion
+    {
+        nya_math::vec3 pos;
+        float radius = 0.0f;
+    };
+
+    void spawn_explosion(const nya_math::vec3 &pos, float radius)
+    {
+        msg_explosion me;
+        me.pos = pos, me.radius = radius;
+        m_explosion_requests.push_back(me);
+    }
+
+    bool get_explosion_msg(msg_explosion &m)
+    {
+        if (!m_explosions.empty())
+        {
+            m = m_explosions.front();
+            m_explosions.pop_front();
+            return true;
+        }
+
+        return false;
+    }
+
+public:
     virtual void update() {};
     virtual void update_post(int dt) {};
 
@@ -106,6 +133,11 @@ protected:
     std::deque<msg_add_plane> m_add_plane_msgs;
     std::deque<msg_add_plane> m_add_plane_requests;
 
+protected:
+    std::deque<msg_explosion> m_explosions;
+    std::deque<msg_explosion> m_explosion_requests;
+
+protected:
     struct plane
     {
         msg_add_plane r;

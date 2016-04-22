@@ -189,7 +189,7 @@ public:
     missile_ptr add_missile(const char *id, const char *model);
     missile_ptr add_missile(const char *id, const renderer::model &m);
 
-    void spawn_explosion(const vec3 &pos, int damage, float radius);
+    void spawn_explosion(const vec3 &pos, float radius, bool net_src = true);
     void spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, const plane_ptr &owner);
 
     int get_planes_count() const { return (int)m_planes.size(); }
