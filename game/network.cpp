@@ -242,15 +242,17 @@ inline void read(std::istringstream &is, nya_math::quat &q)
 inline std::string to_string(const net_plane &n)
 {
     return to_string(n.pos) + " " + to_string(n.vel) + " " + to_string(n.rot) + " " + to_string(n.ctrl_rot) + " "
-         + std::to_string(n.ctrl_throttle) + " " + std::to_string(n.ctrl_brake);
+         + std::to_string(n.ctrl_throttle) + " " + std::to_string(n.ctrl_brake) + " "
+         + (n.ctrl_mgun ? '1' : '0') + " " + (n.ctrl_mgp ? '1' : '0');
 }
 
 //------------------------------------------------------------
 
 inline void read(std::istringstream &is, net_plane &n)
 {
-    read(is, n.pos), read(is, n.vel), read(is, n.rot),
+    read(is, n.pos), read(is, n.vel), read(is, n.rot);
     read(is, n.ctrl_rot), is>>n.ctrl_throttle, is>>n.ctrl_brake;
+    is>>n.ctrl_mgun, is>>n.ctrl_mgp;
 }
 
 //------------------------------------------------------------

@@ -310,20 +310,24 @@ void world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, con
 {
     vec3 r;
     const bool hit_world = m_phys_world.spawn_bullet(type, pos, dir, r);
-    for (auto &p: m_planes)
+
+    if (!owner->net || owner->net->source)
     {
-        if (p->hp <= 0 || is_ally(owner, p))
-            continue;
-
-        if (line_sphere_intersect(pos, r, p->get_pos(), p->hit_radius))
+        for (auto &p: m_planes)
         {
-            p->take_damage(60, *this);
-            const bool destroyed = p->hp <= 0;
-            if (destroyed)
-                on_kill(owner, p);
+            if (p->hp <= 0 || is_ally(owner, p))
+                continue;
 
-            if (owner == get_player())
-                popup_hit(destroyed);
+            if (line_sphere_intersect(pos, r, p->get_pos(), p->hit_radius))
+            {
+                p->take_damage(60, *this);
+                const bool destroyed = p->hp <= 0;
+                if (destroyed)
+                    on_kill(owner, p);
+
+                if (owner == get_player())
+                    popup_hit(destroyed);
+            }
         }
     }
 
@@ -386,7 +390,17 @@ void world::update(int dt)
             p->controls.rot = p->net->ctrl_rot;
             p->controls.throttle = p->net->ctrl_throttle;
             p->controls.brake = p->net->ctrl_brake;
+            p->controls.mgun = p->net->ctrl_mgun;
             p->phys->update(dt);
+
+            if (p->net->ctrl_mgp)
+            {
+                p->special_weapon_selected = true;
+                p->controls.missile = true;
+                p->special_count = 9000;
+            }
+            else
+                p->controls.missile = false;
         }
     }
 
@@ -491,6 +505,9 @@ void world::update(int dt)
             p->net->ctrl_rot = p->controls.rot;
             p->net->ctrl_throttle = p->controls.throttle;
             p->net->ctrl_brake = p->controls.brake;
+
+            p->net->ctrl_mgun = p->controls.mgun;
+            p->net->ctrl_mgp = p->special_weapon_selected && p->controls.missile && p->special.id == "MGP" && p->special_count > 0;
         }
 
         m_network->update_post(dt);

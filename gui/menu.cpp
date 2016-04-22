@@ -364,15 +364,18 @@ void menu::set_screen(const std::string &screen)
 #endif
         add_sub_entry(L"Miami", "ms01");
         add_sub_entry(L"Dubai", "ms06");
+        add_sub_entry(L"Paris", {"ms30"});
+        add_sub_entry(L"Tokyo", {"ms50"});
         add_sub_entry(L"Honolulu", "ms51");
         add_sub_entry(L"Beliy Base", "ms08x");
+        add_sub_entry(L"Black Sea", {"ms09"});
 
         send_sub_events(m_entries.back());
 
         add_entry(L"Aircraft: ", {""}, "ac", {"update_ac"});
-        add_sub_entry(L"F-14D", "f14d");
-        add_sub_entry(L"Su-33", "su33");
-        add_sub_entry(L"B-01B", "b01b");
+        const auto planes = game::get_aircraft_ids({"fighter", "multirole", "attacker", "bomber"});
+        for (auto &p: planes)
+            add_sub_entry(game::get_aircraft_name(p), {p});
 
         add_entry(L"Color: ", {""}, "color", {});
 

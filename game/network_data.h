@@ -26,6 +26,8 @@ struct net_plane
     nya_math::vec3 ctrl_rot;
     float ctrl_throttle = 0.0f;
     float ctrl_brake = 0.0f;
+    bool ctrl_mgun = false;
+    bool ctrl_mgp = false;
 
     bool source = false;
 };
