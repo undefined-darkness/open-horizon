@@ -323,7 +323,7 @@ void network_server::close()
     for (auto &c: m_clients)
         m_server.send_message(c.first, "disconnect");
 
-    m_server.close();
+    m_server.close(true);
     m_planes.clear();
 }
 
@@ -702,12 +702,13 @@ void network_client::start()
 
 void network_client::disconnect()
 {
+    m_planes.clear();
+
     if (!m_client.is_open())
         return;
 
     m_client.send_message("disconnect");
     m_client.disconnect();
-    m_planes.clear();
 }
 
 //------------------------------------------------------------
