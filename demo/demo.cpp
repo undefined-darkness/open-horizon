@@ -405,6 +405,8 @@ int main()
                 client.disconnect();
                 world.set_network(0);
                 menu_controls.prev = false;
+                if (is_client)
+                    menu.send_event("screen=mp_connect");
             }
         }
 

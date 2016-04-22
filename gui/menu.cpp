@@ -320,6 +320,10 @@ void menu::set_screen(const std::string &screen)
     }
     else if (screen == "mp_connect")
     {
+        m_screens.clear();
+        m_screens.push_back("main");
+        m_screens.push_back("mp");
+
         m_title = L"CONNECT TO SERVER";
 
         add_entry(L"Name: ", {});
