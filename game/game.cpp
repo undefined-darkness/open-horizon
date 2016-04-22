@@ -390,8 +390,14 @@ void world::update(int dt)
         }
     }
 
-    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p)
-                                  { return p.unique() && (!p->net || p->net.unique()); }), m_planes.end());
+    auto removed_planes = std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p) { return p.unique() && (!p->net || p->net.unique()); });
+    if (removed_planes != m_planes.end())
+    {
+        m_planes.erase(removed_planes, m_planes.end());
+        for (auto &p: m_planes)
+            p->targets.erase(remove_if(p->targets.begin(), p->targets.end(), [](const plane::target_lock &t){ return t.target_plane.expired(); }));
+    }
+
     m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m)
                                     { return m.unique() && m->time <= 0; }), m_missiles.end());
     for (auto &p: m_planes)

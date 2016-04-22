@@ -542,7 +542,17 @@ void network_server::update_post(int dt)
 
 void network_server::remove_client(miso::server_tcp::client_id id)
 {
-    //ToDo
+    for (auto &p: m_planes)
+    {
+        if (p.r.client_id != id)
+            continue;
+
+        for (auto &c: m_clients)
+            m_server.send_message(c.first, "remove_plane " + std::to_string(p.r.plane_id));
+    }
+
+    m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [id](const plane &p){ return p.r.client_id == id; }), m_planes.end());
+    for(auto it = m_planes_remap.begin(); it != m_planes_remap.end();) { if(it->first.first == id) it = m_planes_remap.erase(it); else ++it; }
 }
 
 //------------------------------------------------------------
@@ -695,6 +705,12 @@ void network_client::update()
             msg_add_plane ap;
             read(is, ap);
             m_add_plane_msgs.push_back(ap);
+        }
+        else if (cmd == "remove_plane")
+        {
+            unsigned int plane_id;
+            is >> plane_id;
+            m_planes.erase(std::remove_if(m_planes.begin(), m_planes.end(), [plane_id](const plane &p){ return p.r.plane_id == plane_id; }), m_planes.end());
         }
         else if (cmd == "disconnect")
         {
