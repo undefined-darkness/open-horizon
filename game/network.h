@@ -26,6 +26,7 @@ bool http_get(const char *url, const char *arg, std::string &data);
 struct server_info
 {
     int version = 0;
+    std::string server_name;
     std::string game_mode;
     std::string location;
     int players = 0;
@@ -55,7 +56,7 @@ private:
 class network_server: public noncopyable, public network_interface
 {
 public:
-    bool open(short port, const char *game_mode, const char *location, int max_players);
+    bool open(unsigned short port, const char *name, const char *game_mode, const char *location, int max_players);
     void close();
 
     bool is_server() const override { return true; }
@@ -107,6 +108,8 @@ public:
 
     const server_info &get_server_info() const;
 
+    std::string get_error() const { return m_error; }
+
     ~network_client();
 
 private:
@@ -117,6 +120,7 @@ private:
     miso::client_tcp m_client;
     server_info m_server_info;
     unsigned int m_last_send_time = 0;
+    std::string m_error;
 };
 
 //------------------------------------------------------------

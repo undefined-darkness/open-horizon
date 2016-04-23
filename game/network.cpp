@@ -117,41 +117,33 @@ static bool get_info(const std::string &s, server_info &info)
 
     std::istringstream ss(s.c_str() + strlen(server_header) + 1);
     std::string tmp;
+
     ss >> tmp;
-    if (tmp != "version")
+    if (tmp != "version") //obligatory
         return false;
 
     ss >> info.version;
 
-    ss >> tmp;
-    if (tmp != "game_mode")
-        return false;
+    while (ss)
+    {
+        ss >> tmp;
+        if (tmp == "server_name")
+            ss >> info.server_name;
+        else if (tmp == "game_mode")
+            ss >> info.game_mode;
+        else if (tmp == "location")
+            ss >> info.location;
+        else if (tmp == "players")
+            ss >> info.players;
+        else if (tmp == "max_players")
+            ss >> info.max_players;
+        else if (tmp == "end")
+            return true;
+        else
+            ss >> tmp; //skip
+    }
 
-    ss >> info.game_mode;
-
-    ss >> tmp;
-    if (tmp != "location")
-        return false;
-
-    ss >> info.location;
-
-    ss >> tmp;
-    if (tmp != "players")
-        return false;
-
-    ss >> info.players;
-
-    ss >> tmp;
-    if (tmp != "max_players")
-        return false;
-    
-    ss >> info.max_players;
-    
-    ss >> tmp;
-    if (tmp != "end")
-        return false;
-    
-    return true;
+    return false;
 }
 
 //------------------------------------------------------------
@@ -285,7 +277,7 @@ inline void read(std::istringstream &is, network_client::msg_explosion &m)
 
 //------------------------------------------------------------
 
-bool network_server::open(short port, const char *game_mode, const char *location, int max_players)
+bool network_server::open(unsigned short port, const char *name, const char *game_mode, const char *location, int max_players)
 {
     if (m_server.is_open())
         return false;
@@ -295,6 +287,7 @@ bool network_server::open(short port, const char *game_mode, const char *locatio
 
     m_header = server_header;
     m_header.append(" version ").append(std::to_string(version));
+    m_header.append(" server_name ").append(name);
     m_header.append(" game_mode ").append(game_mode);
     m_header.append(" location ").append(location);
     m_header.append(" players ").append("1"); //ToDo
@@ -606,12 +599,17 @@ bool network_client::connect(const char *address, short port)
     if (!address || m_client.is_open())
         return false;
 
+    m_error.clear();
+
     const int timeout = 2000;
 
     static miso::app_protocol_simple protocol;
     m_client.set_app_protocol(&protocol);
     if (!m_client.connect_wait(miso::ipv4_address(address), port, timeout))
+    {
+        m_error = "Unable to connect";
         return false;
+    }
 
     bool has_info = false;
     const int interval = 100;
@@ -626,6 +624,16 @@ bool network_client::connect(const char *address, short port)
                 if (!get_info(m, m_server_info))
                 {
                     m_client.disconnect();
+                    m_error = "Invalid server response";
+                    return false;
+                }
+
+                if (m_server_info.version != version)
+                {
+                    m_client.disconnect();
+                    m_error = "Incompatible server version";
+                    if (m_server_info.version > version)
+                        m_error += ", please update";
                     return false;
                 }
 
@@ -645,6 +653,7 @@ bool network_client::connect(const char *address, short port)
                 }
 
                 m_client.disconnect();
+                m_error = "Invalid server response";
                 return false;
             }
         }
@@ -653,6 +662,7 @@ bool network_client::connect(const char *address, short port)
     }
 
     m_client.disconnect();
+    m_error = "Connection timed out";
     return false;
 }
 

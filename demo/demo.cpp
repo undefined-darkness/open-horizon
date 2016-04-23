@@ -187,7 +187,7 @@ int main()
             {
                 world.set_network(&server);
                 auto port = menu.get_var_int("port");
-                server.open(port, mode.c_str(), menu.get_var("map").c_str(), menu.get_var_int("max_players"));
+                server.open(port, config::get_var("name").c_str(), mode.c_str(), menu.get_var("map").c_str(), menu.get_var_int("max_players"));
                 if (menu.get_var("mp_public") == "true")
                     game::servers_list::register_server(port);
                 is_server = true;
@@ -217,6 +217,7 @@ int main()
         }
         else if (event == "connect")
         {
+            menu.set_error("");
             client.disconnect();
             auto port = menu.get_var_int("port");
             if (client.connect(menu.get_var("address").c_str(), port))
@@ -226,7 +227,7 @@ int main()
                 menu.send_event("screen=ac_select");
             }
             else
-                printf("unable to connect to server\n"); //ToDo: show error
+                menu.set_error(client.get_error());
         }
         else if (event == "viewer_start")
         {

@@ -80,6 +80,8 @@ void menu::draw(const render &r)
         y += 34;
     }
 
+    m_fonts.draw_text(r, m_error.c_str(), "ZurichBD_M", x, r.get_height() - 30, nya_math::vec4(1.0, 0.1, 0.1, 1.0));
+
     //m_fonts.draw_text(r, L"ASDFGHJKLasdfghjklQWERTYUIOPqwertyuiopZXCVBNMzxcvbnm\"\'*_-=.,0123456789", "NowGE24", 50, 200, white);
     //m_fonts.draw_text(r, L"This is a test. The quick brown fox jumps over the lazy dog's back 1234567890", "NowGE24", 50, 100, white);
     //m_fonts.draw_text(r, L"テストです。いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし えひもせす。", "ShinGo18outline", 50, 150, white);
@@ -295,6 +297,7 @@ void menu::send_sub_events(const entry &e)
 void menu::set_screen(const std::string &screen)
 {
     m_selected = 0;
+    m_error.clear();
     m_entries.clear();
     m_back_events.clear();
 
@@ -536,6 +539,13 @@ void menu::send_event(const std::string &event)
 
     if (m_on_action)
         m_on_action(event);
+}
+
+//------------------------------------------------------------
+
+void menu::set_error(const std::string &error)
+{
+    m_error = std::wstring(error.begin(), error.end());
 }
 
 //------------------------------------------------------------

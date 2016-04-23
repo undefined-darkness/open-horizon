@@ -36,6 +36,7 @@ public:
     std::string get_var(const std::string &name) const;
     int get_var_int(const std::string &name) const;
     void send_event(const std::string &event);
+    void set_error(const std::string &error);
 
 private:
     void set_hide(bool value) { m_hide = value; }
@@ -49,6 +50,7 @@ private:
     std::map<std::string, std::string> m_vars;
     menu_controls m_prev_controls;
     std::wstring m_title;
+    std::wstring m_error;
 
     struct entry
     {
