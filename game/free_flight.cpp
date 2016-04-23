@@ -90,7 +90,7 @@ void free_flight::set_plane(const char *plane, int color)
         r = m_player->get_rot();
     }
 
-    m_player = m_world.add_plane(plane, color, true);
+    m_player = m_world.add_plane(plane, m_world.get_player_name(), color, true);
     m_player->set_pos(p);
     m_player->set_rot(r);
 }

@@ -259,14 +259,14 @@ inline void read(std::istringstream &is, net_plane &n)
 
 inline std::string to_string(const network_client::msg_add_plane &m)
 {
-    return std::to_string(m.client_id) + " " + std::to_string(m.plane_id) + " " + m.name + " " + std::to_string(m.color);
+    return std::to_string(m.client_id) + " " + std::to_string(m.plane_id) + " " + m.preset + " " + m.player_name + " " + std::to_string(m.color);
 }
 
 //------------------------------------------------------------
 
 inline void read(std::istringstream &is, network_client::msg_add_plane &m)
 {
-    is>>m.client_id, is>>m.plane_id, is>>m.name, is>>m.color;
+    is>>m.client_id, is>>m.plane_id, is>>m.preset, is>>m.player_name, is>>m.color;
 }
 
 //------------------------------------------------------------

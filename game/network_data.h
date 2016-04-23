@@ -39,9 +39,9 @@ typedef std::shared_ptr<net_plane> net_plane_ptr;
 class network_interface
 {
 public:
-    net_plane_ptr add_plane(const char *name, int color)
+    net_plane_ptr add_plane(std::string preset, std::string player_name, int color)
     {
-        return add_plane(name, color, true, m_id, new_plane_id());
+        return add_plane(preset, player_name, color, true, m_id, new_plane_id());
     }
 
     unsigned int new_plane_id() { return m_last_plane_id++; }
@@ -52,13 +52,13 @@ public:
     struct msg_add_plane
     {
         unsigned int client_id = 0, plane_id = 0;
-        std::string name;
+        std::string preset, player_name;
         int color = 0;
     };
 
     net_plane_ptr add_plane(const msg_add_plane &m)
     {
-        return add_plane(m.name.c_str(), m.color, false, m.client_id, m.plane_id);
+        return add_plane(m.preset, m.player_name, m.color, false, m.client_id, m.plane_id);
     }
 
     bool get_add_plane_msg(msg_add_plane &m)
@@ -106,7 +106,7 @@ public:
     unsigned int get_time() const { return m_time; }
 
 private:
-    net_plane_ptr add_plane(const char *name, int color, bool source, unsigned int client_id, unsigned int plane_id)
+    net_plane_ptr add_plane(std::string preset, std::string player_name, int color, bool source, unsigned int client_id, unsigned int plane_id)
     {
         if (!source)
             assert(client_id != m_id);
@@ -117,15 +117,13 @@ private:
         n->source = source;
 
         auto &r = m_planes.back().r;
-        r.name.assign(name);
+        r.preset = preset;
+        r.player_name = player_name;
         r.color = color;
         r.client_id = client_id;
         r.plane_id = plane_id;
         if (source)
             m_add_plane_requests.push_back(r);
-
-        printf("netdata add_plane %s %s\n", name, source ? "source" : "ref");
-
         return n;
     }
 

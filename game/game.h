@@ -145,7 +145,6 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     void update(int dt, world &w);
     void update_hud(world &w, gui::hud &h);
     bool is_ecm_active() const { return special.id=="ECM" && ecm_time > 0;}
-    void set_name(std::string name);
 
     virtual void take_damage(int damage, world &w) override;
 
@@ -185,8 +184,8 @@ class world
 public:
     void set_location(const char *name);
 
-    plane_ptr add_plane(const char *name, int color, bool player, net_plane_ptr ptr = net_plane_ptr());
-    missile_ptr add_missile(const char *id, const char *model);
+    plane_ptr add_plane(const char *preset, const char *player_name, int color, bool player, net_plane_ptr ptr = net_plane_ptr());
+    missile_ptr add_missile(const char *id, const char *preset);
     missile_ptr add_missile(const char *id, const renderer::model &m);
 
     void spawn_explosion(const vec3 &pos, float radius, bool net_src = true);
@@ -195,6 +194,7 @@ public:
     int get_planes_count() const { return (int)m_planes.size(); }
     plane_ptr get_plane(int idx);
     plane_ptr get_player() { return m_player.lock(); }
+    const char *get_player_name() const;
 
     int get_missiles_count() const { return (int)m_missiles.size(); }
     missile_ptr get_missile(int idx);

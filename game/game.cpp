@@ -228,27 +228,27 @@ missile_ptr world::add_missile(const char *id, const renderer::model &mdl)
 
 //------------------------------------------------------------
 
-plane_ptr world::add_plane(const char *name, int color, bool player, net_plane_ptr ptr)
+plane_ptr world::add_plane(const char *preset, const char *player_name, int color, bool player, net_plane_ptr ptr)
 {
-    if (!name)
+    if (!preset)
         return plane_ptr();
 
     plane_ptr p(new plane());
     const bool add_to_world = !(ptr && !ptr->source);
-    p->phys = m_phys_world.add_plane(name, add_to_world);
+    p->phys = m_phys_world.add_plane(preset, add_to_world);
 
-    p->render = m_render_world.add_aircraft(name, color, player);
+    p->render = m_render_world.add_aircraft(preset, color, player);
     p->phys->nose_offset = p->render->get_bone_pos("clv1");
 
     p->hp = p->max_hp = int(p->phys->params.misc.maxHp);
 
-    p->hit_radius = name[0] == 'b' ? 12.0f : 7.0f;
+    p->hit_radius = preset[0] == 'b' ? 12.0f : 7.0f;
 
     time_t now = time(NULL);
     struct tm *tm_now = localtime(&now);
     p->render->set_time(tm_now->tm_sec + tm_now->tm_min * 60 + tm_now->tm_hour * 60 * 60); //ToDo
 
-    auto wi = weapon_information::get().get_aircraft_weapons(name);
+    auto wi = weapon_information::get().get_aircraft_weapons(preset);
     if (wi)
     {
         p->name = wi->short_name;
@@ -270,15 +270,21 @@ plane_ptr world::add_plane(const char *name, int color, bool player, net_plane_p
 
     if (player)
     {
-        m_hud.load(name, m_render_world.get_location_name());
+        m_hud.load(preset, m_render_world.get_location_name());
         m_hud.set_missiles(p->missile.id.c_str(), 0);
         m_hud.set_missiles_count(p->missile_count);
         m_player = p;
-        p->set_name(config::get_var("name"));
     }
 
     if (m_network)
-        p->net = ptr ? ptr : m_network->add_plane(name, color);
+        p->net = ptr ? ptr : m_network->add_plane(preset, player_name ? player_name : "", color);
+
+    if (player_name && player_name[0])
+    {
+        std::string name(player_name);
+        std::transform(name.begin() + 1, name.end(), name.begin() + 1, ::tolower);
+        p->player_name = std::wstring(name.begin(), name.end());
+    }
 
     m_planes.push_back(p);
     get_arms_param(); //cache
@@ -340,6 +346,15 @@ void world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, con
 
 //------------------------------------------------------------
 
+const char *world::get_player_name() const
+{
+    static std::string tmp;
+    tmp = config::get_var("name");
+    return tmp.c_str();
+}
+
+//------------------------------------------------------------
+
 plane_ptr world::get_plane(int idx)
 {
     if (idx < 0 || idx >= (int)m_planes.size())
@@ -378,7 +393,7 @@ void world::update(int dt)
 
         network_interface::msg_add_plane m;
         while(m_network->get_add_plane_msg(m))
-            add_plane(m.name.c_str(), m.color, false, m_network->add_plane(m));
+            add_plane(m.preset.c_str(), m.player_name.c_str(), m.color, false, m_network->add_plane(m));
 
         network_interface::msg_explosion me;
         while(m_network->get_explosion_msg(me))
@@ -626,17 +641,6 @@ void plane::reset_state()
 
     jammed = false;
     ecm_time = 0;
-}
-
-//------------------------------------------------------------
-
-void plane::set_name(std::string name)
-{
-    if (name.empty())
-        player_name.clear();
-
-    std::transform(name.begin() + 1, name.end(), name.begin() + 1, ::tolower);
-    player_name = std::wstring(name.begin(), name.end());
 }
 
 //------------------------------------------------------------

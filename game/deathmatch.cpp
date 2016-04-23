@@ -46,14 +46,13 @@ void deathmatch::start(const char *plane, int color, int special, const char *lo
         plane_ptr p;
         if (is_player)
         {
-            p = m_world.add_plane(plane, color, is_player);
+            p = m_world.add_plane(plane, m_world.get_player_name(), color, is_player);
         }
         else
         {
             ai b;
             const char *plane_name = planes[plane_idx = (plane_idx + 1) % planes.size()].c_str(); //ToDo
-            p = m_world.add_plane(plane_name, 0, is_player);
-            p->set_name("BOT");
+            p = m_world.add_plane(plane_name, "BOT", 0, is_player);
             b.set_plane(p);
             m_bots.push_back(b);
         }
