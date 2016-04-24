@@ -230,27 +230,34 @@ void network_client::update()
 
 //------------------------------------------------------------
 
-template<typename rs> void send_requests(rs &requests, miso::client_tcp &client, const char *msg)
+template<typename rs> void send_requests(rs &requests, miso::client_tcp &client, const std::string &msg)
 {
     if (requests.empty())
         return;
 
     for (auto &r: requests)
-        client.send_message(msg + (" " + to_string(r)));
+        client.send_message(msg + " " + to_string(r));
     requests.clear();
 }
 
 //------------------------------------------------------------
 
-template<typename rs> void send_objects(rs &objs, miso::client_tcp &client, unsigned int time, const char *msg)
+template<typename rs> void send_objects(rs &objs, miso::client_tcp &client, unsigned int time, const std::string &msg)
 {
+    send_requests(objs.add_requests, client, "add_" + msg);
+
     for (auto &o: objs.objects)
     {
         if (!o.net->source)
             continue;
 
-        client.send_message(msg + (" " + std::to_string(time)) + " " + std::to_string(o.r.id) + " "+ to_string(o.net));
+        if (o.net.unique())
+            client.send_message("remove_" + msg + " " + std::to_string(o.r.id));
+        else
+            client.send_message(msg + " " + std::to_string(time) + " " + std::to_string(o.r.id) + " "+ to_string(o.net));
     }
+
+    objs.remove_src_unique();
 }
 
 //------------------------------------------------------------
@@ -258,18 +265,13 @@ template<typename rs> void send_objects(rs &objs, miso::client_tcp &client, unsi
 void network_client::update_post(int dt)
 {
     m_time += dt;
-
-    send_requests(m_planes.add_requests, m_client, "add_plane");
-    send_requests(m_missiles.add_requests, m_client, "add_missile");
-    send_requests(m_explosion_requests, m_client, "explosion");
-
     if (m_time - m_last_send_time < 1000 / net_fps)
         return;
-
     m_last_send_time = m_time;
 
     send_objects(m_planes, m_client, m_time, "plane");
     send_objects(m_missiles, m_client, m_time, "missile");
+    send_requests(m_explosion_requests, m_client, "explosion");
 }
 
 //------------------------------------------------------------

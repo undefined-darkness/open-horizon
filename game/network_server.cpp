@@ -151,30 +151,30 @@ void network_server::process_msg(client &c, const std::string &msg)
 
         auto k = std::make_pair(c.id, plane_id);
         auto remap_id = m_planes_remap.find(k);
-        if (remap_id != m_planes_remap.end())
+        if (remap_id == m_planes_remap.end())
+            return;
+
+        for (auto &p: m_planes.objects)
         {
-            for (auto &p: m_planes.objects)
+            if (p.r.id == remap_id->second)
             {
-                if (p.r.id == remap_id->second)
-                {
-                    if (p.last_time > time)
-                        break;
-
-                    read(is, p.net);
-                    const int time_fix = int(m_time - time);
-
-                    for (auto &oc: m_clients)
-                    {
-                        if (oc.first == c.id)
-                            continue;
-
-                        m_server.send_message(oc.first, "plane " + std::to_string(time) + " " + std::to_string(p.r.id) + " "+ to_string(p.net));
-                    }
-
-                    p.net->pos += p.net->vel * (0.001f * time_fix);
-                    p.last_time = time;
+                if (p.last_time > time)
                     break;
+
+                read(is, p.net);
+                const int time_fix = int(m_time - time);
+
+                for (auto &oc: m_clients)
+                {
+                    if (oc.first == c.id)
+                        continue;
+
+                    m_server.send_message(oc.first, "plane " + std::to_string(time) + " " + std::to_string(p.r.id) + " "+ to_string(p.net));
                 }
+
+                p.net->pos += p.net->vel * (0.001f * time_fix);
+                p.last_time = time;
+                break;
             }
         }
     }
@@ -185,30 +185,30 @@ void network_server::process_msg(client &c, const std::string &msg)
 
         auto k = std::make_pair(c.id, missile_id);
         auto remap_id = m_missiles_remap.find(k);
-        if (remap_id != m_missiles_remap.end())
+        if (remap_id == m_missiles_remap.end())
+            return;
+
+        for (auto &m: m_missiles.objects)
         {
-            for (auto &m: m_missiles.objects)
+            if (m.r.id == remap_id->second)
             {
-                if (m.r.id == remap_id->second)
-                {
-                    if (m.last_time > time)
-                        break;
-
-                    read(is, m.net);
-                    const int time_fix = int(m_time - time);
-
-                    for (auto &oc: m_clients)
-                    {
-                        if (oc.first == c.id)
-                            continue;
-
-                        m_server.send_message(oc.first, "missile " + std::to_string(time) + " " + std::to_string(m.r.id) + " "+ to_string(m.net));
-                    }
-
-                    m.net->pos += m.net->vel * (0.001f * time_fix);
-                    m.last_time = time;
+                if (m.last_time > time)
                     break;
+
+                read(is, m.net);
+                const int time_fix = int(m_time - time);
+
+                for (auto &oc: m_clients)
+                {
+                    if (oc.first == c.id)
+                        continue;
+
+                    m_server.send_message(oc.first, "missile " + std::to_string(time) + " " + std::to_string(m.r.id) + " "+ to_string(m.net));
                 }
+
+                m.net->pos += m.net->vel * (0.001f * time_fix);
+                m.last_time = time;
+                break;
             }
         }
     }
@@ -249,20 +249,40 @@ void network_server::process_msg(client &c, const std::string &msg)
 
         auto k = std::make_pair(c.id, am.plane_id);
         auto remap_id = m_planes_remap.find(k);
-        if (remap_id != m_planes_remap.end())
+        if (remap_id == m_planes_remap.end())
+            return;
+
+        am.client_id = c.id;
+        am.plane_id = remap_id->second;
+        am.id = m_missiles_remap[std::make_pair(c.id, am.id)] = m_missiles.new_id();
+        m_missiles.add_msgs.push_back(am);
+
+        for (auto &oc: m_clients)
         {
-            am.client_id = c.id;
-            am.plane_id = remap_id->second;
-            am.id = m_missiles_remap[std::make_pair(c.id, am.id)] = m_missiles.new_id();
-            m_missiles.add_msgs.push_back(am);
+            if(oc.first == c.id)
+                continue;
 
-            for (auto &oc: m_clients)
-            {
-                if(oc.first == c.id)
-                    continue;
+            m_server.send_message(oc.first, "add_missile " + to_string(am));
+        }
+    }
+    else if (cmd == "remove_missile")
+    {
+        unsigned int missile_id;
+        is >> missile_id;
 
-                m_server.send_message(oc.first, "add_missile " + to_string(am));
-            }
+        auto k = std::make_pair(c.id, missile_id);
+        auto remap_id = m_missiles_remap.find(k);
+        if (remap_id == m_missiles_remap.end())
+            return;
+
+        m_missiles.remove(remap_id->second);
+
+        for (auto &oc: m_clients)
+        {
+            if(oc.first == c.id)
+                continue;
+
+            m_server.send_message(oc.first, "remove_missile " + std::to_string(remap_id->second));
         }
     }
     else if (cmd == "sync_time")
@@ -304,7 +324,7 @@ void network_server::process_msg(client &c, const std::string &msg)
 
 //------------------------------------------------------------
 
-template<typename rs, typename cs> void send_requests(rs &requests, cs &clients, miso::server_tcp &server, const char *msg)
+template<typename rs, typename cs> void send_requests(rs &requests, cs &clients, miso::server_tcp &server, const std::string &msg)
 {
     if (requests.empty())
         return;
@@ -315,7 +335,7 @@ template<typename rs, typename cs> void send_requests(rs &requests, cs &clients,
             continue;
 
         for (auto &r: requests)
-            server.send_message(c.first, msg + (" " + to_string(r)));
+            server.send_message(c.first, msg + " " + to_string(r));
     }
 
     requests.clear();
@@ -323,15 +343,28 @@ template<typename rs, typename cs> void send_requests(rs &requests, cs &clients,
 
 //------------------------------------------------------------
 
-template<typename rs> void send_objects(rs &objs, miso::server_tcp &server, unsigned int client_id, unsigned int time, const char *msg)
+template<typename rs, typename cs> void send_objects(rs &objs, cs &clients, miso::server_tcp &server, unsigned int time, const std::string &msg)
 {
-    for (auto &o: objs.objects)
+    send_requests(objs.add_requests, clients, server, "add_" + msg);
+
+    for (auto &c: clients)
     {
-        if (!o.net->source)
+        if (!c.second.started)
             continue;
 
-        server.send_message(client_id, msg + (" " + std::to_string(time)) + " " + std::to_string(o.r.id) + " "+ to_string(o.net));
+        for (auto &o: objs.objects)
+        {
+            if (!o.net->source)
+                continue;
+
+            if (o.net.unique())
+                server.send_message(c.first, "remove_" + msg + " " + std::to_string(o.r.id));
+            else
+                server.send_message(c.first, msg + " " + std::to_string(time) + " " + std::to_string(o.r.id) + " "+ to_string(o.net));
+        }
     }
+
+    objs.remove_src_unique();
 }
 
 //------------------------------------------------------------
@@ -339,24 +372,13 @@ template<typename rs> void send_objects(rs &objs, miso::server_tcp &server, unsi
 void network_server::update_post(int dt)
 {
     m_time += dt;
-
-    send_requests(m_planes.add_requests, m_clients, m_server, "add_plane");
-    send_requests(m_missiles.add_requests, m_clients, m_server, "add_missile");
-    send_requests(m_explosion_requests, m_clients, m_server, "explosion");
-
     if (m_time - m_last_send_time < 1000 / net_fps)
         return;
-
     m_last_send_time = m_time;
 
-    for (auto &c: m_clients)
-    {
-        if (!c.second.started)
-            continue;
-
-        send_objects(m_planes, m_server, c.first, m_time, "plane");
-        send_objects(m_missiles, m_server, c.first, m_time, "missile");
-    }
+    send_objects(m_planes, m_clients, m_server, m_time, "plane");
+    send_objects(m_missiles, m_clients, m_server, m_time, "missile");
+    send_requests(m_explosion_requests, m_clients, m_server, "explosion");
 }
 
 //------------------------------------------------------------

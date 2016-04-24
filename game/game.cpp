@@ -472,8 +472,7 @@ void world::update(int dt)
             p->targets.erase(remove_if(p->targets.begin(), p->targets.end(), [](const plane::target_lock &t){ return t.target_plane.expired(); }), p->targets.end());
     }
 
-    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m)
-                                    { return m.unique() && m->time <= 0  && (!m->net || m->net->source || m->net.unique()); }), m_missiles.end());
+    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m) { return (m->net && !m->net->source) ? m->net.unique() : m->time <= 0; }), m_missiles.end());
 
     for (auto &p: m_planes)
         p->phys->controls = p->controls;
