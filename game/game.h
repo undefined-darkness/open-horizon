@@ -92,6 +92,8 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     std::wstring player_name;
 
     net_plane_ptr net;
+    game_data local_game_data; //local general data
+    game_data net_game_data; //sync over network
     plane_controls controls;
     plane_controls last_controls;
     phys::plane_ptr phys;
@@ -216,6 +218,7 @@ public:
     void update(int dt);
 
     void set_network(network_interface *n) { m_network = n; }
+    bool is_host() const { return !m_network || m_network->is_server(); }
 
     unsigned int get_net_time() const { return m_network ? m_network->get_time() : 0; }
 

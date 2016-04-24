@@ -11,6 +11,7 @@
 #include <deque>
 #include <string>
 #include <memory>
+#include <sstream>
 
 namespace game
 {
@@ -24,6 +25,48 @@ struct server_info
     std::string location;
     int players = 0;
     int max_players = 0;
+};
+
+//------------------------------------------------------------
+
+struct game_data
+{
+    template<typename t> t get(std::string name) const
+    {
+        for (auto &p: params)
+        {
+            if (p.first == name)
+            {
+                std::istringstream ss(p.second);
+                t value;
+                ss >> value;
+                return value;
+            }
+        }
+
+        return t();
+    }
+
+    void set(std::string name, std::string value)
+    {
+        for (auto &p: params)
+        {
+            if (p.first == name)
+            {
+                p.second = value;
+                changed = true;
+                return;
+            }
+        }
+
+        params.push_back({name, value});
+        changed = true;
+    }
+
+    template<typename t> void set(std::string name, t value) { set(name, std::to_string(value)); }
+
+    std::vector<std::pair<std::string, std::string> > params;
+    bool changed = false;
 };
 
 //------------------------------------------------------------

@@ -9,6 +9,11 @@ namespace game
 {
 //------------------------------------------------------------
 
+inline int get_team(std::string t) { return t == "red" ? 1 : 0; }
+inline std::string get_team(int t) { return t == 1 ? "red" : "blue"; }
+
+//------------------------------------------------------------
+
 void team_deathmatch::start(const char *plane, int color, int special, const char *location, int players_count)
 {
     m_world.set_location(location);
@@ -29,9 +34,9 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
             const int game_area_size = 8096;
             p.first.x = 0.25 * (-game_area_size/2 + (game_area_size / int(m_respawn_points[t].size())) * i);
             p.first.y = m_world.get_height(p.first.x, p.first.z) + 400.0f;
-            p.first.z = game_area_size/2 * (t == team_ally ? 1 : -1);
+            p.first.z = game_area_size/2 * (t == 0 ? 1 : -1);
 
-            p.second = quat(0.0, t == team_ally ? nya_math::constants::pi : 0.0, 0.0);
+            p.second = quat(0.0, t == 0 ? nya_math::constants::pi : 0.0, 0.0);
         }
     }
 
@@ -72,11 +77,10 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
                 m_bots.push_back(b);
             }
 
-            tdm_plane tp;
-            tp.t = team(t);
-            m_planes[p] = tp;
+            p->net_game_data.set("team", get_team(t));
+            m_planes.push_back(p);
 
-            auto rp = get_respawn_point(team(t));
+            auto rp = get_respawn_point(p->net_game_data.get<std::string>("team"));
             p->set_pos(rp.first);
             p->set_rot(rp.second);
         }
@@ -87,35 +91,12 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
 
 //------------------------------------------------------------
 
-void team_deathmatch::update(int dt, const plane_controls &player_controls)
+void team_deathmatch::respawn(plane_ptr p)
 {
-    if (m_world.get_player()->hp > 0)
-        m_world.get_player()->controls = player_controls;
-
-    for (auto &b: m_bots)
-        b.update(m_world, dt);
-
-    m_world.update(dt);
-
-    for (auto &p: m_planes)
-    {
-        if (p.first->hp <= 0)
-        {
-            if (p.second.respawn_time > 0)
-            {
-                p.second.respawn_time -= dt;
-                if (p.second.respawn_time <= 0)
-                {
-                    auto rp = get_respawn_point(p.second.t);
-                    p.first->set_pos(rp.first);
-                    p.first->set_rot(rp.second);
-                    p.first->reset_state();
-                }
-            }
-            else
-                p.second.respawn_time = 2000;
-        }
-    }
+    auto rp = get_respawn_point(p->net_game_data.get<std::string>("team"));
+    p->set_pos(rp.first);
+    p->set_rot(rp.second);
+    p->reset_state();
 }
 
 //------------------------------------------------------------
@@ -127,8 +108,10 @@ void team_deathmatch::end()
 
 //------------------------------------------------------------
 
-team_deathmatch::respawn_point team_deathmatch::get_respawn_point(team t)
+team_deathmatch::respawn_point team_deathmatch::get_respawn_point(std::string team)
 {
+    const int t = get_team(team);
+
     if (m_respawn_points[t].empty())
         return respawn_point();
 
@@ -139,38 +122,38 @@ team_deathmatch::respawn_point team_deathmatch::get_respawn_point(team t)
 
 bool team_deathmatch::is_ally(const plane_ptr &a, const plane_ptr &b)
 {
-    return m_planes[a].t == m_planes[b].t;
+    return a->net_game_data.get<std::string>("team") == b->net_game_data.get<std::string>("team");
 }
 
 //------------------------------------------------------------
+
+void team_deathmatch::update_scores()
+{
+    deathmatch::update_scores();
+
+    m_score[0] = m_score[1] = 0;
+
+    for (int i = 0; i < m_world.get_planes_count(); ++i)
+    {
+        auto p = m_world.get_plane(i);
+        m_score[get_team(p->net_game_data.get<std::string>("team"))] += p->net_game_data.get<int>("score");
+    }
+
+    m_world.get_hud().set_team_score(m_score[0], m_score[1]);
+}
 
 void team_deathmatch::on_kill(const plane_ptr &k, const plane_ptr &v)
 {
     if (!v)
         return;
 
-    const bool ally = is_ally(m_world.get_player(), v);
-
     if (k)
     {
         if (!is_ally(k, v))
-        {
-            ++m_score[ally ? team_enemies : team_ally];
-            ++m_planes[k].score;
-        }
+            k->net_game_data.set("score", k->net_game_data.get<int>("score") + 1);
     }
     else
-    {
-        --m_score[ally ? team_ally : team_enemies];
-        --m_planes[v].score;
-    }
-
-    m_world.get_hud().set_team_score(m_score[team_ally], m_score[team_enemies]);
-
-    std::vector<score_e> score_table;
-    for (auto &p: m_planes)
-        score_table.push_back({p.second.score, p.first});
-    update_score_table(score_table);
+        v->net_game_data.set("score", v->net_game_data.get<int>("score") - 1);
 }
 
 //------------------------------------------------------------

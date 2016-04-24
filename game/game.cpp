@@ -387,7 +387,6 @@ void world::set_location(const char *name)
 {
     m_render_world.set_location(name);
     m_phys_world.set_location(name);
-
     m_hud.set_location(name);
 }
 
@@ -463,6 +462,9 @@ void world::update(int dt)
             m->phys->accel_started = m->net->engine_started;
         }
     }
+
+    for (auto &p: m_planes)
+        p->net_game_data.changed = false;
 
     auto removed_planes = std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p) { return p.unique() && (!p->net || p->net->source || p->net.unique()); });
     if (removed_planes != m_planes.end())

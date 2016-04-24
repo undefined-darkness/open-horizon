@@ -32,20 +32,30 @@ void free_flight::update(int dt, const plane_controls &player_controls)
 
     m_world.update(dt);
 
-    if (m_player->hp <= 0)
+    if (!m_world.is_host())
+        return;
+
+    for (int i = 0; i < m_world.get_planes_count(); ++i)
     {
-        if (m_respawn_time > 0)
+        auto p = m_world.get_plane(i);
+        if (p->hp <= 0)
         {
-            m_respawn_time -= dt;
-            if (m_respawn_time <= 0)
+            auto respawn_time = p->local_game_data.get<int>("respawn_time");
+            if (respawn_time > 0)
             {
-                m_player->set_pos(m_spawn_pos);
-                m_player->set_rot(nya_math::quat());
-                m_player->reset_state();
+                respawn_time -= dt;
+                if (respawn_time <= 0)
+                {
+                    p->set_pos(m_spawn_pos);
+                    p->set_rot(nya_math::quat());
+                    p->reset_state();
+                }
             }
+            else
+                respawn_time = 2000;
+
+            p->local_game_data.set("respawn_time", respawn_time);
         }
-        else
-            m_respawn_time = 2000;
     }
 }
 

@@ -57,7 +57,7 @@ void deathmatch::start(const char *plane, int color, int special, const char *lo
             m_bots.push_back(b);
         }
 
-        m_planes[p] = {};
+        m_planes.push_back(p);
 
         auto rp = get_respawn_point();
         p->set_pos(rp.first);
@@ -77,25 +77,47 @@ void deathmatch::update(int dt, const plane_controls &player_controls)
 
     m_world.update(dt);
 
-    for (auto &p: m_planes)
+    bool data_changed = false;
+    for (int i = 0; i < m_world.get_planes_count(); ++i)
     {
-        if (p.first->hp <= 0)
+        if (m_world.get_plane(i)->net_game_data.changed)
+            data_changed = true;
+    }
+
+    if (data_changed)
+        update_scores();
+
+    if (!m_world.is_host())
+        return;
+
+    for (int i = 0; i < m_world.get_planes_count(); ++i)
+    {
+        auto p = m_world.get_plane(i);
+        if (p->hp <= 0)
         {
-            if (p.second.respawn_time > 0)
+            auto respawn_time = p->local_game_data.get<int>("respawn_time");
+            if (respawn_time > 0)
             {
-                p.second.respawn_time -= dt;
-                if (p.second.respawn_time <= 0)
-                {
-                    auto rp = get_respawn_point();
-                    p.first->set_pos(rp.first);
-                    p.first->set_rot(rp.second);
-                    p.first->reset_state();
-                }
+                respawn_time -= dt;
+                if (respawn_time <= 0)
+                    respawn(p);
             }
             else
-                p.second.respawn_time = 2000;
+                respawn_time = 2000;
+
+            p->local_game_data.set("respawn_time", respawn_time);
         }
     }
+}
+
+//------------------------------------------------------------
+
+void deathmatch::respawn(plane_ptr p)
+{
+    auto rp = get_respawn_point();
+    p->set_pos(rp.first);
+    p->set_rot(rp.second);
+    p->reset_state();
 }
 
 //------------------------------------------------------------
@@ -123,22 +145,25 @@ void deathmatch::on_kill(const plane_ptr &k, const plane_ptr &v)
         return;
 
     if (k)
-    {
-        ++m_planes[k].score;
-    }
+        k->net_game_data.set("score", k->net_game_data.get<int>("score") + 1);
     else
-        --m_planes[v].score;
-
-    std::vector<score_e> score_table;
-    for (auto &p: m_planes)
-        score_table.push_back({p.second.score, p.first});
-    update_score_table(score_table);
+        v->net_game_data.set("score", v->net_game_data.get<int>("score") - 1);
 }
 
 //------------------------------------------------------------
 
-void deathmatch::update_score_table(std::vector<score_e> &score_table)
+void deathmatch::update_scores()
 {
+    typedef std::pair<int, plane_ptr> score_e;
+    std::vector<score_e> score_table(m_world.get_planes_count());
+
+    for (int i = 0; i < m_world.get_planes_count(); ++i)
+    {
+        auto &s = score_table[i];
+        s.second = m_world.get_plane(i);
+        s.first = s.second->net_game_data.get<int>("score");
+    }
+
     std::sort(score_table.rbegin(), score_table.rend());
     size_t pidx = std::find_if(score_table.begin(), score_table.end(), [this](score_e &p){ return p.second == m_world.get_player(); }) - score_table.begin();
 
