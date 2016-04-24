@@ -193,25 +193,13 @@ const std::wstring &get_aircraft_name(const std::string &id)
 
 //------------------------------------------------------------
 
-missile_ptr world::add_missile(const char *id, const char *model_id)
-{
-    if (!model_id || !id)
-        return missile_ptr();
-
-    renderer::model m;
-    m.load((std::string("w_") + model_id).c_str(), m_render_world.get_location_params());
-    return add_missile(id, m);
-}
-
-//------------------------------------------------------------
-
-missile_ptr world::add_missile(const char *id, const renderer::model &mdl)
+missile_ptr world::add_missile(const char *id, const renderer::model &mdl, bool add_to_phys_world)
 {
     if (!id)
         return missile_ptr();
 
     missile_ptr m(new missile());
-    m->phys = m_phys_world.add_missile(id);
+    m->phys = m_phys_world.add_missile(id, add_to_phys_world);
     m->render = m_render_world.add_missile(mdl);
 
     auto &param = get_arms_param();
@@ -223,6 +211,26 @@ missile_ptr world::add_missile(const char *id, const renderer::model &mdl)
         m->is_saam = true;
 
     m_missiles.push_back(m);
+    return m;
+}
+
+//------------------------------------------------------------
+
+missile_ptr world::add_missile(const plane_ptr &p, net_missile_ptr ptr)
+{
+    if (!p)
+        return missile_ptr();
+
+    const bool add_to_world = !(ptr && !ptr->source);
+
+    auto m = p->special_weapon_selected ? add_missile(p->special.id.c_str(), p->render->get_special_model(), add_to_world) :
+                                          add_missile(p->missile.id.c_str(), p->render->get_missile_model(), add_to_world);
+    if (!m)
+        return missile_ptr();
+
+    if (m_network)
+        m->net = ptr ? ptr : m_network->add_missile(p->net, p->special_weapon_selected);
+
     return m;
 }
 
@@ -391,9 +399,27 @@ void world::update(int dt)
     {
         m_network->update();
 
-        network_interface::msg_add_plane m;
-        while(m_network->get_add_plane_msg(m))
-            add_plane(m.preset.c_str(), m.player_name.c_str(), m.color, false, m_network->add_plane(m));
+        network_interface::msg_add_plane mp;
+        while(m_network->get_add_plane_msg(mp))
+            add_plane(mp.preset.c_str(), mp.player_name.c_str(), mp.color, false, m_network->add_plane(mp));
+
+        network_interface::msg_add_missile mm;
+        while(m_network->get_add_missile_msg(mm))
+        {
+            auto net = m_network->get_plane(mm.plane_id);
+            if (!net)
+                continue;
+
+            for (auto &p: m_planes)
+            {
+                if(p->net != net)
+                    continue;
+
+                p->special_weapon_selected = mm.special;
+                add_missile(p, m_network->add_missile(mm));
+                break;
+            }
+        }
 
         network_interface::msg_explosion me;
         while(m_network->get_explosion_msg(me))
@@ -422,9 +448,23 @@ void world::update(int dt)
             else
                 p->controls.missile = false;
         }
+
+        for (auto &m: m_missiles)
+        {
+            if (!m->net || m->net->source)
+                continue;
+
+            m->phys->pos = m->net->pos;
+            m->phys->rot = m->net->rot;
+            m->phys->vel = m->net->vel;
+            m->phys->target_dir = m->net->target_dir;
+            m->phys->accel_started = m->net->engine_started;
+            m->phys->update(dt);
+            m->phys->accel_started = m->net->engine_started;
+        }
     }
 
-    auto removed_planes = std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p) { return p.unique() && (!p->net || p->net.unique()); });
+    auto removed_planes = std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p) { return p.unique() && (!p->net || p->net->source || p->net.unique()); });
     if (removed_planes != m_planes.end())
     {
         m_planes.erase(removed_planes, m_planes.end());
@@ -433,7 +473,8 @@ void world::update(int dt)
     }
 
     m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m)
-                                    { return m.unique() && m->time <= 0; }), m_missiles.end());
+                                    { return m.unique() && m->time <= 0  && (!m->net || m->net->source || m->net.unique()); }), m_missiles.end());
+
     for (auto &p: m_planes)
         p->phys->controls = p->controls;
 
@@ -528,6 +569,22 @@ void world::update(int dt)
 
             p->net->ctrl_mgun = p->controls.mgun;
             p->net->ctrl_mgp = p->special_weapon_selected && p->controls.missile && p->special.id == "MGP" && p->special_count > 0;
+        }
+
+        for (auto &m: m_missiles)
+        {
+            if (!m->net)
+                continue;
+
+            m->net->pos = m->phys->pos;
+            m->net->rot = m->phys->rot;
+            m->net->vel = m->phys->vel;
+
+            if (!m->net->source)
+                continue;
+
+            m->net->target_dir = m->phys->target_dir;
+            m->net->engine_started = m->phys->accel_started;
         }
 
         m_network->update_post(dt);
@@ -1036,7 +1093,7 @@ void plane::update(int dt, world &w)
             const int shot_cout = special_count > special.lockon_count ? special.lockon_count : special_count;
             for (int i = 0; i < shot_cout; ++i)
             {
-                auto m = w.add_missile(special.id.c_str(), render->get_special_model());
+                auto m = w.add_missile(shared_from_this());
                 m->owner = shared_from_this();
 
                 special_mount_idx = ++special_mount_idx % (int)special_mount_cooldown.size();
@@ -1080,7 +1137,7 @@ void plane::update(int dt, world &w)
                 else if (missile_cooldown[1] <= 0)
                     missile_cooldown[1] = missile.reload_time;
 
-                auto m = w.add_missile(missile.id.c_str(), render->get_missile_model());
+                auto m = w.add_missile(shared_from_this());
                 m->owner = shared_from_this();
                 missile_mount_idx = ++missile_mount_idx % render->get_missile_mount_count();
                 missile_mount_cooldown[missile_mount_idx] = missile.reload_time;
@@ -1284,6 +1341,13 @@ void plane::take_damage(int damage, world &w)
 
 void missile::update_homing(int dt, world &w)
 {
+    if (net && !net->source)
+    {
+        //ToDo: alert dirs
+
+        return;
+    }
+
     if (is_saam)
     {
         if (owner.lock()->hp <= 0)
@@ -1318,6 +1382,12 @@ void missile::update(int dt, world &w)
     render->mdl.set_rot(phys->rot);
 
     render->engine_started = phys->accel_started;
+
+    if (time > 0)
+        time -= dt;
+
+    if (net && !net->source)
+        return;
 
     if (!target.expired())
     {
@@ -1354,9 +1424,6 @@ void missile::update(int dt, world &w)
         if (t->hp < 0)
             target.reset();
     }
-
-    if (time > 0)
-        time -= dt;
 }
 
 //------------------------------------------------------------

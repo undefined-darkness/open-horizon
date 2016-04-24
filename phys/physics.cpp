@@ -121,7 +121,7 @@ plane_ptr world::add_plane(const char *name, bool add_to_world)
 
 //------------------------------------------------------------
 
-missile_ptr world::add_missile(const char *name)
+missile_ptr world::add_missile(const char *name, bool add_to_world)
 {
     missile_ptr m(new missile());
 
@@ -139,7 +139,8 @@ missile_ptr world::add_missile(const char *name)
     m->rot_max_hi = param.get_float(pref + "rotAngMaxHi") * ang_to_rad;
     m->rot_max_low = param.get_float(pref + "rotAngMaxLow") * ang_to_rad;
 
-    m_missiles.push_back(m);
+    if (add_to_world)
+        m_missiles.push_back(m);
     return m;
 }
 

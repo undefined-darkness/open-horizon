@@ -162,6 +162,7 @@ typedef ptr<plane> plane_ptr;
 
 struct missile: public object
 {
+    net_missile_ptr net;
     phys::missile_ptr phys;
     renderer::missile_ptr render;
     ivalue time;
@@ -185,8 +186,7 @@ public:
     void set_location(const char *name);
 
     plane_ptr add_plane(const char *preset, const char *player_name, int color, bool player, net_plane_ptr ptr = net_plane_ptr());
-    missile_ptr add_missile(const char *id, const char *preset);
-    missile_ptr add_missile(const char *id, const renderer::model &m);
+    missile_ptr add_missile(const plane_ptr &p, net_missile_ptr ptr = net_missile_ptr());
 
     void spawn_explosion(const vec3 &pos, float radius, bool net_src = true);
     void spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, const plane_ptr &owner);
@@ -220,6 +220,9 @@ public:
     unsigned int get_net_time() const { return m_network ? m_network->get_time() : 0; }
 
     world(renderer::world &w, gui::hud &h): m_render_world(w), m_hud(h), m_network(0) {}
+
+private:
+    missile_ptr add_missile(const char *id, const renderer::model &m, bool add_to_phys_world);
 
 private:
     plane_ptr get_plane(const phys::object_ptr &o);

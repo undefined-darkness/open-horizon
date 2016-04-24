@@ -108,7 +108,7 @@ public:
     void set_location(const char *name);
 
     plane_ptr add_plane(const char *name, bool add_to_world);
-    missile_ptr add_missile(const char *name);
+    missile_ptr add_missile(const char *name, bool add_to_world);
 
     bool spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, vec3 &result);
 

@@ -8,6 +8,8 @@
 #include "game/deathmatch.h"
 #include "game/team_deathmatch.h"
 #include "game/free_flight.h"
+#include "game/network_client.h"
+#include "game/network_server.h"
 #include "game/hangar.h"
 #include "gui/menu.h"
 
@@ -273,7 +275,8 @@ int main()
     {
         unsigned long time = nya_system::get_time();
         int dt = int(time - app_time);
-        //if (dt > 1000)
+
+        //if (dt > 1000 && !is_client && !is_server)
         //    dt = 1000;
 
         app_time = time;
