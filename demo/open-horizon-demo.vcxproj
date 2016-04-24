@@ -117,6 +117,8 @@
     <ClCompile Include="..\game\deathmatch.cpp" />
     <ClCompile Include="..\game\free_flight.cpp" />
     <ClCompile Include="..\game\network.cpp" />
+    <ClCompile Include="..\game\network_client.cpp" />
+    <ClCompile Include="..\game\network_server.cpp" />
     <ClCompile Include="..\game\team_deathmatch.cpp" />
     <ClCompile Include="..\gui\hud.cpp" />
     <ClCompile Include="..\gui\menu.cpp" />
@@ -187,7 +189,10 @@
     <ClInclude Include="..\game\deathmatch.h" />
     <ClInclude Include="..\game\free_flight.h" />
     <ClInclude Include="..\game\network.h" />
+    <ClInclude Include="..\game\network_client.h" />
     <ClInclude Include="..\game\network_data.h" />
+    <ClInclude Include="..\game\network_helpers.h" />
+    <ClInclude Include="..\game\network_server.h" />
     <ClInclude Include="..\game\team_deathmatch.h" />
     <ClInclude Include="..\gui\hud.h" />
     <ClInclude Include="..\gui\menu.h" />

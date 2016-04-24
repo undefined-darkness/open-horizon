@@ -182,6 +182,12 @@
     <ClCompile Include="..\containers\cpk.cpp">
       <Filter>Source Files\containers</Filter>
     </ClCompile>
+    <ClCompile Include="..\game\network_client.cpp">
+      <Filter>Source Files\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\game\network_server.cpp">
+      <Filter>Source Files\game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\game\ai.h">
@@ -333,6 +339,15 @@
     </ClInclude>
     <ClInclude Include="..\containers\cpk.h">
       <Filter>Source Files\containers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\network_client.h">
+      <Filter>Source Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\network_helpers.h">
+      <Filter>Source Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\network_server.h">
+      <Filter>Source Files\game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
