@@ -83,7 +83,12 @@ void team_deathmatch::update(int dt, const plane_controls &player_controls)
     if (!m_world.is_host())
         return;
 
-    if (m_world.net_data_updated())
+    if (m_last_planes_count != m_world.get_planes_count())
+    {
+        m_last_planes_count = m_world.get_planes_count();
+        rebalance();
+    }
+    else if (m_world.net_data_updated())
         rebalance();
 }
 
@@ -92,9 +97,7 @@ void team_deathmatch::update(int dt, const plane_controls &player_controls)
 void team_deathmatch::respawn(plane_ptr p)
 {
     auto rp = get_respawn_point(p->net_game_data.get<std::string>("team"));
-    p->set_pos(rp.first);
-    p->set_rot(rp.second);
-    p->reset_state();
+    m_world.respawn(p, rp.first, rp.second);
 }
 
 //------------------------------------------------------------
@@ -127,6 +130,8 @@ void team_deathmatch::rebalance()
                 --count[dec_team];
                 ++count[inc_team];
                 p->net_game_data.set("team", get_team(inc_team));
+                auto rp = get_respawn_point(get_team(inc_team));
+                m_world.respawn(p, rp.first, rp.second);
                 break;
             }
         }

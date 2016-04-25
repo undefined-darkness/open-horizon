@@ -31,6 +31,7 @@ protected:
     std::vector<respawn_point> m_respawn_points[2];
     ivalue m_last_respawn[2];
     ivalue m_score[2];
+    int m_last_planes_count = 0;
 };
 
 //------------------------------------------------------------
