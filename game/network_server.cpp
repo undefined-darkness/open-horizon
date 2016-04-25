@@ -218,6 +218,20 @@ void network_server::process_msg(client &c, const std::string &msg)
             m_server.send_message(oc.first, msg);
         }
     }
+    else if (cmd == "game_data")
+    {
+        msg_game_data mg;
+        read(is, mg);
+        m_game_data_msg.push_back(mg);
+
+        for (auto &oc: m_clients)
+        {
+            if (oc.first == c.id)
+                continue;
+
+            m_server.send_message(oc.first, msg);
+        }
+    }
     else if (cmd == "add_plane")
     {
         msg_add_plane ap;
@@ -358,6 +372,7 @@ void network_server::update_post(int dt)
     send_objects(m_planes, m_clients, m_server, m_time, "plane");
     send_objects(m_missiles, m_clients, m_server, m_time, "missile");
     send_requests(m_general_msg_requests, m_clients, m_server, "message");
+    send_requests(m_game_data_msg_requests, m_clients, m_server, "game_data");
 }
 
 //------------------------------------------------------------

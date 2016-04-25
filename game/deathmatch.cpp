@@ -74,14 +74,7 @@ void deathmatch::update(int dt, const plane_controls &player_controls)
 
     m_world.update(dt);
 
-    bool data_changed = false;
-    for (int i = 0; i < m_world.get_planes_count(); ++i)
-    {
-        if (m_world.get_plane(i)->net_game_data.changed)
-            data_changed = true;
-    }
-
-    if (data_changed)
+    if (m_world.net_data_updated())
         update_scores();
 
     if (!m_world.is_host())

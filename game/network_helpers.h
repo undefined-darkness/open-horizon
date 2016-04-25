@@ -160,6 +160,28 @@ inline void read(std::istringstream &is, network_interface::msg_add_missile &m)
 
 //------------------------------------------------------------
 
+inline std::string to_string(const network_interface::msg_game_data &m)
+{
+    std::string str = std::to_string(m.client_id) + " " + std::to_string(m.plane_id) + " ";
+    for (auto &p: m.data.params)
+        str.append(p.first + '{' + p.second + '}');
+
+    return str;
+}
+
+//------------------------------------------------------------
+
+inline void read(std::istringstream &is, network_interface::msg_game_data &m)
+{
+    is >> m.client_id, is >> m.plane_id;
+    is.ignore(); //whitespace
+    std::string name, value;
+    while (std::getline(is, name, '{') && std::getline(is, value, '}'))
+        m.data.params.push_back(std::make_pair(name, value));
+}
+
+//------------------------------------------------------------
+
 inline std::string to_string(const std::string &s) { return s; }
 
 //------------------------------------------------------------

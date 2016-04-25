@@ -196,6 +196,12 @@ void network_client::update()
             std::getline(is, str);
             m_general_msg.push_back(str);
         }
+        else if (cmd == "game_data")
+        {
+            msg_game_data mg;
+            read(is, mg);
+            m_game_data_msg.push_back(mg);
+        }
         else if (cmd == "add_plane")
         {
             msg_add_plane ap;
@@ -273,6 +279,7 @@ void network_client::update_post(int dt)
     send_objects(m_planes, m_client, m_time, "plane");
     send_objects(m_missiles, m_client, m_time, "missile");
     send_requests(m_general_msg_requests, m_client, "message");
+    send_requests(m_game_data_msg_requests, m_client, "game_data");
 }
 
 //------------------------------------------------------------

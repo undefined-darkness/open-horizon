@@ -410,16 +410,18 @@ void world::set_location(const char *name)
 
 void world::update(int dt)
 {
+    m_net_data_updated = false;
+
     if (m_network)
     {
         m_network->update();
 
         network_interface::msg_add_plane mp;
-        while(m_network->get_add_plane_msg(mp))
+        while (m_network->get_add_plane_msg(mp))
             add_plane(mp.preset.c_str(), mp.player_name.c_str(), mp.color, false, m_network->add_plane(mp));
 
         network_interface::msg_add_missile mm;
-        while(m_network->get_add_missile_msg(mm))
+        while (m_network->get_add_missile_msg(mm))
         {
             auto net = m_network->get_plane(mm.plane_id);
             if (!net)
@@ -434,6 +436,25 @@ void world::update(int dt)
                 add_missile(p, m_network->add_missile(mm));
                 break;
             }
+        }
+
+        network_interface::msg_game_data md;
+        while (m_network->get_game_data_msg(md))
+        {
+            auto net = m_network->get_plane(md.plane_id);
+            if (!net)
+                continue;
+
+            for (auto &p: m_planes)
+            {
+                if(p->net != net)
+                    continue;
+
+                p->net_game_data = md.data;
+                break;
+            }
+
+            m_net_data_updated = true;
         }
 
         std::string str;
@@ -514,6 +535,9 @@ void world::update(int dt)
 
         for (auto &p: m_planes)
         {
+            if (p->net && p->net_game_data.changed)
+                m_network->send_game_data(p->net, p->net_game_data);
+
             if (!p->net || p->net->source)
                 continue;
 
@@ -677,6 +701,15 @@ void world::update(int dt)
         }
 
         m_network->update_post(dt);
+    }
+
+    if (!m_net_data_updated)
+    {
+        for (auto &p: m_planes)
+        {
+            if (p->net_game_data.changed)
+                m_net_data_updated = true;
+        }
     }
 }
 

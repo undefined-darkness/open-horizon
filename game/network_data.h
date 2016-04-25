@@ -169,6 +169,25 @@ public:
     bool get_general_msg(std::string &m) { return get_msg(m, m_general_msg); }
 
 public:
+    struct msg_game_data
+    {
+        unsigned int client_id, plane_id;
+        game_data data;
+    };
+
+    void send_game_data(net_plane_ptr plane, const game_data &data)
+    {
+        msg_game_data m;
+        m.client_id = m_id;
+        m.plane_id = get_plane_id(plane);
+        m.data = data;
+
+        m_game_data_msg_requests.push_back(m);
+    }
+
+    bool get_game_data_msg(msg_game_data &m) { return get_msg(m, m_game_data_msg); }
+
+public:
     virtual bool is_server() const { return false; };
 
     virtual void update() {};
@@ -259,6 +278,10 @@ protected:
 protected:
     std::deque<std::string> m_general_msg;
     std::deque<std::string> m_general_msg_requests;
+
+protected:
+    std::deque<msg_game_data> m_game_data_msg;
+    std::deque<msg_game_data> m_game_data_msg_requests;
 
 protected:
     unsigned int m_id = 0;

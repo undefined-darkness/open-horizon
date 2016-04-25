@@ -316,7 +316,7 @@ void menu::set_screen(const std::string &screen)
     else if (screen == "mp")
     {
         m_title = L"MULTIPLAYER";
-        add_entry(L"Internet servers", {"screen=mp_inet", "multiplayer=client"});
+        //add_entry(L"Internet servers", {"screen=mp_inet", "multiplayer=client"});
         //add_entry(L"Local network servers", {"screen=mp_local", "multiplayer=client"});
         add_entry(L"Connect to address", {"screen=mp_connect", "multiplayer=client"});
         add_entry(L"Start server", {"screen=mp_create", "multiplayer=server"});
@@ -356,11 +356,11 @@ void menu::set_screen(const std::string &screen)
         send_event("max_players=8");
         add_input("max_players", true);
         m_entries.back().allow_input = false;
-
+/*
         add_entry(L"Public: ", {}, "mp_public", {});
         add_sub_entry(L"Yes", "true");
         add_sub_entry(L"No", "false");
-
+*/
         send_sub_events(m_entries.back());
 
         add_entry(L"Location: ", {}, "map", {});

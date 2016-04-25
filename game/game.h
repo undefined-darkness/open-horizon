@@ -222,7 +222,7 @@ public:
     void set_network(network_interface *n) { m_network = n; }
     network_interface *get_network() { return m_network; }
     bool is_host() const { return !m_network || m_network->is_server(); }
-
+    bool net_data_updated() const { return m_net_data_updated; }
 
     unsigned int get_net_time() const { return m_network ? m_network->get_time() : 0; }
 
@@ -248,6 +248,7 @@ private:
 
 private:
     network_interface *m_network;
+    bool m_net_data_updated = false;
 };
 
 //------------------------------------------------------------
