@@ -17,6 +17,10 @@ namespace game
 {
 //------------------------------------------------------------
 
+const static unsigned int invalid_id = (unsigned int)(-1);
+
+//------------------------------------------------------------
+
 struct server_info
 {
     int version = 0;
@@ -96,6 +100,7 @@ struct net_missile
     nya_math::vec3 vel;
     nya_math::quat rot;
     nya_math::vec3 target_dir;
+    unsigned int target = invalid_id;
     bool engine_started = false;
 
     bool source = false;
@@ -139,7 +144,7 @@ public:
                 return p.r.id;
         }
 
-        return (unsigned int)(-1);
+        return invalid_id;
     }
 
     unsigned int get_id() const { return m_id; }

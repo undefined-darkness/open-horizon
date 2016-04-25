@@ -569,6 +569,21 @@ void world::update(int dt)
             m->phys->accel_started = m->net->engine_started;
             m->phys->update(dt);
             m->phys->accel_started = m->net->engine_started;
+
+            m->target.reset();
+
+            auto target_net = m_network->get_plane(m->net->target);
+            if (!target_net)
+                continue;
+
+            for (auto &p: m_planes)
+            {
+                if(p->net == target_net)
+                {
+                    m->target = p;
+                    break;
+                }
+            }
         }
     }
 
@@ -698,6 +713,7 @@ void world::update(int dt)
                 continue;
 
             m->net->target_dir = m->phys->target_dir;
+            m->net->target = m->target.expired() ? invalid_id : m_network->get_plane_id(m->target.lock()->net);
             m->net->engine_started = m->phys->accel_started;
         }
 
@@ -1467,8 +1483,11 @@ void missile::update_homing(int dt, world &w)
 {
     if (net && !net->source)
     {
-        //ToDo: alert dirs
-
+        if (!target.expired())
+        {
+            auto t = target.lock();
+            t->alert_dirs.push_back(t->get_pos() - phys->pos);
+        }
         return;
     }
 

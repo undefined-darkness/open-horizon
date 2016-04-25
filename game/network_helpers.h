@@ -131,7 +131,7 @@ inline std::string to_string(const net_missile_ptr &n)
     if (!n)
         return "";
 
-    return to_string(n->pos) + " " + to_string(n->vel) + " " + to_string(n->rot) + " " + to_string(n->target_dir) + " " + (n->engine_started ? '1' : '0');
+    return to_string(n->pos) + " " + to_string(n->vel) + " " + to_string(n->rot) + " " + to_string(n->target_dir) + " " + std::to_string(n->target) + " " + (n->engine_started ? '1' : '0');
 }
 
 //------------------------------------------------------------
@@ -141,7 +141,7 @@ inline void read(std::istringstream &is, net_missile_ptr &n)
     if (!n)
         return;
 
-    read(is, n->pos), read(is, n->vel), read(is, n->rot), read(is, n->target_dir), is >> n->engine_started;
+    read(is, n->pos), read(is, n->vel), read(is, n->rot), read(is, n->target_dir), is >> n->target, is >> n->engine_started;
 }
 
 //------------------------------------------------------------
