@@ -14,7 +14,7 @@ inline std::string get_team(int t) { return t == 1 ? "red" : "blue"; }
 
 //------------------------------------------------------------
 
-void team_deathmatch::start(const char *plane, int color, int special, const char *location, int players_count)
+void team_deathmatch::start(const char *plane, int color, int special, const char *location, int bots_count)
 {
     m_world.set_location(location);
 
@@ -26,7 +26,7 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
 
     for (int t = 0; t < 2; ++t)
     {
-        m_respawn_points[t].resize(players_count / 2);
+        m_respawn_points[t].resize(5);
         for (int i = 0; i < (int)m_respawn_points[t].size(); ++i)
         {
             auto &p = m_respawn_points[t][i];
@@ -40,50 +40,36 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
         }
     }
 
-    bool is_player = true;
-    bool easter_edge = true;
-
     size_t plane_idx = 0;
     const auto planes = get_aircraft_ids({"fighter", "multirole"});
     assert(!planes.empty());
 
+    m_planes.push_back(m_world.add_plane(plane, m_world.get_player_name(), color, true));
+
     m_bots.clear();
-    for (int t = 0; t < 2; ++t)
+
+    for (int i = 0; i < bots_count; ++i)
     {
-        for (int i = 0; i < players_count / 2; ++i)
-        {
-            plane_ptr p;
-            if (is_player)
-            {
-                p = m_world.add_plane(plane, m_world.get_player_name(), color, is_player);
-                is_player = false;
-            }
-            else
-            {
-                ai b;
-                if (easter_edge)
-                {
-                    p = m_world.add_plane("f14d", "BOT", 3, is_player);
-                    b.set_follow(m_world.get_player(), vec3(10.0, 0.0, -10.0));
-                    easter_edge = false;
-                }
-                else
-                {
-                    const char *plane_name = planes[plane_idx = (plane_idx + 1) % planes.size()].c_str(); //ToDo
-                    p = m_world.add_plane(plane_name, "BOT", 0, is_player);
-                }
+        plane_ptr p;
+        ai b;
 
-                b.set_plane(p);
-                m_bots.push_back(b);
-            }
+        const char *plane_name = planes[plane_idx = (plane_idx + 1) % planes.size()].c_str(); //ToDo
+        p = m_world.add_plane(plane_name, "BOT", 0, false);
 
-            p->net_game_data.set("team", get_team(t));
-            m_planes.push_back(p);
+        b.set_plane(p);
+        m_bots.push_back(b);
 
-            auto rp = get_respawn_point(p->net_game_data.get<std::string>("team"));
-            p->set_pos(rp.first);
-            p->set_rot(rp.second);
-        }
+        m_planes.push_back(p);
+    }
+
+    int last_team = 0;
+    for (auto &p: m_planes)
+    {
+        p->net_game_data.set("team", get_team(last_team));
+        last_team = !last_team;
+        auto rp = get_respawn_point(p->net_game_data.get<std::string>("team"));
+        p->set_pos(rp.first);
+        p->set_rot(rp.second);
     }
 
     m_world.get_hud().set_team_score(0, 0);

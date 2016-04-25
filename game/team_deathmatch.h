@@ -13,7 +13,7 @@ namespace game
 class team_deathmatch: public deathmatch
 {
 public:
-    virtual void start(const char *plane, int color, int special, const char *location, int players_count);
+    virtual void start(const char *plane, int color, int special, const char *location, int bots_count);
     virtual void end() override;
 
     team_deathmatch(world &w): deathmatch(w) {}

@@ -9,7 +9,7 @@ namespace game
 {
 //------------------------------------------------------------
 
-void deathmatch::start(const char *plane, int color, int special, const char *location, int players_count)
+void deathmatch::start(const char *plane, int color, int special, const char *location, int bots_count)
 {
     m_world.set_location(location);
 
@@ -19,7 +19,7 @@ void deathmatch::start(const char *plane, int color, int special, const char *lo
     world::on_kill_handler fok = std::bind(&deathmatch::on_kill, this, std::placeholders::_1, std::placeholders::_2);
     m_world.set_on_kill_handler(fok);
 
-    m_respawn_points.resize(players_count);
+    m_respawn_points.resize(8);
     for (int i = 0; i < (int)m_respawn_points.size(); ++i)
     {
         auto &p = m_respawn_points[i];
@@ -39,26 +39,23 @@ void deathmatch::start(const char *plane, int color, int special, const char *lo
 
     m_bots.clear();
 
-    for (int i = 0; i < players_count; ++i)
-    {
-        const bool is_player = i == 0;
+    m_planes.push_back(m_world.add_plane(plane, m_world.get_player_name(), color, true)); //player
 
+    for (int i = 0; i < bots_count; ++i)
+    {
         plane_ptr p;
-        if (is_player)
-        {
-            p = m_world.add_plane(plane, m_world.get_player_name(), color, is_player);
-        }
-        else
-        {
-            ai b;
-            const char *plane_name = planes[plane_idx = (plane_idx + 1) % planes.size()].c_str(); //ToDo
-            p = m_world.add_plane(plane_name, "BOT", 0, is_player);
-            b.set_plane(p);
-            m_bots.push_back(b);
-        }
+
+        ai b;
+        const char *plane_name = planes[plane_idx = (plane_idx + 1) % planes.size()].c_str(); //ToDo
+        p = m_world.add_plane(plane_name, "BOT", 0, false);
+        b.set_plane(p);
+        m_bots.push_back(b);
 
         m_planes.push_back(p);
+    }
 
+    for (auto &p: m_planes)
+    {
         auto rp = get_respawn_point();
         p->set_pos(rp.first);
         p->set_rot(rp.second);

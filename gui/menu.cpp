@@ -346,6 +346,8 @@ void menu::set_screen(const std::string &screen)
         add_input("name", "PLAYER");
 
         add_entry(L"Game mode: ", {}, "mode");
+        add_sub_entry(L"Deathmatch", "dm");
+        add_sub_entry(L"Team deathmatch", "tdm");
         add_sub_entry(L"Free flight", "ff");
 
         send_sub_events(m_entries.back());

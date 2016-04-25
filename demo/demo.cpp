@@ -203,13 +203,17 @@ int main()
 
             if (mode == "dm")
             {
+                const int bots_count = (is_client || is_server) ? 0 : 11;
+
                 active_game_mode = &game_mode_dm;
-                game_mode_dm.start(plane.c_str(), color, 0, location.c_str(), 12);
+                game_mode_dm.start(plane.c_str(), color, 0, location.c_str(), bots_count);
             }
             else if (mode == "tdm")
             {
+                const int bots_count = (is_client || is_server) ? 0 : 7;
+
                 active_game_mode = &game_mode_tdm;
-                game_mode_tdm.start(plane.c_str(), color, 0, location.c_str(), 8);
+                game_mode_tdm.start(plane.c_str(), color, 0, location.c_str(), bots_count);
             }
             else if (mode == "ff")
             {
@@ -276,8 +280,8 @@ int main()
         unsigned long time = nya_system::get_time();
         int dt = int(time - app_time);
 
-        //if (dt > 1000 && !is_client && !is_server)
-        //    dt = 1000;
+        if (dt > 1000 && !is_client && !is_server)
+            dt = 1000;
 
         app_time = time;
 

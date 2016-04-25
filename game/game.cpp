@@ -364,7 +364,7 @@ void world::respawn(const plane_ptr &p, const vec3 &pos, const quat &rot)
     p->set_rot(rot);
     p->reset_state();
 
-    if (is_host() && m_network && !p->net->source)
+    if (is_host() && m_network)
         m_network->general_msg("respawn " + std::to_string(m_network->get_plane_id(p->net)) + " " + to_string(pos) + " " + to_string(rot));
 }
 
@@ -470,24 +470,6 @@ void world::update(int dt)
                         break;
                     }
                 }
-                else if (cmd == "plane_set_hp")
-                {
-                    unsigned int plane_id; int hp;
-                    is >> plane_id, is >> hp;
-
-                    auto net = m_network->get_plane(plane_id);
-                    if (!net)
-                        continue;
-
-                    for (auto &p: m_planes)
-                    {
-                        if(p->net != net)
-                            continue;
-                        
-                        p->hp = hp;
-                        break;
-                    }
-                }
             }
             else
             {
@@ -506,6 +488,24 @@ void world::update(int dt)
                             continue;
 
                         respawn(p, pos, rot);
+                        break;
+                    }
+                }
+                else if (cmd == "plane_set_hp")
+                {
+                    unsigned int plane_id; int hp;
+                    is >> plane_id, is >> hp;
+
+                    auto net = m_network->get_plane(plane_id);
+                    if (!net)
+                        continue;
+
+                    for (auto &p: m_planes)
+                    {
+                        if(p->net != net)
+                            continue;
+
+                        p->hp = hp;
                         break;
                     }
                 }
