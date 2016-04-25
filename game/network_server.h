@@ -42,6 +42,7 @@ private:
     std::string m_header;
     int m_max_players = 0;
     unsigned int m_last_send_time = 0;
+    unsigned int m_last_client_range = 0;
 
     struct client
     {
@@ -51,9 +52,6 @@ private:
 
     std::map<miso::server_tcp::client_id, client> m_clients;
     std::set<miso::server_tcp::client_id> m_requests;
-
-    std::map<std::pair<miso::server_tcp::client_id, unsigned int>, unsigned int> m_planes_remap;
-    std::map<std::pair<miso::server_tcp::client_id, unsigned int>, unsigned int> m_missiles_remap;
 };
 
 //------------------------------------------------------------

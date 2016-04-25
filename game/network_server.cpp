@@ -128,7 +128,9 @@ void network_server::process_msg(const std::pair<miso::server_tcp::client_id, st
         }
         else
         {
-            m_server.send_message(id, "connected " + std::to_string(id));
+            const unsigned int client_range = (unsigned int)(-1) / 1024;
+            m_last_client_range += client_range;
+            m_server.send_message(id, "connected " + std::to_string(id) + " " + std::to_string(m_last_client_range));
             m_requests.erase(id);
             client &c = m_clients[id];
             c.id = id;
@@ -149,14 +151,9 @@ void network_server::process_msg(client &c, const std::string &msg)
         unsigned int time, plane_id;
         is >> time, is >> plane_id;
 
-        auto k = std::make_pair(c.id, plane_id);
-        auto remap_id = m_planes_remap.find(k);
-        if (remap_id == m_planes_remap.end())
-            return;
-
         for (auto &p: m_planes.objects)
         {
-            if (p.r.id == remap_id->second)
+            if (p.r.id == plane_id)
             {
                 if (p.last_time > time)
                     break;
@@ -183,14 +180,9 @@ void network_server::process_msg(client &c, const std::string &msg)
         unsigned int time, missile_id;
         is >> time, is >> missile_id;
 
-        auto k = std::make_pair(c.id, missile_id);
-        auto remap_id = m_missiles_remap.find(k);
-        if (remap_id == m_missiles_remap.end())
-            return;
-
         for (auto &m: m_missiles.objects)
         {
-            if (m.r.id == remap_id->second)
+            if (m.r.id == missile_id)
             {
                 if (m.last_time > time)
                     break;
@@ -212,11 +204,11 @@ void network_server::process_msg(client &c, const std::string &msg)
             }
         }
     }
-    else if (cmd == "explosion")
+    else if (cmd == "message")
     {
-        msg_explosion me;
-        read(is, me);
-        m_explosions.push_back(me);
+        std::string str;
+        std::getline(is, str);
+        m_general_msg.push_back(str);
 
         for (auto &oc: m_clients)
         {
@@ -231,7 +223,6 @@ void network_server::process_msg(client &c, const std::string &msg)
         msg_add_plane ap;
         read(is, ap);
         ap.client_id = c.id;
-        ap.id = m_planes_remap[std::make_pair(c.id, ap.id)] = m_planes.new_id();
         m_planes.add_msgs.push_back(ap);
 
         for (auto &oc: m_clients)
@@ -247,14 +238,7 @@ void network_server::process_msg(client &c, const std::string &msg)
         msg_add_missile am;
         read(is, am);
 
-        auto k = std::make_pair(c.id, am.plane_id);
-        auto remap_id = m_planes_remap.find(k);
-        if (remap_id == m_planes_remap.end())
-            return;
-
         am.client_id = c.id;
-        am.plane_id = remap_id->second;
-        am.id = m_missiles_remap[std::make_pair(c.id, am.id)] = m_missiles.new_id();
         m_missiles.add_msgs.push_back(am);
 
         for (auto &oc: m_clients)
@@ -270,19 +254,14 @@ void network_server::process_msg(client &c, const std::string &msg)
         unsigned int missile_id;
         is >> missile_id;
 
-        auto k = std::make_pair(c.id, missile_id);
-        auto remap_id = m_missiles_remap.find(k);
-        if (remap_id == m_missiles_remap.end())
-            return;
-
-        m_missiles.remove(remap_id->second);
+        m_missiles.remove(missile_id);
 
         for (auto &oc: m_clients)
         {
             if(oc.first == c.id)
                 continue;
 
-            m_server.send_message(oc.first, "remove_missile " + std::to_string(remap_id->second));
+            m_server.send_message(oc.first, msg);
         }
     }
     else if (cmd == "sync_time")
@@ -378,7 +357,7 @@ void network_server::update_post(int dt)
 
     send_objects(m_planes, m_clients, m_server, m_time, "plane");
     send_objects(m_missiles, m_clients, m_server, m_time, "missile");
-    send_requests(m_explosion_requests, m_clients, m_server, "explosion");
+    send_requests(m_general_msg_requests, m_clients, m_server, "message");
 }
 
 //------------------------------------------------------------
@@ -395,7 +374,6 @@ void network_server::remove_client(miso::server_tcp::client_id id)
     }
 
     m_planes.remove_by_client_id(id);
-    for(auto it = m_planes_remap.begin(); it != m_planes_remap.end();) { if(it->first.first == id) it = m_planes_remap.erase(it); else ++it; }
 
     for (auto &m: m_missiles.objects)
     {
@@ -407,7 +385,6 @@ void network_server::remove_client(miso::server_tcp::client_id id)
     }
 
     m_missiles.remove_by_client_id(id);
-    for(auto it = m_missiles_remap.begin(); it != m_missiles_remap.end();) { if(it->first.first == id) it = m_missiles_remap.erase(it); else ++it; }
 }
 
 //------------------------------------------------------------

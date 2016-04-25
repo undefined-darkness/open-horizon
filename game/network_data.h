@@ -112,7 +112,7 @@ public:
     {
         msg_add_plane r;
         r.client_id = m_id;
-        r.id = m_planes.new_id();
+        r.id = new_obj_id();
         r.preset = preset;
         r.player_name = player_name;
         r.color = color;
@@ -131,23 +131,28 @@ public:
 
     net_plane_ptr get_plane(unsigned int plane_id) { return m_planes.get_net(plane_id); }
 
-public:
-    net_missile_ptr add_missile(net_plane_ptr plane, bool special)
+    unsigned int get_plane_id(net_plane_ptr plane)
     {
         for (auto &p: m_planes.objects)
         {
             if (p.net == plane)
-            {
-                msg_add_missile m;
-                m.client_id = m_id;
-                m.plane_id = p.r.id;
-                m.id = m_missiles.new_id();
-                m.special = special;
-                return m_missiles.add(m, true);
-            }
+                return p.r.id;
         }
 
-        return net_missile_ptr();
+        return (unsigned int)(-1);
+    }
+
+    unsigned int get_id() const { return m_id; }
+
+public:
+    net_missile_ptr add_missile(net_plane_ptr plane, bool special)
+    {
+        msg_add_missile m;
+        m.client_id = m_id;
+        m.plane_id = get_plane_id(plane);
+        m.id = new_obj_id();
+        m.special = special;
+        return m_missiles.add(m, true);
     }
 
     struct msg_add_missile
@@ -160,20 +165,8 @@ public:
     bool get_add_missile_msg(msg_add_missile &m) { return get_msg(m, m_missiles.add_msgs); }
 
 public:
-    struct msg_explosion
-    {
-        nya_math::vec3 pos;
-        float radius = 0.0f;
-    };
-
-    void spawn_explosion(const nya_math::vec3 &pos, float radius)
-    {
-        msg_explosion me;
-        me.pos = pos, me.radius = radius;
-        m_explosion_requests.push_back(me);
-    }
-
-    bool get_explosion_msg(msg_explosion &m) { return get_msg(m, m_explosions); }
+    void general_msg(std::string msg) { m_general_msg_requests.push_back(msg); }
+    bool get_general_msg(std::string &m) { return get_msg(m, m_general_msg); }
 
 public:
     virtual bool is_server() const { return false; };
@@ -239,8 +232,6 @@ protected:
             objects.erase(std::remove_if(objects.begin(), objects.end(), [](const obj &o){ return o.net.unique() && o.net->source; }), objects.end());
         }
 
-        unsigned int new_id() { return m_last_id++; }
-
         void clear() { objects.clear(), add_msgs.clear(), add_requests.clear(); }
 
     public:
@@ -256,25 +247,23 @@ protected:
     public:
         std::deque<request> add_msgs;
         std::deque<request> add_requests;
-
-    public:
-        net_objects(): m_last_id(0) {}
-
-    private:
-        unsigned short m_last_id;
     };
+
+protected:
+    unsigned int new_obj_id() { return m_last_obj_id++; }
 
 protected:
     net_objects<msg_add_plane,net_plane> m_planes;
     net_objects<msg_add_missile,net_missile>  m_missiles;
 
 protected:
-    std::deque<msg_explosion> m_explosions;
-    std::deque<msg_explosion> m_explosion_requests;
+    std::deque<std::string> m_general_msg;
+    std::deque<std::string> m_general_msg_requests;
 
 protected:
     unsigned int m_id = 0;
     unsigned int m_time = 0;
+    unsigned int m_last_obj_id = 0;
 };
 
 //------------------------------------------------------------

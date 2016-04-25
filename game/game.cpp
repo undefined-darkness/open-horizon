@@ -3,6 +3,7 @@
 //
 
 #include "game.h"
+#include "network_helpers.h"
 #include "math/scalar.h"
 #include "util/util.h"
 #include "util/xml.h"
@@ -306,7 +307,7 @@ void world::spawn_explosion(const nya_math::vec3 &pos, float radius, bool net_sr
     m_render_world.spawn_explosion(pos, radius);
 
     if (m_network && net_src)
-        m_network->spawn_explosion(pos, radius);
+        m_network->general_msg("explosion " + to_string(pos) + " " + std::to_string(radius));
 }
 
 //------------------------------------------------------------
@@ -350,6 +351,21 @@ void world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, con
     {
         //ToDo: spark
     }
+}
+
+//------------------------------------------------------------
+
+void world::respawn(const plane_ptr &p, const vec3 &pos, const quat &rot)
+{
+    if (!p)
+        return;
+
+    p->set_pos(pos);
+    p->set_rot(rot);
+    p->reset_state();
+
+    if (is_host() && m_network && !p->net->source)
+        m_network->general_msg("respawn " + std::to_string(m_network->get_plane_id(p->net)) + " " + to_string(pos) + " " + to_string(rot));
 }
 
 //------------------------------------------------------------
@@ -420,9 +436,81 @@ void world::update(int dt)
             }
         }
 
-        network_interface::msg_explosion me;
-        while(m_network->get_explosion_msg(me))
-            spawn_explosion(me.pos, me.radius, false);
+        std::string str;
+        while(m_network->get_general_msg(str))
+        {
+            std::istringstream is(str);
+            std::string cmd;
+            is >> cmd;
+
+            if (cmd == "explosion")
+            {
+                vec3 pos; float r;
+                read(is, pos), is >> r;
+                spawn_explosion(pos, r, false);
+            }
+
+            if (is_host())
+            {
+                if (cmd == "plane_take_damage")
+                {
+                    unsigned int plane_id; int damage;
+                    is >> plane_id, is >> damage;
+
+                    auto net = m_network->get_plane(plane_id);
+                    if (!net)
+                        continue;
+
+                    for (auto &p: m_planes)
+                    {
+                        if(p->net != net)
+                            continue;
+
+                        p->take_damage(damage, *this, false);
+                        break;
+                    }
+                }
+                else if (cmd == "plane_set_hp")
+                {
+                    unsigned int plane_id; int hp;
+                    is >> plane_id, is >> hp;
+
+                    auto net = m_network->get_plane(plane_id);
+                    if (!net)
+                        continue;
+
+                    for (auto &p: m_planes)
+                    {
+                        if(p->net != net)
+                            continue;
+                        
+                        p->hp = hp;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                if (cmd == "respawn")
+                {
+                    unsigned int plane_id; vec3 pos; quat rot;
+                    is >> plane_id, read(is, pos), read(is, rot);
+
+                    auto net = m_network->get_plane(plane_id);
+                    if (!net)
+                        continue;
+
+                    for (auto &p: m_planes)
+                    {
+                        if(p->net != net)
+                            continue;
+
+                        respawn(p, pos, rot);
+                        break;
+                    }
+                }
+            }
+        }
 
         for (auto &p: m_planes)
         {
@@ -1323,12 +1411,22 @@ void plane::update_hud(world &w, gui::hud &h)
 
 //------------------------------------------------------------
 
-void plane::take_damage(int damage, world &w)
+void plane::take_damage(int damage, world &w, bool net_src)
 {
     if (hp <= 0)
         return;
 
     object::take_damage(damage, w);
+
+    if (!w.is_host() && net_src)
+    {
+        w.get_network()->general_msg("plane_take_damage " + std::to_string(w.get_network()->get_plane_id(net)) + " " + std::to_string(damage));
+        return;
+    }
+
+    if (w.is_host() && w.get_network())
+        w.get_network()->general_msg("plane_set_hp " + std::to_string(w.get_network()->get_plane_id(net)) + " " + std::to_string(hp));
+
     if (hp <= 0)
     {
         render->set_dead(true);

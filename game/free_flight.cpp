@@ -45,11 +45,7 @@ void free_flight::update(int dt, const plane_controls &player_controls)
             {
                 respawn_time -= dt;
                 if (respawn_time <= 0)
-                {
-                    p->set_pos(m_spawn_pos);
-                    p->set_rot(nya_math::quat());
-                    p->reset_state();
-                }
+                    m_world.respawn(p, m_spawn_pos, nya_math::quat());
             }
             else
                 respawn_time = 2000;

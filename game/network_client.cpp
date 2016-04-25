@@ -70,6 +70,7 @@ bool network_client::connect(const char *address, short port)
                 if (command == "connected")
                 {
                     ss >> m_id;
+                    ss >> m_last_obj_id;
                     return true;
                 }
 
@@ -189,11 +190,11 @@ void network_client::update()
         {
             receive_object(m_missiles, m_id, is, m_time);
         }
-        else if (cmd == "explosion")
+        else if (cmd == "message")
         {
-            msg_explosion me;
-            read(is, me);
-            m_explosions.push_back(me);
+            std::string str;
+            std::getline(is, str);
+            m_general_msg.push_back(str);
         }
         else if (cmd == "add_plane")
         {
@@ -271,7 +272,7 @@ void network_client::update_post(int dt)
 
     send_objects(m_planes, m_client, m_time, "plane");
     send_objects(m_missiles, m_client, m_time, "missile");
-    send_requests(m_explosion_requests, m_client, "explosion");
+    send_requests(m_general_msg_requests, m_client, "message");
 }
 
 //------------------------------------------------------------

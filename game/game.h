@@ -44,7 +44,7 @@ struct object
     ivalue max_hp;
     ivalue hp;
 
-    virtual void take_damage(int damage, world &w) { hp = damage < hp ? hp - damage : 0; }
+    virtual void take_damage(int damage, world &w, bool net_src = true) { hp = damage < hp ? hp - damage : 0; }
 };
 
 typedef ptr<object> object_ptr;
@@ -148,7 +148,7 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     void update_hud(world &w, gui::hud &h);
     bool is_ecm_active() const { return special.id=="ECM" && ecm_time > 0;}
 
-    virtual void take_damage(int damage, world &w) override;
+    virtual void take_damage(int damage, world &w, bool net_src = true) override;
 
 private:
     void update_targets(world &w);
@@ -193,6 +193,8 @@ public:
     void spawn_explosion(const vec3 &pos, float radius, bool net_src = true);
     void spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, const plane_ptr &owner);
 
+    void respawn(const plane_ptr &p, const vec3 &pos, const quat &rot);
+
     int get_planes_count() const { return (int)m_planes.size(); }
     plane_ptr get_plane(int idx);
     plane_ptr get_player() { return m_player.lock(); }
@@ -218,7 +220,9 @@ public:
     void update(int dt);
 
     void set_network(network_interface *n) { m_network = n; }
+    network_interface *get_network() { return m_network; }
     bool is_host() const { return !m_network || m_network->is_server(); }
+
 
     unsigned int get_net_time() const { return m_network ? m_network->get_time() : 0; }
 

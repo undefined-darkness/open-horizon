@@ -115,9 +115,7 @@ void deathmatch::update(int dt, const plane_controls &player_controls)
 void deathmatch::respawn(plane_ptr p)
 {
     auto rp = get_respawn_point();
-    p->set_pos(rp.first);
-    p->set_rot(rp.second);
-    p->reset_state();
+    m_world.respawn(p, rp.first, rp.second);
 }
 
 //------------------------------------------------------------

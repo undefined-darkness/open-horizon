@@ -142,6 +142,8 @@ void team_deathmatch::update_scores()
     m_world.get_hud().set_team_score(m_score[0], m_score[1]);
 }
 
+//------------------------------------------------------------
+
 void team_deathmatch::on_kill(const plane_ptr &k, const plane_ptr &v)
 {
     if (!v)

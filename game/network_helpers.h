@@ -160,17 +160,7 @@ inline void read(std::istringstream &is, network_interface::msg_add_missile &m)
 
 //------------------------------------------------------------
 
-inline std::string to_string(const network_interface::msg_explosion &m)
-{
-    return to_string(m.pos) + " " + std::to_string(m.radius);
-}
-
-//------------------------------------------------------------
-
-inline void read(std::istringstream &is, network_interface::msg_explosion &m)
-{
-    read(is, m.pos), is >> m.radius;
-}
+inline std::string to_string(const std::string &s) { return s; }
 
 //------------------------------------------------------------
 }
