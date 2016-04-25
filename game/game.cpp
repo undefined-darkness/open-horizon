@@ -679,11 +679,7 @@ void world::update(int dt)
                 continue;
 
             if (p->net_game_data.changed)
-            {
                 m_network->send_game_data(p->net, p->net_game_data);
-                m_net_data_updated = true;
-                p->net_game_data.changed = false;
-            }
 
             p->net->pos = p->phys->pos;
             p->net->rot = p->phys->rot;
@@ -718,6 +714,15 @@ void world::update(int dt)
         }
 
         m_network->update_post(dt);
+    }
+
+    for (auto &p: m_planes)
+    {
+        if (!p->net_game_data.changed)
+            continue;
+
+        m_net_data_updated = true;
+        p->net_game_data.changed = false;
     }
 }
 

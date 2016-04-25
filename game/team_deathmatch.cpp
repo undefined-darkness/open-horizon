@@ -166,6 +166,9 @@ void team_deathmatch::update_scores()
         m_score[get_team(p->net_game_data.get<std::string>("team"))] += p->net_game_data.get<int>("score");
     }
 
+    if (get_team(m_world.get_player()->net_game_data.get<std::string>("team")) == 1)
+        std::swap(m_score[0], m_score[1]);
+
     m_world.get_hud().set_team_score(m_score[0], m_score[1]);
 }
 
