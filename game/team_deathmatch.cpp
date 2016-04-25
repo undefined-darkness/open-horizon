@@ -130,8 +130,7 @@ void team_deathmatch::rebalance()
                 --count[dec_team];
                 ++count[inc_team];
                 p->net_game_data.set("team", get_team(inc_team));
-                auto rp = get_respawn_point(get_team(inc_team));
-                m_world.respawn(p, rp.first, rp.second);
+                respawn(p);
                 break;
             }
         }
