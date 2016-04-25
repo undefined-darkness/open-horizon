@@ -14,6 +14,7 @@ class team_deathmatch: public deathmatch
 {
 public:
     virtual void start(const char *plane, int color, int special, const char *location, int bots_count);
+    virtual void update(int dt, const plane_controls &player_controls) override;
     virtual void end() override;
 
     team_deathmatch(world &w): deathmatch(w) {}
@@ -23,6 +24,7 @@ protected:
     void on_kill(const plane_ptr &k, const plane_ptr &v);
     virtual void respawn(plane_ptr p);
     virtual void update_scores() override;
+    void rebalance();
 
     respawn_point get_respawn_point(std::string team);
 

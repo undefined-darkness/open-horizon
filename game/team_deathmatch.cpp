@@ -77,6 +77,18 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
 
 //------------------------------------------------------------
 
+void team_deathmatch::update(int dt, const plane_controls &player_controls)
+{
+    deathmatch::update(dt, player_controls);
+    if (!m_world.is_host())
+        return;
+
+    if (m_world.net_data_updated())
+        rebalance();
+}
+
+//------------------------------------------------------------
+
 void team_deathmatch::respawn(plane_ptr p)
 {
     auto rp = get_respawn_point(p->net_game_data.get<std::string>("team"));
@@ -90,6 +102,35 @@ void team_deathmatch::respawn(plane_ptr p)
 void team_deathmatch::end()
 {
     m_planes.clear();
+}
+
+//------------------------------------------------------------
+
+void team_deathmatch::rebalance()
+{
+    int count[2] = {0};
+    for (int i = 0; i < m_world.get_planes_count(); ++i)
+    {
+        auto p = m_world.get_plane(i);
+        ++count[get_team(p->net_game_data.get<std::string>("team"))];
+    }
+
+    while (abs(count[1] - count[0]) > 1)
+    {
+        const int dec_team = count[1] > count[0] ? 1 : 0;
+        const int inc_team = 1 - dec_team;
+        for (int i = m_world.get_planes_count() - 1; i >= 0; --i)
+        {
+            auto p = m_world.get_plane(i);
+            if (get_team(p->net_game_data.get<std::string>("team")) == dec_team)
+            {
+                --count[dec_team];
+                ++count[inc_team];
+                p->net_game_data.set("team", get_team(inc_team));
+                break;
+            }
+        }
+    }
 }
 
 //------------------------------------------------------------
