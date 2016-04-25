@@ -535,9 +535,6 @@ void world::update(int dt)
 
         for (auto &p: m_planes)
         {
-            if (p->net && p->net_game_data.changed)
-                m_network->send_game_data(p->net, p->net_game_data);
-
             if (!p->net || p->net->source)
                 continue;
 
@@ -574,9 +571,6 @@ void world::update(int dt)
             m->phys->accel_started = m->net->engine_started;
         }
     }
-
-    for (auto &p: m_planes)
-        p->net_game_data.changed = false;
 
     auto removed_planes = std::remove_if(m_planes.begin(), m_planes.end(), [](const plane_ptr &p) { return p.unique() && (!p->net || p->net->source || p->net.unique()); });
     if (removed_planes != m_planes.end())
@@ -669,6 +663,13 @@ void world::update(int dt)
             if (!p->net)
                 continue;
 
+            if (p->net_game_data.changed)
+            {
+                m_network->send_game_data(p->net, p->net_game_data);
+                m_net_data_updated = true;
+                p->net_game_data.changed = false;
+            }
+
             p->net->pos = p->phys->pos;
             p->net->rot = p->phys->rot;
             p->net->vel = p->phys->vel;
@@ -701,15 +702,6 @@ void world::update(int dt)
         }
 
         m_network->update_post(dt);
-    }
-
-    if (!m_net_data_updated)
-    {
-        for (auto &p: m_planes)
-        {
-            if (p->net_game_data.changed)
-                m_net_data_updated = true;
-        }
     }
 }
 

@@ -140,6 +140,22 @@ void network_server::process_msg(const std::pair<miso::server_tcp::client_id, st
 
 //------------------------------------------------------------
 
+void network_server::cache_net_game_data(const msg_game_data &data)
+{
+    for (auto &d: m_game_data_cache)
+    {
+        if (d.plane_id == data.plane_id)
+        {
+            d = data;
+            return;
+        }
+    }
+
+    m_game_data_cache.push_back(data);
+}
+
+//------------------------------------------------------------
+
 void network_server::process_msg(client &c, const std::string &msg)
 {
     std::istringstream is(msg);
@@ -223,6 +239,7 @@ void network_server::process_msg(client &c, const std::string &msg)
         msg_game_data mg;
         read(is, mg);
         m_game_data_msg.push_back(mg);
+        cache_net_game_data(mg);
 
         for (auto &oc: m_clients)
         {
@@ -306,10 +323,12 @@ void network_server::process_msg(client &c, const std::string &msg)
     else if (cmd == "start")
     {
         for (auto &p: m_planes.objects)
-        {
             m_server.send_message(c.id, "add_plane " + to_string(p.r));
-            c.started = true;
-        }
+
+        for (auto &d: m_game_data_cache)
+            m_server.send_message(c.id, "game_data " + to_string(d));
+
+        c.started = true;
     }
     else
         printf("server received: %s\n", msg.c_str());
@@ -368,6 +387,9 @@ void network_server::update_post(int dt)
     if (m_time - m_last_send_time < 1000 / net_fps)
         return;
     m_last_send_time = m_time;
+
+    for (auto &d: m_game_data_msg_requests)
+        cache_net_game_data(d);
 
     send_objects(m_planes, m_clients, m_server, m_time, "plane");
     send_objects(m_missiles, m_clients, m_server, m_time, "missile");

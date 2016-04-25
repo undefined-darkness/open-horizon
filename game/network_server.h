@@ -52,6 +52,9 @@ private:
 
     std::map<miso::server_tcp::client_id, client> m_clients;
     std::set<miso::server_tcp::client_id> m_requests;
+
+    void cache_net_game_data(const msg_game_data &data);
+    std::vector<msg_game_data> m_game_data_cache;
 };
 
 //------------------------------------------------------------
