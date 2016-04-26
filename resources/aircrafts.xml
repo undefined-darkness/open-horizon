@@ -120,7 +120,7 @@
     <spc id="LAGM" model="las_f0" count="20"/>
 </aircraft>
 
-<aircraft id="f15m" role="multirole" name="F-15C Eagle">
+<aircraft id="f15m" role="multirole" name="F-15S/MTD">
     <msl id="MISSILE" model="msl_a0" count="216"/>
     <spc id="QAAM" model="qaa_a0" count="34"/>
     <spc id="SAAM" model="saa_a0" count="26"/>
@@ -217,6 +217,12 @@
     <msl id="MISSILE" model="msl_r0" count="198"/>
     <spc id="UGB" model="ugb_r0" count="38"/>
     <spc id="MGP" model="gpd_r0" count="680"/>
+</aircraft>
+
+<aircraft id="tnd4" role="attacker" name="Tornado GR.4">
+    <msl id="MISSILE" model="msl_a0" count="198"/>
+    <spc id="_4AGM" model="xag_a0" count="36"/>
+    <spc id="BDM" model="sod_e0" count="18"/>
 </aircraft>
 
 <!----------------------------------------------------------------------------->
