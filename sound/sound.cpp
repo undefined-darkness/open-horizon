@@ -234,7 +234,8 @@ void world::update(int dt)
     const auto c = nya_scene::get_camera();
     alListenerfv(AL_POSITION, &c.get_pos().x);
 
-    const vec3 vel = c.get_pos() - m_prev_pos;
+    const vec3 vel = (c.get_pos() - m_prev_pos) / (dt * 0.001f);
+    m_prev_pos = c.get_pos();
     alListenerfv(AL_VELOCITY, &vel.x);
 
     const vec3 ori[] = { c.get_rot().rotate(vec3::forward()), c.get_rot().rotate(vec3::up())};
