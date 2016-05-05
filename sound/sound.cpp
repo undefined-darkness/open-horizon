@@ -150,6 +150,8 @@ void world_2d::sound_src::update()
     int processed_bufs = 0;
     alGetSourcei(id, AL_BUFFERS_PROCESSED, &processed_bufs);
 
+    const auto prev_buf_idx = last_buf_idx;
+
     while (processed_bufs--)
     {
         unsigned int buf_id = 0;
@@ -167,7 +169,13 @@ void world_2d::sound_src::update()
     ALint state;
     alGetSourcei(id, AL_SOURCE_STATE, &state);
     if (state != AL_PLAYING)
-        release();
+    {
+        const bool has_bufs = last_buf_idx != prev_buf_idx;
+        if (has_bufs)
+            alSourcePlay(id);
+        else
+            release();
+    }
 }
 
 //------------------------------------------------------------

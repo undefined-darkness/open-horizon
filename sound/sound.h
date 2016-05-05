@@ -57,7 +57,7 @@ protected:
         unsigned int last_buf_idx = 0;
         static std::vector<char> cache_buf;
 
-        static const int cache_count = 2;
+        static const int cache_count = 16;
         unsigned int buf_ids[cache_count];
     };
 
