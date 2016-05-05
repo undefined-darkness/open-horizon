@@ -64,7 +64,26 @@ size_t file::get_buf_size() const
 
 size_t file::cache_buf(void *data, unsigned int buf_idx, bool loop) const
 {
-    return 0; //ToDo
+    if (m_hca_data)
+    {
+        auto &d = *m_hca_data.get();
+
+        if (buf_idx >= d.block_count)
+        {
+            if (loop && d.loop_end > d.loop_start)
+                buf_idx = (buf_idx - d.loop_start) % (d.loop_end - d.loop_start) + d.loop_start;
+            else
+                return 0;
+        }
+
+        char *cdata = (char *)data;
+
+        //ToDo: decode
+
+        return cdata - (char *)data;
+    }
+
+    return 0;
 }
 
 //------------------------------------------------------------
@@ -73,6 +92,7 @@ inline uint32_t read_sign(nya_memory::memory_reader &r) { return swap_bytes(r.re
 inline uint32_t read_uint32(nya_memory::memory_reader &r) { return swap_bytes(r.read<uint32_t>()); }
 inline uint16_t read_uint16(nya_memory::memory_reader &r) { return swap_bytes(r.read<uint16_t>()); }
 inline uint8_t read_uint8(nya_memory::memory_reader &r) { return r.read<uint8_t>(); }
+inline float read_float(nya_memory::memory_reader &r) { return swap_bytes(r.read<float>()); }
 
 //------------------------------------------------------------
 
@@ -114,6 +134,12 @@ bool file::load_hca(const void *data, size_t size)
             }
             continue;
 
+            case 'rva\0':
+            {
+                d.volume = read_float(r);
+            }
+            continue;
+
             case 'ath\0':
             {
                 auto ath_type = read_uint16(r);
@@ -122,7 +148,9 @@ bool file::load_hca(const void *data, size_t size)
             continue;
 
             case 'loop':
-                r.skip(12); //ToDo: read loop start,end
+                d.loop_start = read_uint32(r);
+                d.loop_end = read_uint32(r) + 1;
+                r.skip(4);
                 continue;
 
             case 'ciph':
@@ -141,6 +169,12 @@ bool file::load_hca(const void *data, size_t size)
     }
 
     r.seek(data_offset);
+
+    if (d.channels > 2)
+        d.channels = 2;
+
+    if (!d.loop_end)
+        d.loop_end = d.block_count;
 
     auto data_size = d.block_count * d.block_size;
 
