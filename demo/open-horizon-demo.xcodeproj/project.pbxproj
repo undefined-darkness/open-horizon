@@ -19,6 +19,9 @@
 		F50D9C9B1C9F2E5700A56812 /* pac5.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50D9C971C9F2E5700A56812 /* pac5.cpp */; };
 		F50D9C9C1C9F2E5700A56812 /* pac6.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50D9C991C9F2E5700A56812 /* pac6.cpp */; };
 		F50DADAC1C3047D5000DD3EA /* hangar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50DADAA1C3047D5000DD3EA /* hangar.cpp */; };
+		F50EE62A1CD3BA2D00DDED72 /* sound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50EE6281CD3BA2D00DDED72 /* sound.cpp */; };
+		F50EE62C1CD3BF3900DDED72 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F50EE62B1CD3BF3900DDED72 /* OpenAL.framework */; };
+		F50EE6311CD3C0D100DDED72 /* file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50EE62F1CD3C0D100DDED72 /* file.cpp */; };
 		F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53304C61B09DEC300D8C3C7 /* menu.cpp */; };
 		F538BB0B1CC2B8EA0055F394 /* app_protocol_simple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */; };
 		F5696AAA1B1136B100C7BFC9 /* joystick.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5696AA11B10E3F800C7BFC9 /* joystick.xml */; };
@@ -133,6 +136,11 @@
 		F50D9C9A1C9F2E5700A56812 /* pac6.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pac6.h; sourceTree = "<group>"; };
 		F50DADAA1C3047D5000DD3EA /* hangar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = hangar.cpp; path = ../game/hangar.cpp; sourceTree = "<group>"; };
 		F50DADAB1C3047D5000DD3EA /* hangar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hangar.h; path = ../game/hangar.h; sourceTree = "<group>"; };
+		F50EE6281CD3BA2D00DDED72 /* sound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sound.cpp; path = ../sound/sound.cpp; sourceTree = "<group>"; };
+		F50EE6291CD3BA2D00DDED72 /* sound.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = sound.h; path = ../sound/sound.h; sourceTree = "<group>"; };
+		F50EE62B1CD3BF3900DDED72 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
+		F50EE62F1CD3C0D100DDED72 /* file.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = file.cpp; path = ../sound/file.cpp; sourceTree = "<group>"; };
+		F50EE6301CD3C0D100DDED72 /* file.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = file.h; path = ../sound/file.h; sourceTree = "<group>"; };
 		F53304C61B09DEC300D8C3C7 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = menu.cpp; path = ../gui/menu.cpp; sourceTree = "<group>"; };
 		F53304C71B09DEC300D8C3C7 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = menu.h; path = ../gui/menu.h; sourceTree = "<group>"; };
 		F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = app_protocol_simple.cpp; path = ../deps/miso/src/app_protocol_simple.cpp; sourceTree = "<group>"; };
@@ -246,6 +254,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F50EE62C1CD3BF3900DDED72 /* OpenAL.framework in Frameworks */,
 				F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */,
 				F5DFAD8B19BB248C00786736 /* libz.dylib in Frameworks */,
 				F503E52919048E7300C3590A /* IOKit.framework in Frameworks */,
@@ -268,6 +277,7 @@
 				F5C6D3941AF969BE006FB7E6 /* phys */,
 				F5DAA8CB1AD7CE5000C2C633 /* resources */,
 				F5C6D3641AF9689D006FB7E6 /* renderer */,
+				F50EE6251CD3BA1100DDED72 /* sound */,
 				F5C6D37A1AF968C5006FB7E6 /* util */,
 				F503E4E019048C6700C3590A /* open-horizon-demo */,
 				F5D796A319B34350006269F0 /* deps */,
@@ -287,6 +297,7 @@
 		F503E4D919048C6700C3590A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F50EE62B1CD3BF3900DDED72 /* OpenAL.framework */,
 				F5DFAD8A19BB248C00786736 /* libz.dylib */,
 				F503E52819048E7300C3590A /* IOKit.framework */,
 				F503E52519048E5000C3590A /* OpenGL.framework */,
@@ -331,6 +342,17 @@
 				F503E52119048D4A00C3590A /* libnya_engine_ios.a */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F50EE6251CD3BA1100DDED72 /* sound */ = {
+			isa = PBXGroup;
+			children = (
+				F50EE62F1CD3C0D100DDED72 /* file.cpp */,
+				F50EE6301CD3C0D100DDED72 /* file.h */,
+				F50EE6281CD3BA2D00DDED72 /* sound.cpp */,
+				F50EE6291CD3BA2D00DDED72 /* sound.h */,
+			);
+			name = sound;
 			sourceTree = "<group>";
 		};
 		F57832381AFBE804005FE829 /* gui */ = {
@@ -666,6 +688,7 @@
 				F50D9C9B1C9F2E5700A56812 /* pac5.cpp in Sources */,
 				F5DC44881C7CD9AF00F68115 /* mesh.cpp in Sources */,
 				F572C1F11CA715AC00AB1D1F /* poc.cpp in Sources */,
+				F50EE6311CD3C0D100DDED72 /* file.cpp in Sources */,
 				F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */,
 				F50D9C9C1C9F2E5700A56812 /* pac6.cpp in Sources */,
 				F578323E1AFBE859005FE829 /* ui.cpp in Sources */,
@@ -698,6 +721,7 @@
 				F50D9C941C9E946B00A56812 /* cdp.cpp in Sources */,
 				F5C3B6FE1B2C809000479524 /* particles.cpp in Sources */,
 				F59AB5B11AFA4FEC00137527 /* world.cpp in Sources */,
+				F50EE62A1CD3BA2D00DDED72 /* sound.cpp in Sources */,
 				F50BFC621C53BBCB000B8500 /* sky.cpp in Sources */,
 				F5D20A0B1CC2228100189814 /* server_tcp.cpp in Sources */,
 				F5BE29E71CB39B3200345699 /* cpk.cpp in Sources */,
