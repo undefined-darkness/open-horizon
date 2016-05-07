@@ -2,6 +2,7 @@
 // open horizon -- undefined_darkness@outlook.com
 //
 
+#include "containers/cpk.h"
 #include "scene/camera.h"
 #include "sound.h"
 #include "util/util.h"
@@ -265,6 +266,53 @@ void world::update(int dt)
 
     m_sound_sources.erase(std::remove_if(m_sound_sources.begin(), m_sound_sources.end(),
                                          [](const std::pair<sound_src, source_ptr> &s) { return !s.first.id; }), m_sound_sources.end());
+}
+
+//------------------------------------------------------------
+
+bool pack::load(const char *name)
+{
+    auto r = load_resource(name);
+    cri_utf_table t(r.get_data(), r.get_size());
+    r.free();
+
+    for (auto &c: t.columns)
+    {
+        if (c.name == "AwbFile")
+        {
+            if (c.values.size() != 1)
+                return false;
+
+            struct data_adaptor: public nya_resources::resource_data
+            {
+                const std::vector<char> &data;
+                data_adaptor(std::vector<char> & d): data(d) {}
+                size_t get_size() override { return data.size(); }
+                bool read_chunk(void *d,size_t size,size_t offset=0) override
+                {
+                    return d && (offset + size <= data.size()) && memcpy(d, &data[offset], size) != 0;
+                }
+            } da(c.values.front().d);
+
+            cpk_file cpk;
+            cpk.open(&da);
+
+            files.reserve(cpk.get_files_count());
+            for (int i = 0; i < cpk.get_files_count(); ++i)
+            {
+                nya_memory::tmp_buffer_scoped buf(cpk.get_file_size(i));
+                cpk.read_file_data(i, buf.get_data());
+                sound::file f;
+                if (f.load(buf.get_data(), buf.get_size()))
+                    files.push_back(f);
+            }
+
+            cpk.close();
+            return true;
+        }
+    }
+
+    return false;
 }
 
 //------------------------------------------------------------
