@@ -33,6 +33,7 @@ class world_2d
 {
 public:
     void set_music(const file &f);
+    void set_music(int idx);
     void stop_music();
 
     void play(const file &f, float volume);
@@ -43,8 +44,9 @@ protected:
     struct sound_src
     {
         bool init(const file &f, float volume, bool loop);
-        void update();
+        void update(int dt);
         void release();
+        void set_mute(bool mute);
 
         file f;
         unsigned int id = 0;
@@ -53,7 +55,9 @@ protected:
 
     private:
         bool loop = false;
+        bool stream = false;
         int format = 0;
+        unsigned int time = 0;
         unsigned int last_buf_idx = 0;
         static std::vector<char> cache_buf;
 
@@ -70,8 +74,8 @@ protected:
 class world: public world_2d
 {
 public:
-    source_ptr add(const file &f, bool loop);
-    void play(const file &f, vec3 pos, float volume);
+    source_ptr add(file &f, bool loop);
+    void play(file &f, vec3 pos, float volume);
 
     void update(int dt) override;
 
@@ -79,6 +83,10 @@ protected:
     nya_math::vec3 m_prev_pos;
     std::list<std::pair<sound_src, source_ptr> > m_sound_sources;
 };
+
+//------------------------------------------------------------
+
+bool cache(file &f);
 
 //------------------------------------------------------------
 

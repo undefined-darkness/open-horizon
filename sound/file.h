@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <memory>
+#include <functional>
 
 namespace sound
 {
@@ -24,8 +25,18 @@ public:
     unsigned int get_freq() const;
     bool is_stereo() const;
 
+    //stream
+public:
     size_t get_buf_size() const;
     size_t cache_buf(void *data, unsigned int buf_idx, bool loop) const; //returns actually cached size
+
+    //cache into audio system
+public:
+    typedef std::function<unsigned int(const void *data, size_t size)> as_create_buf;
+    typedef std::function<void(unsigned int)> as_free_buf;
+
+    bool cache(const as_create_buf &c, const as_free_buf &f);
+    unsigned int get_cached_id() const;
 
 private:
     bool load_hca(const void *data, size_t size);
@@ -66,6 +77,20 @@ private:
     };
 
     std::shared_ptr<hca_data> m_hca_data;
+
+    struct cached
+    {
+        unsigned int id = 0;
+        unsigned int length = 0;
+        unsigned int channels = 0;
+        unsigned int freq = 0;
+
+        as_free_buf on_free;
+
+        ~cached() { if (id && on_free) on_free(id); }
+    };
+
+    std::shared_ptr<cached> m_cached;
 };
 
 //------------------------------------------------------------

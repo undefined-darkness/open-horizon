@@ -89,6 +89,9 @@ unsigned int file::get_length() const
     if (m_hca_data)
         return sizeof(hca_data::channel::samples) / sizeof(float) * m_hca_data->block_count / (m_hca_data->samples_per_second / 1000);
 
+    if (m_cached)
+        return m_cached->length;
+
     return 0;
 }
 
@@ -98,6 +101,9 @@ unsigned int file::get_freq() const
 {
     if (m_hca_data)
         return m_hca_data->samples_per_second;
+
+    if (m_cached)
+        return m_cached->freq;
 
     return 0;
 }
@@ -109,6 +115,9 @@ bool file::is_stereo() const
     if (m_hca_data)
         return m_hca_data->channels.size() > 1;
 
+    if (m_cached)
+        return m_cached->channels > 1;
+
     return 0;
 }
 
@@ -117,10 +126,7 @@ bool file::is_stereo() const
 size_t file::get_buf_size() const
 {
     if (m_hca_data)
-    {
-        const int channels = m_hca_data->channels.size() > max_channels ? max_channels : (int)m_hca_data->channels.size();
-        return channels * sizeof(hca_data::channel::samples) / sizeof(float) * sizeof(uint16_t);
-    }
+        return std::min((int)m_hca_data->channels.size(), max_channels) * sizeof(hca_data::channel::samples) / sizeof(float) * sizeof(uint16_t);
 
     return 0;
 }
@@ -175,6 +181,46 @@ size_t file::cache_buf(void *data, unsigned int buf_idx, bool loop) const
 
     return 0;
 }
+
+//------------------------------------------------------------
+
+bool file::cache(const as_create_buf &c, const as_free_buf &f)
+{
+    if (m_cached)
+        return true;
+
+    if (!c)
+        return false;
+
+    if (m_hca_data)
+    {
+        auto &d = *m_hca_data.get();
+
+        nya_memory::tmp_buffer_scoped buf(d.block_count * get_buf_size());
+
+        for (unsigned int i = 0, offset = 0; i < d.block_count; ++i)
+            offset += cache_buf(buf.get_data(offset), i, false);
+
+        auto id = c(buf.get_data(), buf.get_size());
+        if (!id)
+            return false;
+
+        m_cached = std::shared_ptr<cached>(new cached());
+        m_cached->id = id;
+        m_cached->channels = std::min((int)d.channels.size(), max_channels);
+        m_cached->freq = get_freq();
+        m_cached->length = get_length();
+        m_cached->on_free = f;
+        m_hca_data.reset();
+        return true;
+    }
+
+    return false;
+}
+
+//------------------------------------------------------------
+
+unsigned int file::get_cached_id() const { return m_cached ? m_cached->id : 0; }
 
 //------------------------------------------------------------
 

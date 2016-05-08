@@ -14,6 +14,12 @@
 #include <algorithm>
 #include <stdint.h>
 
+#ifdef _WIN32
+    #include <direct.h>
+#else
+    #include <sys/stat.h>
+#endif
+
 //------------------------------------------------------------
 
 #define assume(expr) assert(expr) //like assert, but not critical
@@ -289,6 +295,29 @@ inline void find_data(nya_resources::resources_provider &rp, float *f, size_t co
 
 //------------------------------------------------------------
 
+static void create_path(const char *dir)
+{
+    if (!dir)
+        return;
+
+    std::string tmp(dir);
+    for (char *p = &tmp[1]; *p; p++)
+    {
+        if (*p == '/')
+        {
+            *p = 0;
+#ifdef _WIN32
+            _mkdir(tmp.c_str());
+#else
+            mkdir(tmp.c_str(), S_IRWXU);
+#endif
+            *p = '/';
+        }
+    }
+}
+
+//------------------------------------------------------------
+
 inline bool write_file(const char *name, const void *buf, size_t size)
 {
     if (!name || !buf)
@@ -304,6 +333,30 @@ inline bool write_file(const char *name, const void *buf, size_t size)
     const bool r = fwrite(buf, size, 1, f) == size;
     fclose(f);
     return r;
+}
+
+//------------------------------------------------------------
+
+template<typename t> nya_resources::resource_data *access(t &provider, int idx)
+{
+    if (idx < 0 || idx >= provider.get_files_count())
+        return 0;
+
+    struct res: public nya_resources::resource_data
+    {
+        t &p;
+        int idx;
+
+        res(t &p, int idx): p(p), idx(idx) {}
+
+    private:
+        size_t get_size() override { return p.get_file_size(idx); }
+        bool read_all(void*data) override { return p.read_file_data(idx, data); }
+        bool read_chunk(void *data, size_t size, size_t offset=0) override { return p.read_file_data(idx, data, size, offset); }
+        void release() override { delete this; }
+    };
+
+    return new res(provider, idx);
 }
 
 //------------------------------------------------------------

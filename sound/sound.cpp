@@ -77,6 +77,46 @@ void world_2d::set_music(const file &f)
 
 //------------------------------------------------------------
 
+void world_2d::set_music(int idx)
+{
+    stop_music();
+    if (idx < 0)
+        return;
+
+    cpk_file base;
+    if (!base.open("DATA10.PAC"))
+        return;
+
+    auto *res = access(base, 0);
+    if (!res)
+    {
+        base.close();
+        return;
+    }
+
+    cpk_file files;
+    if (!files.open(res) || idx >= files.get_files_count())
+    {
+        base.close();
+        res->release();
+        return;
+    }
+
+    nya_memory::tmp_buffer_scoped buf(files.get_file_size(idx));
+    files.read_file_data(idx, buf.get_data());
+
+    base.close();
+    res->release();
+
+    file f;
+    if (!f.load(buf.get_data(), buf.get_size()))
+        return;
+
+    set_music(f);
+}
+
+//------------------------------------------------------------
+
 void world_2d::stop_music()
 {
     m_music.release();
@@ -115,6 +155,16 @@ bool world_2d::sound_src::init(const file &f, float volume, bool loop)
     this->loop = loop;
     this->f = f;
 
+    auto cached_id = f.get_cached_id();
+    if (cached_id)
+    {
+        alSourcei(id, AL_BUFFER, cached_id);
+        alSourcei(id, AL_LOOPING, loop);
+        alSourcePlay(id);
+        return true;
+    }
+
+    stream = true;
     format = f.is_stereo() ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
 
     if (cache_buf.size() < f.get_buf_size())
@@ -143,10 +193,23 @@ bool world_2d::sound_src::init(const file &f, float volume, bool loop)
 
 //------------------------------------------------------------
 
-void world_2d::sound_src::update()
+void world_2d::sound_src::update(int dt)
 {
     if (!id)
         return;
+
+    if (!stream)
+    {
+        time += dt;
+        if (time >= f.get_length())
+        {
+            if (loop && f.get_length() > 0)
+                time %= f.get_length();
+            else
+                release();
+        }
+        return;
+    }
 
     int processed_bufs = 0;
     alGetSourcei(id, AL_BUFFERS_PROCESSED, &processed_bufs);
@@ -181,6 +244,23 @@ void world_2d::sound_src::update()
 
 //------------------------------------------------------------
 
+void world_2d::sound_src::set_mute(bool mute)
+{
+    if (!id || stream)
+        return;
+
+    if (mute)
+    {
+        alSourceStop(id);
+        return;
+    }
+
+    alSourcePlay(id);
+    alSourcef(id, AL_SEC_OFFSET, time * 0.001f);
+}
+
+//------------------------------------------------------------
+
 void world_2d::sound_src::release()
 {
     if (!id)
@@ -195,8 +275,10 @@ void world_2d::sound_src::release()
 
 //------------------------------------------------------------
 
-void world::play(const file &f, vec3 pos, float volume)
+void world::play(file &f, vec3 pos, float volume)
 {
+    cache(f);
+
     sound_src s;
     if (!s.init(f, volume, false))
         return;
@@ -209,8 +291,10 @@ void world::play(const file &f, vec3 pos, float volume)
 
 //------------------------------------------------------------
 
-source_ptr world::add(const file &f, bool loop)
+source_ptr world::add(file &f, bool loop)
 {
+    cache(f);
+
     sound_src s;
     s.init(f, 0.0, loop);
     m_sound_sources.push_back({s, source_ptr(new source())});
@@ -224,9 +308,9 @@ void world_2d::update(int dt)
     if (!context::valid())
         return;
 
-    m_music.update();
+    m_music.update(dt);
     for (auto &s: m_sounds)
-        s.update();
+        s.update(dt);
 
     m_sounds.erase(std::remove_if(m_sounds.begin(), m_sounds.end(), [](const sound_src &s) { return !s.id; }), m_sounds.end());
 }
@@ -250,8 +334,12 @@ void world::update(int dt)
     const vec3 ori[] = { c.get_rot().rotate(vec3::forward()), c.get_rot().rotate(vec3::up())};
     alListenerfv(AL_ORIENTATION, &ori[0].x);
 
+    //ToDo: mute far sounds
+
     for (auto &s: m_sound_sources)
     {
+        s.first.update(dt);
+
         if (s.second.unique())
         {
             s.first.release();
@@ -266,6 +354,23 @@ void world::update(int dt)
 
     m_sound_sources.erase(std::remove_if(m_sound_sources.begin(), m_sound_sources.end(),
                                          [](const std::pair<sound_src, source_ptr> &s) { return !s.first.id; }), m_sound_sources.end());
+}
+
+//------------------------------------------------------------
+
+bool cache(file &f)
+{
+    if (!context::valid())
+        return false;
+
+    return f.cache([f](const void *data, size_t size)
+                   {
+                       unsigned int id;
+                       alGenBuffers(1, &id);
+                       alBufferData(id, f.is_stereo() ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16, data, (ALsizei)size, f.get_freq());
+                       return id;
+                   },
+                   [](unsigned int id){ if (context::valid()) alDeleteBuffers(1, &id); });
 }
 
 //------------------------------------------------------------
