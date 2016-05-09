@@ -55,6 +55,7 @@ protected:
 
     private:
         bool loop = false;
+        bool muted = false;
         bool stream = false;
         int format = 0;
         unsigned int time = 0;
@@ -80,6 +81,14 @@ public:
     void update(int dt) override;
 
 protected:
+    struct sound_3d
+    {
+        vec3 pos;
+        sound_src src;
+    };
+
+    std::list<sound_3d> m_sounds_3d;
+
     nya_math::vec3 m_prev_pos;
     std::list<std::pair<sound_src, source_ptr> > m_sound_sources;
 };

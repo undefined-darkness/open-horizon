@@ -19,6 +19,11 @@ namespace sound
 {
 //------------------------------------------------------------
 
+static float min_distance = 10.0f;
+static float max_distance = 1000.0f;
+
+//------------------------------------------------------------
+
 class context
 {
 public:
@@ -72,7 +77,12 @@ private:
 
 void world_2d::set_music(const file &f)
 {
-    m_music.init(f, 1.0f, true);
+    if (!m_music.init(f, 1.0f, true))
+        return;
+
+    alSourcei(m_music.id, AL_SOURCE_RELATIVE, AL_TRUE);
+    alSource3f(m_music.id, AL_POSITION, 0.0f, 0.0f, 0.0f);
+    alSource3f(m_music.id, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
 }
 
 //------------------------------------------------------------
@@ -130,7 +140,25 @@ void world_2d::play(const file &f, float volume)
     if (!s.init(f, volume, false))
         return;
 
+    alSourcei(s.id, AL_SOURCE_RELATIVE, AL_TRUE);
+    alSource3f(s.id, AL_POSITION, 0.0f, 0.0f, 0.0f);
+    alSource3f(s.id, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+
     m_sounds.push_back(s);
+}
+
+//------------------------------------------------------------
+
+void world_2d::update(int dt)
+{
+    if (!context::valid())
+        return;
+
+    m_music.update(dt);
+    for (auto &s: m_sounds)
+        s.update(dt);
+
+    m_sounds.erase(std::remove_if(m_sounds.begin(), m_sounds.end(), [](const sound_src &s) { return !s.id; }), m_sounds.end());
 }
 
 //------------------------------------------------------------
@@ -249,6 +277,11 @@ void world_2d::sound_src::set_mute(bool mute)
     if (!id || stream)
         return;
 
+    if (muted == mute)
+        return;
+
+    muted = mute;
+
     if (mute)
     {
         alSourceStop(id);
@@ -286,7 +319,9 @@ void world::play(file &f, vec3 pos, float volume)
     nya_math::vec3 vel;
     alSourcefv(s.id, AL_POSITION,  &pos.x);
     alSourcefv(s.id, AL_VELOCITY, &vel.x);
-    m_sounds.push_back(s);
+    alSourcei(s.id, AL_REFERENCE_DISTANCE, min_distance);
+    alSourcei(s.id, AL_MAX_DISTANCE, max_distance);
+    m_sounds_3d.push_back({pos, s});
 }
 
 //------------------------------------------------------------
@@ -296,23 +331,14 @@ source_ptr world::add(file &f, bool loop)
     cache(f);
 
     sound_src s;
-    s.init(f, 0.0, loop);
+    if (s.init(f, 0.0f, loop))
+    {
+        alSourcei(s.id, AL_REFERENCE_DISTANCE, min_distance);
+        alSourcei(s.id, AL_MAX_DISTANCE, max_distance);
+    }
+
     m_sound_sources.push_back({s, source_ptr(new source())});
     return m_sound_sources.back().second;
-}
-
-//------------------------------------------------------------
-
-void world_2d::update(int dt)
-{
-    if (!context::valid())
-        return;
-
-    m_music.update(dt);
-    for (auto &s: m_sounds)
-        s.update(dt);
-
-    m_sounds.erase(std::remove_if(m_sounds.begin(), m_sounds.end(), [](const sound_src &s) { return !s.id; }), m_sounds.end());
 }
 
 //------------------------------------------------------------
@@ -325,7 +351,10 @@ void world::update(int dt)
     world_2d::update(dt);
 
     const auto c = nya_scene::get_camera();
-    alListenerfv(AL_POSITION, &c.get_pos().x);
+
+    const vec3 &listener_pos = c.get_pos();
+
+    alListenerfv(AL_POSITION, &listener_pos.x);
 
     const vec3 vel = (c.get_pos() - m_prev_pos) / (dt * 0.001f);
     m_prev_pos = c.get_pos();
@@ -334,7 +363,11 @@ void world::update(int dt)
     const vec3 ori[] = { c.get_rot().rotate(vec3::forward()), c.get_rot().rotate(vec3::up())};
     alListenerfv(AL_ORIENTATION, &ori[0].x);
 
-    //ToDo: mute far sounds
+    for (auto &s: m_sounds_3d)
+    {
+        s.src.update(dt);
+        s.src.set_mute((s.pos-listener_pos).length_sq() > max_distance * max_distance);
+    }
 
     for (auto &s: m_sound_sources)
     {
@@ -346,10 +379,12 @@ void world::update(int dt)
             continue;
         }
 
-        alSourcef (s.first.id, AL_PITCH, s.second->pitch);
-        alSourcef (s.first.id, AL_GAIN, s.second->volume);
+        alSourcef(s.first.id, AL_PITCH, s.second->pitch);
+        alSourcef(s.first.id, AL_GAIN, s.second->volume);
         alSourcefv(s.first.id, AL_POSITION,  &s.second->pos.x);
         alSourcefv(s.first.id, AL_VELOCITY, &s.second->vel.x);
+
+        s.first.set_mute((s.second->pos-listener_pos).length_sq() > max_distance * max_distance);
     }
 
     m_sound_sources.erase(std::remove_if(m_sound_sources.begin(), m_sound_sources.end(),
