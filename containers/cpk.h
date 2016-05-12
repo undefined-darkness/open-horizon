@@ -16,10 +16,10 @@ struct cri_utf_table
 {
     enum value_type
     {
-        type_uint,
-        type_float,
-        type_string,
-        type_data
+        type_uint = 'u',
+        type_float = 'f',
+        type_string = 's',
+        type_data = 'd'
     };
 
     struct value
@@ -42,6 +42,7 @@ struct cri_utf_table
     std::vector<column> columns;
     int num_rows = 0;
 
+    const column &get_column(const std::string &name) const;
     const value &get_value(const std::string &name, int row = 0) const;
 
     void debug_print() const;

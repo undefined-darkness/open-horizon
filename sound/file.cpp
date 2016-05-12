@@ -97,6 +97,19 @@ unsigned int file::get_length() const
 
 //------------------------------------------------------------
 
+unsigned int file::get_loop_start() const
+{
+    if (m_hca_data)
+        return sizeof(hca_data::channel::samples) / sizeof(float) * m_hca_data->loop_start / (m_hca_data->samples_per_second / 1000);
+
+    if (m_cached)
+        return m_cached->loop_start;
+
+    return 0;
+}
+
+//------------------------------------------------------------
+
 unsigned int file::get_freq() const
 {
     if (m_hca_data)
@@ -210,6 +223,7 @@ bool file::cache(const as_create_buf &c, const as_free_buf &f)
         m_cached->channels = std::min((int)d.channels.size(), max_channels);
         m_cached->freq = get_freq();
         m_cached->length = get_length();
+        m_cached->loop_start = get_loop_start();
         m_cached->on_free = f;
         m_hca_data.reset();
         return true;

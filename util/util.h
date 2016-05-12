@@ -35,6 +35,8 @@ inline uint64_t swap_bytes(uint64_t v)
     return (v & 0x00FF00FF00FF00FF) << 8  | (v & 0xFF00FF00FF00FF00) >> 8;
 }
 
+inline int16_t swap_bytes(int16_t v) { const uint16_t t = swap_bytes(*(uint16_t *)&v); return *(int16_t *)&t; }
+inline int32_t swap_bytes(int32_t v) { const uint32_t t = swap_bytes(*(uint32_t *)&v); return *(int32_t *)&t; }
 inline float swap_bytes(float v) { const uint32_t t = swap_bytes(*(uint32_t *)&v); return *(float *)&t; }
 
 //------------------------------------------------------------

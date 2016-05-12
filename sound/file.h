@@ -22,6 +22,7 @@ public:
     bool load(const void *data, size_t size);
 
     unsigned int get_length() const;
+    unsigned int get_loop_start() const;
     unsigned int get_freq() const;
     bool is_stereo() const;
 
@@ -82,6 +83,7 @@ private:
     {
         unsigned int id = 0;
         unsigned int length = 0;
+        unsigned int loop_start = 0;
         unsigned int channels = 0;
         unsigned int freq = 0;
 

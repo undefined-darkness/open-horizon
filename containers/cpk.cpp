@@ -26,13 +26,7 @@ inline void read_value(nya_memory::memory_reader &r, int type, cri_utf_table::va
         case 4: case 5: v.u = swap_bytes(r.read<uint32_t>()); break;
         case 6: case 7: r.skip(4); v.u = swap_bytes(r.read<uint32_t>()); break;
 
-        case 8:
-        {
-            auto u = swap_bytes(r.read<uint32_t>());
-            v.type = cri_utf_table::type_float;
-            v.f = *(float *)(&u);
-        }
-        break;
+        case 8: v.type = cri_utf_table::type_float; v.f = swap_bytes(r.read<float>()); break;
 
         case 0xA:
         {
@@ -161,6 +155,14 @@ cri_utf_table::cri_utf_table(const void *data, size_t size)
 
 //------------------------------------------------------------
 
+const cri_utf_table::column &cri_utf_table::get_column(const std::string &name) const
+{
+    for (auto &c: columns) if (c.name == name) return c;
+    return nya_memory::invalid_object<column>();
+}
+
+//------------------------------------------------------------
+
 const cri_utf_table::value &cri_utf_table::get_value(const std::string &name, int row) const
 {
     if (name.empty() || row < 0)
@@ -187,7 +189,9 @@ void cri_utf_table::debug_print() const
     printf("table: %s\n", name.c_str());
     for (auto &c: columns)
     {
-        printf("%s", c.name.c_str());
+        char type = c.values.empty() ? ' ' : c.values.front().type;
+
+        printf("%s <%c> [%d]", c.name.c_str(), type, (int)c.values.size());
 
         for (auto &v: c.values)
         {
