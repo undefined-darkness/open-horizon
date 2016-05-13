@@ -129,10 +129,10 @@ void hud::draw(const render &r)
 
     wchar_t buf[255];
     m_fonts.draw_text(r, L"SPEED", "Zurich14", r.get_width()/2 - 210, r.get_height()/2 - 33, alert_color);
-    swprintf(buf, sizeof(buf), L"%4d", m_speed);
+    swprintf(buf, sizeof(buf), L"%4d", (int)m_speed);
     m_fonts.draw_text(r, buf, "OCRB15", r.get_width()/2 - 212, r.get_height()/2 - 8, alert_color);
     m_fonts.draw_text(r, L"ALT", "Zurich14", r.get_width()/2 + 170, r.get_height()/2 - 33, alert_color);
-    swprintf(buf, sizeof(buf), L"%5d", m_alt);
+    swprintf(buf, sizeof(buf), L"%5d", (int)m_alt);
     m_fonts.draw_text(r, buf, "OCRB15", r.get_width()/2 + 158, r.get_height()/2 - 8, alert_color);
 
     swprintf(buf, sizeof(buf), L"pos   %ld   %ld   %ld", long(m_pos.x),long(m_pos.y),long(m_pos.z));
@@ -386,7 +386,7 @@ void hud::draw(const render &r)
     m_aircraft.draw(r, m_missiles_icon + 406, r.get_width() - 110, r.get_height() - 60, green);
 
     m_fonts.draw_text(r, m_missiles_name.c_str(), "NowGE20", r.get_width() - 190, r.get_height() - 120, green);
-    swprintf(buf, sizeof(buf), L"%d", m_missiles_count);
+    swprintf(buf, sizeof(buf), L"%d", (int)m_missiles_count);
     m_fonts.draw_text(r, buf, "ZurichXCnBT52", r.get_width() - 145 - m_fonts.get_text_width(buf, "ZurichXCnBT52"), r.get_height() - 103, green);
 
     if (!m_alerts.empty())

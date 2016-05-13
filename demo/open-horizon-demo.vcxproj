@@ -56,18 +56,18 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WIN32_WINNT=0x0501;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/miso/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/miso/include/;../deps/openal/include/</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4018;4244;4305</DisableSpecificWarnings>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2015_x86_debug/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2015_x86_debug/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;../deps/openal/libs/OpenAL32.lib;OpenGL32.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(SolutionDir)../resources" "$(TargetDir)*" /e
-</Command>
+copy /Y "$(SolutionDir)..\deps\openal\bin\*" "$(TargetDir)\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -79,7 +79,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WIN32_WINNT=0x0501;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/miso/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/miso/include/;../deps/openal/include/</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4018;4244;4305;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
@@ -88,10 +88,11 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2015_x86_release/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;OpenGL32.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2015_x86_release/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;../deps/openal/libs/OpenAL32.lib;OpenGL32.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y "$(SolutionDir)../resources" "$(TargetDir)*" /e
+      <Command>xcopy /Y "$(SolutionDir)..\resources" "$(TargetDir)*" /e
+copy /Y "$(SolutionDir)..\deps\openal\bin\*" "$(TargetDir)\"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -123,6 +124,8 @@
     <ClCompile Include="..\gui\hud.cpp" />
     <ClCompile Include="..\gui\menu.cpp" />
     <ClCompile Include="..\renderer\missile_trail.cpp" />
+    <ClCompile Include="..\sound\file.cpp" />
+    <ClCompile Include="..\sound\sound.cpp" />
     <ClCompile Include="..\util\controls.cpp" />
     <ClCompile Include="..\util\platform.cpp" />
     <ClCompile Include="demo.cpp" />
@@ -197,6 +200,8 @@
     <ClInclude Include="..\gui\hud.h" />
     <ClInclude Include="..\gui\menu.h" />
     <ClInclude Include="..\renderer\missile_trail.h" />
+    <ClInclude Include="..\sound\file.h" />
+    <ClInclude Include="..\sound\sound.h" />
     <ClInclude Include="..\util\controls.h" />
     <ClInclude Include="..\util\platform.h" />
     <ClInclude Include="..\util\simd.h" />

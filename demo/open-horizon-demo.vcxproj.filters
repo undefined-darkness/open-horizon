@@ -36,6 +36,9 @@
     <Filter Include="Source Files\deps\pugi">
       <UniqueIdentifier>{b3ad0bbc-ecc7-4a2d-8c63-ad92f5c7416b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\sound">
+      <UniqueIdentifier>{1ae31485-4d5b-4a0e-a557-a430faec904e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="demo.cpp">
@@ -187,6 +190,12 @@
     </ClCompile>
     <ClCompile Include="..\game\network_server.cpp">
       <Filter>Source Files\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sound\file.cpp">
+      <Filter>Source Files\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sound\sound.cpp">
+      <Filter>Source Files\sound</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -348,6 +357,12 @@
     </ClInclude>
     <ClInclude Include="..\game\network_server.h">
       <Filter>Source Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sound\file.h">
+      <Filter>Source Files\sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sound\sound.h">
+      <Filter>Source Files\sound</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
