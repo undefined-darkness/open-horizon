@@ -33,10 +33,11 @@ class world_2d
 {
 public:
     void set_music(const file &f);
-    void set_music(int idx);
+    void set_music(const std::string &name);
     void stop_music();
 
-    void play(const file &f, float volume);
+    unsigned int play_ui(const file &f, float volume = 1.0f, bool loop = false);
+    void stop_ui(unsigned int id);
 
     virtual void update(int dt);
 
@@ -76,7 +77,7 @@ class world: public world_2d
 {
 public:
     source_ptr add(file &f, bool loop);
-    void play(file &f, vec3 pos, float volume);
+    void play(file &f, vec3 pos, float volume = 1.0f);
 
     void update(int dt) override;
 
@@ -101,9 +102,20 @@ bool cache(file &f);
 
 struct pack
 {
-    std::vector<sound::file> files;
+    std::vector<sound::file> waves;
 
-    bool load(const char *name);
+    struct cue
+    {
+        std::string name;
+        std::vector<uint16_t> wave_ids;
+    };
+
+    std::vector<cue> cues;
+
+    bool has(const std::string &name);
+    file &get(const std::string &name, int idx = 0);
+
+    bool load(const std::string &name);
 };
 
 //------------------------------------------------------------

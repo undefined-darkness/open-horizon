@@ -87,10 +87,61 @@ void world_2d::set_music(const file &f)
 
 //------------------------------------------------------------
 
-void world_2d::set_music(int idx)
+static void load_refs(int idx, const cri_utf_table::column &c, std::vector<uint16_t> &ids)
+{
+    assert(idx<(int)c.values.size());
+    auto inds = (uint16_t *)c.values[idx].d.data();
+    int count = (int)c.values[idx].d.size() / (sizeof(uint16_t) * 2);
+    for (int i = 0; i < count; ++i)
+    {
+        auto type = swap_bytes(*inds++);
+        auto ind = swap_bytes(*inds++);
+        if (type == 2)
+            load_refs((int)ind, c, ids);
+        else if (type == 1)
+            ids.push_back(ind);
+    }
+}
+
+//------------------------------------------------------------
+
+static void load_cues(const cri_utf_table &t, std::vector<pack::cue> &cues)
+{
+    cri_utf_table cnt(t.get_value("CueNameTable").d);
+    auto &ct_cn = cnt.get_column("CueName");
+    auto &ct_ci = cnt.get_column("CueIndex");
+
+    cri_utf_table ct(t.get_value("CueTable").d);
+    auto &ct_id = ct.get_column("CueId");
+    //auto &ct_rt = ct.get_column("ReferenceType");
+    auto &ct_ri = ct.get_column("ReferenceIndex");
+
+    cri_utf_table st(t.get_value("SynthTable").d);
+    auto &st_r = st.get_column("ReferenceItems");
+
+    assert(ct_ci.values.size() == ct_id.values.size());
+
+    cues.resize(ct_id.values.size());
+
+    for (int i = 0; i < (int)cues.size(); ++i)
+    {
+        assert(ct_ci.values[i].u < cues.size());
+        cues[ct_ci.values[i].u].name = ct_cn.values[i].s;
+
+        //assert(ct_id.values[i].u < cues.size());
+        //auto &c = cues[ct_id.values[i].u];
+        auto &c = cues[i];
+
+        load_refs((int)ct_ri.values[i].u, st_r, c.wave_ids);
+    }
+}
+
+//------------------------------------------------------------
+
+void world_2d::set_music(const std::string &name)
 {
     stop_music();
-    if (idx < 0)
+    if (name.empty())
         return;
 
     cpk_file base;
@@ -103,6 +154,40 @@ void world_2d::set_music(int idx)
         base.close();
         return;
     }
+
+    static std::vector<pack::cue> cues;
+    static std::vector<int> waveform_remap;
+    if (cues.empty())
+    {
+        auto *res1 = access(base, 1);
+        nya_memory::tmp_buffer_scoped buf1(res1->get_size());
+        res1->read_all(buf1.get_data());
+        cri_utf_table t(buf1.get_data(), buf1.get_size());
+        load_cues(t, cues);
+
+        cri_utf_table wt(t.get_value("WaveformTable").d);
+        auto &wt_id = wt.get_column("Id");
+        waveform_remap.resize(wt_id.values.size());
+        for (int i = 0; i < (int)waveform_remap.size(); ++i)
+            waveform_remap[i] = (int)wt_id.values[i].u;
+    }
+
+    int idx = -1;
+
+    for (auto &c: cues)
+    {
+        if (c.name == name)
+        {
+            if (!c.wave_ids.empty())
+                idx = c.wave_ids[0];
+            break;
+        }
+    }
+
+    if (idx < 0 || idx >= (int)waveform_remap.size())
+        return;
+
+    idx = waveform_remap[idx];
 
     cpk_file files;
     if (!files.open(res) || idx >= files.get_files_count())
@@ -134,17 +219,32 @@ void world_2d::stop_music()
 
 //------------------------------------------------------------
 
-void world_2d::play(const file &f, float volume)
+unsigned int world_2d::play_ui(const file &f, float volume, bool loop)
 {
     sound_src s;
-    if (!s.init(f, volume, false))
-        return;
+    if (!s.init(f, volume, loop))
+        return 0;
 
     alSourcei(s.id, AL_SOURCE_RELATIVE, AL_TRUE);
     alSource3f(s.id, AL_POSITION, 0.0f, 0.0f, 0.0f);
     alSource3f(s.id, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
 
     m_sounds.push_back(s);
+    return s.id;
+}
+
+//------------------------------------------------------------
+
+void world_2d::stop_ui(unsigned int id)
+{
+    if (!id)
+        return;
+
+    for (auto &s: m_sounds)
+    {
+        if (s.id == id)
+            s.release();
+    }
 }
 
 //------------------------------------------------------------
@@ -410,49 +510,75 @@ bool cache(file &f)
 
 //------------------------------------------------------------
 
-bool pack::load(const char *name)
+bool pack::has(const std::string &name)
 {
-    auto r = load_resource(name);
+    for (auto &c: cues) if (c.name == name) return true;
+    return false;
+}
+
+//------------------------------------------------------------
+
+file &pack::get(const std::string &name, int idx)
+{
+    for (auto &c: cues)
+    {
+        if (c.name != name)
+            continue;
+
+        if (idx < 0 || idx >= c.wave_ids.size())
+            break;
+
+        auto id = c.wave_ids[idx];
+        if (id >= waves.size())
+            break;
+
+        return waves[id];
+    }
+
+    return nya_memory::invalid_object<file>();
+}
+
+//------------------------------------------------------------
+
+bool pack::load(const std::string &name)
+{
+    auto r = load_resource(name.c_str());
     cri_utf_table t(r.get_data(), r.get_size());
     r.free();
 
-    for (auto &c: t.columns)
+    struct data_adaptor: public nya_resources::resource_data
     {
-        if (c.name == "AwbFile")
+        const std::vector<char> &data;
+        data_adaptor(const std::vector<char> & d): data(d) {}
+        size_t get_size() override { return data.size(); }
+        bool read_chunk(void *d,size_t size,size_t offset=0) override
         {
-            if (c.values.size() != 1)
-                return false;
-
-            struct data_adaptor: public nya_resources::resource_data
-            {
-                const std::vector<char> &data;
-                data_adaptor(std::vector<char> & d): data(d) {}
-                size_t get_size() override { return data.size(); }
-                bool read_chunk(void *d,size_t size,size_t offset=0) override
-                {
-                    return d && (offset + size <= data.size()) && memcpy(d, &data[offset], size) != 0;
-                }
-            } da(c.values.front().d);
-
-            cpk_file cpk;
-            cpk.open(&da);
-
-            files.reserve(cpk.get_files_count());
-            for (int i = 0; i < cpk.get_files_count(); ++i)
-            {
-                nya_memory::tmp_buffer_scoped buf(cpk.get_file_size(i));
-                cpk.read_file_data(i, buf.get_data());
-                sound::file f;
-                if (f.load(buf.get_data(), buf.get_size()))
-                    files.push_back(f);
-            }
-
-            cpk.close();
-            return true;
+            return d && (offset + size <= data.size()) && memcpy(d, &data[offset], size) != 0;
         }
+    } da(t.get_value("AwbFile").d);
+
+    cpk_file cpk;
+    if (!cpk.open(&da))
+        return false;
+
+    cri_utf_table wt(t.get_value("WaveformTable").d);
+    auto &wt_id = wt.get_column("Id");
+    //assume((int)wt_id.values.size() == cpk.get_files_count());
+
+    for (auto &v: wt_id.values)
+    {
+        nya_memory::tmp_buffer_scoped buf(cpk.get_file_size((int)v.u));
+        cpk.read_file_data((int)v.u, buf.get_data());
+        sound::file f;
+        if (f.load(buf.get_data(), buf.get_size()))
+            waves.push_back(f);
     }
 
-    return false;
+    cpk.close();
+
+    load_cues(t, cues);
+
+    return true;
 }
 
 //------------------------------------------------------------

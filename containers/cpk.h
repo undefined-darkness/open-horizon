@@ -49,6 +49,7 @@ struct cri_utf_table
 
     cri_utf_table() {}
     cri_utf_table(const void *data, size_t size);
+    cri_utf_table(const std::vector<char> &d): cri_utf_table(d.data(), d.size()) {}
 };
 
 //------------------------------------------------------------
