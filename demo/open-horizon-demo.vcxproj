@@ -67,7 +67,7 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(SolutionDir)../resources" "$(TargetDir)*" /e
-copy /Y "$(SolutionDir)..\deps\openal\bin\*" "$(TargetDir)\"</Command>
+copy /Y "$(SolutionDir)..\deps\openal\win32\*" "$(TargetDir)\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -92,7 +92,7 @@ copy /Y "$(SolutionDir)..\deps\openal\bin\*" "$(TargetDir)\"</Command>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(SolutionDir)..\resources" "$(TargetDir)*" /e
-copy /Y "$(SolutionDir)..\deps\openal\bin\*" "$(TargetDir)\"
+copy /Y "$(SolutionDir)..\deps\openal\win32\*" "$(TargetDir)\"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
