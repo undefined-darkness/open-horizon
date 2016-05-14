@@ -407,10 +407,6 @@ void plane::reset_state()
 
 //------------------------------------------------------------
 
-float plane::get_speed_kmh() { return vel.length() * meps_to_kmph; }
-
-//------------------------------------------------------------
-
 void plane::update(int dt)
 {
     float kdt = dt * 0.001f;
@@ -518,6 +514,26 @@ void plane::update(int dt)
     vel *= kmph_to_meps;
 
     pos += vel * kdt;
+}
+
+//------------------------------------------------------------
+
+float plane::get_speed_kmh() const { return vel.length() * meps_to_kmph; }
+
+//------------------------------------------------------------
+
+float plane::get_thrust() const
+{
+    return 0.5 * (nya_math::min(nya_math::max(get_speed_kmh() - params.move.speed.speedMin, 0.0)
+                                / (params.move.speed.speedCruising - params.move.speed.speedMin), 1.0f)
+                  + thrust_time / params.move.accel.thrustMinWait);
+}
+
+//------------------------------------------------------------
+
+bool plane::get_ab() const
+{
+    return thrust_time >= params.move.accel.thrustMinWait;
 }
 
 //------------------------------------------------------------

@@ -428,7 +428,7 @@ void world::play(file &f, vec3 pos, float volume)
 
 source_ptr world::add(file &f, bool loop)
 {
-    cache(f);
+    //cache(f); //ToDo: OpenAL doesn't support loop points
 
     sound_src s;
     if (s.init(f, 0.0f, loop))
@@ -460,7 +460,7 @@ void world::update(int dt)
     m_prev_pos = c.get_pos();
     alListenerfv(AL_VELOCITY, &vel.x);
 
-    const vec3 ori[] = { c.get_rot().rotate(vec3::forward()), c.get_rot().rotate(vec3::up())};
+    const vec3 ori[] = { c.get_rot().rotate(vec3::forward()), c.get_rot().rotate(vec3::right())};
     alListenerfv(AL_ORIENTATION, &ori[0].x);
 
     for (auto &s: m_sounds_3d)

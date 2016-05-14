@@ -220,6 +220,11 @@ void platform::key_func(GLFWwindow *, int key, int scancode, int action, int mod
     }
     else if (action == GLFW_RELEASE)
         m_buttons[key] = false;
+
+#ifdef __APPLE__
+    m_buttons[GLFW_KEY_LEFT_CONTROL] = mods & GLFW_MOD_CONTROL;
+    m_buttons[GLFW_KEY_LEFT_SHIFT] = mods & GLFW_MOD_SHIFT;
+#endif
 }
 
 //------------------------------------------------------------

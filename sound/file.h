@@ -49,6 +49,7 @@ private:
         uint32_t samples_per_second = 0;
         uint32_t block_count = 0;
         uint16_t block_size = 0;
+        uint16_t loop_fine = 0;
         uint32_t loop_start = 0, loop_end = 0;
         std::vector<char> raw_data;
 

@@ -180,13 +180,14 @@ size_t file::cache_buf(void *data, unsigned int buf_idx, bool loop) const
         hsa_bit_stream bits(&d.raw_data[buf_idx * d.block_size], d.block_size);
         d.decode(bits);
 
-		for (int i = 0; i < 8; ++i)
+        int count = 1024;
+        if (buf_idx + 1 == d.block_count)
+            count = d.loop_fine;
+
+		for (int i = 0; i < count; ++i)
         {
-			for (int j = 0; j < 0x80; ++j)
-            {
-				for (int k = 0; k < (int)d.channels.size() && k < max_channels; ++k)
-                    *sdata = pack_sample16(d.channels[k].samples[i][j]), ++sdata;
-			}
+            for (int k = 0; k < (int)d.channels.size() && k < max_channels; ++k)
+                *sdata = pack_sample16(((float *)(d.channels[k].samples))[i]), ++sdata;
 		}
 
         return (char *)sdata - (char *)data;
@@ -211,10 +212,11 @@ bool file::cache(const as_create_buf &c, const as_free_buf &f)
 
         nya_memory::tmp_buffer_scoped buf(d.block_count * get_buf_size());
 
-        for (unsigned int i = 0, offset = 0; i < d.block_count; ++i)
+        unsigned int offset = 0;
+        for (unsigned int i = 0; i < d.block_count; ++i)
             offset += cache_buf(buf.get_data(offset), i, false);
 
-        auto id = c(buf.get_data(), buf.get_size());
+        auto id = c(buf.get_data(), offset);
         if (!id)
             return false;
 
@@ -318,7 +320,9 @@ bool file::load_hca(const void *data, size_t size)
             case 'loop':
                 d.loop_start = read_uint32(r);
                 d.loop_end = read_uint32(r) + 1;
-                r.skip(4);
+                r.skip(2);
+                d.loop_fine = read_uint16(r);
+                d.loop_fine /= 2; //Dunno
                 continue;
 
             case 'ciph':
@@ -337,7 +341,10 @@ bool file::load_hca(const void *data, size_t size)
     }
 
     if (!d.loop_end)
+    {
         d.loop_end = d.block_count;
+        d.loop_fine = 1024;
+    }
 
     r.seek(data_offset);
     const auto data_size = d.block_count * d.block_size;
@@ -369,7 +376,7 @@ void file::hca_data::decode(hsa_bit_stream &bits)
     for (auto &c: channels)
         c.decode1(bits, t);
 
-    for(int i=0;i<8;i++)
+    for (int i = 0; i < 8; ++i)
     {
         for (auto &c: channels)
             c.decode2(bits);

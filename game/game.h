@@ -121,6 +121,11 @@ struct plane: public object, public std::enable_shared_from_this<plane>
 
     fvalue hit_radius;
 
+    sound::pack sounds;
+    std::map<std::string, sound::source_ptr> sound_srcs;
+    typedef std::pair<vec3, sound::source_ptr> sound_rel_src;
+    std::vector<sound_rel_src> sound_rel_srcs;
+
     std::vector<nya_math::vec3> alert_dirs;
 
     struct target_lock
@@ -152,6 +157,8 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     virtual void take_damage(int damage, world &w, bool net_src = true) override;
 
 private:
+    void update_sound(world &w, std::string name, bool enabled, float volume = 1.0f);
+    void play_relative(world &w, std::string name, int idx, vec3 offset);
     void update_targets(world &w);
     void update_render();
     void update_weapons_hud();
@@ -227,6 +234,10 @@ public:
 
     unsigned int get_net_time() const { return m_network ? m_network->get_time() : 0; }
 
+    sound::source_ptr add_sound(sound::file &f, bool loop) { return m_sound_world.add(f, loop); }
+    sound::source_ptr add_sound(std::string name, int idx);
+    unsigned int play_sound_ui(std::string name, bool loop);
+
     world(renderer::world &w, sound::world &s, gui::hud &h): m_render_world(w), m_sound_world(s), m_hud(h), m_network(0) {}
 
 private:
@@ -244,6 +255,8 @@ private:
     gui::hud &m_hud;
     phys::world m_phys_world;
     sound::world &m_sound_world;
+    sound::pack m_sounds;
+    sound::pack m_sounds_ui;
 
     is_ally_handler m_ally_handler;
     on_kill_handler m_on_kill_handler;

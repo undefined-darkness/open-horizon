@@ -93,16 +93,18 @@ void menu::update(int dt, const menu_controls &controls)
 {
     if (controls.up && controls.up != m_prev_controls.up)
     {
+        play_sound("SYS_CURSOR");
+
         if (m_selected > 0)
             --m_selected;
         else if (!m_entries.empty())
             m_selected = (int)m_entries.size() - 1;
-
-        play_sound("SYS_CURSOR");
     }
 
     if (controls.down && controls.down != m_prev_controls.down)
     {
+        play_sound("SYS_CURSOR");
+
         if (!m_entries.empty())
         {
             if (m_selected + 1 < m_entries.size())
@@ -110,8 +112,6 @@ void menu::update(int dt, const menu_controls &controls)
             else
                 m_selected = 0;
         }
-
-        play_sound("SYS_CURSOR");
     }
 
     if (controls.left && controls.left != m_prev_controls.left)
@@ -121,6 +121,8 @@ void menu::update(int dt, const menu_controls &controls)
             auto &e = m_entries[m_selected];
             if (!e.sub_select.empty() || e.input_numeric)
             {
+                play_sound("SYS_CURSOR");
+
                 if (e.sub_selected > 0)
                     --e.sub_selected;
                 else if (!e.sub_select.empty())
@@ -141,8 +143,6 @@ void menu::update(int dt, const menu_controls &controls)
                         send_event(e.input_event + "=" + std::string(e.input.begin(), e.input.end()));
                     }
                 }
-
-                play_sound("SYS_CURSOR");
             }
         }
     }
@@ -154,6 +154,8 @@ void menu::update(int dt, const menu_controls &controls)
             auto &e = m_entries[m_selected];
             if (!e.sub_select.empty() || e.input_numeric)
             {
+                play_sound("SYS_CURSOR");
+
                 if (e.sub_selected + 1 < e.sub_select.size())
                     ++e.sub_selected;
                 else
@@ -171,8 +173,6 @@ void menu::update(int dt, const menu_controls &controls)
                         send_event(e.input_event + "=" + std::string(e.input.begin(), e.input.end()));
                     }
                 }
-
-                play_sound("SYS_CURSOR");
             }
         }
     }
@@ -181,6 +181,8 @@ void menu::update(int dt, const menu_controls &controls)
     {
         if (!m_screens.empty())
         {
+            play_sound("SYS_CANCEL");
+
             m_screens.pop_back();
             if (m_screens.empty())
                 send_event("exit");
@@ -195,8 +197,6 @@ void menu::update(int dt, const menu_controls &controls)
 
                 set_screen(last);
             }
-
-            play_sound("SYS_CANCEL");
         }
     }
 
@@ -204,11 +204,11 @@ void menu::update(int dt, const menu_controls &controls)
     {
         if (m_selected < m_entries.size())
         {
+            play_sound("SYS_DECIDE");
+
             auto events = m_entries[m_selected].events;
             for (auto &e: events)
                 send_event(e);
-
-            play_sound("SYS_DECIDE");
         }
     }
 

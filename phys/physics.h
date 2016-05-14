@@ -62,10 +62,12 @@ struct plane: public object
     plane_params params;
     //col_mesh mesh;
 
-    float get_speed_kmh();
-
     void reset_state();
     void update(int dt);
+
+    float get_speed_kmh() const;
+    float get_thrust() const;
+    bool get_ab() const;
 };
 
 typedef ptr<plane> plane_ptr;

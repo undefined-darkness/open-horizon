@@ -249,6 +249,8 @@ plane_ptr world::add_plane(const char *preset, const char *player_name, int colo
     p->render = m_render_world.add_aircraft(preset, color, player);
     p->phys->nose_offset = p->render->get_bone_pos("clv1");
 
+    p->sounds.load("sound/f15.acb"); //ToDo
+
     p->hp = p->max_hp = int(p->phys->params.misc.maxHp);
 
     p->hit_radius = preset[0] == 'b' ? 12.0f : 7.0f;
@@ -404,6 +406,12 @@ void world::set_location(const char *name)
     m_render_world.set_location(name);
     m_phys_world.set_location(name);
     m_hud.set_location(name);
+
+    if (m_sounds.cues.empty())
+        m_sounds.load("sound/game.acb");
+
+    if (m_sounds_ui.cues.empty())
+        m_sounds_ui.load("sound/game_common.acb");
 }
 
 //------------------------------------------------------------
@@ -806,6 +814,20 @@ void world::popup_miss()
 
 //------------------------------------------------------------
 
+sound::source_ptr world::add_sound(std::string name, int idx)
+{
+    return m_sound_world.add(m_sounds.get(name, idx), false);
+}
+
+//------------------------------------------------------------
+
+unsigned int world::play_sound_ui(std::string name, bool loop)
+{
+    return m_sound_world.play_ui(m_sounds_ui.get(name), loop);
+}
+
+//------------------------------------------------------------
+
 void plane::reset_state()
 {
     hp = max_hp;
@@ -959,6 +981,34 @@ bool plane::is_special_bay_ready()
 
 //------------------------------------------------------------
 
+void plane::play_relative(world &w, std::string name, int idx, vec3 offset)
+{
+    sound_rel_srcs.push_back({offset, w.add_sound(name, idx)});
+}
+
+//------------------------------------------------------------
+
+void plane::update_sound(world &w, std::string name, bool enabled, float volume)
+{
+    auto &snd = sound_srcs[name];
+
+    if (!enabled)
+    {
+        if (snd)
+            snd.reset();
+        return;
+    }
+
+    if (snd)
+    {
+        snd->pos = phys->pos;
+        snd->vel = phys->vel;
+        snd->volume = volume;
+    }
+    else
+        snd = w.add_sound(sounds.get(name), true);
+}
+
 void plane::update(int dt, world &w)
 {
     const plane_ptr &me = shared_from_this();
@@ -966,6 +1016,18 @@ void plane::update(int dt, world &w)
     const vec3 pos_fix = phys->pos - render->get_pos(); //skeleton is not updated yet
 
     update_render();
+
+    update_sound(w, "VULCAN_REAR", is_mg_bay_ready() && controls.mgun);
+    update_sound(w, "75p", hp > 0, phys->get_thrust());
+    update_sound(w, "JET_REAR_AB", phys->get_ab() && hp > 0);
+
+    sound_rel_srcs.erase(std::remove_if(sound_rel_srcs.begin(), sound_rel_srcs.end(), [](const sound_rel_src &s){ return s.second.unique(); }), sound_rel_srcs.end());
+
+    for (auto &s: sound_rel_srcs)
+    {
+        s.second->pos = phys->pos + phys->rot.rotate(s.first);
+        s.second->vel = phys->vel;
+    }
 
     if (hp <= 0)
         return;
@@ -1287,6 +1349,8 @@ void plane::update(int dt, world &w)
                     m->target = targets.front().target_plane;
 
                 --missile_count;
+
+                play_relative(w, "SHOT_MSL", random(0, 2), m->phys->pos - get_pos());
             }
         }
     }
