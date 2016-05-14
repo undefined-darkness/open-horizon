@@ -139,7 +139,8 @@ int main()
     }
 
     renderer::scene scene;
-    game::world world(scene, scene.hud);
+    sound::world sound_world;
+    game::world world(scene, sound_world, scene.hud);
     game::free_flight game_mode_ff(world);
     game::deathmatch game_mode_dm(world);
     game::team_deathmatch game_mode_tdm(world);
@@ -149,7 +150,7 @@ int main()
     game::network_client client;
     game::network_server server;
 
-    gui::menu menu;
+    gui::menu menu(sound_world);
     gui::menu_controls menu_controls;
 
     platform::key_callback kcb = std::bind(&gui::menu::on_input, &menu, std::placeholders::_1);
@@ -164,6 +165,8 @@ int main()
     platform.end_frame();
 
     menu.init();
+    sound_world.set_music("BGM_menu");
+
     bool viewer_mode = false;
     bool is_client = false, is_server = false;
 
@@ -171,6 +174,8 @@ int main()
     {
         if (event == "start")
         {
+            sound_world.stop_music();
+
             auto location = menu.get_var("map");
             auto plane = menu.get_var("ac");
             const int color = atoi(menu.get_var("color").c_str());
@@ -415,6 +420,8 @@ int main()
                 menu_controls.prev = false;
                 if (is_client)
                     menu.send_event("screen=mp_connect");
+
+                sound_world.set_music("BGM_menu");
             }
         }
 

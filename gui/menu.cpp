@@ -21,13 +21,13 @@ void menu::init_var(const std::string &name, const std::string &value)
 
 void menu::init()
 {
-    *this = menu(); //release
-
     set_screen("main");
 
     m_fonts.load("UI/text/menuCommon.acf");
     m_bkg.load("UI/comp_simple_bg.lar");
     m_select.load("UI/comp_menu.lar");
+
+    m_sounds.load("sound/common.acb");
 
     init_var("name", "PLAYER");
     init_var("address", "127.0.0.1");
@@ -97,6 +97,8 @@ void menu::update(int dt, const menu_controls &controls)
             --m_selected;
         else if (!m_entries.empty())
             m_selected = (int)m_entries.size() - 1;
+
+        play_sound("SYS_CURSOR");
     }
 
     if (controls.down && controls.down != m_prev_controls.down)
@@ -108,6 +110,8 @@ void menu::update(int dt, const menu_controls &controls)
             else
                 m_selected = 0;
         }
+
+        play_sound("SYS_CURSOR");
     }
 
     if (controls.left && controls.left != m_prev_controls.left)
@@ -115,25 +119,30 @@ void menu::update(int dt, const menu_controls &controls)
         if (m_selected<m_entries.size())
         {
             auto &e = m_entries[m_selected];
-            if (e.sub_selected > 0)
-                --e.sub_selected;
-            else if (!e.sub_select.empty())
-                e.sub_selected = (int)e.sub_select.size() - 1;
-            send_sub_events(e);
-
-            if (e.input_numeric)
+            if (!e.sub_select.empty() || e.input_numeric)
             {
-                std::string s(e.input.begin(), e.input.end());
-                int n = atoi(s.c_str());
-                if (n > 0)
-                {
-                    s = std::to_string(--n);
-                    if (!n && e.input_event == "max_players")
-                        s = "No limit";
+                if (e.sub_selected > 0)
+                    --e.sub_selected;
+                else if (!e.sub_select.empty())
+                    e.sub_selected = (int)e.sub_select.size() - 1;
+                send_sub_events(e);
 
-                    e.input = std::wstring(s.begin(), s.end());
-                    send_event(e.input_event + "=" + std::string(e.input.begin(), e.input.end()));
+                if (e.input_numeric)
+                {
+                    std::string s(e.input.begin(), e.input.end());
+                    int n = atoi(s.c_str());
+                    if (n > 0)
+                    {
+                        s = std::to_string(--n);
+                        if (!n && e.input_event == "max_players")
+                            s = "No limit";
+
+                        e.input = std::wstring(s.begin(), s.end());
+                        send_event(e.input_event + "=" + std::string(e.input.begin(), e.input.end()));
+                    }
                 }
+
+                play_sound("SYS_CURSOR");
             }
         }
     }
@@ -143,22 +152,27 @@ void menu::update(int dt, const menu_controls &controls)
         if (m_selected<m_entries.size())
         {
             auto &e = m_entries[m_selected];
-            if (e.sub_selected + 1 < e.sub_select.size())
-                ++e.sub_selected;
-            else
-                e.sub_selected = 0;
-            send_sub_events(e);
-
-            if (e.input_numeric)
+            if (!e.sub_select.empty() || e.input_numeric)
             {
-                std::string s(e.input.begin(), e.input.end());
-                int n = atoi(s.c_str());
-                if (n < 65535)
+                if (e.sub_selected + 1 < e.sub_select.size())
+                    ++e.sub_selected;
+                else
+                    e.sub_selected = 0;
+                send_sub_events(e);
+
+                if (e.input_numeric)
                 {
-                    s = std::to_string(++n);
-                    e.input = std::wstring(s.begin(), s.end());
-                    send_event(e.input_event + "=" + std::string(e.input.begin(), e.input.end()));
+                    std::string s(e.input.begin(), e.input.end());
+                    int n = atoi(s.c_str());
+                    if (n < 65535)
+                    {
+                        s = std::to_string(++n);
+                        e.input = std::wstring(s.begin(), s.end());
+                        send_event(e.input_event + "=" + std::string(e.input.begin(), e.input.end()));
+                    }
                 }
+
+                play_sound("SYS_CURSOR");
             }
         }
     }
@@ -181,6 +195,8 @@ void menu::update(int dt, const menu_controls &controls)
 
                 set_screen(last);
             }
+
+            play_sound("SYS_CANCEL");
         }
     }
 
@@ -191,9 +207,12 @@ void menu::update(int dt, const menu_controls &controls)
             auto events = m_entries[m_selected].events;
             for (auto &e: events)
                 send_event(e);
+
+            play_sound("SYS_DECIDE");
         }
     }
 
+    m_sound_world.update(dt);
     m_prev_controls = controls;
 }
 
@@ -237,6 +256,13 @@ std::string menu::get_var(const std::string &name) const
 int menu::get_var_int(const std::string &name) const
 {
     return atoi(get_var(name).c_str());
+}
+
+//------------------------------------------------------------
+
+void menu::play_sound(std::string name)
+{
+    m_sound_world.play_ui(m_sounds.get(name));
 }
 
 //------------------------------------------------------------
@@ -343,7 +369,7 @@ void menu::set_screen(const std::string &screen)
         m_title = L"START SERVER";
 
         add_entry(L"Name: ", {});
-        add_input("name", "PLAYER");
+        add_input("name");
 
         add_entry(L"Game mode: ", {}, "mode");
         add_sub_entry(L"Deathmatch", "dm");

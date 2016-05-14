@@ -670,6 +670,7 @@ void world::update(int dt)
         bullets_to.add_bullet(b.pos, b.vel);
 
     m_render_world.update(dt);
+    m_sound_world.update(dt);
 
     if (m_network)
     {

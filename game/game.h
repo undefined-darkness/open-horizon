@@ -6,6 +6,7 @@
 
 #include "phys/physics.h"
 #include "renderer/scene.h"
+#include "sound/sound.h"
 #include "gui/hud.h"
 #include "network_data.h"
 #include <memory>
@@ -226,7 +227,7 @@ public:
 
     unsigned int get_net_time() const { return m_network ? m_network->get_time() : 0; }
 
-    world(renderer::world &w, gui::hud &h): m_render_world(w), m_hud(h), m_network(0) {}
+    world(renderer::world &w, sound::world &s, gui::hud &h): m_render_world(w), m_sound_world(s), m_hud(h), m_network(0) {}
 
 private:
     missile_ptr add_missile(const char *id, const renderer::model &m, bool add_to_phys_world);
@@ -242,6 +243,7 @@ private:
     renderer::world &m_render_world;
     gui::hud &m_hud;
     phys::world m_phys_world;
+    sound::world &m_sound_world;
 
     is_ally_handler m_ally_handler;
     on_kill_handler m_on_kill_handler;

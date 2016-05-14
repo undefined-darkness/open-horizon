@@ -6,6 +6,7 @@
 
 #include "ui.h"
 #include "game/network.h"
+#include "sound/sound.h"
 #include <functional>
 #include <list>
 
@@ -38,12 +39,18 @@ public:
     void send_event(const std::string &event);
     void set_error(const std::string &error);
 
+    menu(sound::world_2d &s): m_sound_world(s) {}
+
 private:
     void set_hide(bool value) { m_hide = value; }
     void set_screen(const std::string &screen);
     void init_var(const std::string &name, const std::string &value);
+    void play_sound(std::string name);
 
 private:
+    sound::world_2d &m_sound_world;
+    sound::pack m_sounds;
+
     bvalue m_hide;
     fonts m_fonts;
     on_action m_on_action;
