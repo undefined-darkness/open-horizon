@@ -308,6 +308,8 @@ void world::spawn_explosion(const nya_math::vec3 &pos, float radius, bool net_sr
 {
     m_render_world.spawn_explosion(pos, radius);
 
+    play_sound("MISL_HIT", random(2, 4), pos);
+
     if (m_network && net_src)
         m_network->general_msg("explosion " + to_string(pos) + " " + std::to_string(radius));
 }
@@ -619,6 +621,7 @@ void world::update(int dt)
                 p->take_damage(9000, *this);
                 on_kill(plane_ptr(), p);
                 p->render->set_hide(true);
+                play_sound("PLAYER_CRASH_AIRPLANE", 0, p->get_pos());
             }
         }
     });
@@ -814,9 +817,9 @@ void world::popup_miss()
 
 //------------------------------------------------------------
 
-sound::source_ptr world::add_sound(std::string name, int idx)
+sound::source_ptr world::add_sound(std::string name, int idx, bool loop)
 {
-    return m_sound_world.add(m_sounds.get(name, idx), false);
+    return m_sound_world.add(m_sounds.get(name, idx), loop);
 }
 
 //------------------------------------------------------------
@@ -824,6 +827,13 @@ sound::source_ptr world::add_sound(std::string name, int idx)
 unsigned int world::play_sound_ui(std::string name, bool loop)
 {
     return m_sound_world.play_ui(m_sounds_ui.get(name), loop);
+}
+
+//------------------------------------------------------------
+
+void world::play_sound(std::string name, int idx, vec3 pos)
+{
+    m_sound_world.play(m_sounds.get(name, idx), pos);
 }
 
 //------------------------------------------------------------
@@ -919,7 +929,7 @@ void plane::update_targets(world &w)
 
 //------------------------------------------------------------
 
-void plane::update_render()
+void plane::update_render(world &w)
 {
     render->set_hide(hp <= 0);
     if (hp <= 0)
@@ -958,8 +968,23 @@ void plane::update_render()
     render->set_special_bay(special_weapon_selected);
     render->set_mgun_bay(controls.mgun);
 
-    render->set_mgun_fire(is_mg_bay_ready() && controls.mgun);
-    render->set_mgp_fire(special_weapon_selected && controls.missile && special.id == "MGP" && special_count > 0);
+    const bool mg_fire = is_mg_bay_ready() && controls.mgun;
+    const bool mgp_fire = special_weapon_selected && controls.missile && special.id == "MGP" && special_count > 0;
+
+    render->set_mgun_fire(mg_fire);
+    render->set_mgp_fire(mgp_fire);
+
+    update_sound(w, "VULCAN_REAR", mg_fire);
+    update_sound(w, "MGP", mgp_fire);
+    update_sound(w, "75p", hp > 0, phys->get_thrust());
+    update_sound(w, "JET_REAR_AB", phys->get_ab() && hp > 0);
+
+    sound_rel_srcs.erase(std::remove_if(sound_rel_srcs.begin(), sound_rel_srcs.end(), [](const sound_rel_src &s){ return s.second.unique(); }), sound_rel_srcs.end());
+    for (auto &s: sound_rel_srcs)
+    {
+        s.second->pos = phys->pos + phys->rot.rotate(s.first);
+        s.second->vel = phys->vel;
+    }
 }
 
 //------------------------------------------------------------
@@ -1006,8 +1031,15 @@ void plane::update_sound(world &w, std::string name, bool enabled, float volume)
         snd->volume = volume;
     }
     else
-        snd = w.add_sound(sounds.get(name), true);
+    {
+        if (sounds.has(name))
+            snd = w.add_sound(sounds.get(name), true);
+        else
+            snd = w.add_sound(name, 0, true);
+    }
 }
+
+//------------------------------------------------------------
 
 void plane::update(int dt, world &w)
 {
@@ -1015,19 +1047,7 @@ void plane::update(int dt, world &w)
     const vec3 dir = get_dir();
     const vec3 pos_fix = phys->pos - render->get_pos(); //skeleton is not updated yet
 
-    update_render();
-
-    update_sound(w, "VULCAN_REAR", is_mg_bay_ready() && controls.mgun);
-    update_sound(w, "75p", hp > 0, phys->get_thrust());
-    update_sound(w, "JET_REAR_AB", phys->get_ab() && hp > 0);
-
-    sound_rel_srcs.erase(std::remove_if(sound_rel_srcs.begin(), sound_rel_srcs.end(), [](const sound_rel_src &s){ return s.second.unique(); }), sound_rel_srcs.end());
-
-    for (auto &s: sound_rel_srcs)
-    {
-        s.second->pos = phys->pos + phys->rot.rotate(s.first);
-        s.second->vel = phys->vel;
-    }
+    update_render(w);
 
     if (hp <= 0)
         return;
@@ -1174,6 +1194,8 @@ void plane::update(int dt, world &w)
         {
             ecm_time = special_cooldown[0] = special_cooldown[1] = special.reload_time;
             --special_count;
+
+            play_relative(w, "ECM", 0, vec3());
         }
 
         if (special.id == "ADMM")
@@ -1310,6 +1332,16 @@ void plane::update(int dt, world &w)
                     if (!saam_missile.expired())
                         saam_missile.lock()->target.reset(); //one at a time
                     saam_missile = m;
+                }
+
+                if (i == 0)
+                {
+                    if (special.id == "QAAM")
+                        play_relative(w, "SHOT_MSL", random(0, 2), m->phys->pos - get_pos());
+                    else if (shot_cout > 1)
+                        play_relative(w, "SAAM", 0, vec3());
+                    else
+                        play_relative(w, "SAAM", 0, m->phys->pos - get_pos());
                 }
             }
 
@@ -1563,7 +1595,7 @@ void missile::update_homing(int dt, world &w)
 
     if (is_saam)
     {
-        if (owner.lock()->hp <= 0)
+        if (owner.expired() || owner.lock()->hp <= 0)
             target.reset();
     }
 

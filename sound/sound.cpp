@@ -20,7 +20,7 @@ namespace sound
 //------------------------------------------------------------
 
 static float min_distance = 10.0f;
-static float max_distance = 1000.0f;
+static float max_distance = 5000.0f;
 
 //------------------------------------------------------------
 
@@ -428,7 +428,8 @@ void world::play(file &f, vec3 pos, float volume)
 
 source_ptr world::add(file &f, bool loop)
 {
-    //cache(f); //ToDo: OpenAL doesn't support loop points
+    if (!loop) //ToDo: OpenAL doesn't support loop points
+        cache(f);
 
     sound_src s;
     if (s.init(f, 0.0f, loop))

@@ -160,7 +160,7 @@ private:
     void update_sound(world &w, std::string name, bool enabled, float volume = 1.0f);
     void play_relative(world &w, std::string name, int idx, vec3 offset);
     void update_targets(world &w);
-    void update_render();
+    void update_render(world &w);
     void update_weapons_hud();
     bool is_mg_bay_ready();
     bool is_special_bay_ready();
@@ -234,9 +234,10 @@ public:
 
     unsigned int get_net_time() const { return m_network ? m_network->get_time() : 0; }
 
-    sound::source_ptr add_sound(sound::file &f, bool loop) { return m_sound_world.add(f, loop); }
-    sound::source_ptr add_sound(std::string name, int idx);
-    unsigned int play_sound_ui(std::string name, bool loop);
+    sound::source_ptr add_sound(sound::file &f, bool loop = false) { return m_sound_world.add(f, loop); }
+    sound::source_ptr add_sound(std::string name, int idx = 0, bool loop = false);
+    unsigned int play_sound_ui(std::string name, bool loop = false);
+    void play_sound(std::string name, int idx, vec3 pos);
 
     world(renderer::world &w, sound::world &s, gui::hud &h): m_render_world(w), m_sound_world(s), m_hud(h), m_network(0) {}
 
