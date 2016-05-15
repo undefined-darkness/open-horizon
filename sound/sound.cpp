@@ -221,8 +221,11 @@ void world_2d::stop_music()
 
 //------------------------------------------------------------
 
-unsigned int world_2d::play_ui(const file &f, float volume, bool loop)
+unsigned int world_2d::play_ui(file &f, float volume, bool loop)
 {
+    if (!loop)
+        cache(f);
+
     sound_src s;
     if (!s.init(f, volume, loop))
         return 0;
@@ -462,9 +465,9 @@ void world::update(int dt)
 
     alListenerfv(AL_POSITION, &listener_pos.x);
 
-    const vec3 vel = (c.get_pos() - m_prev_pos) / (dt * 0.001f);
+    const vec3 listener_vel = (c.get_pos() - m_prev_pos) / (dt * 0.001f);
     m_prev_pos = c.get_pos();
-    alListenerfv(AL_VELOCITY, &vel.x);
+    alListenerfv(AL_VELOCITY, &listener_vel.x);
 
     const vec3 ori[] = { c.get_rot().rotate_inv(-vec3::forward()), c.get_rot().rotate_inv(vec3::up())};
     alListenerfv(AL_ORIENTATION, &ori[0].x);

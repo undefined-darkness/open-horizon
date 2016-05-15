@@ -826,7 +826,7 @@ sound::source_ptr world::add_sound(std::string name, int idx, bool loop)
 
 unsigned int world::play_sound_ui(std::string name, bool loop)
 {
-    return m_sound_world.play_ui(m_sounds_ui.get(name), loop);
+    return m_sound_world.play_ui(m_sounds_ui.get(name), 1.0f, loop);
 }
 
 //------------------------------------------------------------
