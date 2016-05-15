@@ -318,12 +318,15 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
 
     m_half_flaps_flag = name_str == "f22a" || name_str == "m21b" || name_str == "av8b";
 
+    m_engine_lod_idx = 3; //ToDo: player ? 3 : -1;
+    if (name_str == "av8b")
+        m_engine_lod_idx = -1;
+
     std::string name_tmp_str = "p_" + name_str; //ToDo: load d_ models
     name_str = (player ? "p_" : "d_") + name_str;
 
     const std::string tex_pref = std::string("model_id/tdb/mech/") + (player ? "plyr/" : "airp/");
     const std::string mesh_pref = std::string("model_id/mech/") + "plyr/"; //ToDo: + (player ? "plyr/" : "airp/");
-    m_engine_lod_idx = 3; //ToDo: player ? 3 : -1;
 
     auto info = aircraft_information::get().get_info(name);
     if (!info)
