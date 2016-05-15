@@ -194,6 +194,7 @@ class world
 {
 public:
     void set_location(const char *name);
+    void stop_sounds();
 
     plane_ptr add_plane(const char *preset, const char *player_name, int color, bool player, net_plane_ptr ptr = net_plane_ptr());
     missile_ptr add_missile(const plane_ptr &p, net_missile_ptr ptr = net_missile_ptr());

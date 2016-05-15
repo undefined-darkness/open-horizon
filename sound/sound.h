@@ -39,7 +39,7 @@ public:
     unsigned int play_ui(file &f, float volume = 1.0f, bool loop = false);
     void stop_ui(unsigned int id);
 
-    virtual void update(int dt);
+    void update(int dt);
 
 protected:
     struct sound_src
@@ -79,7 +79,9 @@ public:
     source_ptr add(file &f, bool loop);
     void play(file &f, vec3 pos, float volume = 1.0f);
 
-    void update(int dt) override;
+    void update(int dt);
+
+    void stop_sounds();
 
 protected:
     struct sound_3d

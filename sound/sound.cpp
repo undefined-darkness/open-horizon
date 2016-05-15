@@ -379,7 +379,7 @@ void world_2d::sound_src::update(int dt)
 
 void world_2d::sound_src::set_mute(bool mute)
 {
-    if (!id || stream)
+    if (!id)
         return;
 
     if (muted == mute)
@@ -394,7 +394,8 @@ void world_2d::sound_src::set_mute(bool mute)
     }
 
     alSourcePlay(id);
-    alSourcef(id, AL_SEC_OFFSET, time * 0.001f);
+    if (!stream)
+        alSourcef(id, AL_SEC_OFFSET, time * 0.001f);
 }
 
 //------------------------------------------------------------
@@ -409,6 +410,17 @@ void world_2d::sound_src::release()
     id = 0;
     alDeleteBuffers(cache_count, buf_ids);
     for (auto &b: buf_ids) b = 0;
+}
+
+//------------------------------------------------------------
+
+void world::stop_sounds()
+{
+    for (auto &s: m_sounds_3d)
+        s.src.set_mute(true);
+
+    for (auto &s: m_sound_sources)
+        s.first.set_mute(true);
 }
 
 //------------------------------------------------------------

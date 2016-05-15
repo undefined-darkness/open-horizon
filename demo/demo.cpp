@@ -417,6 +417,7 @@ int main()
                 server.close();
                 client.disconnect();
                 world.set_network(0);
+                sound_world.stop_sounds();
                 menu_controls.prev = false;
                 if (is_client)
                     menu.send_event("screen=mp_connect");
