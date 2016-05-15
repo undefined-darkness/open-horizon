@@ -7,13 +7,8 @@
 #include "sound.h"
 #include "util/util.h"
 
-#ifdef __APPLE__
-    #include <OpenAL/al.h>
-    #include <OpenAL/alc.h>
-#else
-    #include <AL/al.h>
-    #include <AL/alc.h>
-#endif
+#include "AL/al.h"
+#include "AL/alc.h"
 
 namespace sound
 {
@@ -27,15 +22,29 @@ static float max_distance = 5000.0f;
 class context
 {
 public:
-    static ALCcontext *get()
-    {
-        static context c;
-        return c.m_context;
-    }
-
+    static ALCcontext *get() {return get_instance().m_context; }
     static bool valid() { return get() != 0; }
 
+    static void release()
+    {
+        auto &c = get_instance();
+        if (c.m_context)
+        {
+            alcMakeContextCurrent(NULL);
+            alcDestroyContext(c.m_context);
+            c.m_context = 0;
+        }
+
+        if (c.m_device)
+        {
+            alcCloseDevice(c.m_device);
+            c.m_device = 0;
+        }
+    }
+
 private:
+    static context &get_instance() { static context c; return c; }
+
     context()
     {
         m_device = alcOpenDevice(NULL);
@@ -47,31 +56,24 @@ private:
 
         m_context = alcCreateContext(m_device, NULL);
         if (!m_context)
-            return;
-
-        alcMakeContextCurrent(m_context);
-    }
-/*
-    ~context()
-    {
-        if (m_context)
-        {
-            alcMakeContextCurrent(NULL);
-            alcDestroyContext(m_context);
-            m_context = 0;
-        }
-
-        if (m_device)
         {
             alcCloseDevice(m_device);
-            m_device = 0;
+            return;
         }
+
+        alcMakeContextCurrent(m_context);
+        alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
+        alDopplerFactor(0.1f);
     }
-*/
+
 private:
     ALCdevice *m_device = 0;
     ALCcontext *m_context = 0;
 };
+
+//------------------------------------------------------------
+
+void release_context() { context::release(); }
 
 //------------------------------------------------------------
 
@@ -410,6 +412,7 @@ void world_2d::sound_src::release()
 
 void world::play(file &f, vec3 pos, float volume)
 {
+    f.limit_channels(1);
     cache(f);
 
     sound_src s;
@@ -428,6 +431,8 @@ void world::play(file &f, vec3 pos, float volume)
 
 source_ptr world::add(file &f, bool loop)
 {
+    f.limit_channels(1);
+
     if (!loop) //ToDo: OpenAL doesn't support loop points
         cache(f);
 
@@ -461,7 +466,7 @@ void world::update(int dt)
     m_prev_pos = c.get_pos();
     alListenerfv(AL_VELOCITY, &vel.x);
 
-    const vec3 ori[] = { c.get_rot().rotate(vec3::forward()), c.get_rot().rotate(vec3::right())};
+    const vec3 ori[] = { c.get_rot().rotate_inv(-vec3::forward()), c.get_rot().rotate_inv(vec3::up())};
     alListenerfv(AL_ORIENTATION, &ori[0].x);
 
     for (auto &s: m_sounds_3d)

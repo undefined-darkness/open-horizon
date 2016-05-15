@@ -11,10 +11,6 @@ namespace sound
 {
 //------------------------------------------------------------
 
-static const int max_channels = 2; //ToDo?
-
-//------------------------------------------------------------
-
 class hsa_bit_stream
 {
 public:
@@ -84,6 +80,14 @@ bool file::load(const void *data, size_t size)
 
 //------------------------------------------------------------
 
+void file::limit_channels(int count)
+{
+    if (m_hca_data)
+        m_hca_data->limit_channels = count;
+}
+
+//------------------------------------------------------------
+
 unsigned int file::get_length() const
 {
     if (m_hca_data)
@@ -126,7 +130,7 @@ unsigned int file::get_freq() const
 bool file::is_stereo() const
 {
     if (m_hca_data)
-        return m_hca_data->channels.size() > 1;
+        return m_hca_data->channels.size() > 1 && m_hca_data->limit_channels > 1;
 
     if (m_cached)
         return m_cached->channels > 1;
@@ -139,7 +143,7 @@ bool file::is_stereo() const
 size_t file::get_buf_size() const
 {
     if (m_hca_data)
-        return std::min((int)m_hca_data->channels.size(), max_channels) * sizeof(hca_data::channel::samples) / sizeof(float) * sizeof(uint16_t);
+        return std::min((int)m_hca_data->channels.size(), m_hca_data->limit_channels) * sizeof(hca_data::channel::samples) / sizeof(float) * sizeof(uint16_t);
 
     return 0;
 }
@@ -186,7 +190,7 @@ size_t file::cache_buf(void *data, unsigned int buf_idx, bool loop) const
 
 		for (int i = 0; i < count; ++i)
         {
-            for (int k = 0; k < (int)d.channels.size() && k < max_channels; ++k)
+            for (int k = 0; k < (int)d.channels.size() && k < d.limit_channels; ++k)
                 *sdata = pack_sample16(((float *)(d.channels[k].samples))[i]), ++sdata;
 		}
 
@@ -222,7 +226,7 @@ bool file::cache(const as_create_buf &c, const as_free_buf &f)
 
         m_cached = std::shared_ptr<cached>(new cached());
         m_cached->id = id;
-        m_cached->channels = std::min((int)d.channels.size(), max_channels);
+        m_cached->channels = std::min((int)d.channels.size(), d.limit_channels);
         m_cached->freq = get_freq();
         m_cached->length = get_length();
         m_cached->loop_start = get_loop_start();
@@ -381,7 +385,7 @@ void file::hca_data::decode(hsa_bit_stream &bits)
         for (auto &c: channels)
             c.decode2(bits);
 
-        for (int j = 0; j < (int)channels.size() && j < max_channels; ++j)
+        for (int j = 0; j < (int)channels.size() && j < limit_channels; ++j)
             channels[j].decode5(i);
     }
 }

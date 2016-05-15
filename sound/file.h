@@ -22,6 +22,8 @@ class file
 public:
     bool load(const void *data, size_t size);
 
+    void limit_channels(int count);
+
     unsigned int get_length() const;
     unsigned int get_loop_start() const;
     unsigned int get_freq() const;
@@ -52,6 +54,8 @@ private:
         uint16_t loop_fine = 0;
         uint32_t loop_start = 0, loop_end = 0;
         std::vector<char> raw_data;
+
+        int limit_channels = 2;
 
         void decode(hsa_bit_stream &data);
 

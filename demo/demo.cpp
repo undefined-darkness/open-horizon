@@ -445,6 +445,7 @@ int main()
 
     server.close();
     client.disconnect();
+    sound::release_context();
     platform.terminate();
 
     return 0;

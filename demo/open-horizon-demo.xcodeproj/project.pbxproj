@@ -20,7 +20,6 @@
 		F50D9C9C1C9F2E5700A56812 /* pac6.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50D9C991C9F2E5700A56812 /* pac6.cpp */; };
 		F50DADAC1C3047D5000DD3EA /* hangar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50DADAA1C3047D5000DD3EA /* hangar.cpp */; };
 		F50EE62A1CD3BA2D00DDED72 /* sound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50EE6281CD3BA2D00DDED72 /* sound.cpp */; };
-		F50EE62C1CD3BF3900DDED72 /* OpenAL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F50EE62B1CD3BF3900DDED72 /* OpenAL.framework */; };
 		F50EE6311CD3C0D100DDED72 /* file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50EE62F1CD3C0D100DDED72 /* file.cpp */; };
 		F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53304C61B09DEC300D8C3C7 /* menu.cpp */; };
 		F538BB0B1CC2B8EA0055F394 /* app_protocol_simple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */; };
@@ -28,6 +27,7 @@
 		F572C1F11CA715AC00AB1D1F /* poc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F572C1EF1CA715AC00AB1D1F /* poc.cpp */; };
 		F578323E1AFBE859005FE829 /* ui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F578323C1AFBE859005FE829 /* ui.cpp */; };
 		F57832401AFC20B7005FE829 /* aircrafts.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F578323F1AFC20B1005FE829 /* aircrafts.xml */; };
+		F586B6701CE8D14300A2B7BE /* libopenal.1.17.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F586B66B1CE8C4C700A2B7BE /* libopenal.1.17.2.dylib */; };
 		F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E51F19048D4A00C3590A /* libnya_engine.a */; };
 		F5961A281CCCBFEE00B92BE4 /* network_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5961A241CCCBFEE00B92BE4 /* network_client.cpp */; };
 		F5961A291CCCBFEE00B92BE4 /* network_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5961A261CCCBFEE00B92BE4 /* network_server.cpp */; };
@@ -151,6 +151,7 @@
 		F578323C1AFBE859005FE829 /* ui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ui.cpp; path = ../gui/ui.cpp; sourceTree = "<group>"; };
 		F578323D1AFBE859005FE829 /* ui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui.h; path = ../gui/ui.h; sourceTree = "<group>"; };
 		F578323F1AFC20B1005FE829 /* aircrafts.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = aircrafts.xml; path = ../resources/aircrafts.xml; sourceTree = "<group>"; };
+		F586B66B1CE8C4C700A2B7BE /* libopenal.1.17.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopenal.1.17.2.dylib; path = "../deps/openal-soft/libopenal.1.17.2.dylib"; sourceTree = "<group>"; };
 		F58E4F581C63F7410056B029 /* network_data.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = network_data.h; path = ../game/network_data.h; sourceTree = "<group>"; };
 		F5961A211CCCBE0300B92BE4 /* network_helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = network_helpers.h; path = ../game/network_helpers.h; sourceTree = "<group>"; };
 		F5961A241CCCBFEE00B92BE4 /* network_client.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_client.cpp; path = ../game/network_client.cpp; sourceTree = "<group>"; };
@@ -254,7 +255,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F50EE62C1CD3BF3900DDED72 /* OpenAL.framework in Frameworks */,
+				F586B6701CE8D14300A2B7BE /* libopenal.1.17.2.dylib in Frameworks */,
 				F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */,
 				F5DFAD8B19BB248C00786736 /* libz.dylib in Frameworks */,
 				F503E52919048E7300C3590A /* IOKit.framework in Frameworks */,
@@ -297,6 +298,7 @@
 		F503E4D919048C6700C3590A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F586B66B1CE8C4C700A2B7BE /* libopenal.1.17.2.dylib */,
 				F50EE62B1CD3BF3900DDED72 /* OpenAL.framework */,
 				F5DFAD8A19BB248C00786736 /* libz.dylib */,
 				F503E52819048E7300C3590A /* IOKit.framework */,
@@ -820,9 +822,10 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"../deps/glfw-bin/lib",
+					"../deps/openal-soft",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../deps/miso/include/ ../";
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../deps/miso/include/ ../deps/openal-soft/include/ ../";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -837,9 +840,10 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"../deps/glfw-bin/lib",
+					"../deps/openal-soft",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../deps/miso/include/ ../";
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../deps/miso/include/ ../deps/openal-soft/include/ ../";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

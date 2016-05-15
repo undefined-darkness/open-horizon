@@ -1340,11 +1340,11 @@ void plane::update(int dt, world &w)
                 if (i == 0)
                 {
                     if (special.id == "QAAM")
-                        play_relative(w, "SHOT_MSL", random(0, 2), m->phys->pos - get_pos());
+                        play_relative(w, "SHOT_MSL", random(0, 2), m->phys->rot.rotate_inv(m->phys->pos - get_pos()));
                     else if (shot_cout > 1)
                         play_relative(w, "SAAM", 0, vec3());
                     else
-                        play_relative(w, "SAAM", 0, m->phys->pos - get_pos());
+                        play_relative(w, "SAAM", 0, m->phys->rot.rotate_inv(m->phys->pos - get_pos()));
                 }
             }
 
@@ -1385,7 +1385,7 @@ void plane::update(int dt, world &w)
 
                 --missile_count;
 
-                play_relative(w, "SHOT_MSL", random(0, 2), m->phys->pos - get_pos());
+                play_relative(w, "SHOT_MSL", random(0, 2), m->phys->rot.rotate_inv(m->phys->pos - get_pos()));
             }
         }
     }
@@ -1466,6 +1466,8 @@ void plane::update_hud(world &w, gui::hud &h)
 
     if (special_weapon_selected != h.is_special_selected())
     {
+        w.play_sound_ui(special_weapon_selected ? "HUD_WEP_CHANGE" : "HUD_WEP_CHANGE_NORMAL");
+
         if (special_weapon_selected)
         {
             const int special_weapon_idx = 0; //ToDo
