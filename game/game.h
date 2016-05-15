@@ -123,6 +123,7 @@ struct plane: public object, public std::enable_shared_from_this<plane>
 
     sound::pack sounds;
     std::map<std::string, sound::source_ptr> sound_srcs;
+    std::map<std::string, ivalue> sounds_ui;
     typedef std::pair<vec3, sound::source_ptr> sound_rel_src;
     std::vector<sound_rel_src> sound_rel_srcs;
 
@@ -158,6 +159,7 @@ struct plane: public object, public std::enable_shared_from_this<plane>
 
 private:
     void update_sound(world &w, std::string name, bool enabled, float volume = 1.0f);
+    void update_ui_sound(world &w, std::string name, bool enabled);
     void play_relative(world &w, std::string name, int idx, vec3 offset);
     void update_targets(world &w);
     void update_render(world &w);
@@ -238,6 +240,7 @@ public:
     sound::source_ptr add_sound(sound::file &f, bool loop = false) { return m_sound_world.add(f, loop); }
     sound::source_ptr add_sound(std::string name, int idx = 0, bool loop = false);
     unsigned int play_sound_ui(std::string name, bool loop = false);
+    void stop_sound_ui(unsigned int id);
     void play_sound(std::string name, int idx, vec3 pos);
 
     world(renderer::world &w, sound::world &s, gui::hud &h): m_render_world(w), m_sound_world(s), m_hud(h), m_network(0) {}

@@ -831,6 +831,13 @@ unsigned int world::play_sound_ui(std::string name, bool loop)
 
 //------------------------------------------------------------
 
+void world::stop_sound_ui(unsigned int id)
+{
+    m_sound_world.stop_ui(id);
+}
+
+//------------------------------------------------------------
+
 void world::play_sound(std::string name, int idx, vec3 pos)
 {
     m_sound_world.play(m_sounds.get(name, idx), pos);
@@ -1039,6 +1046,24 @@ void plane::update_sound(world &w, std::string name, bool enabled, float volume)
             snd = w.add_sound(sounds.get(name), true);
         else
             snd = w.add_sound(name, 0, true);
+    }
+}
+
+//------------------------------------------------------------
+
+void plane::update_ui_sound(world &w, std::string name, bool enabled)
+{
+    auto &snd = sounds_ui[name];
+
+    if (enabled)
+    {
+        if (!snd)
+            snd = w.play_sound_ui(name, true);
+    }
+    else
+    {
+        if (snd)
+            w.stop_sound_ui(snd), snd = 0;
     }
 }
 
@@ -1411,6 +1436,16 @@ void plane::update(int dt, world &w)
 
 void plane::update_hud(world &w, gui::hud &h)
 {
+    bool missile_alert = !alert_dirs.empty(), missile_alert_near = false;
+    for (auto &a: alert_dirs)
+    {
+        if (a.length() < 1000.0f)
+            missile_alert_near = true;
+    }
+
+    update_ui_sound(w, "HUD_MSL_ALERT", missile_alert && !missile_alert_near);
+    update_ui_sound(w, "HUD_MSL_ALERT_NEAR", missile_alert_near);
+
     h.set_hide(hp <= 0);
     if (hp <= 0)
         return;
