@@ -1446,6 +1446,9 @@ void plane::update_hud(world &w, gui::hud &h)
     update_ui_sound(w, "HUD_MSL_ALERT", missile_alert && !missile_alert_near);
     update_ui_sound(w, "HUD_MSL_ALERT_NEAR", missile_alert_near);
 
+    update_ui_sound(w, "HUD_MSL_LOCK_ON", !special_weapon_selected && !targets.empty() && targets.front().locked > 0);
+    update_ui_sound(w, "HUD_SP_LOCK_ON", special_weapon_selected && special.lockon_count == 1 && !targets.empty() && targets.front().locked > 0);
+
     h.set_hide(hp <= 0);
     if (hp <= 0)
         return;

@@ -35,6 +35,7 @@ public:
     void set_music(const file &f);
     void set_music(const std::string &name);
     void stop_music();
+    void stop_sounds();
 
     unsigned int play_ui(file &f, float volume = 1.0f, bool loop = false);
     void stop_ui(unsigned int id);

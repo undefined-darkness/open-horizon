@@ -221,6 +221,16 @@ void world_2d::stop_music()
 
 //------------------------------------------------------------
 
+void world_2d::stop_sounds()
+{
+    for (auto &s: m_sounds)
+        s.release();
+
+    m_sounds.clear();
+}
+
+//------------------------------------------------------------
+
 unsigned int world_2d::play_ui(file &f, float volume, bool loop)
 {
     if (!loop)
@@ -416,6 +426,8 @@ void world_2d::sound_src::release()
 
 void world::stop_sounds()
 {
+    world_2d::stop_sounds();
+
     for (auto &s: m_sounds_3d)
         s.src.set_mute(true);
 
