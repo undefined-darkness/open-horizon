@@ -98,6 +98,8 @@ public:
 
     //info
     static unsigned int get_colors_count(const char *plane_name);
+    static std::string get_sound_name(const char *plane_name);
+    static std::string get_voice_name(const char *plane_name);
 
     aircraft(): m_hide(false), m_time(0), m_camera_mode(camera_mode_third), m_half_flaps_flag(false),
                 m_engine_lod_idx(0), m_dead(false), m_has_trail(false)

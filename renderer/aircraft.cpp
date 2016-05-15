@@ -89,6 +89,7 @@ public:
         std::string name;
         nya_math::vec3 camera_offset;
         std::vector<color_info> colors;
+        std::string sound, voice;
     };
 
     info *get_info(const char *name)
@@ -243,6 +244,7 @@ public:
         //ToDo
 
         std::map<std::string,std::vector<int> > ints;
+        std::map<std::string, std::pair<std::string, std::string> > sounds;
 
         dpl_file dp;
         dp.open("datapack.bin");
@@ -256,15 +258,24 @@ public:
             if (strncmp(buf.c_str(), ";DPL_P_", 7) != 0)
                 continue;
 
-            if (buf[7+4] != '_' || buf[7+4+1] != 'T')
-                continue;
-
-            int idx = atoi(&buf[7+4+2]);
-
             std::string plane_name = buf.substr(7,4);
             std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
 
-            ints[plane_name].push_back(idx);
+            if (buf[7+4] == '\n')
+            {
+                auto s0 = buf.find("ound/");     if (s0 == std::string::npos) continue;
+                auto e0 = buf.find('\x9', s0);    if (e0 == std::string::npos) continue;
+                auto s1 = buf.find("ound/", e0); if (s1 == std::string::npos) continue;
+                auto e1 = buf.find('\x9', s1);    if (e1 == std::string::npos) continue;
+
+                auto test = sounds[plane_name] = std::make_pair('s' + buf.substr(s0, e0 - s0), 's' + buf.substr(s1, e1 - s1));
+                test = test;
+            }
+            else if (buf[7+4] == '_' && buf[7+4+1] == 'T')
+            {
+                int idx = atoi(&buf[7+4+2]);
+                ints[plane_name].push_back(idx);
+            }
         }
 
         dp.close();
@@ -272,6 +283,10 @@ public:
         for (auto &info: m_infos)
         {
             auto &in = ints[info.name];
+
+            auto s = sounds.find(info.name);
+            if (s != sounds.end())
+                info.sound = s->second.first, info.voice = s->second.second;
 
             int last_idx = 0;
             for (size_t i = 0; i < info.colors.size(); ++i)
@@ -322,7 +337,6 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     m_camera_offset = info->camera_offset;
 
     m_mesh.load(name_tmp_str.c_str(), params);
-
 
     if (player)
     {
@@ -559,6 +573,28 @@ unsigned int aircraft::get_colors_count(const char *plane_name)
 
 //------------------------------------------------------------
 
+std::string aircraft::get_sound_name(const char *plane_name)
+{
+    auto info = aircraft_information::get().get_info(plane_name);
+    if (!info)
+        return "";
+
+    return info->sound;
+}
+
+//------------------------------------------------------------
+
+std::string aircraft::get_voice_name(const char *plane_name)
+{
+    auto info = aircraft_information::get().get_info(plane_name);
+    if (!info)
+        return "";
+
+    return info->voice;
+}
+
+//------------------------------------------------------------
+
 nya_math::vec3 aircraft::get_bone_pos(const char *name)
 {
     return m_mesh.get_bone_pos(0, m_mesh.get_bone_idx(0, name));
@@ -743,6 +779,9 @@ bool aircraft::is_missile_ready()
 
 bool aircraft::is_mgun_ready()
 {
+    if (m_mguns.empty())
+        return false;
+
     if (!m_mesh.has_anim(0, 'gunc'))
         return true;
 

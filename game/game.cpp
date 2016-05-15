@@ -249,7 +249,7 @@ plane_ptr world::add_plane(const char *preset, const char *player_name, int colo
     p->render = m_render_world.add_aircraft(preset, color, player);
     p->phys->nose_offset = p->render->get_bone_pos("clv1");
 
-    p->sounds.load("sound/f15.acb"); //ToDo
+    p->sounds.load(renderer::aircraft::get_sound_name(preset));
 
     p->hp = p->max_hp = int(p->phys->params.misc.maxHp);
 
@@ -933,7 +933,10 @@ void plane::update_render(world &w)
 {
     render->set_hide(hp <= 0);
     if (hp <= 0)
+    {
+        sound_srcs.clear();
         return;
+    }
 
     render->set_pos(phys->pos);
     render->set_rot(phys->rot);
@@ -976,8 +979,8 @@ void plane::update_render(world &w)
 
     update_sound(w, "VULCAN_REAR", mg_fire);
     update_sound(w, "MGP", mgp_fire);
-    update_sound(w, "75p", hp > 0, phys->get_thrust());
-    update_sound(w, "JET_REAR_AB", phys->get_ab() && hp > 0);
+    update_sound(w, "75p", phys->get_thrust());
+    update_sound(w, "JET_REAR_AB", phys->get_ab());
 
     sound_rel_srcs.erase(std::remove_if(sound_rel_srcs.begin(), sound_rel_srcs.end(), [](const sound_rel_src &s){ return s.second.unique(); }), sound_rel_srcs.end());
     for (auto &s: sound_rel_srcs)
