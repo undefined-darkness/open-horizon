@@ -1457,10 +1457,13 @@ void plane::update_hud(world &w, gui::hud &h)
     const auto proj_dir = dir * 1000.0f;
     h.set_project_pos(phys->pos + proj_dir);
     h.set_pos(phys->pos);
-    h.set_yaw(phys->rot.get_euler().y);
+    auto angles = phys->rot.get_euler();
+    h.set_angles(angles.x, angles.y, angles.z);
+    h.set_ab(phys->get_ab());
     h.set_speed(phys->get_speed_kmh());
     h.set_alt(phys->pos.y);
     h.set_jammed(jammed);
+    h.set_pitch_ladder(render->get_camera_mode() != renderer::aircraft::camera_mode_third);
 
     //missile alerts
 

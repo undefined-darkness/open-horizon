@@ -119,7 +119,7 @@ void hud::draw(const render &r)
 
     const float anim = fabsf(m_anim_time / 500.0f - 1.0);
 
-    nya_math::vec2 jam_glitch;
+    vec2 jam_glitch;
     if (m_jammed)
         jam_glitch.set((rand() % 2000 - 1000) * 0.005f, (rand() % 2000 - 1000) * 0.005f);
 
@@ -140,6 +140,8 @@ void hud::draw(const render &r)
 
     m_common.draw(r, 10, r.get_width()/2 - 150, r.get_height()/2, alert_color);
     m_common.draw(r, 16, r.get_width()/2 + 150, r.get_height()/2, alert_color);
+    if (m_ab)
+        m_common.draw(r, 5, r.get_width()/2 - 245, r.get_height()/2 + 2, alert_color);
 
     //m_common.debug_draw_tx(r);
     //m_aircraft.debug_draw_tx(r);
@@ -151,7 +153,7 @@ void hud::draw(const render &r)
     //m_common.draw(r, 159, green);
     //m_common.draw(r, 214, green);
 
-    nya_math::vec2 proj_pos;
+    vec2 proj_pos;
     if (get_project_pos(r, m_project_pos, proj_pos))
     {
         proj_pos.x -= 1.0f;
@@ -172,6 +174,54 @@ void hud::draw(const render &r)
 
         if (m_mgp)
             m_common.draw(r, 145, proj_pos.x, proj_pos.y, green);
+    }
+
+    if (m_pitch_ladder)
+    {
+        m_common.draw(r, 1, r.get_width()/2, r.get_height()/2, alert_color);
+
+        static std::vector<vec2> lines;
+        lines.clear();
+
+        float offset = m_pitch * 180.0f / nya_math::constants::pi;
+        int idx_offset = offset / 5;
+        float doff = offset - idx_offset * 5;
+        for (int i = 0; i < 2; ++i)
+        {
+            float right = i == 0 ? 1.0f : -1.0f;
+            for (int j = -2; j <= 2; ++j)
+            {
+                int idx = idx_offset + j;
+
+                vec2 rp = vec2(right * 105, (j - doff / 5) * 56);
+                if (idx <= 0)
+                {
+                    lines.push_back(rp - vec2(right * 32, 0)), lines.push_back(rp);
+                    if (idx < 0)
+                    {
+                        lines.push_back(rp), lines.push_back(rp + vec2(0, 8));
+                        idx = -idx;
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < 3; ++i)
+                        lines.push_back(rp - vec2(right * 11 * i, 0)), lines.push_back(rp - vec2(right * (10 * i + 8), 0));
+
+                    lines.push_back(rp), lines.push_back(rp + vec2(0, -8));
+                }
+
+                auto fp = vec2(right * 120, rp.y).rotate(-m_roll) + vec2(r.get_width()/2, r.get_height()/2);
+                auto t = std::to_wstring(idx * 5);
+                m_fonts.draw_text(r, t.c_str(), "Zurich12", fp.x - m_fonts.get_text_width(t.c_str(), "Zurich12")/2, fp.y - 6, alert_color);
+            }
+        }
+
+        render::transform t;
+        t.x = r.get_width()/2;
+        t.y = r.get_height()/2;
+        t.yaw = -m_roll;
+        r.draw(lines, alert_color, t, false);
     }
 
     //small lock icons
@@ -254,7 +304,7 @@ void hud::draw(const render &r)
         const int radar_center_x = 185 + jam_glitch.x, radar_center_y = r.get_height()-140 + jam_glitch.y, radar_radius = 75;
         const int frame_half_size = radar_radius + 5;
 
-        static std::vector<nya_math::vec2> radar_frame(5);
+        static std::vector<vec2> radar_frame(5);
         radar_frame[0].x = radar_frame[1].x = radar_center_x - frame_half_size;
         radar_frame[2].x = radar_frame[3].x = radar_center_x + frame_half_size;
         radar_frame[0].y = radar_frame[3].y = radar_center_y + frame_half_size;
@@ -269,7 +319,7 @@ void hud::draw(const render &r)
 
         for (auto &e: m_ecms)
         {
-            auto d = nya_math::vec2::rotate(nya_math::vec2(m_pos.x - e.x, m_pos.z - e.z), (float)m_yaw);
+            auto d = vec2::rotate(vec2(m_pos.x - e.x, m_pos.z - e.z), (float)m_yaw);
             const float len = d.length();
             if (len > radar_range)
                 continue;
@@ -293,23 +343,23 @@ void hud::draw(const render &r)
             m_common.draw(r, 213, radar_center_x, radar_center_y, green);
         m_common.draw(r, 183, radar_center_x, radar_center_y, green); //my aircraft
 
-        auto north_vec = -nya_math::vec2::rotate(nya_math::vec2(0.0f, radar_radius - 5.0f), (float)m_yaw);
+        auto north_vec = -vec2::rotate(vec2(0.0f, radar_radius - 5.0f), (float)m_yaw);
         m_fonts.draw_text(r, L"N", "Zurich14", radar_center_x + north_vec.x - 4, radar_center_y + north_vec.y - 8, green);
         m_fonts.draw_text(r, L"S", "Zurich14", radar_center_x - north_vec.x - 3, radar_center_y - north_vec.y - 8, green);
         m_fonts.draw_text(r, L"E", "Zurich14", radar_center_x - north_vec.y - 3, radar_center_y + north_vec.x - 8, green);
         m_fonts.draw_text(r, L"W", "Zurich14", radar_center_x + north_vec.y - 5, radar_center_y - north_vec.x - 8, green);
 
-        static std::vector<nya_math::vec2> radar_ang(3);
+        static std::vector<vec2> radar_ang(3);
         for (auto &r: radar_ang)
             r.x = radar_center_x, r.y = radar_center_y;
-        auto radar_ang_vec = -nya_math::vec2::rotate(nya_math::vec2(0.0f, radar_radius + 15.0f), (60.0f*0.5f) * nya_math::constants::pi/180.0f);
+        auto radar_ang_vec = -vec2::rotate(vec2(0.0f, radar_radius + 15.0f), (60.0f*0.5f) * nya_math::constants::pi/180.0f);
         radar_ang[0].x -= radar_ang_vec.x, radar_ang[0].y += radar_ang_vec.y,
         radar_ang[2].x += radar_ang_vec.x, radar_ang[2].y += radar_ang_vec.y,
         r.draw(radar_ang, green);
 
         for (auto &t: m_targets)
         {
-            auto d = nya_math::vec2::rotate(nya_math::vec2(m_pos.x - t.pos.x, m_pos.z - t.pos.z), (float)m_yaw);
+            auto d = vec2::rotate(vec2(m_pos.x - t.pos.x, m_pos.z - t.pos.z), (float)m_yaw);
             const float len = d.length();
             if (len > radar_range)
                 continue;
@@ -348,7 +398,7 @@ void hud::draw(const render &r)
 
         const nya_math::vec3 arrow_origin3 = m_project_pos + m_target_arrow_dir * arrow_offset;
 
-        nya_math::vec2 arrow_origin, arrow_end;
+        vec2 arrow_origin, arrow_end;
         if(get_project_pos(r, arrow_origin3, arrow_origin) &&
            get_project_pos(r, arrow_origin3 + m_target_arrow_dir * arrow_length, arrow_end))
         {
@@ -366,7 +416,7 @@ void hud::draw(const render &r)
 
             const auto arrow_back3 = arrow_origin3 - m_target_arrow_dir * arrow_width * 2.0f;
 
-            static std::vector<nya_math::vec2> arrow(8);
+            static std::vector<vec2> arrow(8);
             arrow[0] = arrow_origin;
             arrow[1] = arrow_end;
             get_project_pos(r, arrow_back3 + arrow_up3 * arrow_width, arrow[2]);
@@ -394,7 +444,7 @@ void hud::draw(const render &r)
         const int malert_pos_y = 235;
 
         alert_color.w = anim;
-        static std::vector<nya_math::vec2> malert_quad(5);
+        static std::vector<vec2> malert_quad(5);
         const int malert_width = 150;
         malert_quad[0].x = (r.get_width() - malert_width) / 2, malert_quad[0].y = malert_pos_y;
         malert_quad[1].x = (r.get_width() - malert_width) / 2, malert_quad[1].y = malert_pos_y + 25;
@@ -443,7 +493,7 @@ void hud::draw(const render &r)
         const int popup_pos_y = r.get_height() / 2 - 71;
         const int twidth = m_fonts.get_text_width(m_popup_text.c_str(), "Zurich30");
 
-        static std::vector<nya_math::vec2> popup_quad(5);
+        static std::vector<vec2> popup_quad(5);
         const int popup_width = twidth + 20;
         popup_quad[0].x = (r.get_width() - popup_width) / 2, popup_quad[0].y = popup_pos_y;
         popup_quad[1].x = (r.get_width() - popup_width) / 2, popup_quad[1].y = popup_pos_y + 30;
@@ -580,7 +630,7 @@ void hud::set_saam_circle(bool visible, float angle)
     for(int i = 0; i < num_segments; ++i)
     {
         const float a = 2.0f * nya_math::constants::pi * float(i) / float(num_segments);
-        const nya_math::vec2 p(radius * cosf(a), radius * sinf(a));
+        const vec2 p(radius * cosf(a), radius * sinf(a));
         m_saam_mesh.push_back(p);
     }
 

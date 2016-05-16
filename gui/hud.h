@@ -21,8 +21,10 @@ public:
     void set_hide(bool value);
     void set_project_pos(const nya_math::vec3 &pos) { m_project_pos = pos; }
     void set_pos(const nya_math::vec3 &pos) { m_pos = pos; }
-    void set_yaw(float yaw) { m_yaw = yaw; }
+    void set_angles(float pitch, float yaw, float roll) { m_pitch = pitch, m_yaw = yaw, m_roll = roll; }
     void set_speed(int value) { m_speed = value; }
+    void set_ab(bool value) { m_ab = value; }
+    void set_pitch_ladder(bool visible) { m_pitch_ladder = visible; }
     void set_alt(int value) { m_alt = value; }
     void set_missiles(const char *id, int icon);
     void set_missiles_count(int count) { m_missiles_count = count; }
@@ -85,14 +87,19 @@ public:
     hud(): m_common_loaded(false), m_hide(false) {}
 
 private:
+    typedef nya_math::vec2 vec2;
     nya_math::vec3 m_project_pos;
     nya_math::vec3 m_pos;
     ivalue m_speed;
+    bvalue m_ab;
+    fvalue m_pitch;
     fvalue m_yaw;
+    fvalue m_roll;
     ivalue m_alt;
     ivalue m_missiles_icon;
     ivalue m_missiles_cross;
     bvalue m_show_map;
+    bvalue m_pitch_ladder;
     std::vector<float> m_alerts;
     nya_math::vec3 m_target_arrow_dir;
     bvalue m_target_arrow_visible;
@@ -126,7 +133,7 @@ private:
     bvalue m_mgp;
     bvalue m_jammed;
 
-    std::vector<nya_math::vec2> m_saam_mesh;
+    std::vector<vec2> m_saam_mesh;
 
     struct score_line
     {
@@ -156,7 +163,7 @@ private:
     tiles m_aircraft;
     tiles m_location;
     std::string m_location_name;
-    nya_math::vec2 m_map_offset;
+    vec2 m_map_offset;
     float m_map_scale = 1.0f;
 
 private:
