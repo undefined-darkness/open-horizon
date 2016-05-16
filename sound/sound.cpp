@@ -79,7 +79,7 @@ void release_context() { context::release(); }
 
 void world_2d::set_music(const file &f)
 {
-    if (!m_music.init(f, 1.0f, true))
+    if (!m_music.init(f, m_music_volume, true))
         return;
 
     alSourcei(m_music.id, AL_SOURCE_RELATIVE, AL_TRUE);
@@ -217,6 +217,15 @@ void world_2d::set_music(const std::string &name)
 void world_2d::stop_music()
 {
     m_music.release();
+}
+
+//------------------------------------------------------------
+
+void world_2d::set_music_volume(float volume)
+{
+    m_music_volume = volume;
+    if (m_music.id > 0)
+        alSourcef(m_music.id, AL_GAIN, volume);
 }
 
 //------------------------------------------------------------
@@ -472,6 +481,13 @@ source_ptr world::add(file &f, bool loop)
 
     m_sound_sources.push_back({s, source_ptr(new source())});
     return m_sound_sources.back().second;
+}
+
+//------------------------------------------------------------
+
+void world::set_volume(float volume)
+{
+    alListenerf(AL_GAIN, volume);
 }
 
 //------------------------------------------------------------

@@ -37,6 +37,8 @@ public:
     void stop_music();
     void stop_sounds();
 
+    void set_music_volume(float volume);
+
     unsigned int play_ui(file &f, float volume = 1.0f, bool loop = false);
     void stop_ui(unsigned int id);
 
@@ -70,6 +72,7 @@ protected:
 
     sound_src m_music;
     std::list<sound_src> m_sounds;
+    float m_music_volume = 1.0f;
 };
 
 //------------------------------------------------------------
@@ -79,6 +82,8 @@ class world: public world_2d
 public:
     source_ptr add(file &f, bool loop);
     void play(file &f, vec3 pos, float volume = 1.0f);
+
+    void set_volume(float volume);
 
     void update(int dt);
 

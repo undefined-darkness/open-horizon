@@ -166,6 +166,7 @@ int main()
 
     menu.init();
     sound_world.set_music("BGM_menu");
+    sound_world.set_music_volume(0.5f);
 
     bool viewer_mode = false;
     bool is_client = false, is_server = false;
@@ -175,6 +176,8 @@ int main()
         if (event == "start")
         {
             sound_world.stop_music();
+            const char *music_names[] = {"BGM_ms10_08", "BGM_ms06", "BGM_ms08x", "BGM_ms11a", "BGM_ms11b", "BGM_ms12_02"};
+            sound_world.set_music(music_names[rand() % (sizeof(music_names) / sizeof(music_names[0]))]);
 
             auto location = menu.get_var("map");
             auto plane = menu.get_var("ac");
