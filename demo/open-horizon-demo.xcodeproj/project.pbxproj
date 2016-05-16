@@ -612,6 +612,7 @@
 				F503E4D319048C6700C3590A /* Sources */,
 				F503E4D419048C6700C3590A /* Frameworks */,
 				F5DAA8C81AD7CE3300C2C633 /* CopyFiles */,
+				F586B6741CEA5A6E00A2B7BE /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -670,6 +671,22 @@
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F586B6741CEA5A6E00A2B7BE /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "mkdir -p \"$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/\"\ncp ../deps/openal-soft/libopenal.1.17.2.dylib \"$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/Frameworks/\"\ninstall_name_tool -change /openal-soft/libopenal.1.dylib \"@executable_path/../Frameworks/libopenal.1.17.2.dylib\" \"$TARGET_BUILD_DIR/$PRODUCT_NAME.app/Contents/MacOS/$PRODUCT_NAME\"";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F503E4D319048C6700C3590A /* Sources */ = {
