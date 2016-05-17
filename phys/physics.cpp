@@ -482,7 +482,7 @@ void plane::update(int dt)
 
     //afterburner
 
-    if (controls.throttle > 0.3)
+    if (controls.throttle > 0.3f)
     {
         thrust_time += kdt;
         if (thrust_time >= params.move.accel.thrustMinWait)
@@ -500,10 +500,17 @@ void plane::update(int dt)
 
     //apply acceleration
 
-    vel = vec3::lerp(vel, forward * speed, nya_math::min(5.0 * kdt, 1.0));
+    vel = vec3::lerp(vel, forward * speed, nya_math::min(5.0f * kdt, 1.0f));
 
-    vel += forward * (params.move.accel.acceleR * throttle * kdt * 50.0f - params.move.accel.deceleR * brake * kdt * speed * 0.04f);
+    const float brake_eff = nya_math::min(1.01f + forward.dot(vec3::up()), 1.0f);
+
+    vel += forward * (params.move.accel.acceleR * throttle * kdt * 50.0f - params.move.accel.deceleR * brake * brake_eff * kdt * speed * 0.04f);
     speed = vel.length();
+
+    const float grav = 9.8f * meps_to_kmph * kdt;
+    vel.y -= grav;
+    vel += up * grav;
+
     if (speed < params.move.speed.speedMin)
         vel = vel * (params.move.speed.speedMin / speed);
     if (speed > params.move.speed.speedMax)
