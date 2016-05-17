@@ -178,7 +178,7 @@ void hud::draw(const render &r)
 
     if (m_pitch_ladder)
     {
-        m_common.draw(r, 1, r.get_width()/2, r.get_height()/2, alert_color);
+        //pitch ladder
 
         static std::vector<vec2> lines;
         lines.clear();
@@ -189,11 +189,14 @@ void hud::draw(const render &r)
         for (int i = 0; i < 2; ++i)
         {
             float right = i == 0 ? 1.0f : -1.0f;
-            for (int j = -2; j <= 2; ++j)
+            for (int j = -3; j <= 3; ++j)
             {
-                int idx = idx_offset + j;
+                const float y = (j - doff / 5) * 56;
+                if (fabsf(y) > 140.0f)
+                    continue;
 
-                vec2 rp = vec2(right * 105, (j - doff / 5) * 56);
+                int idx = idx_offset + j;
+                vec2 rp = vec2(right * 105, y);
                 if (idx <= 0)
                 {
                     lines.push_back(rp - vec2(right * 32, 0)), lines.push_back(rp);
@@ -221,6 +224,49 @@ void hud::draw(const render &r)
         t.x = r.get_width()/2;
         t.y = r.get_height()/2;
         t.yaw = -m_roll;
+        r.draw(lines, alert_color, t, false);
+
+        //compass
+
+        const float yaw = m_yaw * 180.0f / nya_math::constants::pi;
+        auto text = std::to_wstring(int(360 - yaw) % 360);
+        m_fonts.draw_text(r, text.c_str(), "Zurich12", r.get_width()/2 - m_fonts.get_text_width(text.c_str(), "Zurich12")/2, r.get_height()/2 - 163, alert_color);
+
+        m_common.draw(r, 1, r.get_width()/2, r.get_height()/2, alert_color);
+
+        lines.clear();
+        vec2 q(20, 7);
+        lines.push_back(vec2(-q.x, -q.y));
+        lines.push_back(vec2(q.x, -q.y));
+        lines.push_back(vec2(q.x, q.y));
+        lines.push_back(vec2(-q.x, q.y));
+        lines.push_back(vec2(-q.x, -q.y));
+
+        t.y = r.get_height()/2 - 156;
+        t.yaw = 0;
+        r.draw(lines, alert_color, t, true);
+
+        lines.clear();
+
+        int idx_yoff = yaw / 5;
+        auto yoff = yaw - idx_yoff * 5.0f;
+        for (int i = -5; i <= 5; ++i)
+        {
+            const float x = q.x - (i - yoff / 5) * 33;
+            if (fabsf(x) < 25.0f || fabsf(x) > 110.0f)
+                continue;
+
+            if ((idx_yoff + i) * 5 % 90)
+            {
+                lines.push_back(vec2(x, -3)), lines.push_back(vec2(x, 3));
+                continue;
+            }
+
+            auto lidx = ((idx_yoff + i) * 5 / 90 + 4) % 4;
+            wchar_t letters[][2] = {L"N", L"W", L"S", L"E"};
+            m_fonts.draw_text(r, letters[lidx], "Zurich14", r.get_width()/2 + x - m_fonts.get_text_width(letters[lidx], "Zurich14") / 2, t.y - 9, green);
+        }
+
         r.draw(lines, alert_color, t, false);
     }
 
