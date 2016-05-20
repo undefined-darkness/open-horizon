@@ -1011,11 +1011,14 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
     {
         float pos[3];
         float tc[2];
-        float bone;
+        float param_tc;
         ushort normal[4]; //half float
         ushort tangent[4];
         ushort bitangent[4];
-        float param_tc;
+
+        //ToDo:
+        float bones[4];
+        float weights[4];
     };
 
     std::vector<vert> verts;
@@ -1116,10 +1119,20 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
             */
             const float bone_fidx = (mesh.skeleton.get_bones_count() <= 0 || gf.header.bone_idx < 0) ? -1.0 : float(gf.header.bone_idx);
 
-            for (int i = 0; i < rgf.header.vcount; ++i)
+            for (int i = first_index; i < first_index + rgf.header.vcount; ++i)
             {
-                verts[i + first_index].bone = bone_fidx;
-                verts[i + first_index].param_tc = ptc;
+                verts[i].param_tc = ptc;
+                verts[i].bones[0] = bone_fidx;
+                verts[i].weights[0] = 1.0f;
+                for (int j = 1; j < 4; ++j)
+                    verts[i].weights[j] = 0.0f;
+
+                for (int j = 0; j < 4; ++j)
+                {
+                    verts[i].normal[j] = 0;
+                    verts[i].tangent[j] = 0;
+                    verts[i].bitangent[j] = 0;
+                }
             }
 
             switch(rgf.header.vertex_format)
@@ -1242,19 +1255,21 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
                     reader.seek(header.offset_to_indices + 48 + header.indices_buffer_size + header.vertices_buffer_size + add_vertex_offset);
                     const float *ndxr_verts = (float *)reader.get_data();
 
-                    //print_data(reader,reader.get_offset(),512);
-
-                    //ToDo: skining
-
                     switch (rgf.header.vertex_format)
                     {
                         case 4112:
                             for (int i = 0; i < rgf.header.vcount; ++i)
                             {
                                 memcpy(verts[i + first_index].pos, &ndxr_verts[i * 12], sizeof(verts[0].pos));
-                                float3_to_half3(&ndxr_verts[i * 12 + 3], verts[i + first_index].normal);
                                 //ToDo
+
+                                for (int j = 0; j < 4; ++j)
+                                {
+                                    verts[i + first_index].bones[j] = *(int *)&ndxr_verts[i * 12 + 4 + j];
+                                    verts[i + first_index].weights[j] = ndxr_verts[i * 12 + 8 + j];
+                                }
                             }
+                            //print_data(reader,reader.get_offset(),512);
                             add_vertex_offset += rgf.header.vcount * 12 * 4;
                             break;
 
@@ -1262,8 +1277,13 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
                             for (int i = 0; i < rgf.header.vcount; ++i)
                             {
                                 memcpy(verts[i + first_index].pos, &ndxr_verts[i * 16], sizeof(verts[0].pos));
-                                float3_to_half3(&ndxr_verts[i * 16 + 3], verts[i + first_index].normal);
                                 //ToDo
+
+                                for (int j = 0; j < 4; ++j)
+                                {
+                                    verts[i + first_index].bones[j] = *(int *)&ndxr_verts[i * 16 + 8 + j];
+                                    verts[i + first_index].weights[j] = ndxr_verts[i * 16 + 12 + j];
+                                }
                             }
                             //print_data(reader,reader.get_offset(),512);
                             add_vertex_offset += rgf.header.vcount * 16 * 4;
@@ -1279,12 +1299,13 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
                                 //float3_to_half3(&ndxr_verts[i * 24 + 6], verts[i + first_index].bitangent);
                                 //ToDo
 
-                                //verts[i + first_index].bone = float(*(int *)&ndxr_verts[i * 24 + 16]); //ToDo: correct skining, 4 bones 4 weights
-
-                                //printf("%f %f\n", verts[i + first_index].bone, ndxr_verts[i * 24 + 20]);
+                                for (int j = 0; j < 4; ++j)
+                                {
+                                    verts[i + first_index].bones[j] = *(int *)&ndxr_verts[i * 24 + 16 + j];
+                                    verts[i + first_index].weights[j] = ndxr_verts[i * 24 + 20 + j];
+                                }
                             }
                             add_vertex_offset += rgf.header.vcount * 24 * 4;
-
                             break;
                     }
                 }
@@ -1311,6 +1332,13 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
                     //print_data(reader,reader.get_offset(),512);
                     //print_data(reader,reader.get_offset(), header.vertices_buffer_size);
                     continue;
+            }
+
+            if (gf.header.bone_idx > 0)
+            {
+                for (int i = first_index; i < first_index + rgf.header.vcount; ++i)
+                    *(nya_math::vec3 *)&verts[i].pos = mesh.skeleton.get_bone_rot(gf.header.bone_idx).rotate(*(nya_math::vec3 *)&verts[i].pos)
+                                                     + mesh.skeleton.get_bone_pos(gf.header.bone_idx);
             }
 
             reader.seek(header.offset_to_indices + 48 + rgf.header.ibuf_offset); //rgf.header.icount
@@ -1479,11 +1507,14 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
     mesh.materials = regroup_materials;
 //#endif
 
-    mesh.vbo.set_tc(0, sizeof(verts[0].pos), 3);
-    mesh.vbo.set_normals(sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].bone), nya_render::vbo::float16);
-    mesh.vbo.set_tc(1, sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].bone) + sizeof(verts[0].normal), 3, nya_render::vbo::float16);
-    mesh.vbo.set_tc(2, sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].bone) + sizeof(verts[0].normal) * 2, 3, nya_render::vbo::float16);
-    mesh.vbo.set_tc(3, sizeof(verts[0].pos) + sizeof(verts[0].tc) + sizeof(verts[0].bone) + sizeof(verts[0].normal) * 3, 1, nya_render::vbo::float32);
+#define off(st, m) uint((size_t)(&((st *)0)->m))
+
+    mesh.vbo.set_tc(0, off(vert, tc), 3);
+    mesh.vbo.set_normals(off(vert, normal), nya_render::vbo::float16);
+    mesh.vbo.set_tc(1, off(vert, tangent), 3, nya_render::vbo::float16);
+    mesh.vbo.set_tc(2, off(vert, bitangent), 3, nya_render::vbo::float16);
+    mesh.vbo.set_tc(3, off(vert, bones), 4, nya_render::vbo::float32);
+    mesh.vbo.set_tc(4, off(vert, weights), 4, nya_render::vbo::float32);
 
     mesh.vbo.set_vertex_data(&verts[0], sizeof(verts[0]), uint(verts.size()));
 
@@ -1502,18 +1533,20 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
         //assume(a.first == "basepose" || a.first.length() == 4);
         assert(a.first != "base");
 
+        if (a.first == "nzln") continue; //ToDo
+
         union { uint u; char c[4]; } hash_id;
         for (int i = 0; i < 4; ++i) hash_id.c[i] = a.first[3 - i];
 
         //if (hash_id.u == 'swp1' || hash_id.u == 'swp2') continue; //ToDo
+
+        //printf("anim %d %s\n", layer, a.first.c_str());
 
         auto &la = l.anims[hash_id.u];
         la.layer = layer;
         la.duration = a.second.get_duration();
         la.inv_duration = a.second.get_duration() > 0 ? 1.0f / a.second.get_duration() : 0.0f;
         l.mesh.set_anim(a.second, layer++);
-
-        //printf("lod %d anim %s\n", (int)lods.size() - 1,a.first.c_str());
     }
 
     l.mesh.update(0);

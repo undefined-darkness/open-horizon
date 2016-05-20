@@ -9,10 +9,9 @@
 @predefined camera_pos "nya camera position":local
 @predefined model_rot "nya model rot"
 
-@predefined bones_pos "nya bones pos"
-@predefined bones_rot "nya bones rot"
-
 @uniform light_dir "light dir":local_rot
+
+@include "skeleton.nsh"
 
 @all
 
@@ -30,45 +29,24 @@ varying vec4 alpha_clip;
 
 @vertex
 
-uniform vec3 bones_pos[250];
-uniform vec4 bones_rot[250];
-
 //uniform sampler2D bones_pos_map;
 //uniform sampler2D bones_rot_map;
 uniform sampler2D params_map;
 
 uniform vec4 model_rot;
 
-vec3 tr(vec3 v, vec4 q) { return v + cross(q.xyz, cross(q.xyz, v) + v * q.w) * 2.0; }
-
 void main()
 {
-    //vec2 btc=vec2(gl_MultiTexCoord0.z,0.0);
-
-    pos = gl_Vertex.xyz;
-    normal = gl_Normal.xyz;
-    tangent = gl_MultiTexCoord1.xyz;
-    bitangent = gl_MultiTexCoord2.xyz;
-
-    float ptc = gl_MultiTexCoord3.x;
+    float ptc = gl_MultiTexCoord0.z;
     specular_param = texture2D(params_map,vec2(ptc, (0.5 + 0.0) / 5.0));
     ibl_param = texture2D(params_map,vec2(ptc, (0.5 + 1.0) / 5.0));
     rim_light_mtr = texture2D(params_map,vec2(ptc, (0.5 + 2.0) / 5.0));
     alpha_clip = texture2D(params_map,vec2(ptc, (0.5 + 3.0) / 5.0));
-
-    if (gl_MultiTexCoord0.z > -0.5)
-    {
-        int bidx = int(gl_MultiTexCoord0.z);
-
-        //vec4 q = texture2D(bones_rot_map, btc);
-	    //pos = texture2D(bones_pos_map,btc).xyz + tr(pos, q);
-        vec4 q = bones_rot[bidx];
-	    pos = bones_pos[bidx] + tr(pos, q);
-
-        normal = tr(normal, q);
-        tangent = tr(tangent, q);
-        bitangent = tr(bitangent, q);
-    }
+    
+    pos = tr(gl_Vertex.xyz, gl_MultiTexCoord3, gl_MultiTexCoord4);
+    normal = tr(gl_Normal, gl_MultiTexCoord3, gl_MultiTexCoord4);
+    tangent = tr(gl_MultiTexCoord1.xyz, gl_MultiTexCoord3, gl_MultiTexCoord4);
+    bitangent = tr(gl_MultiTexCoord2.xyz, gl_MultiTexCoord3, gl_MultiTexCoord4);
 
     tc = gl_MultiTexCoord0.xy;
     normal_tr = tr(normal, model_rot);

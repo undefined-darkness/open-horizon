@@ -642,6 +642,10 @@ void aircraft::set_elev(float left, float right)
     m_mesh.set_anim_speed(0, 'elvl', (left * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'elvl')) * anim_speed_k);
     m_mesh.set_anim_speed(0, 'elvr', (right * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'elvr')) * anim_speed_k);
     m_mesh.set_anim_speed(0, 'elvn', (left * 0.5f + 0.5f - m_mesh.get_relative_anim_time(0, 'elvn')) * anim_speed_k);
+
+    m_mesh.set_anim_speed(3, 'vctl', (left * 0.5f + 0.5f - m_mesh.get_relative_anim_time(3, 'vctl')) * anim_speed_k);
+    m_mesh.set_anim_speed(3, 'vctr', (right * 0.5f + 0.5f - m_mesh.get_relative_anim_time(3, 'vctr')) * anim_speed_k);
+    m_mesh.set_anim_speed(3, 'vctn', (((left + right) * 0.5) * 0.5f + 0.5f - m_mesh.get_relative_anim_time(3, 'vctn')) * anim_speed_k);
 }
 
 //------------------------------------------------------------
@@ -665,6 +669,8 @@ void aircraft::set_rudder(float left, float right, float center)
     m_mesh.set_anim_speed(0, 'rudl', ((has_air_brake ? center : left) * 0.5 + 0.5 - m_mesh.get_relative_anim_time(0, 'rudl')) * anim_speed_k);
     m_mesh.set_anim_speed(0, 'rudr', ((has_air_brake ? center : right) * 0.5 + 0.5 - m_mesh.get_relative_anim_time(0, 'rudr')) * anim_speed_k);
     m_mesh.set_anim_speed(0, 'rudn', (center * 0.5 + 0.5 - m_mesh.get_relative_anim_time(0, 'rudn')) * anim_speed_k);
+
+    m_mesh.set_anim_speed(3, 'vcth', (center * 0.5 + 0.5 - m_mesh.get_relative_anim_time(3, 'vcth')) * anim_speed_k);
 }
 
 //------------------------------------------------------------
