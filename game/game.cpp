@@ -970,6 +970,7 @@ void plane::update_render(world &w)
     render->set_wing_sweep(speed >  phys->params.move.speed.speedCruising + 250 ? 1.0 : -1.0);
 
     render->set_intake_ramp(phys->thrust_time >= phys->params.move.accel.thrustMinWait ? 1.0 : -1.0);
+    render->set_thrust(phys->get_thrust());
 
     const float aoa = acosf(nya_math::vec3::dot(nya_math::vec3::normalize(phys->vel), get_dir()));
     render->set_aoa(aoa);

@@ -1117,15 +1117,19 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
             const float bone_fidx = (mesh.skeleton.get_bones_count() <= 0 || gf.header.bone_idx < 0) ? -1.0:
                                      float(gf.header.bone_idx + 0.5f) / 1024;
             */
-            const float bone_fidx = (mesh.skeleton.get_bones_count() <= 0 || gf.header.bone_idx < 0) ? -1.0 : float(gf.header.bone_idx);
+            const float bone_fidx = (mesh.skeleton.get_bones_count() <= 0 || gf.header.bone_idx < 0) ? 0.0f : float(gf.header.bone_idx);
+            const float bone_weight = (mesh.skeleton.get_bones_count() <= 0 || gf.header.bone_idx < 0) ? 0.0f : 1.0f;
 
             for (int i = first_index; i < first_index + rgf.header.vcount; ++i)
             {
                 verts[i].param_tc = ptc;
                 verts[i].bones[0] = bone_fidx;
-                verts[i].weights[0] = 1.0f;
+                verts[i].weights[0] = bone_weight;
                 for (int j = 1; j < 4; ++j)
+                {
+                    verts[i].bones[j] = 0;
                     verts[i].weights[j] = 0.0f;
+                }
 
                 for (int j = 0; j < 4; ++j)
                 {
@@ -1533,8 +1537,6 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
         //assume(a.first == "basepose" || a.first.length() == 4);
         assert(a.first != "base");
 
-        if (a.first == "nzln") continue; //ToDo
-
         union { uint u; char c[4]; } hash_id;
         for (int i = 0; i < 4; ++i) hash_id.c[i] = a.first[3 - i];
 
@@ -1620,6 +1622,25 @@ void fhm_mesh::set_anim_speed(int lod_idx, unsigned int anim_hash_id, float spee
         return;
 
     ma->set_speed(speed);
+}
+
+//------------------------------------------------------------
+
+void fhm_mesh::set_anim_weight(int lod_idx, unsigned int anim_hash_id, float weight)
+{
+    if (lod_idx < 0 || lod_idx >= m_lods.size())
+        return;
+
+    auto &l = m_lods[lod_idx];
+    auto a = l.anims.find(anim_hash_id);
+    if (a == l.anims.end())
+        return;
+
+    auto ma = l.mesh.get_anim(a->second.layer);
+    if (!ma.is_valid())
+        return;
+
+    ma->set_weight(weight);
 }
 
 //------------------------------------------------------------

@@ -56,6 +56,7 @@ public:
     float get_relative_anim_time(int lod_idx, unsigned int anim_hash_id);
     void set_relative_anim_time(int lod_idx, unsigned int anim_hash_id, float time);
     void set_anim_speed(int lod_idx, unsigned int anim_hash_id, float speed);
+    void set_anim_weight(int lod_idx, unsigned int anim_hash_id, float weight);
 
     void set_material(int lod_idx, const fhm_materials::material &m, const char *shader);
 

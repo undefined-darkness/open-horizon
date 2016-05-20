@@ -728,6 +728,17 @@ void aircraft::set_intake_ramp(float value)
 
 //------------------------------------------------------------
 
+void aircraft::set_thrust(float value)
+{
+    value *= 1.2;
+    if (value > 1.0f)
+        value = 2.0f - value;
+
+    m_mesh.set_anim_weight(3, 'nzln', value);
+}
+
+//------------------------------------------------------------
+
 void aircraft::set_special_bay(bool value)
 {
     m_mesh.set_anim_speed(0, 'spwc', value ? 1.0f : -1.0f);

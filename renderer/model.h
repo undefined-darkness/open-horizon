@@ -40,6 +40,11 @@ public:
         return m_mesh.get_relative_anim_time(lod_idx, anim_hash_id);
     }
 
+    void set_anim_weight(int lod_idx, unsigned int anim_hash_id, float weight)
+    {
+        m_mesh.set_anim_weight(lod_idx, anim_hash_id, weight);
+    }
+
     bool has_anim(int lod_idx, unsigned int anim_hash_id)
     {
         return m_mesh.has_anim(lod_idx, anim_hash_id);

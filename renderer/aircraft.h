@@ -53,6 +53,7 @@ public:
     void set_brake(float value);
     void set_wing_sweep(float value);
     void set_intake_ramp(float value);
+    void set_thrust(float value);
     void set_special_bay(bool value);
     void set_missile_bay(bool value);
     void set_mgun_bay(bool value);
