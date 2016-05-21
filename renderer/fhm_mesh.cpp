@@ -726,9 +726,7 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mnt &mnt, fhm_mop2 &mop2)
                         {
                             base[idx].rot.v = value.xyz();
                             base[idx].rot.w = value.w;
-
-                            base[idx].irot.v = -base[idx].rot.v;
-                            base[idx].irot.w = base[idx].rot.w;
+                            base[idx].irot = nya_math::quat::invert(base[idx].rot);
                         }
                         else
                             base[idx].pos = value.xyz();
@@ -736,11 +734,15 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mnt &mnt, fhm_mop2 &mop2)
                     else
                     {
                         if (is_quat)
-                            anim.anim.add_bone_rot_frame(aidx, l * frame_time, base[idx].irot*nya_math::quat(value.x, value.y, value.z, value.w));
+                        {
+                            auto q = base[idx].irot * nya_math::quat(value.x, value.y, value.z, value.w);
+                            if (q.w < 0)
+                                q = -q;
+                            anim.anim.add_bone_rot_frame(aidx, l * frame_time, q);
+                        }
                         else
                             anim.anim.add_bone_pos_frame(aidx, l * frame_time, value.xyz() - base[idx].pos);
                     }
-
                 }
 
                 if (sequence_reader.get_offset() > last_offset)
@@ -1568,7 +1570,6 @@ void fhm_mesh::draw(int lod_idx)
     l.mesh.set_pos(m_pos);
     l.mesh.set_rot(m_rot);
     l.mesh.draw();
-
 /*
 if (lod_idx == 0)
 {
@@ -1587,7 +1588,7 @@ if (lod_idx == 0)
     if (last_dvar != debug_variable::get())
         printf("bone %d %s\n", debug_variable::get(), l.mesh.get_skeleton().get_bone_name(last_dvar = debug_variable::get()));
 
-    d.add_point(l.mesh.get_skeleton().get_bone_pos(debug_variable::get()), nya_math::vec4(0.0,1.0,0.0,1.0));
+    d.add_point(l.mesh.get_skeleton().get_bone_pos(debug_variable::get()), nya_math::vec4(0.0,1.0,0.0,0.5));
     d.draw();
 }
 */
