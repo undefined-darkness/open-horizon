@@ -20,25 +20,6 @@ public:
         if (!r.get_data())
             return false;
 
-        struct sph_data
-        {
-            float radius;
-            float height;
-            uint32_t zero[2];
-
-            color colors[24];
-            uint32_t zero2[2];
-            color colors2[3];
-            uint32_t zero3;
-
-            //color colors[30];
-
-            float k[10];
-
-        } data[2];
-
-        //colors count is 40 ? and coeffs is char and 40 too?
-
         assert(r.get_size() == sizeof(data));
 
         memcpy(&data, r.get_data(), r.get_size());
@@ -46,32 +27,87 @@ public:
         for (size_t i = 0; i < sizeof(data)/sizeof(uint32_t); ++i)
             ((uint32_t *)&data)[i] = swap_bytes(((uint32_t *)&data)[i]);
 
-        for (auto &d: data)
-        {
-            assume(d.zero[0] == 0 && d.zero[1] == 0);
-            //assume(d.zero2[0] == 0 && d.zero2[1] == 0);
-            //assume(d.zero3 == 0);
-
-            for (auto &c: d.colors) assume(c.unused == 0);
-            //for (auto &c: d.colors2) assume(c.a == 0);
-        }
-
         r.free();
         return true;
     }
 
-private:
     struct color { unsigned char r, g, b, unused; };
 
-    color mix(const color &c0, const color &c1, float k)
+    struct sph_data
+    {
+        float radius;
+        float height;
+        uint32_t zero[2];
+        color colors[30];
+        float k[10];
+
+    };
+
+    sph_data data[2];
+
+    static color mix(const color &c0, const color &c1, float k)
     {
         color out;
-        out.r = c0.r + k * (c1.r - c0.r);
-        out.g = c0.g + k * (c1.g - c0.g);
-        out.b = c0.b + k * (c1.b - c0.b);
+        out.r = (unsigned char)nya_math::clamp(float(c0.r) + k * (float(c1.r) - float(c0.r)), 0.0f, 255.0f);
+        out.g = (unsigned char)nya_math::clamp(float(c0.g) + k * (float(c1.g) - float(c0.g)), 0.0f, 255.0f);
+        out.b = (unsigned char)nya_math::clamp(float(c0.b) + k * (float(c1.b) - float(c0.b)), 0.0f, 255.0f);
         return out;
     }
+
+    struct color_table
+    {
+        color colors[58];
+        color fog_color;
+
+        color_table(const sph_data &d);
+    };
 };
+
+//------------------------------------------------------------
+
+sph::color_table::color_table(const sph_data &d)
+{
+    fog_color = mix(d.colors[10], d.colors[11], 0.87f);
+
+    memset(colors, 0, sizeof(colors));
+
+    colors[0] = colors[1] = d.colors[8];
+    colors[16] = colors[17] = d.colors[9];
+    int remap[] = { 20, 24, 28, 30, 21, 25, 29, 31 };
+    for (size_t i = 0; i < sizeof(remap)/sizeof(remap[0]); ++i)
+        colors[remap[i]] = d.colors[i];
+
+    for (size_t i = 38; i < sizeof(colors)/sizeof(color); ++i)
+        colors[i] = fog_color;
+
+    for (int i = 1; i < 8; ++i)
+    {
+        static const float ks[] = { 0.980785f, 0.923880f, 0.831470f, 0.707107f, 0.555570f, 0.382683f, 0.195090f };
+        const float k = ks[i-1];
+        colors[i*2] = mix(colors[16], colors[0], k);
+        colors[i*2+1] = mix(colors[17], colors[1], k);
+    }
+
+    colors[18] = mix(colors[16], colors[20], 0.5f);
+    colors[19] = mix(colors[17], colors[21], 0.5f);
+
+    colors[22] = mix(colors[20], colors[24], 0.5);
+    colors[23] = mix(colors[21], colors[25], 0.5);
+
+    for(int i = 1; i < 3; ++i)
+    {
+        const float k = i * 0.5f;
+        colors[24 + i*2] = mix(colors[24], colors[28], k);
+        colors[25 + i*2] = mix(colors[25], colors[29], k);
+    }
+
+    for (int i = 1; i < 5; ++i)
+    {
+        const float k = i * 0.25f;
+        colors[30 + i*2] = mix(colors[30], colors[38], k);
+        colors[31 + i*2] = mix(colors[31], colors[39], k);
+    }
+}
 
 //------------------------------------------------------------
 
