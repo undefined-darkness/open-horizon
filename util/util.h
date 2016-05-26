@@ -6,8 +6,9 @@
 
 #include "memory/tmp_buffer.h"
 #include "memory/memory_reader.h"
-#include "resources/resources.h"
+#include "resources/file_resources_provider.h"
 #include "render/debug_draw.h"
+#include "system/system.h"
 #include <assert.h>
 #include <math.h>
 #include <vector>
@@ -293,6 +294,31 @@ inline void find_data(nya_resources::resources_provider &rp, float *f, size_t co
     }
 
     printf("\n");
+}
+
+//------------------------------------------------------------
+
+static std::vector<std::string> list_files(std::string folder)
+{
+    std::vector<std::string> result;
+    auto app_path = nya_system::get_app_path();
+    if (!app_path)
+        return result;
+
+    nya_resources::file_resources_provider fprov;
+    if (!fprov.set_folder((app_path + folder).c_str()))
+       return result;
+
+    for (int i = 0; i < fprov.get_resources_count(); ++i)
+    {
+        auto name = fprov.get_resource_name(i);
+        if (!name)
+            continue;
+
+        result.push_back(folder + name);
+    }
+
+    return result;
 }
 
 //------------------------------------------------------------

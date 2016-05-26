@@ -28,6 +28,8 @@
 		F578323E1AFBE859005FE829 /* ui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F578323C1AFBE859005FE829 /* ui.cpp */; };
 		F57832401AFC20B7005FE829 /* aircrafts.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F578323F1AFC20B1005FE829 /* aircrafts.xml */; };
 		F586B6701CE8D14300A2B7BE /* libopenal.1.17.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F586B66B1CE8C4C700A2B7BE /* libopenal.1.17.2.dylib */; };
+		F586B67E1CF7774B00A2B7BE /* decals in CopyFiles */ = {isa = PBXBuildFile; fileRef = F586B67D1CF7773800A2B7BE /* decals */; };
+		F586B6821CF786DF00A2B7BE /* zip_resources_provider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F586B6811CF786DF00A2B7BE /* zip_resources_provider.cpp */; };
 		F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E51F19048D4A00C3590A /* libnya_engine.a */; };
 		F5961A281CCCBFEE00B92BE4 /* network_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5961A241CCCBFEE00B92BE4 /* network_client.cpp */; };
 		F5961A291CCCBFEE00B92BE4 /* network_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5961A261CCCBFEE00B92BE4 /* network_server.cpp */; };
@@ -97,6 +99,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				F586B67E1CF7774B00A2B7BE /* decals in CopyFiles */,
 				F5696AAA1B1136B100C7BFC9 /* joystick.xml in CopyFiles */,
 				F57832401AFC20B7005FE829 /* aircrafts.xml in CopyFiles */,
 				F5C6D39E1AF96A18006FB7E6 /* DATA.PAC.xml in CopyFiles */,
@@ -152,6 +155,9 @@
 		F578323D1AFBE859005FE829 /* ui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ui.h; path = ../gui/ui.h; sourceTree = "<group>"; };
 		F578323F1AFC20B1005FE829 /* aircrafts.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = aircrafts.xml; path = ../resources/aircrafts.xml; sourceTree = "<group>"; };
 		F586B66B1CE8C4C700A2B7BE /* libopenal.1.17.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopenal.1.17.2.dylib; path = "../deps/openal-soft/libopenal.1.17.2.dylib"; sourceTree = "<group>"; };
+		F586B67D1CF7773800A2B7BE /* decals */ = {isa = PBXFileReference; lastKnownFileType = folder; name = decals; path = ../resources/decals; sourceTree = "<group>"; };
+		F586B6801CF786DF00A2B7BE /* zip_resources_provider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zip_resources_provider.h; path = "../deps/nya-engine/extensions/zip_resources_provider.h"; sourceTree = "<group>"; };
+		F586B6811CF786DF00A2B7BE /* zip_resources_provider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = zip_resources_provider.cpp; path = "../deps/nya-engine/extensions/zip_resources_provider.cpp"; sourceTree = "<group>"; };
 		F58E4F581C63F7410056B029 /* network_data.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = network_data.h; path = ../game/network_data.h; sourceTree = "<group>"; };
 		F5961A211CCCBE0300B92BE4 /* network_helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = network_helpers.h; path = ../game/network_helpers.h; sourceTree = "<group>"; };
 		F5961A241CCCBFEE00B92BE4 /* network_client.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_client.cpp; path = ../game/network_client.cpp; sourceTree = "<group>"; };
@@ -370,6 +376,16 @@
 			name = gui;
 			sourceTree = "<group>";
 		};
+		F586B67F1CF786BE00A2B7BE /* nya */ = {
+			isa = PBXGroup;
+			children = (
+				F503E51919048D4A00C3590A /* nya_engine.xcodeproj */,
+				F586B6801CF786DF00A2B7BE /* zip_resources_provider.h */,
+				F586B6811CF786DF00A2B7BE /* zip_resources_provider.cpp */,
+			);
+			name = nya;
+			sourceTree = "<group>";
+		};
 		F59AB58D1AFA387500137527 /* game */ = {
 			isa = PBXGroup;
 			children = (
@@ -583,9 +599,9 @@
 		F5D796A319B34350006269F0 /* deps */ = {
 			isa = PBXGroup;
 			children = (
+				F586B67F1CF786BE00A2B7BE /* nya */,
 				F5D209E91CC18D8A00189814 /* miso */,
 				F5D7969C19B342ED006269F0 /* pugixml */,
-				F503E51919048D4A00C3590A /* nya_engine.xcodeproj */,
 			);
 			name = deps;
 			sourceTree = "<group>";
@@ -597,6 +613,7 @@
 				F5696AA11B10E3F800C7BFC9 /* joystick.xml */,
 				F5C6D39C1AF96A08006FB7E6 /* postprocess.txt */,
 				F578323F1AFC20B1005FE829 /* aircrafts.xml */,
+				F586B67D1CF7773800A2B7BE /* decals */,
 				F5C6D39D1AF96A08006FB7E6 /* shaders */,
 			);
 			name = resources;
@@ -734,6 +751,7 @@
 				F5D20A0F1CC235EA00189814 /* client_tcp.cpp in Sources */,
 				F5C6D3861AF9694D006FB7E6 /* demo.cpp in Sources */,
 				F59AB5AA1AFA4F1800137527 /* location_params.cpp in Sources */,
+				F586B6821CF786DF00A2B7BE /* zip_resources_provider.cpp in Sources */,
 				F5A2A2E71B05466C009765C1 /* team_deathmatch.cpp in Sources */,
 				F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */,
 				F59AB5921AFA389500137527 /* game.cpp in Sources */,

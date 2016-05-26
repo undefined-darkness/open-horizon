@@ -3,7 +3,7 @@
 //
 
 #include "aircraft.h"
-#include "resources/resources.h"
+#include "extensions/zip_resources_provider.h"
 #include "memory/tmp_buffer.h"
 #include "render/screen_quad.h"
 #include "render/fbo.h"
@@ -12,6 +12,7 @@
 #include "containers/dpl.h"
 #include "renderer/shared.h"
 #include "renderer/scene.h"
+#include "util/xml.h"
 #include <stdint.h>
 
 namespace renderer
@@ -24,6 +25,7 @@ public:
     void set_base(const nya_scene::texture &tex) { m_mat.set_texture("base", tex); }
     void set_colx(const nya_scene::texture &tex) { m_mat.set_texture("colx", tex); }
     void set_coly(const nya_scene::texture &tex) { m_mat.set_texture("coly", tex); }
+    void set_decal(const nya_scene::texture &tex) { m_mat.set_texture("decal", tex); }
 
     void set_color(unsigned int idx, const nya_math::vec3 &color)
     {
@@ -38,9 +40,16 @@ public:
 
     nya_scene::texture bake()
     {
-        auto tp=m_mat.get_texture("base");
+        auto tp = m_mat.get_texture("base");
         if (!tp.is_valid())
             return nya_scene::texture();
+
+        if (!m_mat.get_texture("decal").is_valid())
+        {
+            nya_scene::texture tex;
+            tex.build("\0\0\0\0", 1, 1, nya_render::texture::color_rgba);
+            m_mat.set_texture("decal", tex);
+        }
 
         nya_render::fbo fbo;
         nya_render::screen_quad quad;
@@ -84,11 +93,18 @@ public:
         nya_math::vec3 colors[6];
     };
 
+    struct mod_info: public color_info
+    {
+        std::string zip_name, tex_name;
+        bool override_colors[6] = { false };
+    };
+
     struct info
     {
         std::string name;
         nya_math::vec3 camera_offset;
         std::vector<color_info> colors;
+        std::vector<mod_info> color_mods;
         std::string sound, voice;
     };
 
@@ -117,6 +133,72 @@ public:
         {
             aircraft_information info5("target/Information/AircraftInformationC05.AIN"); //ToDo
             *info.get_info("tnd4") = *info5.get_info("tnd4");
+
+            auto &su35 = *info.get_info("su35");
+            auto &su37 = *info.get_info("su37");
+            if (!su35.colors.empty() && !su37.colors.empty())
+                std::swap(su35.colors[0], su37.colors[0]);
+
+            auto custom_decals = list_files("decals/");
+            for (auto &d: custom_decals)
+            {
+                nya_resources::zip_resources_provider zprov;
+                if (!zprov.open_archive(d.c_str()))
+                    continue;
+
+                auto r = zprov.access("info.xml");
+                if (!r)
+                    continue;
+
+                nya_memory::tmp_buffer_scoped buf(r->get_size());
+                if (!r->read_all(buf.get_data()))
+                {
+                    r->release();
+                    continue;
+                }
+
+                r->release();
+
+                pugi::xml_document doc;
+                if (!doc.load_buffer((const char *)buf.get_data(), buf.get_size()))
+                    continue;
+
+                auto root = doc.first_child();
+                auto plane_id = root.attribute("plane").as_string();
+
+                auto pi = info.get_info(plane_id);
+                if (!pi)
+                {
+                    printf("plane '%s' not found for decal mod '%s'\n", plane_id, d.c_str());
+                    continue;
+                }
+
+                mod_info m;
+                m.zip_name = d;
+                m.coledit_idx = root.attribute("base").as_int();
+
+                if (m.coledit_idx < 0 || m.coledit_idx >= pi->colors.size())
+                {
+                    printf("invalid base idx %d for decal mod '%s', base count: %d\n", m.coledit_idx, d.c_str(), (int)pi->colors.size());
+                    continue;
+                }
+
+                auto img = root.child("image");
+                if (img)
+                    m.tex_name = img.attribute("file").as_string();
+
+                for (int i = 0; i < sizeof(m.colors) / sizeof(m.colors[0]); ++i)
+                {
+                    auto c = root.child(("color" + std::to_string(i)).c_str());
+                    if (!c)
+                        continue;
+
+                    m.override_colors[i] = true;
+                    m.colors[i].set(c.attribute("r").as_int() / 255.0f, c.attribute("g").as_int() / 255.0f, c.attribute("b").as_int() / 255.0f);
+                }
+
+                pi->color_mods.push_back(m);
+            }
 
             once = false;
         }
@@ -332,10 +414,13 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     if (!info)
         return false;
 
-    if (color_idx >= info->colors.size())
+    if (color_idx >= info->colors.size() + info->color_mods.size())
         return false;
 
-    auto &color = info->colors[color_idx];
+    const auto base_color_idx = color_idx < info->colors.size() ? color_idx : info->color_mods[color_idx - info->colors.size()].coledit_idx;
+
+    assert(base_color_idx < info->colors.size());
+    auto &color = info->colors[base_color_idx];
 
     m_camera_offset = info->camera_offset;
 
@@ -400,6 +485,39 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
 
     for (int i = 0; i < 6; ++i)
         baker.set_color(i, color.colors[i]);
+
+    if (color_idx >= info->colors.size())
+    {
+        auto &cm = info->color_mods[color_idx - info->colors.size()];
+        if (!cm.tex_name.empty())
+        {
+            nya_resources::zip_resources_provider z;
+            z.open_archive(cm.zip_name.c_str());
+            auto tr = z.access(cm.tex_name.c_str());
+            if (tr)
+            {
+                nya_scene::resource_data d(tr->get_size());
+                tr->read_all(d.get_data());
+                tr->release();
+
+                nya_scene::shared_texture stex;
+                if (nya_scene::texture::load_tga(stex, d, cm.tex_name.c_str()))
+                {
+                    nya_scene::texture tex;
+                    tex.create(stex);
+                    baker.set_decal(tex);
+                }
+
+                d.free();
+            }
+        }
+
+        for (int i = 0; i < 6; ++i)
+        {
+            if (cm.override_colors[i])
+                baker.set_color(i, cm.colors[i]);
+        }
+    }
 
     auto diff_tex = baker.bake();
     m_mesh.set_texture(0, "diffuse", diff_tex );
@@ -571,7 +689,7 @@ unsigned int aircraft::get_colors_count(const char *plane_name)
     if (!info)
         return 0;
 
-    return (unsigned int)info->colors.size();
+    return (unsigned int)(info->colors.size() + info->color_mods.size());
 }
 
 //------------------------------------------------------------
