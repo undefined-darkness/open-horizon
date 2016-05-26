@@ -197,6 +197,9 @@
     <ClCompile Include="..\sound\sound.cpp">
       <Filter>Source Files\sound</Filter>
     </ClCompile>
+    <ClCompile Include="..\deps\nya-engine\extensions\zip_resources_provider.cpp">
+      <Filter>Source Files\deps</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\game\ai.h">
@@ -363,6 +366,9 @@
     </ClInclude>
     <ClInclude Include="..\sound\sound.h">
       <Filter>Source Files\sound</Filter>
+    </ClInclude>
+    <ClInclude Include="..\deps\nya-engine\extensions\zip_resources_provider.h">
+      <Filter>Source Files\deps</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

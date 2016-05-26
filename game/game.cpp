@@ -987,7 +987,7 @@ void plane::update_render(world &w)
 
     update_sound(w, "VULCAN_REAR", mg_fire);
     update_sound(w, "MGP", mgp_fire);
-    update_sound(w, "75p", phys->get_thrust());
+    update_sound(w, "75p", true, phys->get_thrust());
     update_sound(w, "JET_REAR_AB", phys->get_ab());
 
     sound_rel_srcs.erase(std::remove_if(sound_rel_srcs.begin(), sound_rel_srcs.end(), [](const sound_rel_src &s){ return s.second.unique(); }), sound_rel_srcs.end());

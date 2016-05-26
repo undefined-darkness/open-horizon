@@ -111,6 +111,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClCompile Include="..\deps\miso\src\platform.cpp" />
     <ClCompile Include="..\deps\miso\src\server_tcp.cpp" />
     <ClCompile Include="..\deps\miso\src\server_udp.cpp" />
+    <ClCompile Include="..\deps\nya-engine\extensions\zip_resources_provider.cpp" />
     <ClCompile Include="..\deps\pugixml-1.4\src\pugixml.cpp" />
     <ClCompile Include="../containers/dpl.cpp" />
     <ClCompile Include="../containers/fhm.cpp" />
@@ -161,6 +162,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClInclude Include="..\containers\poc.h" />
     <ClInclude Include="..\containers\qdf_provider.h" />
     <ClInclude Include="..\deps\miso\src\node_tcp.h" />
+    <ClInclude Include="..\deps\nya-engine\extensions\zip_resources_provider.h" />
     <ClInclude Include="..\deps\pugixml-1.4\src\pugiconfig.hpp" />
     <ClInclude Include="..\deps\pugixml-1.4\src\pugixml.hpp" />
     <ClInclude Include="../containers/dpl.h" />
