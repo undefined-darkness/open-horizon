@@ -453,7 +453,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
 //------------------------------------------------------------
 
-bool fhm_location::load(const char *fileName, const location_params &params)
+bool fhm_location::load(const char *fileName, const location_params &params, nya_math::vec3 fcolor)
 {
     fhm_file fhm;
     if (!fhm.open(fileName))
@@ -583,11 +583,8 @@ bool fhm_location::load(const char *fileName, const location_params &params)
     auto &s = params.sky.mapspecular;
     auto &d = params.detail;
 
-    nya_math::vec3 about_fog_color = params.sky.low.ambient * params.sky.low.skysphere_intensity; //ToDo
-    //ms01 0.688, 0.749, 0.764
-
     nya_scene::material::param light_dir(-params.sky.sun_dir, 0.0f);
-    nya_scene::material::param fog_color(about_fog_color.x, about_fog_color.y, about_fog_color.z, -0.01*params.sky.fog_density);
+    nya_scene::material::param fog_color(fcolor.x, fcolor.y, fcolor.z, -0.01*params.sky.fog_density);
     nya_scene::material::param fog_height(params.sky.fog_height_fresnel, params.sky.fog_height,
                                           -0.01 * params.sky.fog_height_fade_density, -0.01 * params.sky.fog_height_density);
     nya_scene::material::param map_param_vs(s.parts_power, 0, 0, 0);

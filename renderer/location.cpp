@@ -24,7 +24,10 @@ bool location::load(const char *name)
         m_sky.release();
         return false;
     }
-    else if (strcmp(name, "def") == 0)
+
+    m_sky.load(name);
+
+    if (strcmp(name, "def") == 0)
     {
         m_params = location_params();
 
@@ -35,8 +38,8 @@ bool location::load(const char *name)
     {
         m_params.load((std::string("Map/mapset_") + name + ".bin").c_str());
 
-        m_location.load((std::string("Map/") + name + ".fhm").c_str(), m_params);
-        m_location.load((std::string("Map/") + name + "_mpt.fhm").c_str(), m_params);
+        m_location.load((std::string("Map/") + name + ".fhm").c_str(), m_params, m_sky.get_fog_color());
+        m_location.load((std::string("Map/") + name + "_mpt.fhm").c_str(), m_params, m_sky.get_fog_color());
         m_trees.load((std::string("Map/") + name + "_tree_nut.fhm").c_str());
         m_trees.load((std::string("Map/") + name + "_tree_nud.fhm").c_str());
 
@@ -61,7 +64,6 @@ bool location::load(const char *name)
     auto t3 = shared::get_texture(shared::load_texture((std::string("Map/ocean_nrm_") + name + ".nut").c_str()));
     m_location.m_land_material.set_texture("normal", t3);
 
-    m_sky.load(name, m_params);
     m_sun.init();
     m_sun.apply_location(m_params);
 

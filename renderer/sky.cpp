@@ -111,13 +111,20 @@ sph::color_table::color_table(const sph_data &d)
 
 //------------------------------------------------------------
 
+static const float hdr_k = 1.2995f / 255.0f;
+
+//------------------------------------------------------------
+
 struct solid_sphere
 {
-    std::vector<nya_math::vec3> vertices;
+    struct vert { nya_math::vec3 pos, color; };
+    std::vector<vert> vertices;
     std::vector<unsigned short> indices;
 
-    solid_sphere(float radius, unsigned int rings, unsigned int sectors)
+    solid_sphere(float radius, const sph::color_table &ct)
     {
+        const unsigned int rings = 29, sectors = 32;
+
         const float ir = 1.0f/(float)(rings-1);
         const float is = 1.0f/(float)(sectors-1);
 
@@ -125,10 +132,18 @@ struct solid_sphere
         auto v = vertices.begin();
         for (int r = 0; r < rings; r++) for (int s = 0; s < sectors; s++)
         {
-            float sr = radius * sin( nya_math::constants::pi * r * ir );
-            v->x = cos(2*nya_math::constants::pi * s * is) * sr;
-            v->y = radius * sin( -nya_math::constants::pi_2 + nya_math::constants::pi * r * ir );
-            v->z = sin(2*nya_math::constants::pi * s * is) * sr;
+            const float sr = radius * sin( nya_math::constants::pi * r * ir );
+            v->pos.x = sin(2*nya_math::constants::pi * s * is) * sr;
+            v->pos.y = -radius * sin( -nya_math::constants::pi_2 + nya_math::constants::pi * r * ir );
+            v->pos.z = cos(2*nya_math::constants::pi * s * is) * sr;
+
+            const float k = (s < sectors / 2 ? s : sectors - s - 1) / float(sectors / 2 - 1);
+            const auto c = sph::mix(ct.colors[r*2], ct.colors[r*2 + 1], k);
+
+            v->color.x = c.r * hdr_k;
+            v->color.y = c.g * hdr_k;
+            v->color.z = c.b * hdr_k;
+
             ++v;
         }
 
@@ -149,25 +164,28 @@ struct solid_sphere
 
 //------------------------------------------------------------
 
-bool sky_mesh::load(const char *name, const location_params &params)
+bool sky_mesh::load(const char *name)
 {
-    solid_sphere s(20000.0,32,24);
+    renderer::sph t;
+    t.load((std::string("Map/sph_") + name + ".sph").c_str());
 
-    m_mesh.set_vertex_data(&s.vertices[0], sizeof(float)*3, (unsigned int)s.vertices.size());
+    renderer::sph::color_table ct(t.data[0]);
+
+    solid_sphere s(20000.0, ct);
+
+    m_mesh.set_vertex_data(&s.vertices[0], sizeof(solid_sphere::vert), (unsigned int)s.vertices.size());
+    m_mesh.set_colors(sizeof(solid_sphere::vert::pos), 3);
     m_mesh.set_index_data(&s.indices[0], nya_render::vbo::index2b, (unsigned int)s.indices.size());
-
-    //ToDo: load from Map/sph_*.sph
-    auto env = shared::get_texture(shared::load_texture((std::string("Map/envmap_") + name + ".nut").c_str()));
 
     auto dithering = shared::get_texture(shared::load_texture("PostProcess/dithering.nut"));
 
     m_material.get_default_pass().set_shader(nya_scene::shader("shaders/sky.nsh"));
     m_material.get_default_pass().get_state().zwrite = false;
-    m_material.set_texture("diffuse", env);
     m_material.set_texture("dithering", dithering);
 
-    nya_math::vec3 about_fog_color = params.sky.low.ambient * params.sky.low.skysphere_intensity; //ToDo
-    m_material.set_param(m_material.get_param_idx("fog color"), about_fog_color);
+    m_fog_color.x = ct.fog_color.r * hdr_k;
+    m_fog_color.y = ct.fog_color.g * hdr_k;
+    m_fog_color.z = ct.fog_color.b * hdr_k;
 
     return true;
 }
@@ -194,6 +212,13 @@ void sky_mesh::release()
 {
     m_mesh.release();
     m_material.unload();
+}
+
+//------------------------------------------------------------
+
+nya_math::vec3 sky_mesh::get_fog_color()
+{
+    return m_fog_color;
 }
 
 //------------------------------------------------------------

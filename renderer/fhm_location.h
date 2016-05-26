@@ -22,7 +22,7 @@ class fhm_location
     friend class location; //ToDo
 
 public:
-    bool load(const char *file_name, const location_params &params);
+    bool load(const char *file_name, const location_params &params, nya_math::vec3 fog_color);
     void update(int dt);
     void draw_mptx();
     void draw_mptx_transparent();

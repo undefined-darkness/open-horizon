@@ -14,13 +14,15 @@ namespace renderer
 class sky_mesh
 {
 public:
-    bool load(const char *name, const location_params &params);
+    bool load(const char *name);
     void draw();
     void release();
+    nya_math::vec3 get_fog_color();
 
 private:
     nya_render::vbo m_mesh;
     nya_scene::material m_material;
+    nya_math::vec3 m_fog_color;
 };
 
 //------------------------------------------------------------
