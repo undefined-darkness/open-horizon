@@ -4,7 +4,6 @@ project(open_horizon)
 
 add_subdirectory(deps/nya-engine)
 include_directories(deps/nya-engine)
-list(APPEND src_files deps/nya-engine/extensions/zip_resources_provider.cpp)
 include_directories(deps/pugixml-1.4/src)
 include_directories(deps/miso/include)
 include_directories(.)
@@ -19,6 +18,7 @@ define_source_files(sound)
 define_source_files(util)
 define_source_files(deps/pugixml-1.4/src)
 define_source_files(deps/miso/src)
+list(APPEND src_files deps/nya-engine/extensions/zip_resources_provider.cpp)
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -Wno-multichar")
 
