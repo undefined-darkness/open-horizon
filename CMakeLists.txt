@@ -4,6 +4,7 @@ project(open_horizon)
 
 add_subdirectory(deps/nya-engine)
 include_directories(deps/nya-engine)
+list(APPEND src_files deps/nya-engine/extensions/zip_resources_provider.cpp)
 include_directories(deps/pugixml-1.4/src)
 include_directories(deps/miso/include)
 include_directories(.)
