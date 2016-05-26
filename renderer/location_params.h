@@ -40,6 +40,28 @@ struct location_params
 
     } hdr;
 
+    struct
+    {
+        params::fvalue far_fade_near;
+        params::fvalue far_fade_far;
+
+        params::fvalue ambient_obj_upper;
+        params::fvalue ambient_obj_lower;
+
+        params::color3 ambient_lower_color;
+        params::color3 ambient_upper_color;
+        params::fvalue ambient_power;
+
+        params::color3 diffuse_color;
+        params::fvalue diffuse_power;
+
+        params::fvalue diffuse_min;
+
+        params::fvalue intensity;
+        params::fvalue highflat_alpha;
+
+    } cloud;
+
     struct skysphere
     {
         params::color3 ambient;

@@ -6,6 +6,7 @@
 
 #include "scene/camera.h"
 #include "memory/memory_reader.h"
+#include "location_params.h"
 #include "shared.h"
 
 namespace renderer
@@ -131,6 +132,38 @@ bool effect_clouds::load(const char *location_name, const location_params &param
         auto &name = m_shader_obj.internal().get_uniform(i).name;
         if (name == "pos")
             m_shader_pos = i;
+
+        //else if (name == "fade_farnear")
+        //    m_shader_obj.internal().set_uniform_value(i, params.cloud.far_fade_far, params.cloud.far_fade_near, 0.0f, 0.0f);
+        else if (name == "obj upper lower")
+            m_shader_obj.internal().set_uniform_value(i, params.cloud.ambient_obj_upper, params.cloud.ambient_obj_lower, 0.0f, 0.0f);
+        else if (name == "amb low")
+        {
+            auto amb = params.cloud.ambient_lower_color / 255.0f * params.cloud.ambient_power * params.cloud.intensity;
+            m_shader_obj.internal().set_uniform_value(i, amb.x, amb.y, amb.z, 0.0f);
+        }
+        else if (name == "amb up")
+        {
+            auto amb = params.cloud.ambient_upper_color / 255.0f * params.cloud.ambient_power * params.cloud.intensity;
+            m_shader_obj.internal().set_uniform_value(i, amb.x, amb.y, amb.z, 0.0f);
+        }
+        else if (name == "diff")
+        {
+            auto diff = params.cloud.diffuse_color / 255.0f * params.cloud.diffuse_power * params.cloud.intensity;
+            m_shader_obj.internal().set_uniform_value(i, diff.x, diff.y, diff.z, 0.0f);
+        }
+        else if (name == "diffuse min")
+            m_shader_obj.internal().set_uniform_value(i, params.cloud.diffuse_min, 0.0f, 0.0f, 0.0f);
+        else if(name == "sprite light dir")
+            m_shader_obj.internal().set_uniform_value(i, -params.sky.sun_dir.x, -params.sky.sun_dir.y, -params.sky.sun_dir.z, 0.0f);
+    }
+
+
+    for (int i = 0; i < m_shader_hi_flat.internal().get_uniforms_count(); ++i)
+    {
+        auto &name = m_shader_hi_flat.internal().get_uniform(i).name;
+        if (name == "color")
+            m_shader_hi_flat.internal().set_uniform_value(i, 1.0f, 1.0f, 1.0f, params.cloud.highflat_alpha / 255.0f);
     }
 
     m_dist_sort.resize(m_clouds.obj_clouds.size());

@@ -108,7 +108,7 @@ public:
 
             if (type == "float")
                 s >> m_float_params[name];
-            else if (type == "S16" || type == "s16" || type == "U16" || type == "u16")
+            else if (type == "S16" || type == "S32" || type == "s16" || type == "U16" || type == "u16")
                 s >> m_int_params[name];
             else
                 printf("invalid text param %s in %s\n", type.c_str(), fname);
@@ -127,7 +127,7 @@ public:
         return p == m_int_params.end() ? default_value : p->second;
     }
 
-private:
+public:
     std::map<std::string,float> m_float_params;
     std::map<std::string,int> m_int_params;
 };

@@ -428,8 +428,10 @@ void menu::set_screen(const std::string &screen)
         add_entry(L"Honolulu", {"map=ms51"});
         add_entry(L"Beliy Base", {"map=ms08x"}); //siege
         add_entry(L"Black Sea", {"map=ms09"});
-/*
+        add_entry(L"Florida", {"map=ms12t"});
         add_entry(L"Moscow", {"map=ms11b"});
+        add_entry(L"Washington", {"map=ms14"});
+/*
         add_entry(L"02", {"map=ms02"}); //inferno //oil day
         //add_entry(L"03 Eastern Africa", {"map=ms03"}); //red moon //tex indices idx < size assert
         //add_entry(L"04 Mogadiyu", {"map=ms04"}); //spooky //tex indices idx < size assert
@@ -439,9 +441,7 @@ void menu::set_screen(const std::string &screen)
         add_entry(L"10 Caucasus Region", {"map=ms10"}); //launch
         //add_entry(L"11A Moscow", {"map=ms11a"}); //motherland //tex indices idx < size assert
         //add_entry(L"12 Miami", {"map=ms12"}); //homefront //type 8 chunk assert, kinda small
-        add_entry(L"12T", {"map=ms12t"});
         add_entry(L"13 Florida Coast", {"map=ms13"}); //hurricane
-        add_entry(L"Washington", {"map=ms14"});
         //add_entry(L"OP", {"map=msop"}); //tex indices idx < size assert
 */
         for (auto &e: m_entries)

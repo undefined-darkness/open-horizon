@@ -18,7 +18,7 @@ void free_flight::start(const char *plane, int color, const char *location)
     m_world.set_ally_handler(fia);
 
     m_spawn_pos.x = -300.0f, m_spawn_pos.z = 2000.0f;
-    m_spawn_pos.y = m_world.get_height(m_spawn_pos.x, m_spawn_pos.z) + 50.0f;
+    m_spawn_pos.y = m_world.get_height(m_spawn_pos.x, m_spawn_pos.z) + 100.0f;
 }
 
 //------------------------------------------------------------
@@ -74,7 +74,7 @@ void free_flight::set_location(const char *location)
         return;
 
     m_spawn_pos.x = -300.0f, m_spawn_pos.z = 2000.0f;
-    m_spawn_pos.y = m_world.get_height(m_spawn_pos.x, m_spawn_pos.z) + 50.0f;
+    m_spawn_pos.y = m_world.get_height(m_spawn_pos.x, m_spawn_pos.z) + 100.0f;
 
     m_player->set_pos(m_spawn_pos);
     m_player->set_rot(nya_math::quat());

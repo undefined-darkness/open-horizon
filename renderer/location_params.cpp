@@ -18,6 +18,8 @@ bool location_params::load(const char *file_name)
     if (!file_name || !file_name[0])
         return false;
 
+    auto text = params::text_params((std::string(file_name).substr(0, strlen(file_name) - 3) + "txt").c_str());
+
     nya_memory::tmp_buffer_scoped fi_data(load_resource(file_name));
     params::memory_reader reader(fi_data.get_data(), fi_data.get_size());
 
@@ -27,6 +29,28 @@ bool location_params::load(const char *file_name)
     clipping_plane.znear = reader.read<float>();
 
     reader.skip(54*4); //clouds
+
+    cloud.far_fade_near = text.get_float(".Cloud.FarFade.Near");
+    cloud.far_fade_far = text.get_float(".Cloud.FarFade.Far");
+    cloud.ambient_obj_upper = text.get_float(".Cloud.A.Ambient.OBJ_Upper");
+    cloud.ambient_obj_lower = text.get_float(".Cloud.A.Ambient.OBJ_Lower");
+
+    cloud.ambient_power = text.get_float(".Cloud.Ambient.Power");
+    cloud.ambient_lower_color.x = text.get_float(".Cloud.Ambient.LowerColor.R");
+    cloud.ambient_lower_color.y = text.get_float(".Cloud.Ambient.LowerColor.G");
+    cloud.ambient_lower_color.z = text.get_float(".Cloud.Ambient.LowerColor.B");
+    cloud.ambient_upper_color.x = text.get_float(".Cloud.Ambient.UpperColor.R");
+    cloud.ambient_upper_color.y = text.get_float(".Cloud.Ambient.UpperColor.G");
+    cloud.ambient_upper_color.z = text.get_float(".Cloud.Ambient.UpperColor.B");
+
+    cloud.diffuse_power = text.get_float(".Cloud.Diffuse.Power");
+    cloud.diffuse_color.x = text.get_float(".Cloud.Diffuse.Color.R");
+    cloud.diffuse_color.y = text.get_float(".Cloud.Diffuse.Color.G");
+    cloud.diffuse_color.z = text.get_float(".Cloud.Diffuse.Color.B");
+    cloud.diffuse_min = text.get_float(".Cloud.Diffuse.Min");
+
+    cloud.intensity = text.get_float(".Cloud.SkySphere.intensity");
+    cloud.highflat_alpha = text.get_float(".Cloud.HiFlatAlpha");
 
     hdr.bloom_offset = reader.read<float>();
     hdr.bloom_saturation = reader.read<float>();

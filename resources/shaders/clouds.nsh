@@ -12,7 +12,7 @@ varying vec4 light;
 @uniform amb_l "amb low"=0.256,0.345,0.431
 @uniform amb_u "amb up"=0.764,0.761,0.737
 @uniform diff "diff"=0.749,0.746,0.706
-@uniform fade_fn "fade_farnear"=15000,20000
+@uniform fade_fn "fade_farnear"=20000,15000
 
 @vertex
 
@@ -49,7 +49,7 @@ void main()
     light.xyz = diff.xyz * l + amb;
 
     float dist = length(cam_diff);
-    light.w = clamp((fade_fn.y - dist) / (fade_fn.y - fade_fn.x), 0.0, 1.0);
+    light.w = clamp((fade_fn.x - dist) / (fade_fn.x - fade_fn.y), 0.0, 1.0);
 
     tc=t.xy;
     tc2=t.zw;
@@ -70,5 +70,5 @@ void main()
     color *= detail;
     color *= light;
 
-    gl_FragColor = vec4(color.rgb * 0.8, color.a); //
+    gl_FragColor = vec4(color.rgb * 0.8, color.a * 0.5); //
 }

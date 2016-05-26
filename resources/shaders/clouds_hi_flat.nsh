@@ -2,6 +2,8 @@
 
 @sampler base_map "diffuse"
 
+@uniform color "color"
+
 @all
 
 varying vec2 tc;
@@ -30,9 +32,10 @@ void main()
 @fragment
 
 uniform sampler2D base_map;
+uniform vec4 color;
 
 void main()
 {
-    vec4 color = texture2D(base_map, tc);
+    vec4 color = texture2D(base_map, tc) * color;
     gl_FragColor = vec4(color.rgb * 0.8, color.a);
 }
