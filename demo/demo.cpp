@@ -279,6 +279,11 @@ int main()
             sound_world.set_volume(config::get_var_int("master_volume") / 10.0f);
             sound_world.set_music_volume(config::get_var_int("music_volume") / 10.0f);
         }
+        else if (event == "update_joy_config")
+        {
+            if (!joysticks.empty())
+                joysticks.front().update_config();
+        }
         else if (event == "exit")
         {
             server.close();
@@ -384,7 +389,12 @@ int main()
             const unsigned char *buttons = glfwGetJoystickButtons(i, &buttons_count);
             joysticks[i].update(axes, axes_count, buttons, buttons_count);
             joysticks[i].apply_controls(controls, pause);
-            joysticks[i].apply_controls(menu_controls);
+
+            if (!active_game_mode)
+            {
+                if (i == 0 && !menu.joy_update(axes, axes_count, buttons, buttons_count))
+                    joysticks[i].apply_controls(menu_controls);
+            }
         }
 
         if (platform.get_key(GLFW_KEY_W)) controls.throttle = 1.0f;

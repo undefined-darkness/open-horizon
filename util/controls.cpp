@@ -3,6 +3,7 @@
 //
 
 #include "controls.h"
+#include "config.h"
 #include "xml.h"
 #include <math.h>
 
@@ -64,6 +65,15 @@ void joystick_config::init(const char *name)
                 m_buttons.push_back({idx,cmd});
         }
     }
+
+    update_config();
+}
+
+//------------------------------------------------------------
+
+void joystick_config::update_config()
+{
+    //ToDo
 }
 
 //------------------------------------------------------------

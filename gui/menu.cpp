@@ -56,7 +56,7 @@ void menu::draw(const render &r)
     else if (m_screens.back() == "map_select" || m_screens.back() == "mp"
              || m_screens.back() == "mp_create" || m_screens.back() == "mp_connect")
         m_bkg.draw_tx(r, 0, 2, sr, white);
-    else if (m_screens.back() == "ac_select" || m_screens.back() == "color_select" || m_screens.back() == "settings")
+    else if (m_screens.back() == "ac_select" || m_screens.back() == "color_select" || m_screens.back() == "settings" || m_screens.back() == "joystick")
         m_bkg.draw_tx(r, 0, 1, sr, white);
 
     int x = 155, y = 155;
@@ -217,6 +217,61 @@ void menu::update(int dt, const menu_controls &controls)
 
     m_sound_world.update(dt);
     m_prev_controls = controls;
+}
+
+//------------------------------------------------------------
+
+bool menu::joy_update(const float *axes, int axes_count, const unsigned char *btns, int btns_count)
+{
+    if (m_screens.empty() || m_screens.back() != "joystick")
+        return false;
+
+    std::string control;
+
+    for (int i = 0; i < axes_count; ++i)
+    {
+        if (axes[i] > 0.8f)
+        {
+            control = "+axis" + std::to_string(i);
+            break;
+        }
+
+        if (axes[i] < -0.8f)
+        {
+            control = "-axis" + std::to_string(i);
+            break;
+        }
+    }
+
+    for (int i = 0; i < btns_count; ++i)
+    {
+        if (btns[i])
+        {
+            control = "btn" + std::to_string(i);
+            break;
+        }
+    }
+
+    if (control.empty())
+        return true;
+
+    auto &e = m_entries[m_selected];
+    auto wcontrol = std::wstring(control.begin(), control.end());
+    if (e.input == wcontrol)
+        return true;
+
+    for (auto &e: m_entries)
+    {
+        if (e.input == wcontrol)
+            e.input.clear();
+    }
+
+    e.input = wcontrol;
+    auto var_name = "joy_" + e.input_event;
+    config::register_var(var_name, control);
+    config::set_var(var_name, control);
+    send_event("update_joy_config");
+    return true;
 }
 
 //------------------------------------------------------------
@@ -533,6 +588,42 @@ void menu::set_screen(const std::string &screen)
         add_entry(L"Music volume: ", {});
         add_input("music_volume", true);
         m_entries.back().allow_input = false;
+
+        add_entry(L"Configure joystick", {"screen=joystick"});
+    }
+    else if (screen == "joystick")
+    {
+        m_title = L"CONFIGURE JOYSTICK";
+
+        add_entry(L"Pitch up: ", {}), m_entries.back().input_event = "+pitch";
+        add_entry(L"Pitch down: ", {}), m_entries.back().input_event = "-pitch";
+        add_entry(L"Yaw left: ", {}), m_entries.back().input_event = "+yaw";
+        add_entry(L"Yaw right: ", {}), m_entries.back().input_event = "-yaw";
+        add_entry(L"Roll left: ", {}), m_entries.back().input_event = "-roll";
+        add_entry(L"Roll right: ", {}), m_entries.back().input_event = "+roll";
+
+        add_entry(L"Throttle: ", {}), m_entries.back().input_event = "throttle";
+        add_entry(L"Brake: ", {}), m_entries.back().input_event = "brake";
+
+        add_entry(L"Fire missile: ", {}), m_entries.back().input_event = "missile";
+        add_entry(L"Fire gun: ", {}), m_entries.back().input_event = "mgun";
+
+        add_entry(L"Change weapon: ", {}), m_entries.back().input_event = "change_weapon";
+        add_entry(L"Change target: ", {}), m_entries.back().input_event = "change_target";
+        add_entry(L"Change radar: ", {}), m_entries.back().input_event = "change_radar";
+
+        add_entry(L"Camera pitch up: ", {}), m_entries.back().input_event = "+camera_pitch";
+        add_entry(L"Camera pitch down: ", {}), m_entries.back().input_event = "-camera_pitch";
+        add_entry(L"Camera yaw left: ", {}), m_entries.back().input_event = "+camera_yaw";
+        add_entry(L"Camera yaw right: ", {}), m_entries.back().input_event = "-camera_yaw";
+
+        add_entry(L"Pause: ", {}), m_entries.back().input_event = "pause";
+
+        for (auto &e: m_entries)
+        {
+            auto c = config::get_var("joy_" + e.input_event);
+            e.input = std::wstring(c.begin(), c.end());
+        }
     }
     else
         printf("unknown screen: %s\n", screen.c_str());

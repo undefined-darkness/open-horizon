@@ -20,6 +20,7 @@ class joystick_config
 {
 public:
     void init(const char *name);
+    void update_config();
     void update(const float *axes, int axes_count, const unsigned char *btns, int btns_count);
     void apply_controls(game::plane_controls &controls, bool &pause);
     void apply_controls(gui::menu_controls &controls);

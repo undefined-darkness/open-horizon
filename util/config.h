@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 #include <stdio.h>
 #include <stdlib.h>
 

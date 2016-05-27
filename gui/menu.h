@@ -30,6 +30,7 @@ public:
     void init();
     void draw(const render &r);
     void update(int dt, const menu_controls &controls);
+    bool joy_update(const float *axes, int axes_count, const unsigned char *btns, int btns_count); //for joystick config
     void on_input(char c);
 
     typedef std::function<void(const std::string &name)> on_action;
