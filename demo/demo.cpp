@@ -117,6 +117,8 @@ int main()
 
     config::register_var("screen_width", "1000");
     config::register_var("screen_height", "562");
+    config::register_var("master_volume", "10");
+    config::register_var("music_volume", "5");
 
     platform platform;
     if (!platform.init(config::get_var_int("screen_width"), config::get_var_int("screen_height"), "Open Horizon 5th demo"))
@@ -164,9 +166,11 @@ int main()
     scene.draw();
     platform.end_frame();
 
+    sound_world.set_volume(config::get_var_int("master_volume") / 10.0f);
+    sound_world.set_music_volume(config::get_var_int("music_volume") / 10.0f);
+
     menu.init();
     sound_world.set_music("BGM_menu");
-    sound_world.set_music_volume(0.5f);
 
     bool viewer_mode = false;
     bool is_client = false, is_server = false;
@@ -269,6 +273,11 @@ int main()
         {
             viewer_mode = false;
             hangar.end();
+        }
+        else if (event == "update_volume")
+        {
+            sound_world.set_volume(config::get_var_int("master_volume") / 10.0f);
+            sound_world.set_music_volume(config::get_var_int("music_volume") / 10.0f);
         }
         else if (event == "exit")
         {

@@ -32,6 +32,9 @@ void menu::init()
     init_var("name", "PLAYER");
     init_var("address", "127.0.0.1");
     init_var("port", "8001");
+
+    init_var("master_volume", config::get_var("master_volumes"));
+    init_var("music_volume", config::get_var("music_volume"));
 }
 
 //------------------------------------------------------------
@@ -53,7 +56,7 @@ void menu::draw(const render &r)
     else if (m_screens.back() == "map_select" || m_screens.back() == "mp"
              || m_screens.back() == "mp_create" || m_screens.back() == "mp_connect")
         m_bkg.draw_tx(r, 0, 2, sr, white);
-    else if (m_screens.back() == "ac_select" || m_screens.back() == "color_select")
+    else if (m_screens.back() == "ac_select" || m_screens.back() == "color_select" || m_screens.back() == "settings")
         m_bkg.draw_tx(r, 0, 1, sr, white);
 
     int x = 155, y = 155;
@@ -334,6 +337,7 @@ void menu::set_screen(const std::string &screen)
         add_entry(L"Team deathmatch", {"mode=tdm", "screen=map_select", "multiplayer=no"});
         add_entry(L"Free flight", {"mode=ff", "screen=map_select", "multiplayer=no"});
         add_entry(L"Multiplayer", {"screen=mp"});
+        add_entry(L"Settings", {"screen=settings"});
 
         //add_entry(L"Aircraft viewer", {"mode=none", "screen=ac_view"});
 
@@ -518,6 +522,18 @@ void menu::set_screen(const std::string &screen)
         if (get_var("mode") != "none")
             add_entry(L"Next", {"start"});
     }
+    else if (screen == "settings")
+    {
+        m_title = L"SETTINGS";
+
+        add_entry(L"Master volume: ", {});
+        add_input("master_volume", true);
+        m_entries.back().allow_input = false;
+
+        add_entry(L"Music volume: ", {});
+        add_input("music_volume", true);
+        m_entries.back().allow_input = false;
+    }
     else
         printf("unknown screen: %s\n", screen.c_str());
 
@@ -537,6 +553,23 @@ void menu::send_event(const std::string &event)
         config::set_var(var, value);
         if (var == "screen")
             set_screen(m_vars[var]);
+
+        if (var == "master_volume" || var == "music_volume")
+        {
+            if (get_var_int(var) > 10)
+            {
+                value = "10";
+                config::set_var(var, value);
+                m_vars[var] = value;
+            }
+            send_event("update_volume");
+        }
+
+        for (auto &e: m_entries)
+        {
+            if (e.input_event == var)
+                e.input = std::wstring(value.begin(), value.end());
+        }
 
         return;
     }
