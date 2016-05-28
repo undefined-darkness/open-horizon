@@ -61,6 +61,7 @@ struct plane_controls: public phys::plane_controls
     bvalue change_target;
     bvalue change_camera;
     bvalue change_radar;
+    nya_math::vec2 cam_rot;
 };
 
 //------------------------------------------------------------
@@ -97,6 +98,10 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     game_data net_game_data; //sync over network
     plane_controls controls;
     plane_controls last_controls;
+    ivalue change_target_hold_time;
+
+    static const int change_target_hold_max_time = 1000;
+
     phys::plane_ptr phys;
     renderer::aircraft_ptr render;
     bvalue special_weapon_selected;

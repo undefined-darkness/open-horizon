@@ -296,6 +296,8 @@ int main()
 
     menu.set_callback(on_menu_action);
 
+    bool reset_camera = false;
+
     unsigned long app_time = nya_system::get_time();
     while (!platform.should_terminate())
     {
@@ -420,6 +422,26 @@ int main()
 
         if (active_game_mode)
         {
+            if (world.get_player())
+            {
+                auto p = world.get_player();
+                if (p->change_target_hold_time >= game::plane::change_target_hold_max_time && !p->targets.empty() && !p->targets.front().target_plane.expired())
+                {
+                    auto t = p->targets.front().target_plane.lock();
+                    auto tdir = t->get_pos() - p->get_pos();
+                    nya_math::quat q(nya_math::vec3::forward(), tdir);
+                    q = nya_math::quat::invert(p->get_rot()) * q;
+
+                    auto da = q.get_euler();
+                    scene.camera.reset_delta_rot();
+
+                    const float k = nya_math::min((p->change_target_hold_time - game::plane::change_target_hold_max_time ) / 200.0f, 1.0);
+
+                    scene.camera.add_delta_rot(da.x * k, -da.y * k);
+                    reset_camera = true;
+                }
+            }
+
             if (((pause && pause != last_pause) || platform.was_pressed(GLFW_KEY_P)) && !is_server && !is_client)
                 scene.pause(paused = !paused);
             last_pause = pause;
@@ -450,10 +472,16 @@ int main()
 
         speed10x = platform.get_key(GLFW_KEY_RIGHT_SHIFT) && !is_client && !is_server;
 
-        if (controls.change_camera)
+        if (controls.change_camera || (reset_camera && !controls.change_target))
         {
             scene.camera.reset_delta_rot();
-            scene.camera.reset_delta_pos();
+            reset_camera = false;
+        }
+
+        if (!joysticks.empty() && !platform.get_mouse_lbtn() && !controls.change_target)
+        {
+            scene.camera.reset_delta_rot();
+            scene.camera.add_delta_rot(-controls.cam_rot.x * nya_math::constants::pi_2, -controls.cam_rot.y * nya_math::constants::pi);
         }
 
         if (platform.was_pressed(GLFW_KEY_COMMA))

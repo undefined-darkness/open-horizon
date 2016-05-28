@@ -1418,9 +1418,9 @@ void plane::update(int dt, world &w)
 
     //target selection
 
-    if (controls.change_target && controls.change_target != last_controls.change_target)
+    if (controls.change_target != last_controls.change_target && !controls.change_target )
     {
-        if (targets.size() > 1)
+        if (change_target_hold_time < change_target_hold_max_time && targets.size() > 1)
         {
             if (!special_weapon_selected || special.lockon_count == 1)
                 targets.front().locked = 0;
@@ -1428,7 +1428,12 @@ void plane::update(int dt, world &w)
             targets.push_back(targets.front());
             targets.pop_front();
         }
+
+        change_target_hold_time = 0;
     }
+
+    if (controls.change_target)
+        change_target_hold_time += dt;
 
     last_controls = controls;
 }

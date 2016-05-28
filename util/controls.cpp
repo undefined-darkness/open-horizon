@@ -155,6 +155,11 @@ void joystick_config::apply_controls(game::plane_controls &controls, bool &pause
                 case 'prll': controls.rot.z = v; break;
                 case 'thrt': controls.throttle = v; break;
 
+                case '+cpc': if (v > 0.0f) controls.cam_rot.x = v; break;
+                case '-cpc': if (v > 0.0f) controls.cam_rot.x = -v; break;
+                case '+cyw': if (v > 0.0f) controls.cam_rot.y = v; break;
+                case '-cyw': if (v > 0.0f) controls.cam_rot.y = -v; break;
+
                 default: break;
             }
         }
@@ -189,6 +194,12 @@ void joystick_config::apply_controls(game::plane_controls &controls, bool &pause
                 case 'brke': controls.brake = true; break;
                 case 'thrt': controls.throttle = true; break;
                 case 'paus': pause = true; break;
+
+                case '+cpc': controls.cam_rot.x = 1.0; break;
+                case '-cpc': controls.cam_rot.x = -1.0; break;
+                case '+cyw': controls.cam_rot.y = 1.0; break;
+                case '-cyw': controls.cam_rot.y = -1.0; break;
+
                 default: break;
             }
         }
