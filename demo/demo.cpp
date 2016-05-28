@@ -30,6 +30,7 @@
 #ifdef _WIN32
     #undef APIENTRY
     #include <windows.h>
+    #undef min
     int main();
     int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) { return main(); }
 #else
