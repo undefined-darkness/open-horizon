@@ -451,7 +451,10 @@ int main()
         speed10x = platform.get_key(GLFW_KEY_RIGHT_SHIFT) && !is_client && !is_server;
 
         if (controls.change_camera)
+        {
             scene.camera.reset_delta_rot();
+            scene.camera.reset_delta_pos();
+        }
 
         if (platform.was_pressed(GLFW_KEY_COMMA))
             debug_variable::set(debug_variable::get() - 1);

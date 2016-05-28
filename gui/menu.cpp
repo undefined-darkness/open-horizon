@@ -597,8 +597,8 @@ void menu::set_screen(const std::string &screen)
 
         add_entry(L"Pitch up: ", {}), m_entries.back().input_event = "+pitch";
         add_entry(L"Pitch down: ", {}), m_entries.back().input_event = "-pitch";
-        add_entry(L"Yaw left: ", {}), m_entries.back().input_event = "+yaw";
-        add_entry(L"Yaw right: ", {}), m_entries.back().input_event = "-yaw";
+        add_entry(L"Yaw left: ", {}), m_entries.back().input_event = "-yaw";
+        add_entry(L"Yaw right: ", {}), m_entries.back().input_event = "+yaw";
         add_entry(L"Roll left: ", {}), m_entries.back().input_event = "-roll";
         add_entry(L"Roll right: ", {}), m_entries.back().input_event = "+roll";
 
@@ -610,6 +610,7 @@ void menu::set_screen(const std::string &screen)
 
         add_entry(L"Change weapon: ", {}), m_entries.back().input_event = "change_weapon";
         add_entry(L"Change target: ", {}), m_entries.back().input_event = "change_target";
+        add_entry(L"Change camera: ", {}), m_entries.back().input_event = "change_camera";
         add_entry(L"Change radar: ", {}), m_entries.back().input_event = "change_radar";
 
         add_entry(L"Camera pitch up: ", {}), m_entries.back().input_event = "+camera_pitch";

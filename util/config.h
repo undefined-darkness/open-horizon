@@ -53,6 +53,11 @@ public:
         return atoi(v.c_str());
     }
 
+    const static std::map<std::string, std::string> &get_vars()
+    {
+        return cfg().m_params;
+    }
+
 private:
     static config &cfg() { static config c; return c; }
     config() { read(); }

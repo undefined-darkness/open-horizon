@@ -73,7 +73,41 @@ void joystick_config::init(const char *name)
 
 void joystick_config::update_config()
 {
-    //ToDo
+    bool clear = true;
+    for (auto &v: config::get_vars())
+    {
+        if (v.first.compare(0, 4, "joy_") != 0)
+            continue;
+
+        if (clear)
+        {
+            m_buttons.clear();
+            m_axes.clear();
+            clear = false;
+        }
+
+        auto cmd = convert_cmd(v.first.substr(4));
+
+        if (v.second.compare(0, 3, "btn") == 0)
+        {
+            btn b;
+            b.idx = atoi(v.second.c_str() + 3);
+            b.cmd = cmd;
+            m_buttons.push_back(b);
+            continue;
+        }
+
+        if (v.second.compare(1, 4, "axis") == 0)
+        {
+            axis a;
+            a.idx = atoi(v.second.c_str() + 5);
+            a.cmd = cmd;
+            a.inverted = v.second.front() == '-';
+            a.deadzone = v.second.front() == '-' || v.second.front() == '+' ? 0.05f : 0.5f;
+            m_axes.push_back(a);
+            continue;
+        }
+    }
 }
 
 //------------------------------------------------------------
@@ -109,10 +143,18 @@ void joystick_config::apply_controls(game::plane_controls &controls, bool &pause
 
             switch (a.cmd)
             {
+                case '+ppc': if (v > 0.0f) controls.rot.x = v; break;
+                case '-ppc': if (v > 0.0f) controls.rot.x = -v; break;
+                case '+prl': if (v > 0.0f) controls.rot.z = v; break;
+                case '-prl': if (v > 0.0f) controls.rot.z = -v; break;
+                case '+pyw': if (v > 0.0f) controls.rot.x = v; break;
+                case '-pyw': if (v > 0.0f) controls.rot.x = -v; break;
+
                 case 'pyaw': controls.rot.y = v; break;
                 case 'ppch': controls.rot.x = v; break;
                 case 'prll': controls.rot.z = v; break;
                 case 'thrt': controls.throttle = v; break;
+
                 default: break;
             }
         }
@@ -130,12 +172,17 @@ void joystick_config::apply_controls(game::plane_controls &controls, bool &pause
 
             switch (b.cmd)
             {
+                case '+ppc': controls.rot.x = 1.0; break;
+                case '-ppc': controls.rot.x = -1.0; break;
+                case '+prl': controls.rot.z = 1.0; break;
+                case '-prl': controls.rot.z = -1.0; break;
                 case '+pyw': controls.rot.y = 1.0; break;
                 case '-pyw': controls.rot.y = -1.0; break;
+
                 case 'cchg': controls.change_camera = true; break;
                 case 'wchg': controls.change_weapon = true; break;
-                case 'tchn': controls.change_target = true; break;
-                case 'rchn': controls.change_radar = true; break;
+                case 'tchg': controls.change_target = true; break;
+                case 'rchg': controls.change_radar = true; break;
                 case 'msle': controls.missile = true; break;
                 case 'flrs': controls.flares = true; break;
                 case 'mgun': controls.mgun = true; break;
@@ -220,16 +267,24 @@ unsigned int joystick_config::convert_cmd(const std::string &cmd)
     if (cmd == "+yaw") return '+pyw';
     if (cmd == "-yaw") return '-pyw';
     if (cmd == "pitch") return 'ppch';
+    if (cmd == "+pitch") return '+ppc';
+    if (cmd == "-pitch") return '-ppc';
     if (cmd == "roll") return 'prll';
+    if (cmd == "+roll") return '+prl';
+    if (cmd == "-roll") return '-prl';
     if (cmd == "camera_yaw") return 'cyaw';
+    if (cmd == "+camera_yaw") return '+cyw';
+    if (cmd == "-camera_yaw") return '-cyw';
     if (cmd == "camera_pitch") return 'cpch';
+    if (cmd == "+camera_pitch") return '+cpc';
+    if (cmd == "-camera_pitch") return '-cpc';
     if (cmd == "change_camera") return 'cchg';
     if (cmd == "change_weapon") return 'wchg';
+    if (cmd == "change_target") return 'tchg';
     if (cmd == "change_radar") return 'rchg';
     if (cmd == "pause") return 'paus';
     if (cmd == "brake") return 'brke';
     if (cmd == "throttle") return 'thrt';
-    if (cmd == "change_target") return 'tchn';
     if (cmd == "missile") return 'msle';
     if (cmd == "flares") return 'flrs';
     if (cmd == "mgun") return 'mgun';
