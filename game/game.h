@@ -100,7 +100,7 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     plane_controls last_controls;
     ivalue change_target_hold_time;
 
-    static const int change_target_hold_max_time = 1000;
+    static const int change_target_hold_max_time = 500;
 
     phys::plane_ptr phys;
     renderer::aircraft_ptr render;
