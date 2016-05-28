@@ -147,7 +147,7 @@ void world_2d::set_music(const std::string &name)
         return;
 
     cpk_file base;
-    if (!base.open("DATA10.PAC"))
+    if (!base.open("target/DATA10.PAC"))
         return;
 
     auto *res = access(base, 0);

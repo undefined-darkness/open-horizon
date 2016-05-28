@@ -67,14 +67,17 @@ int main()
         nya_resources::resources_provider &m_provider;
         dpl_resources_provider m_dlc_provider;
         nya_resources::file_resources_provider m_fprov;
+        nya_resources::file_resources_provider m_fprov2;
 
     public:
         target_resource_provider(nya_resources::resources_provider &provider): m_provider(provider)
         {
             m_fprov.set_folder(nya_system::get_app_path());
+            m_fprov2.set_folder(config::get_var("acah_path").c_str());
 
             nya_resources::composite_resources_provider cprov;
             cprov.add_provider(&m_fprov);
+            cprov.add_provider(&m_fprov2);
             cprov.add_provider(&provider);
             nya_resources::set_resources_provider(&cprov);
 
@@ -100,7 +103,10 @@ int main()
             if (m_provider.has(resource_name))
                 return m_provider.access(resource_name);
 
-            return m_fprov.access(resource_name);
+            if (m_fprov.has(resource_name))
+                return m_fprov.access(resource_name);
+
+            return m_fprov2.access(resource_name);
         }
 
         bool has(const char *resource_name)
