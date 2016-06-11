@@ -73,6 +73,8 @@ public:
     nya_math::quat get_bone_rot(int lod_idx, int bone_idx);
     void set_bone_rot(int lod_idx, int bone_idx, const nya_math::quat &rot);
 
+    const nya_scene::mesh &get_mesh(int lod_idx) const;
+
 public:
     model() {}
     model(const char *name, const location_params &params) { load(name, params); }

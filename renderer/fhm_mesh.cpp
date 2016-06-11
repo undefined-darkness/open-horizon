@@ -1124,6 +1124,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
 
             for (int i = first_index; i < first_index + rgf.header.vcount; ++i)
             {
+                verts[i].tc[0] = verts[i].tc[1] = 0.0f;
                 verts[i].param_tc = ptc;
                 verts[i].bones[0] = bone_fidx;
                 verts[i].weights[0] = bone_weight;

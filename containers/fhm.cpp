@@ -34,7 +34,7 @@ bool fhm_file::open(nya_resources::resource_data *data)
         uint32_t count;
 
         bool check_sign() const { return memcmp(sign, "FHM ", 4) == 0; }
-        bool wrong_byte_order() const { return byte_order_0x01010010 != 0x01010010; }
+        bool wrong_byte_order() const { return byte_order_0x01010010 != 0x01010010 && byte_order_0x01010010 != 0x20101010; }
     };
 
     fhm_old_header old_header;
@@ -54,6 +54,9 @@ bool fhm_file::open(nya_resources::resource_data *data)
         assert(!old_header.wrong_byte_order());
         assume(old_header.unknown_zero[0] == 0 && old_header.unknown_zero[1] == 0);
 
+        if (!old_header.count)
+            return true;
+
         std::vector<uint32_t> offsets(old_header.count * 2);
         if (!m_data->read_chunk(offsets.data(), old_header.count * 2 * sizeof(uint32_t), sizeof(old_header)))
         {
@@ -65,6 +68,7 @@ bool fhm_file::open(nya_resources::resource_data *data)
         m_chunks.resize(old_header.count);
 
         size_t offset = 0;
+
         for (auto &c: m_chunks)
             c.offset = swap_bytes(offsets[offset++]);
         for (auto &c: m_chunks)
@@ -72,6 +76,12 @@ bool fhm_file::open(nya_resources::resource_data *data)
 
         for (auto &c: m_chunks)
         {
+            if (c.size == 0)
+            {
+                c.offset = 0;
+                continue;
+            }
+
             assert(c.offset + c.size <= m_data->get_size());
 
             if (c.size >= 4)
