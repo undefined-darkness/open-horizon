@@ -227,7 +227,7 @@ void model::set_bone_rot(int lod_idx, int bone_idx, const nya_math::quat &rot)
 
 //------------------------------------------------------------
 
-const nya_scene::mesh &model::get_mesh(int lod_idx) const
+nya_scene::mesh &model::get_mesh(int lod_idx)
 {
     if (lod_idx < 0 || lod_idx >= m_mesh.get_lods_count())
         return nya_memory::invalid_object<nya_scene::mesh>();
