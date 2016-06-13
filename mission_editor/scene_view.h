@@ -15,6 +15,9 @@ class scene_view : public QGLWidget
 public:
     scene_view(QWidget *parent = NULL);
 
+public:
+    void load_location(std::string name);
+
 private:
     virtual void initializeGL() override;
     virtual void resizeGL(int w, int h) override;

@@ -24,6 +24,7 @@ public:
 private:
     void setup_menu();
 
+private slots:
     void on_new_mission();
     void on_load_mission();
     void on_save_mission();

@@ -7,6 +7,12 @@
 
 //------------------------------------------------------------
 
+void scene_view::load_location(std::string name)
+{
+}
+
+//------------------------------------------------------------
+
 scene_view::scene_view(QWidget *parent): QGLWidget(parent)
 {
     setFocusPolicy(Qt::StrongFocus);

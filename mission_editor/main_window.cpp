@@ -10,7 +10,9 @@
 #include <QVBoxLayout>
 #include <QSignalMapper>
 #include <QShortcut>
+#include <QInputDialog>
 #include "scene_view.h"
+#include "game/locations_list.h"
 
 //------------------------------------------------------------
 
@@ -86,6 +88,25 @@ void main_window::setup_menu()
 
 void main_window::on_new_mission()
 {
+    QStringList items;
+    auto &list = game::get_locations_list();
+    for (auto &l: list)
+    {
+        auto str = QString::fromWCharArray(l.second.c_str(), l.second.size());
+        str.append((" [" + l.first + "]").c_str());
+        items << str;
+    }
+
+    bool ok = false;
+    QString item = QInputDialog::getItem(this, "Select location", "Location:", items, 0, false, &ok);
+    if (!ok && item.isEmpty())
+        return;
+
+    const int idx = items.indexOf(item);
+    if (idx < 0 || idx >= (int)list.size())
+        return;
+
+    m_scene_view->load_location(list[idx].first);
 }
 
 //------------------------------------------------------------

@@ -22,6 +22,8 @@ DESTDIR = ../bin/$${BIN_DIR_NAME}/
 OBJECTS_DIR = ../obj/$${BIN_DIR_NAME}/
 MOC_DIR = $${OBJECTS_DIR}/
 
+INCLUDEPATH += ../
+
 QMAKE_TARGET_BUNDLE_PREFIX = open-horizon
 
 #-------------------------------------------------
