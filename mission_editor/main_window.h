@@ -6,6 +6,7 @@
 
 #include <QMainWindow>
 #include <QTreeView>
+#include <QFormLayout>
 
 //------------------------------------------------------------
 
@@ -21,8 +22,16 @@ public:
     explicit main_window(QWidget *parent = 0);
 
 private:
+    void setup_menu();
+
+    void on_new_mission();
+    void on_load_mission();
+    void on_save_mission();
+
+private:
     scene_view *m_scene_view;
     QTreeView *m_objects_tree;
+    QFormLayout *m_edit_layout;
 };
 
 //------------------------------------------------------------
