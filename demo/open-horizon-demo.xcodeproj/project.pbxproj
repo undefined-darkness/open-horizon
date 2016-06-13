@@ -148,6 +148,7 @@
 		F53304C71B09DEC300D8C3C7 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = menu.h; path = ../gui/menu.h; sourceTree = "<group>"; };
 		F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = app_protocol_simple.cpp; path = ../deps/miso/src/app_protocol_simple.cpp; sourceTree = "<group>"; };
 		F53EFF501D0EE6FF009B6A0A /* locations_list.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = locations_list.h; path = ../game/locations_list.h; sourceTree = "<group>"; };
+		F53EFF531D0F26DA009B6A0A /* resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = resources.h; path = ../util/resources.h; sourceTree = "<group>"; };
 		F561C5FA1AFD24E900D8DD14 /* half.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = half.h; path = ../util/half.h; sourceTree = "<group>"; };
 		F5696AA11B10E3F800C7BFC9 /* joystick.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = joystick.xml; path = ../resources/joystick.xml; sourceTree = "<group>"; };
 		F572C1EF1CA715AC00AB1D1F /* poc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = poc.cpp; sourceTree = "<group>"; };
@@ -462,6 +463,7 @@
 				F5C6D37C1AF968E7006FB7E6 /* params.h */,
 				F50B755C1CABD1410004E04F /* platform.cpp */,
 				F50B755D1CABD1410004E04F /* platform.h */,
+				F53EFF531D0F26DA009B6A0A /* resources.h */,
 				F5C724A41C8F124700EF0A7B /* simd.h */,
 				F5C6D3A11AF96B4B006FB7E6 /* util.h */,
 				F5C6D37D1AF968E7006FB7E6 /* xml.h */,

@@ -2,9 +2,6 @@
 // open horizon -- undefined_darkness@outlook.com
 //
 
-#include "containers/qdf_provider.h"
-#include "containers/dpl_provider.h"
-
 #include "game/deathmatch.h"
 #include "game/team_deathmatch.h"
 #include "game/free_flight.h"
@@ -13,14 +10,10 @@
 #include "game/hangar.h"
 #include "gui/menu.h"
 
-#include "resources/file_resources_provider.h"
-#include "resources/composite_resources_provider.h"
 #include "scene/camera.h"
-#include "system/system.h"
 
-#include "util/config.h"
 #include "util/controls.h"
-#include "util/platform.h"
+#include "util/resources.h"
 
 #include <thread>
 #include <chrono>
@@ -33,94 +26,13 @@
     #undef min
     int main();
     int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) { return main(); }
-#else
-    #include <unistd.h>
 #endif
 
 //------------------------------------------------------------
 
 int main()
 {
-#ifndef _WIN32
-    chdir(nya_system::get_app_path());
-#endif
-
-    config::register_var("acah_path", "");
-
-    qdf_resources_provider qdfp;
-    if (!qdfp.open_archive((config::get_var("acah_path") + "datafile.qdf").c_str()))
-    {
-        if (platform::show_msgbox("You are running Open Horizon outside of the Assault Horizon folder.\n"
-                                  "Please specify the path to the Assault Horizon folder.\n"
-                                  "It will be saved automatically."))
-        {
-            config::set_var("acah_path", platform::open_folder_dialog());
-            if (!qdfp.open_archive((config::get_var("acah_path") + "datafile.qdf").c_str()))
-                return 0;
-        }
-        else
-            return 0;
-    }
-
-    class target_resource_provider: public nya_resources::resources_provider
-    {
-        nya_resources::resources_provider &m_provider;
-        dpl_resources_provider m_dlc_provider;
-        nya_resources::file_resources_provider m_fprov;
-        nya_resources::file_resources_provider m_fprov2;
-
-    public:
-        target_resource_provider(nya_resources::resources_provider &provider): m_provider(provider)
-        {
-            m_fprov.set_folder(nya_system::get_app_path());
-            m_fprov2.set_folder(config::get_var("acah_path").c_str());
-
-            nya_resources::composite_resources_provider cprov;
-            cprov.add_provider(&m_fprov);
-            cprov.add_provider(&m_fprov2);
-            cprov.add_provider(&provider);
-            nya_resources::set_resources_provider(&cprov);
-
-            m_dlc_provider.open_archive("target/DATA.PAC", "DATA.PAC.xml");
-        }
-
-    private:
-        nya_resources::resource_data *access(const char *resource_name)
-        {
-            if (!resource_name)
-                return 0;
-
-            if (m_dlc_provider.has(resource_name))
-                return m_dlc_provider.access(resource_name);
-
-            const std::string str(resource_name);
-            if (m_provider.has(("target/" + str).c_str()))
-                return m_provider.access(("target/" + str).c_str());
-
-            if (m_provider.has(("common/" + str).c_str()))
-                return m_provider.access(("common/" + str).c_str());
-
-            if (m_provider.has(resource_name))
-                return m_provider.access(resource_name);
-
-            if (m_fprov.has(resource_name))
-                return m_fprov.access(resource_name);
-
-            return m_fprov2.access(resource_name);
-        }
-
-        bool has(const char *resource_name)
-        {
-            if (!resource_name)
-                return false;
-
-            const std::string str(resource_name);
-            return m_provider.has(("target/" + str).c_str()) || m_provider.has(("common/" + str).c_str()) || m_provider.has(resource_name);
-        }
-
-    } trp(qdfp);
-
-    nya_resources::set_resources_provider(&trp);
+    setup_resources();
 
     config::register_var("screen_width", "1000");
     config::register_var("screen_height", "562");
@@ -128,7 +40,7 @@ int main()
     config::register_var("music_volume", "5");
 
     platform platform;
-    if (!platform.init(config::get_var_int("screen_width"), config::get_var_int("screen_height"), "Open Horizon 5th demo"))
+    if (!platform.init(config::get_var_int("screen_width"), config::get_var_int("screen_height"), "Open Horizon 7th demo"))
         return -1;
 
     std::vector<joystick_config> joysticks;

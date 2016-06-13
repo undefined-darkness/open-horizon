@@ -41,13 +41,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\bin\win_vs2012_debug\</OutDir>
-    <IntDir>..\obj\win_vs2012_debug\</IntDir>
+    <OutDir>..\bin\win32_debug\</OutDir>
+    <IntDir>..\obj\win32_debug\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\bin\win_vs2012_release\</OutDir>
-    <IntDir>..\obj\win_vs2012_release\</IntDir>
+    <OutDir>..\bin\win32_release\</OutDir>
+    <IntDir>..\obj\win32_release\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

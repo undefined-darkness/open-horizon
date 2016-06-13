@@ -5,6 +5,7 @@
 #pragma once
 
 #include <QGLWidget>
+#include "renderer/location.h"
 
 //------------------------------------------------------------
 
@@ -27,6 +28,11 @@ private:
     virtual void mousePressEvent(QMouseEvent *event) override;
     virtual void mouseMoveEvent(QMouseEvent *event) override;
     virtual void wheelEvent(QWheelEvent *event) override;
+
+private:
+    renderer::location m_location;
+    nya_math::angle_deg m_camera_yaw, m_camera_pitch;
+    int m_mouse_x = 0, m_mouse_y = 0;
 };
 
 //------------------------------------------------------------
