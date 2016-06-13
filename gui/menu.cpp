@@ -6,6 +6,7 @@
 #include "util/config.h"
 #include "renderer/aircraft.h"
 #include "game/game.h"
+#include "game/locations_list.h"
 
 namespace gui
 {
@@ -449,16 +450,10 @@ void menu::set_screen(const std::string &screen)
         send_sub_events(m_entries.back());
 
         add_entry(L"Location: ", {}, "map", {});
-#if _DEBUG || DEBUG
-        add_sub_entry(L"Test", "def");
-#endif
-        add_sub_entry(L"Miami", "ms01");
-        add_sub_entry(L"Dubai", "ms06");
-        add_sub_entry(L"Paris", {"ms30"});
-        add_sub_entry(L"Tokyo", {"ms50"});
-        add_sub_entry(L"Honolulu", "ms51");
-        add_sub_entry(L"Beliy Base", "ms08x");
-        add_sub_entry(L"Black Sea", {"ms09"});
+
+        auto &locations = game::get_locations_list();
+        for (auto &l: locations)
+            add_sub_entry(l.second, l.first);
 
         send_sub_events(m_entries.back());
 
@@ -480,29 +475,11 @@ void menu::set_screen(const std::string &screen)
     else if (screen == "map_select")
     {
         m_title = L"LOCATION";
-        add_entry(L"Miami", {"map=ms01"});
-        add_entry(L"Dubai", {"map=ms06"});
-        add_entry(L"Paris", {"map=ms30"});
-        add_entry(L"Tokyo", {"map=ms50"});
-        add_entry(L"Honolulu", {"map=ms51"});
-        add_entry(L"Beliy Base", {"map=ms08x"}); //siege
-        add_entry(L"Black Sea", {"map=ms09"});
-        add_entry(L"Florida", {"map=ms12t"});
-        add_entry(L"Moscow", {"map=ms11b"});
-        add_entry(L"Washington", {"map=ms14"});
-/*
-        add_entry(L"02", {"map=ms02"}); //inferno //oil day
-        //add_entry(L"03 Eastern Africa", {"map=ms03"}); //red moon //tex indices idx < size assert
-        //add_entry(L"04 Mogadiyu", {"map=ms04"}); //spooky //tex indices idx < size assert
-        add_entry(L"05", {"map=ms05"}); //oil night - blue on blue
-        //add_entry(L"07 Suez Canal", {"map=ms07"}); //lock n load //tex indices idx < size assert
-        add_entry(L"08 Derbent", {"map=ms08"}); //pipeline
-        add_entry(L"10 Caucasus Region", {"map=ms10"}); //launch
-        //add_entry(L"11A Moscow", {"map=ms11a"}); //motherland //tex indices idx < size assert
-        //add_entry(L"12 Miami", {"map=ms12"}); //homefront //type 8 chunk assert, kinda small
-        add_entry(L"13 Florida Coast", {"map=ms13"}); //hurricane
-        //add_entry(L"OP", {"map=msop"}); //tex indices idx < size assert
-*/
+
+        auto &locations = game::get_locations_list();
+        for (auto &l: locations)
+            add_entry(l.second, {"map=" + l.first});
+
         for (auto &e: m_entries)
             e.events.push_back("screen=ac_select");
     }

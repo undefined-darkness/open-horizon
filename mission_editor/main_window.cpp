@@ -40,8 +40,13 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     navigator->insertTab(2, script_widget, "Script");
     script_widget->setLayout(script_layout);
 
+    QFormLayout *info_layout = new QFormLayout;
+    QWidget *info_widget = new QWidget;
+    navigator->insertTab(3, info_widget, "Info");
+    info_widget->setLayout(info_layout);
+
     QSignalMapper *m = new QSignalMapper(this);
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < 4; ++i)
     {
         QShortcut *s = new QShortcut(QKeySequence(("Ctrl+" + std::to_string(i+1)).c_str()), this);
         connect(s, SIGNAL(activated()), m, SLOT(map()));

@@ -69,7 +69,7 @@ bool mesh::load(const void *data, size_t size)
         chunks[i].size = reader.read<uint>();
     }
 
-    assume(header.count == 1);
+    assume(header.count == 1); //ToDo; header.count > 1 on ms10
 
     for (int i = 0; i < header.count; ++i)
     {
