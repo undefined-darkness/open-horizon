@@ -6,6 +6,7 @@
 
 #include <QGLWidget>
 #include "renderer/location.h"
+#include "phys/physics.h"
 
 //------------------------------------------------------------
 
@@ -31,6 +32,7 @@ private:
 
 private:
     renderer::location m_location;
+    phys::world m_location_phys;
     nya_math::angle_deg m_camera_yaw, m_camera_pitch;
     nya_math::vec3 m_camera_pos;
     int m_mouse_x = 0, m_mouse_y = 0;

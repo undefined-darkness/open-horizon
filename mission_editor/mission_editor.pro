@@ -47,7 +47,10 @@ SOURCES += \
     ../renderer/fhm_location.cpp \
     ../renderer/sky.cpp \
     ../renderer/shared.cpp \
-    ../deps/pugixml-1.4/src/pugixml.cpp
+    ../deps/pugixml-1.4/src/pugixml.cpp \
+    ../phys/mesh.cpp \
+    ../phys/physics.cpp \
+    ../phys/plane_params.cpp
 
 HEADERS += \
     ../containers/fhm.h \
@@ -72,6 +75,9 @@ HEADERS += \
     ../util/zip.h \
     ../util/xml.h \
     ../deps/pugixml-1.4/src/pugiconfig.hpp \
-    ../deps/pugixml-1.4/src/pugixml.hpp
+    ../deps/pugixml-1.4/src/pugixml.hpp \
+    ../phys/physics.h \
+    ../phys/mesh.h \
+    ../phys/plane_params.h
 
 #-------------------------------------------------

@@ -16,6 +16,7 @@ void scene_view::load_location(std::string name)
     m_location = renderer::location();
     shared::clear_textures();
     m_location.load(name.c_str());
+    m_location_phys.set_location(name.c_str());
     m_camera_pos.set(0, 1000, 0);
     m_camera_yaw = 0;
     m_camera_pitch = 30;
@@ -48,8 +49,10 @@ void scene_view::resizeGL(int w, int h)
 
 void scene_view::paintGL()
 {
+    const float height = m_location_phys.get_height(m_camera_pos.x, m_camera_pos.z);
+
     nya_scene::get_camera_proxy()->set_rot(m_camera_yaw, m_camera_pitch, 0.0f);
-    nya_scene::get_camera_proxy()->set_pos(m_camera_pos);
+    nya_scene::get_camera_proxy()->set_pos(m_camera_pos + nya_math::vec3(0, height, 0));
 
     nya_render::clear(true, true);
     m_location.update_tree_texture();
@@ -86,6 +89,10 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
         dpos.rotate(m_camera_yaw);
         dpos *= m_camera_pos.y / 30.0f;
         m_camera_pos.x += dpos.x, m_camera_pos.z += dpos.y;
+
+        float location_size = 256 * 256.0f;
+        m_camera_pos.x = nya_math::clamp(m_camera_pos.x, -location_size, location_size);
+        m_camera_pos.z = nya_math::clamp(m_camera_pos.z, -location_size, location_size);
     }
 
     m_mouse_x = x, m_mouse_y = y;
