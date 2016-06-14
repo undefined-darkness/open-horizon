@@ -75,24 +75,31 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
     int y = event->localPos().y();
 
     auto btns = event->buttons();
-    if (btns.testFlag(Qt::LeftButton))
-    {
-        m_camera_yaw += x - m_mouse_x;
-        m_camera_pitch += y - m_mouse_y;
-        m_camera_yaw.normalize();
-        m_camera_pitch.clamp(-90, 90);
-    }
-
     if (btns.testFlag(Qt::RightButton))
     {
-        nya_math::vec2 dpos(x - m_mouse_x, y - m_mouse_y);
-        dpos.rotate(m_camera_yaw);
-        dpos *= m_camera_pos.y / 30.0f;
-        m_camera_pos.x += dpos.x, m_camera_pos.z += dpos.y;
+        if (event->modifiers().testFlag(Qt::ShiftModifier))
+        {
+            m_camera_yaw += x - m_mouse_x;
+            m_camera_pitch += y - m_mouse_y;
+            m_camera_yaw.normalize();
+            m_camera_pitch.clamp(-90, 90);
+        }
+        else if (event->modifiers().testFlag(Qt::AltModifier))
+        {
+            m_camera_pos.y -= (y - m_mouse_y) * 10.0f;
+            m_camera_pos.y = nya_math::clamp(m_camera_pos.y, 20.0f, 5000.0f);
+        }
+        else
+        {
+            nya_math::vec2 dpos(x - m_mouse_x, y - m_mouse_y);
+            dpos.rotate(m_camera_yaw);
+            dpos *= m_camera_pos.y / 30.0f;
+            m_camera_pos.x += dpos.x, m_camera_pos.z += dpos.y;
 
-        float location_size = 256 * 256.0f;
-        m_camera_pos.x = nya_math::clamp(m_camera_pos.x, -location_size, location_size);
-        m_camera_pos.z = nya_math::clamp(m_camera_pos.z, -location_size, location_size);
+            float location_size = 256 * 256.0f;
+            m_camera_pos.x = nya_math::clamp(m_camera_pos.x, -location_size, location_size);
+            m_camera_pos.z = nya_math::clamp(m_camera_pos.z, -location_size, location_size);
+        }
     }
 
     m_mouse_x = x, m_mouse_y = y;

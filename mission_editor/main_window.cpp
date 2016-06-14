@@ -5,6 +5,8 @@
 #include "main_window.h"
 #include <QSplitter>
 #include <QTabWidget>
+#include <QTreeView>
+#include <QStandardItemModel>
 #include <QMenuBar>
 #include <QAction>
 #include <QVBoxLayout>
@@ -13,6 +15,7 @@
 #include <QInputDialog>
 #include "scene_view.h"
 #include "game/locations_list.h"
+#include "game/objects.h"
 
 //------------------------------------------------------------
 
@@ -29,8 +32,28 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
 
     main_splitter->setSizes(QList<int>() << 1000 << 400);
 
-    m_objects_tree = new QTreeView;
-    navigator->insertTab(0, m_objects_tree, "Add");
+    auto objects_tree = new QTreeView;
+    navigator->insertTab(0, objects_tree, "Add");
+
+    auto tree_model = new QStandardItemModel;
+    auto tree_root = tree_model->invisibleRootItem();
+    auto &obj_list = game::get_objects_list();
+    std::string obj_group;
+    QStandardItem *tree_group = 0;
+    for (auto &o: obj_list)
+    {
+        if (o.group != obj_group)
+        {
+            tree_group = new QStandardItem(o.group.c_str());
+            tree_root->appendRow(tree_group);
+            obj_group = o.group;
+        }
+
+        if (tree_group)
+            tree_group->appendRow(new QStandardItem(o.id.c_str()));
+    }
+    objects_tree->setModel(tree_model);
+    objects_tree->expandAll();
 
     m_edit_layout = new QFormLayout;
     QWidget *edit_widget = new QWidget;

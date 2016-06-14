@@ -1,0 +1,20 @@
+<!--models from target/model_id/mech/-->
+
+<objects>
+    <group name="air">
+        <object id="a10a" type="attacker" model="o_a10a" y="700"/>
+        <object id="m31b" type="fighter" model="o_m31b" y="1000"/>
+        <object id="t160" type="bomber" model="o_t160" y="800"/>
+    </group>
+
+    <group name="ground">
+        <object id="m1a2" type="tank" model="c_m1a2"/>
+        <object id="t90" type="tank" model="c_t090"/>
+
+        <object id="boxs" type="static" model="f_boxs"/>
+    </group>
+
+    <group name="naval">
+        <object id="kuzn" type="carrier" model="s_kuzn"/>
+    </group>
+</objects>

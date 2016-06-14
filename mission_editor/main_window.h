@@ -5,7 +5,6 @@
 #pragma once
 
 #include <QMainWindow>
-#include <QTreeView>
 #include <QFormLayout>
 
 //------------------------------------------------------------
@@ -31,7 +30,6 @@ private slots:
 
 private:
     scene_view *m_scene_view;
-    QTreeView *m_objects_tree;
     QFormLayout *m_edit_layout;
 };
 
