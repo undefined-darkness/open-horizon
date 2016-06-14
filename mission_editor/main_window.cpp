@@ -13,9 +13,19 @@
 #include <QSignalMapper>
 #include <QShortcut>
 #include <QInputDialog>
+#include <QMessageBox>
 #include "scene_view.h"
 #include "game/locations_list.h"
 #include "game/objects.h"
+
+//------------------------------------------------------------
+
+inline void alert(std::string message)
+{
+    auto m = new QMessageBox;
+    m->setText(message.c_str());
+    m->exec();
+}
 
 //------------------------------------------------------------
 
@@ -33,7 +43,7 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     main_splitter->setSizes(QList<int>() << 1000 << 400);
 
     auto objects_tree = new QTreeView;
-    navigator->insertTab(0, objects_tree, "Add");
+    navigator->insertTab(scene_view::mode_add, objects_tree, "Add");
 
     auto tree_model = new QStandardItemModel;
     auto tree_root = tree_model->invisibleRootItem();
@@ -57,27 +67,36 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
 
     m_edit_layout = new QFormLayout;
     QWidget *edit_widget = new QWidget;
-    navigator->insertTab(1, edit_widget, "Edit");
+    navigator->insertTab(scene_view::mode_edit, edit_widget, "Edit");
     edit_widget->setLayout(m_edit_layout);
+
+    QWidget *path_widget = new QWidget;
+    navigator->insertTab(scene_view::mode_path, path_widget, "Path");
+
+    QWidget *zone_widget = new QWidget;
+    navigator->insertTab(scene_view::mode_zone, zone_widget, "Zone");
 
     QVBoxLayout *script_layout = new QVBoxLayout;
     QWidget *script_widget = new QWidget;
-    navigator->insertTab(2, script_widget, "Script");
+    navigator->insertTab(scene_view::mode_other, script_widget, "Script");
     script_widget->setLayout(script_layout);
 
-    QFormLayout *info_layout = new QFormLayout;
+    auto info_layout = new QFormLayout;
     QWidget *info_widget = new QWidget;
-    navigator->insertTab(3, info_widget, "Info");
+    navigator->insertTab(scene_view::mode_other + 1, info_widget, "Info");
     info_widget->setLayout(info_layout);
 
     QSignalMapper *m = new QSignalMapper(this);
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < scene_view::mode_other + 2; ++i)
     {
         QShortcut *s = new QShortcut(QKeySequence(("Ctrl+" + std::to_string(i+1)).c_str()), this);
         connect(s, SIGNAL(activated()), m, SLOT(map()));
         m->setMapping(s, i);
     }
     connect(m, SIGNAL(mapped(int)), navigator, SLOT(setCurrentIndex(int)));
+    connect(navigator, SIGNAL(currentChanged(int)), this, SLOT(on_mode_changed(int)));
+
+    m_scene_view->set_mode(scene_view::mode_add);
 
     setup_menu();
 }
@@ -105,6 +124,12 @@ void main_window::setup_menu()
     this->addAction(save_mission);
     file_menu->addAction(save_mission);
     connect(save_mission, SIGNAL(triggered()), this, SLOT(on_save_mission()));
+
+    QAction *save_as_mission = new QAction("Save as mission", this);
+    save_as_mission->setShortcut(QKeySequence::SaveAs);
+    this->addAction(save_as_mission);
+    file_menu->addAction(save_as_mission);
+    connect(save_as_mission, SIGNAL(triggered()), this, SLOT(on_save_as_mission()));
 }
 
 //------------------------------------------------------------
@@ -142,6 +167,22 @@ void main_window::on_load_mission()
 
 void main_window::on_save_mission()
 {
+}
+
+//------------------------------------------------------------
+
+void main_window::on_save_as_mission()
+{
+}
+
+//------------------------------------------------------------
+
+void main_window::on_mode_changed(int idx)
+{
+    if (idx >= scene_view::mode_other)
+        m_scene_view->set_mode(scene_view::mode_other);
+    else
+        m_scene_view->set_mode(scene_view::mode(idx));
 }
 
 //------------------------------------------------------------

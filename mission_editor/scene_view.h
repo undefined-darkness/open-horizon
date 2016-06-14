@@ -21,6 +21,17 @@ public:
 public:
     void load_location(std::string name);
 
+    enum mode
+    {
+        mode_add,
+        mode_edit,
+        mode_path,
+        mode_zone,
+        mode_other
+    };
+
+    void set_mode(mode m) { m_mode = m; }
+
 private:
     virtual void initializeGL() override;
     virtual void resizeGL(int w, int h) override;
@@ -41,6 +52,7 @@ private:
     nya_math::angle_deg m_camera_yaw, m_camera_pitch;
     nya_math::vec3 m_camera_pos;
     int m_mouse_x = 0, m_mouse_y = 0;
+    mode m_mode;
 };
 
 //------------------------------------------------------------

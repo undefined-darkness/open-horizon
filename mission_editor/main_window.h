@@ -27,6 +27,8 @@ private slots:
     void on_new_mission();
     void on_load_mission();
     void on_save_mission();
+    void on_save_as_mission();
+    void on_mode_changed(int idx);
 
 private:
     scene_view *m_scene_view;
