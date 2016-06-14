@@ -8,6 +8,11 @@
 #include "renderer/shared.h"
 #include <QMouseEvent>
 #include <QWheelEvent>
+#include <QMessageBox>
+
+//------------------------------------------------------------
+
+static const float location_size = 256 * 256.0f;
 
 //------------------------------------------------------------
 
@@ -35,6 +40,7 @@ void scene_view::initializeGL()
 {
     nya_render::set_clear_color(0.2f,0.4f,0.5f,0.0f);
     nya_render::apply_state(true);
+    m_dd.set_point_size(3.0f);
 }
 
 //------------------------------------------------------------
@@ -57,6 +63,34 @@ void scene_view::paintGL()
     nya_render::clear(true, true);
     m_location.update_tree_texture();
     m_location.draw();
+
+    nya_render::set_state(nya_render::state());
+    nya_render::depth_test::disable();
+    nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
+    m_dd.draw();
+}
+
+//------------------------------------------------------------
+
+nya_math::vec3 scene_view::world_cursor_pos() const
+{
+    auto r = nya_render::get_viewport();
+    nya_math::vec4 pos(m_mouse_x, r.height - m_mouse_y, 0.0f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glReadPixels(pos.x, pos.y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &pos.z);
+    nya_render::apply_state(true);
+
+    pos.x = 2.0 * pos.x / r.width - 1.0f;
+    pos.y = 2.0 * pos.y / r.height - 1.0f;
+    pos.z = 2.0 * pos.z - 1.0;
+
+    auto mvp = nya_render::get_modelview_matrix() * nya_render::get_projection_matrix();
+    mvp.invert();
+
+    pos = mvp * pos;
+    pos /= pos.w;
+
+    return pos.xyz();
 }
 
 //------------------------------------------------------------
@@ -65,6 +99,13 @@ void scene_view::mousePressEvent(QMouseEvent *event)
 {
     m_mouse_x = event->localPos().x();
     m_mouse_y = event->localPos().y();
+
+    //test
+    if (event->buttons().testFlag(Qt::LeftButton))
+    {
+        m_dd.add_point(world_cursor_pos(), nya_math::vec4(1.0, 0.3, 0.3, 1.0));
+        update();
+    }
 }
 
 //------------------------------------------------------------
@@ -95,8 +136,6 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
             dpos.rotate(m_camera_yaw);
             dpos *= m_camera_pos.y / 30.0f;
             m_camera_pos.x += dpos.x, m_camera_pos.z += dpos.y;
-
-            float location_size = 256 * 256.0f;
             m_camera_pos.x = nya_math::clamp(m_camera_pos.x, -location_size, location_size);
             m_camera_pos.z = nya_math::clamp(m_camera_pos.z, -location_size, location_size);
         }
