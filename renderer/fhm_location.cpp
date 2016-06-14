@@ -683,7 +683,7 @@ void fhm_location::draw(const std::vector<mptx_mesh> &meshes)
             if (idx >= 127) //limited to 500 in shader uniforms, limited to 127 because of ati max instances per draw limitations
             {
                 mat_unset = true;
-                m_map_parts_material.internal().set(nya_scene::material::default_pass);
+                m_map_parts_material.internal().set();
                 mesh.vbo.bind();
                 mesh.vbo.draw(0, mesh.vbo.get_verts_count(), mesh.vbo.get_element_type(), idx);
                 mesh.vbo.unbind();
@@ -1005,7 +1005,11 @@ bool fhm_location::read_mptx(memory_reader &reader)
     if (header.tex_count>0)
         mesh.textures[0] = header.tex0.id;
     if (header.tex_count>1)
+    {
         mesh.textures[1] = header.tex1.id;
+        if (!header.tex1.id)
+            mesh.textures.pop_back();
+    }
 
     assume(header.tex_count < 3);
 
