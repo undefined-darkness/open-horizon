@@ -22,6 +22,8 @@ void scene_view::load_location(std::string name)
     shared::clear_textures();
     m_location.load(name.c_str());
     m_location_phys.set_location(name.c_str());
+    m_models.clear();
+    set_selected_add(m_selected_add);
     m_camera_pos.set(0, 1000, 0);
     m_camera_yaw = 0;
     m_camera_pitch = 30;
@@ -32,6 +34,22 @@ void scene_view::load_location(std::string name)
 void scene_view::set_selected_add(std::string str)
 {
     m_selected_add = str;
+    if (str.empty())
+        return;
+
+    if (m_models.find(str) != m_models.end())
+        return;
+
+    auto &objects = game::get_objects_list();
+    for (auto &o: objects)
+    {
+        if (o.id == str)
+        {
+            m_models[str].load(o.model.c_str(), m_location.get_params());
+            m_selected_dy = o.y;
+            return;
+        }
+    }
 }
 
 //------------------------------------------------------------
@@ -39,6 +57,7 @@ void scene_view::set_selected_add(std::string str)
 scene_view::scene_view(QWidget *parent): QGLWidget(parent)
 {
     setFocusPolicy(Qt::StrongFocus);
+    setMouseTracking(true);
 }
 
 //------------------------------------------------------------
@@ -71,6 +90,20 @@ void scene_view::paintGL()
     m_location.update_tree_texture();
     m_location.draw();
 
+    m_cursor_pos = world_cursor_pos();
+
+    if (!m_selected_add.empty())
+    {
+        auto it = m_models.find(m_selected_add);
+        if (it != m_models.end())
+        {
+            auto &m = it->second;
+            m.set_pos(m_cursor_pos + nya_math::vec3(0, m_selected_dy, 0));
+            m.set_rot(nya_math::quat());
+            m.draw(0);
+        }
+    }
+
     nya_render::set_state(nya_render::state());
     nya_render::depth_test::disable();
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
@@ -91,7 +124,7 @@ nya_math::vec3 scene_view::world_cursor_pos() const
     pos.y = 2.0 * pos.y / r.height - 1.0f;
     pos.z = 2.0 * pos.z - 1.0;
 
-    auto mvp = nya_render::get_modelview_matrix() * nya_render::get_projection_matrix();
+    auto mvp = nya_scene::get_camera().get_view_matrix() * nya_scene::get_camera().get_proj_matrix();
     mvp.invert();
 
     pos = mvp * pos;
@@ -106,13 +139,6 @@ void scene_view::mousePressEvent(QMouseEvent *event)
 {
     m_mouse_x = event->localPos().x();
     m_mouse_y = event->localPos().y();
-
-    //test
-    if (event->buttons().testFlag(Qt::LeftButton))
-    {
-        m_dd.add_point(world_cursor_pos(), nya_math::vec4(1.0, 0.3, 0.3, 1.0));
-        update();
-    }
 }
 
 //------------------------------------------------------------

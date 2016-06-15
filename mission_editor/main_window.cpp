@@ -186,10 +186,10 @@ void main_window::on_save_as_mission()
 
 void main_window::on_tree_selected(QTreeWidgetItem* item, int)
 {
-    if (!item || !item->parent())
-        return;
-
-    m_scene_view->set_selected_add(item->text(0).toUtf8().constData());
+    if (item && item->parent())
+        m_scene_view->set_selected_add(item->text(0).toUtf8().constData());
+    else
+        m_scene_view->set_selected_add("");
 }
 
 //------------------------------------------------------------

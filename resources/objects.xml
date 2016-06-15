@@ -2,9 +2,9 @@
 
 <objects>
     <group name="air">
-        <object id="a10a" type="attacker" model="o_a10a" y="700"/>
-        <object id="m31b" type="fighter" model="o_m31b" y="1000"/>
-        <object id="t160" type="bomber" model="o_t160" y="800"/>
+        <object id="a10a" type="attacker" model="o_a10a" y="70"/>
+        <object id="m31b" type="fighter" model="o_m31b" y="100"/>
+        <object id="t160" type="bomber" model="o_t160" y="130"/>
     </group>
 
     <group name="ground">
