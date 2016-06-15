@@ -1558,9 +1558,9 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
     mesh.vbo.set_vertex_data(&verts[0], sizeof(verts[0]), uint(verts.size()));
 
     if(use_indices4b)
-        mesh.vbo.set_index_data(&regroup_indices4b[0], nya_render::vbo::index4b, uint(indices4b.size()));
+        mesh.vbo.set_index_data(&regroup_indices4b[0], nya_render::vbo::index4b, uint(regroup_indices4b.size()));
     else
-        mesh.vbo.set_index_data(&regroup_indices2b[0], nya_render::vbo::index2b, uint(indices2b.size()));
+        mesh.vbo.set_index_data(&regroup_indices2b[0], nya_render::vbo::index2b, uint(regroup_indices2b.size()));
 
     l.mesh.create(mesh);
 
