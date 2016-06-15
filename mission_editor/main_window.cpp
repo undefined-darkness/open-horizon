@@ -5,8 +5,7 @@
 #include "main_window.h"
 #include <QSplitter>
 #include <QTabWidget>
-#include <QTreeView>
-#include <QStandardItemModel>
+#include <QTreeWidget>
 #include <QMenuBar>
 #include <QAction>
 #include <QVBoxLayout>
@@ -42,28 +41,36 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
 
     main_splitter->setSizes(QList<int>() << 1000 << 400);
 
-    auto objects_tree = new QTreeView;
+    auto objects_tree = new QTreeWidget;
     navigator->insertTab(scene_view::mode_add, objects_tree, "Add");
-
-    auto tree_model = new QStandardItemModel;
-    auto tree_root = tree_model->invisibleRootItem();
     auto &obj_list = game::get_objects_list();
-    std::string obj_group;
-    QStandardItem *tree_group = 0;
     for (auto &o: obj_list)
     {
-        if (o.group != obj_group)
+        auto item = new QTreeWidgetItem;
+        item->setText(0, o.id.c_str());
+        item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+        if (o.group.empty())
         {
-            tree_group = new QStandardItem(o.group.c_str());
-            tree_root->appendRow(tree_group);
-            obj_group = o.group;
+            objects_tree->addTopLevelItem(item);
+            continue;
         }
 
-        if (tree_group)
-            tree_group->appendRow(new QStandardItem(o.id.c_str()));
+        QList<QTreeWidgetItem*> items = objects_tree->findItems(o.group.c_str(), Qt::MatchExactly, 0);
+        if (!items.empty())
+        {
+            items[0]->addChild(item);
+            continue;
+        }
+
+        auto group = new QTreeWidgetItem;
+        group->setText(0, o.group.c_str());
+        group->setFlags(Qt::ItemIsEnabled);
+        objects_tree->addTopLevelItem(group);
+        group->addChild(item);
     }
-    objects_tree->setModel(tree_model);
+
     objects_tree->expandAll();
+    connect(objects_tree,SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(on_tree_selected(QTreeWidgetItem*, int)));
 
     m_edit_layout = new QFormLayout;
     QWidget *edit_widget = new QWidget;
@@ -173,6 +180,16 @@ void main_window::on_save_mission()
 
 void main_window::on_save_as_mission()
 {
+}
+
+//------------------------------------------------------------
+
+void main_window::on_tree_selected(QTreeWidgetItem* item, int)
+{
+    if (!item || !item->parent())
+        return;
+
+    m_scene_view->set_selected_add(item->text(0).toUtf8().constData());
 }
 
 //------------------------------------------------------------

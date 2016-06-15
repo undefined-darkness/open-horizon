@@ -6,6 +6,7 @@
 
 #include <QMainWindow>
 #include <QFormLayout>
+#include <QTreeWidgetItem>
 
 //------------------------------------------------------------
 
@@ -29,6 +30,7 @@ private slots:
     void on_save_mission();
     void on_save_as_mission();
     void on_mode_changed(int idx);
+    void on_tree_selected(QTreeWidgetItem*, int);
 
 private:
     scene_view *m_scene_view;

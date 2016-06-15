@@ -29,6 +29,13 @@ void scene_view::load_location(std::string name)
 
 //------------------------------------------------------------
 
+void scene_view::set_selected_add(std::string str)
+{
+    m_selected_add = str;
+}
+
+//------------------------------------------------------------
+
 scene_view::scene_view(QWidget *parent): QGLWidget(parent)
 {
     setFocusPolicy(Qt::StrongFocus);

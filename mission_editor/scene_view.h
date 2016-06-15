@@ -31,6 +31,7 @@ public:
     };
 
     void set_mode(mode m) { m_mode = m; }
+    void set_selected_add(std::string str);
 
 private:
     virtual void initializeGL() override;
@@ -53,6 +54,7 @@ private:
     nya_math::vec3 m_camera_pos;
     int m_mouse_x = 0, m_mouse_y = 0;
     mode m_mode;
+    std::string m_selected_add;
 };
 
 //------------------------------------------------------------
