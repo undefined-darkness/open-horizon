@@ -29,10 +29,7 @@ varying vec4 alpha_clip;
 
 @vertex
 
-//uniform sampler2D bones_pos_map;
-//uniform sampler2D bones_rot_map;
 uniform sampler2D params_map;
-
 uniform vec4 model_rot;
 
 void main()

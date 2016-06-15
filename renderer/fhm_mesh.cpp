@@ -78,6 +78,8 @@ bool fhm_mesh::load(const char *file_name)
     if (!fhm.open(file_name))
         return false;
 
+    //mad heuristic
+
     int mnt_count = 0, mop2_count = 0, ndxr_offset = -1;
     for (int j = 0; j < fhm.get_chunks_count(); ++j)
     {
@@ -101,8 +103,6 @@ bool fhm_mesh::load(const char *file_name)
         }
     }
 
-    const bool single_mnt = mnt_count == 1, no_mnt = !mnt_count;
-
     int lods_count = 0;
     for (int j = ndxr_offset; j < fhm.get_chunks_count(); ++j)
     {
@@ -113,7 +113,7 @@ bool fhm_mesh::load(const char *file_name)
         }
         else
         {
-            if (!single_mnt && !no_mnt)
+            if (mnt_count > 2)
                 assert(sign == '\0TNM');
             break;
         }
@@ -125,9 +125,41 @@ bool fhm_mesh::load(const char *file_name)
         std::vector<fhm_mop2> mop2s(lods_count);
         m_lods.resize(lods_count);
 
-        int offsets[] = { lods_count, lods_count * 2, 0 };
-        int signs[] = { '\0TNM', '2POM', 'RXDN' };
-        for (int i = (single_mnt || no_mnt) ? 2 : 0; i < 3; ++i)
+        const int signs[] = { '\0TNM', '2POM', 'RXDN' };
+
+        const bool special_mnt = mnt_count <= 2;
+        if (special_mnt && mnt_count > 0)
+        {
+            for (int j = 0; j < 2; ++j)
+            {
+                for (int i = 0, idx = 0; i < fhm.get_chunks_count(); ++i)
+                {
+                    if (fhm.get_chunk_type(i) == signs[j])
+                    {
+                        nya_memory::tmp_buffer_scoped buf(fhm.get_chunk_size(i));
+                        fhm.read_chunk_data(i, buf.get_data());
+                        memory_reader reader(buf.get_data(), buf.get_size());
+
+                        const int from = (idx++) * lods_count/mnt_count, to = from + lods_count/mnt_count;
+                        if (j == 0)
+                        {
+                            read_mnt(reader, mnts[from]);
+                            for (int i = from + 1; i < to; ++i)
+                                mnts[i] = mnts[from];
+                        }
+                        else
+                        {
+                            read_mop2(reader, mnts[from], mop2s[from]);
+                            for (int i = from + 1; i < to; ++i)
+                                mop2s[i] = mop2s[from];
+                        }
+                    }
+                }
+            }
+        }
+
+        const int offsets[] = { lods_count, lods_count * 2, 0 };
+        for (int i = (special_mnt ? 2 : 0); i < 3; ++i)
         {
             for (int j = 0; j < lods_count; ++j)
             {

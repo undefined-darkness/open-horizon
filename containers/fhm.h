@@ -27,6 +27,15 @@ public:
     bool read_chunk_data(int idx, void *data) const;
     uint32_t get_chunk_offset(int idx) const;
 
+    struct folder
+    {
+        std::vector<int> files;
+        std::vector<folder> folders;
+    };
+
+    const folder &get_root() const { return m_root; }
+    void debug_print() const;
+
 public:
     struct fhm_header
     {
@@ -49,7 +58,7 @@ public:
     };
 
 private:
-    bool read_chunks_info(size_t base_offset, int nesting, int &group);
+    bool read_chunks_info(size_t base_offset, folder &f);
 
     struct chunk
     {
@@ -59,6 +68,7 @@ private:
     };
 
     std::vector<chunk> m_chunks;
+    folder m_root;
 
     nya_resources::resource_data *m_data = 0;
     bool m_byte_order = false;
