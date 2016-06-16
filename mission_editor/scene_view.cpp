@@ -37,15 +37,14 @@ void scene_view::set_selected_add(std::string str)
     if (str.empty())
         return;
 
-    if (m_models.find(str) != m_models.end())
-        return;
-
     auto &objects = game::get_objects_list();
     for (auto &o: objects)
     {
         if (o.id == str)
         {
-            m_models[str].load(o.model.c_str(), m_location.get_params());
+            if (m_models.find(str) == m_models.end())
+                m_models[str].load(o.model.c_str(), m_location.get_params());
+
             m_selected_add.y = o.y;
             return;
         }
