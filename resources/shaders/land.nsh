@@ -35,7 +35,7 @@ void main()
 
     vpos = gl_Vertex.xyz;
     vec4 pos = gl_ModelViewProjectionMatrix * gl_Vertex;
-    vfogh = get_fogh(vpos.xyz);
+    vfogh = get_fogh(vpos);
     vfogf = get_fogv(pos);
     gl_Position = pos;
 }

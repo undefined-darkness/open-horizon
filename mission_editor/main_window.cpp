@@ -68,8 +68,6 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
         objects_tree->addTopLevelItem(group);
         group->addChild(item);
     }
-
-    objects_tree->expandAll();
     connect(objects_tree,SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(on_tree_selected(QTreeWidgetItem*, int)));
 
     m_edit_layout = new QFormLayout;

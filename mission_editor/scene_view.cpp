@@ -23,7 +23,7 @@ void scene_view::load_location(std::string name)
     m_location.load(name.c_str());
     m_location_phys.set_location(name.c_str());
     m_models.clear();
-    set_selected_add(m_selected_add);
+    set_selected_add(m_selected_add.id);
     m_camera_pos.set(0, 1000, 0);
     m_camera_yaw = 0;
     m_camera_pitch = 30;
@@ -33,7 +33,7 @@ void scene_view::load_location(std::string name)
 
 void scene_view::set_selected_add(std::string str)
 {
-    m_selected_add = str;
+    m_selected_add.id = str;
     if (str.empty())
         return;
 
@@ -46,7 +46,7 @@ void scene_view::set_selected_add(std::string str)
         if (o.id == str)
         {
             m_models[str].load(o.model.c_str(), m_location.get_params());
-            m_selected_dy = o.y;
+            m_selected_add.y = o.y;
             return;
         }
     }
@@ -92,14 +92,14 @@ void scene_view::paintGL()
 
     m_cursor_pos = world_cursor_pos();
 
-    if (!m_selected_add.empty())
+    if (!m_selected_add.id.empty())
     {
-        auto it = m_models.find(m_selected_add);
+        auto it = m_models.find(m_selected_add.id);
         if (it != m_models.end())
         {
             auto &m = it->second;
-            m.set_pos(m_cursor_pos + nya_math::vec3(0, m_selected_dy, 0));
-            m.set_rot(nya_math::quat());
+            m.set_pos(m_cursor_pos + nya_math::vec3(0, m_selected_add.y, 0));
+            m.set_rot(nya_math::quat(nya_math::angle_deg(), m_selected_add.yaw, 0.0f));
             m.draw(0);
         }
     }
@@ -148,17 +148,22 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
     int x = event->localPos().x();
     int y = event->localPos().y();
 
+    const bool shift = event->modifiers().testFlag(Qt::ShiftModifier);
+    const bool alt = event->modifiers().testFlag(Qt::AltModifier);
+
+    bool lock_mouse = false;
+
     auto btns = event->buttons();
     if (btns.testFlag(Qt::RightButton))
     {
-        if (event->modifiers().testFlag(Qt::ShiftModifier))
+        if (shift)
         {
             m_camera_yaw += x - m_mouse_x;
             m_camera_pitch += y - m_mouse_y;
             m_camera_yaw.normalize();
             m_camera_pitch.clamp(-90, 90);
         }
-        else if (event->modifiers().testFlag(Qt::AltModifier))
+        else if (alt)
         {
             m_camera_pos.y -= (y - m_mouse_y) * 10.0f;
             m_camera_pos.y = nya_math::clamp(m_camera_pos.y, 20.0f, 5000.0f);
@@ -173,8 +178,29 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
             m_camera_pos.z = nya_math::clamp(m_camera_pos.z, -location_size, location_size);
         }
     }
+    else if (alt)
+    {
+        m_selected_add.y -= (y - m_mouse_y) * (shift ? 10.0f : 1.0f);
+        m_selected_add.y = nya_math::clamp(m_selected_add.y, 0.0f, 10000.0f);
+        lock_mouse = true;
+    }
+    else if (shift)
+    {
+        m_selected_add.yaw += (y - m_mouse_y) * 4.0f;
+        m_selected_add.yaw.normalize();
+        lock_mouse = true;
+    }
 
-    m_mouse_x = x, m_mouse_y = y;
+    if (lock_mouse)
+    {
+        QPoint glob = mapToGlobal(QPoint(m_mouse_x, m_mouse_y));
+        clearFocus();
+        QCursor::setPos(glob);
+        setFocus();
+    }
+    else
+        m_mouse_x = x, m_mouse_y = y;
+
     update();
 }
 

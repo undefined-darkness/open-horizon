@@ -1108,7 +1108,13 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
 
             auto &t = tmp_groups[total_rgf_idx];
 
+            //printf("%s\n", gf.name.c_str());
+
             t.opaque = gf.name.find("OBJ_O") != std::string::npos; //really?
+
+            //ToDo: correct apaque/alpha instead of guessing
+            if (gf.name.find("mrot0") || gf.name.find("auta_"))
+                t.opaque = false;
 
             t.day = gf.name.find("dayt_") != std::string::npos;
             t.night = gf.name.find("nigt_") != std::string::npos;
@@ -1176,6 +1182,24 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
 
             switch(rgf.header.vertex_format)
             {
+                case 4102:
+                    for (int i = 0; i < rgf.header.vcount; ++i)
+                    {
+                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 6], sizeof(verts[0].pos));
+                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 6 + 4], sizeof(verts[0].tc));
+                        //ToDo
+                    }
+                    break;
+
+                case 4103:
+                    for (int i = 0; i < rgf.header.vcount; ++i)
+                    {
+                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 10], sizeof(verts[0].pos));
+                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 10 + 8], sizeof(verts[0].tc));
+                        //ToDo
+                    }
+                    break;
+
                 case 4358:
                     for (int i = 0; i < rgf.header.vcount; ++i)
                     {
@@ -1197,16 +1221,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
                         memcpy(verts[i + first_index].bitangent, &ndxr_verts[i * 11 + 5], sizeof(verts[0].bitangent));
                     }
                     break;
-/*
-                case 4102:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 6], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 6 + debug_variable::get()], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-*/
+
                 case 8454:
                     for (int i = 0; i < rgf.header.vcount; ++i)
                     {

@@ -35,6 +35,14 @@ public:
     void set_mode(mode m) { m_mode = m; }
     void set_selected_add(std::string str);
 
+    struct object
+    {
+        std::string id;
+        nya_math::vec3 pos;
+        nya_math::angle_deg yaw;
+        float y = 0;
+    };
+
 private:
     virtual void initializeGL() override;
     virtual void resizeGL(int w, int h) override;
@@ -57,8 +65,7 @@ private:
     int m_mouse_x = 0, m_mouse_y = 0;
     nya_math::vec3 m_cursor_pos;
     mode m_mode;
-    std::string m_selected_add;
-    float m_selected_dy = 0;
+    object m_selected_add;
     std::map<std::string, renderer::model> m_models;
 };
 
