@@ -43,6 +43,8 @@ public:
         float y = 0;
     };
 
+    const std::vector<object> get_objects() const { return m_objects; }
+
 private:
     virtual void initializeGL() override;
     virtual void resizeGL(int w, int h) override;
@@ -55,6 +57,7 @@ private:
 
 private:
     nya_math::vec3 world_cursor_pos() const;
+    void draw(const object &o);
 
 private:
     renderer::location m_location;
@@ -67,6 +70,7 @@ private:
     mode m_mode;
     object m_selected_add;
     std::map<std::string, renderer::model> m_models;
+    std::vector<object> m_objects;
 };
 
 //------------------------------------------------------------

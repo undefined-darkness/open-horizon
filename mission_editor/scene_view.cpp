@@ -91,22 +91,33 @@ void scene_view::paintGL()
 
     m_cursor_pos = world_cursor_pos();
 
-    if (!m_selected_add.id.empty())
-    {
-        auto it = m_models.find(m_selected_add.id);
-        if (it != m_models.end())
-        {
-            auto &m = it->second;
-            m.set_pos(m_cursor_pos + nya_math::vec3(0, m_selected_add.y, 0));
-            m.set_rot(nya_math::quat(nya_math::angle_deg(), m_selected_add.yaw, 0.0f));
-            m.draw(0);
-        }
-    }
+    for (auto &o: m_objects)
+        draw(o);
+
+    m_selected_add.pos = m_cursor_pos;
+    draw(m_selected_add);
 
     nya_render::set_state(nya_render::state());
     nya_render::depth_test::disable();
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
     m_dd.draw();
+}
+
+//------------------------------------------------------------
+
+void scene_view::draw(const object &o)
+{
+    if (o.id.empty())
+        return;
+
+    auto it = m_models.find(o.id);
+    if (it == m_models.end())
+        return;
+
+    auto &m = it->second;
+    m.set_pos(o.pos + nya_math::vec3(0, o.y, 0));
+    m.set_rot(nya_math::quat(nya_math::angle_deg(), o.yaw, 0.0f));
+    m.draw(0);
 }
 
 //------------------------------------------------------------
@@ -136,8 +147,9 @@ nya_math::vec3 scene_view::world_cursor_pos() const
 
 void scene_view::mousePressEvent(QMouseEvent *event)
 {
-    m_mouse_x = event->localPos().x();
-    m_mouse_y = event->localPos().y();
+    auto btns = event->buttons();
+    if (btns.testFlag(Qt::LeftButton))
+        m_objects.push_back(m_selected_add);
 }
 
 //------------------------------------------------------------
