@@ -16,6 +16,13 @@ static const float location_size = 256 * 256.0f;
 
 //------------------------------------------------------------
 
+static const nya_math::vec4 white = nya_math::vec4(255,255,255,255)/255.0;
+static const nya_math::vec4 green = nya_math::vec4(103,223,144,255)/255.0;
+static const nya_math::vec4 red = nya_math::vec4(200,0,0,255)/255.0;
+static const nya_math::vec4 blue = nya_math::vec4(100,200,200,255)/255.0;
+
+//------------------------------------------------------------
+
 void scene_view::load_location(std::string name)
 {
     m_location = renderer::location();
@@ -89,13 +96,30 @@ void scene_view::paintGL()
     m_location.update_tree_texture();
     m_location.draw();
 
-    m_cursor_pos = world_cursor_pos();
-
     for (auto &o: m_objects)
         draw(o);
 
-    m_selected_add.pos = m_cursor_pos;
-    draw(m_selected_add);
+    m_cursor_pos = world_cursor_pos();
+
+    if (m_mode == mode_add)
+    {
+        m_selected_add.pos = m_cursor_pos;
+        draw(m_selected_add);
+    }
+
+    m_dd.clear();
+
+    for (auto &o: m_objects)
+    {
+        m_dd.add_line(o.pos, o.pos + nya_math::vec3(0, o.y, 0), green);
+        m_dd.add_point(o.pos, green);
+    }
+
+    if (m_mode == mode_add)
+    {
+        m_dd.add_line(m_cursor_pos, m_cursor_pos + nya_math::vec3(0, m_selected_add.y, 0), red);
+        m_dd.add_point(m_cursor_pos, red);
+    }
 
     nya_render::set_state(nya_render::state());
     nya_render::depth_test::disable();
