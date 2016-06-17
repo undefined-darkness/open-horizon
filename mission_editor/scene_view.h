@@ -40,7 +40,7 @@ public:
         std::string id;
         nya_math::vec3 pos;
         nya_math::angle_deg yaw;
-        float y = 0;
+        float y = 0.0f, dy = 0.0f;
     };
 
     const std::vector<object> get_objects() const { return m_objects; }

@@ -45,7 +45,7 @@ void scene_view::set_selected_add(std::string str)
             if (m_models.find(str) == m_models.end())
                 m_models[str].load(o.model.c_str(), m_location.get_params());
 
-            m_selected_add.y = o.y;
+            m_selected_add.y = o.y, m_selected_add.dy = o.dy;
             return;
         }
     }
@@ -115,7 +115,7 @@ void scene_view::draw(const object &o)
         return;
 
     auto &m = it->second;
-    m.set_pos(o.pos + nya_math::vec3(0, o.y, 0));
+    m.set_pos(o.pos + nya_math::vec3(0, o.y + o.dy, 0));
     m.set_rot(nya_math::quat(nya_math::angle_deg(), o.yaw, 0.0f));
     m.draw(0);
 }

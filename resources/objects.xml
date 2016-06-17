@@ -2,64 +2,64 @@
 
 <objects>
     <group name="air - bombers">
-        <object id="b01b" type="bomber" model="o_b01b" y="100"/>
-        <object id="b02a" type="bomber" model="o_b02a" y="100"/>
-        <object id="t095" type="bomber" model="o_t095" y="100"/>
-        <object id="t160" type="bomber" model="o_t160" y="100"/>
+        <object id="b01b" type="bomber" model="o_b01b" y="100" dy="3"/>
+        <object id="b02a" type="bomber" model="o_b02a" y="100" dy="3"/>
+        <object id="t095" type="bomber" model="o_t095" y="100" dy="3"/>
+        <object id="t160" type="bomber" model="o_t160" y="100" dy="3"/>
     </group>
 
     <group name="air - attackers">
-        <object id="a10a" type="attacker" model="o_a10a" y="100"/>
-        <object id="f02a" type="attacker" model="o_f02a" y="100"/>
-        <object id="f17a" type="attacker" model="o_f17a" y="100"/>
-        <object id="f35b" type="attacker" model="o_f35b" y="100"/>
-        <object id="f15e" type="attacker" model="o_f15e" y="100"/>
-        <object id="f16f" type="attacker" model="o_f16f" y="100"/>
-        <object id="su24" type="attacker" model="o_su24" y="100"/>
-        <object id="su25" type="attacker" model="o_su25" y="100"/>
-        <object id="su34" type="attacker" model="o_su34" y="100"/>
-        <object id="tnd4" type="attacker" model="o_tnd4" y="100"/>
+        <object id="a10a" type="attacker" model="o_a10a" y="100" dy="2"/>
+        <object id="f02a" type="attacker" model="o_f02a" y="100" dy="2"/>
+        <object id="f17a" type="attacker" model="o_f17a" y="100" dy="2"/>
+        <object id="f35b" type="attacker" model="o_f35b" y="100" dy="2.2"/>
+        <object id="f15e" type="attacker" model="o_f15e" y="100" dy="2"/>
+        <object id="f16f" type="attacker" model="o_f16f" y="100" dy="2"/>
+        <object id="su24" type="attacker" model="o_su24" y="100" dy="2"/>
+        <object id="su25" type="attacker" model="o_su25" y="100" dy="2.1"/>
+        <object id="su34" type="attacker" model="o_su34" y="100" dy="2"/>
+        <object id="tnd4" type="attacker" model="o_tnd4" y="100" dy="2.3"/>
     </group>
 
     <group name="air - fighters">
-        <object id="av8b" type="fighter" model="o_av8b" y="100"/>
-        <object id="f04e" type="fighter" model="o_f04e" y="100"/>
-        <object id="f14d" type="fighter" model="o_f14d" y="100"/>
-        <object id="f15c" type="fighter" model="o_f15c" y="100"/>
-        <object id="f15m" type="fighter" model="o_f15m" y="100"/>
-        <object id="f16c" type="fighter" model="o_f16c" y="100"/>
-        <object id="f18f" type="fighter" model="o_f18f" y="100"/>
-        <object id="f22a" type="fighter" model="o_f22a" y="100"/>
-<!--    <object id="fa44" type="fighter" model="o_fa44" y="100"/> -->
-        <object id="j39c" type="fighter" model="o_j39c" y="100"/>
-<!--    <object id="kwmr" type="fighter" model="o_kwmr" y="100"/> -->
-        <object id="m21b" type="fighter" model="o_m21b" y="100"/>
-        <object id="m29a" type="fighter" model="o_m29a" y="100"/>
-        <object id="m31b" type="fighter" model="o_m31b" y="100"/>
-        <object id="mr2k" type="fighter" model="o_mr2k" y="100"/>
-        <object id="pkfa" type="fighter" model="o_pkfa" y="100"/>
-        <object id="rflm" type="fighter" model="o_rflm" y="100"/>
-        <object id="su27" type="fighter" model="o_su27" y="100"/>
-        <object id="su33" type="fighter" model="o_su33" y="100"/>
-        <object id="su35" type="fighter" model="o_su35" y="100"/>
-<!--    <object id="su37" type="fighter" model="o_su37" y="100"/> -->
-        <object id="su47" type="fighter" model="o_su47" y="100"/>
-        <object id="typn" type="fighter" model="o_typn" y="100"/>
+        <object id="av8b" type="fighter" model="o_av8b" y="100" dy="2"/>
+        <object id="f04e" type="fighter" model="o_f04e" y="100" dy="2"/>
+        <object id="f14d" type="fighter" model="o_f14d" y="100" dy="2"/>
+        <object id="f15c" type="fighter" model="o_f15c" y="100" dy="2.2"/>
+        <object id="f15m" type="fighter" model="o_f15m" y="100" dy="2"/>
+        <object id="f16c" type="fighter" model="o_f16c" y="100" dy="2"/>
+        <object id="f18f" type="fighter" model="o_f18f" y="100" dy="2"/>
+        <object id="f22a" type="fighter" model="o_f22a" y="100" dy="2"/>
+<!--    <object id="fa44" type="fighter" model="o_fa44" y="100" dy="2"/> -->
+        <object id="j39c" type="fighter" model="o_j39c" y="100" dy="2"/>
+<!--    <object id="kwmr" type="fighter" model="o_kwmr" y="100" dy="2"/> -->
+        <object id="m21b" type="fighter" model="o_m21b" y="100" dy="2"/>
+        <object id="m29a" type="fighter" model="o_m29a" y="100" dy="2"/>
+        <object id="m31b" type="fighter" model="o_m31b" y="100" dy="2"/>
+        <object id="mr2k" type="fighter" model="o_mr2k" y="100" dy="2"/>
+        <object id="pkfa" type="fighter" model="o_pkfa" y="100" dy="2"/>
+        <object id="rflm" type="fighter" model="o_rflm" y="100" dy="2"/>
+        <object id="su27" type="fighter" model="o_su27" y="100" dy="2"/>
+        <object id="su33" type="fighter" model="o_su33" y="100" dy="2"/>
+        <object id="su35" type="fighter" model="o_su35" y="100" dy="2"/>
+<!--    <object id="su37" type="fighter" model="o_su37" y="100" dy="2"/> -->
+        <object id="su47" type="fighter" model="o_su47" y="100" dy="2"/>
+        <object id="typn" type="fighter" model="o_typn" y="100" dy="2"/>
     </group>
 
     <group name="air - transport">
-        <object id="a130" type="plane" model="o_a130" y="100"/>
-        <object id="an12" type="plane" model="o_an12" y="100"/>
-        <object id="c130" type="plane" model="o_c130" y="100"/>
-        <object id="civl" type="plane" model="o_civl" y="100"/>
-        <object id="il76" type="plane" model="o_il76" y="100"/>
+        <object id="a130" type="plane" model="o_a130" y="100" dy="4"/>
+        <object id="an12" type="plane" model="o_an12" y="100" dy="5"/>
+        <object id="c130" type="plane" model="o_c130" y="100" dy="4"/>
+        <object id="civl" type="plane" model="o_civl" y="100" dy="4"/>
+        <object id="il76" type="plane" model="o_il76" y="100" dy="5.3"/>
     </group>
 
     <group name="air - helicopters">
-        <object id="ah64" type="heli" model="o_ah64" y="50"/>
-        <object id="ka27" type="heli" model="o_ka27" y="50"/>
-        <object id="mi24" type="heli" model="o_mi24" y="50"/>
-        <object id="mh60" type="heli" model="o_mh60" y="50"/>
+        <object id="ah64" type="heli" model="o_ah64" y="50" dy="2.1"/>
+        <object id="ka27" type="heli" model="o_ka27" y="50" dy="0"/>
+        <object id="mi24" type="heli" model="o_mi24" y="50" dy="3"/>
+        <object id="mh60" type="heli" model="o_mh60" y="50" dy="2"/>
     </group>
 
     <group name="air - missiles">
@@ -105,7 +105,7 @@
         <object id="tec2" type="vehicle" model="c_tec2"/>
         <object id="tec3" type="vehicle" model="c_tec3"/>
         <object id="tel1" type="vehicle" model="c_tel1"/>
-        <object id="tnkr" type="vehicle" model="c_tnkr" y="1"/>
+        <object id="tnkr" type="vehicle" model="c_tnkr" dy="1.3"/>
         <object id="tung" type="vehicle" model="c_tung"/>
         <object id="uaz4" type="vehicle" model="c_uaz4"/>
         <object id="ural" type="vehicle" model="c_ural"/>
@@ -192,7 +192,7 @@
         <object id="gobl_s" type="turret" model="f_gobl"/>
         <object id="kort_s" type="turret" model="f_kort"/>
         <object id="sam1_s" type="turret" model="f_sam1"/>
-        <object id="su33_s" type="object" model="c_su33" y="2.0"/>
+        <object id="su33_s" type="object" model="c_su33" dy="2.0"/>
     </group>
 
 </objects>

@@ -18,7 +18,7 @@ struct object_desc
     std::string type;
     std::string group;
     std::string model;
-    float y = 0.0f;
+    float y = 0.0f, dy = 0.0f;
 };
 
 typedef std::vector<object_desc> objects_list;
@@ -44,6 +44,7 @@ static const objects_list &get_objects_list()
                 obj.group = group;
                 obj.model = o.attribute("model").as_string();
                 obj.y = o.attribute("y").as_float(0.0f);
+                obj.dy = o.attribute("dy").as_float(0.0f);
                 list.push_back(obj);
             }
         }
