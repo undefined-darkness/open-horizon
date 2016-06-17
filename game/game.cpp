@@ -932,6 +932,9 @@ void plane::update_targets(world &w)
         t->dist = dist;
         t->cos = target_dir.dot(dir) / dist;
     }
+
+    if (targets.size() > 2)
+        std::sort(std::next(targets.begin(), 1), targets.end(), [](target_lock &a, target_lock &b) { return a.dist < b.dist; });
 }
 
 //------------------------------------------------------------
@@ -1425,8 +1428,7 @@ void plane::update(int dt, world &w)
             if (!special_weapon_selected || special.lockon_count == 1)
                 targets.front().locked = 0;
 
-            targets.push_back(targets.front());
-            targets.pop_front();
+            std::swap(targets.front(), targets.back());
         }
 
         change_target_hold_time = 0;

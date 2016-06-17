@@ -144,7 +144,7 @@ struct plane: public object, public std::enable_shared_from_this<plane>
         bool can_lock(const wpn_params &p) const { return dist < p.lockon_range && cos > p.lockon_angle_cos; }
     };
 
-    std::list<target_lock> targets;
+    std::vector<target_lock> targets;
     ivalue lock_timer;
 
     w_ptr<game::missile> saam_missile;
