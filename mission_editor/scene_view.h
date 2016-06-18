@@ -10,6 +10,7 @@
 #include "phys/physics.h"
 #include "render/debug_draw.h"
 #include "game/objects.h"
+#include <functional>
 
 //------------------------------------------------------------
 
@@ -19,6 +20,7 @@ class scene_view : public QGLWidget
 
 public:
     scene_view(QWidget *parent = NULL);
+    std::function<void()> update_objects_tree;
 
 public:
     void load_location(std::string name);
@@ -37,6 +39,7 @@ public:
 
     struct object
     {
+        std::string name;
         std::string id;
         nya_math::vec3 pos;
         nya_math::angle_deg yaw;
@@ -44,6 +47,7 @@ public:
     };
 
     const std::vector<object> get_objects() const { return m_objects; }
+    void clear_objects() { m_objects.clear(); }
 
 private:
     virtual void initializeGL() override;

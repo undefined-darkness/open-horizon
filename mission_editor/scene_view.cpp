@@ -169,11 +169,31 @@ nya_math::vec3 scene_view::world_cursor_pos() const
 
 //------------------------------------------------------------
 
+template<typename t> std::string new_name(std::string s, const std::vector<t> &objects)
+{
+    for (size_t i = 0; i < objects.size() + 1; ++i)
+    {
+        std::string name = s + std::to_string(i+1);
+        if (std::find_if(objects.begin(), objects.end(), [name](const t &o){ return o.name == name; }) == objects.end())
+            return name;
+    }
+
+    return s;
+}
+
+//------------------------------------------------------------
+
 void scene_view::mousePressEvent(QMouseEvent *event)
 {
     auto btns = event->buttons();
     if (btns.testFlag(Qt::LeftButton))
+    {
         m_objects.push_back(m_selected_add);
+        m_objects.back().name = new_name("object", m_objects);
+        update_objects_tree();
+    }
+
+    update();
 }
 
 //------------------------------------------------------------

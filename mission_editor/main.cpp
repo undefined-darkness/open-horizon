@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 
     main_window w;
     w.setWindowTitle("Open-Horizon mission editor");
-    w.resize(1200, 700);
+    w.resize(1300, 700);
     w.show();
 
     return a.exec();

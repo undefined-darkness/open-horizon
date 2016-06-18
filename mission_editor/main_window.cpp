@@ -5,7 +5,6 @@
 #include "main_window.h"
 #include <QSplitter>
 #include <QTabWidget>
-#include <QTreeWidget>
 #include <QMenuBar>
 #include <QAction>
 #include <QVBoxLayout>
@@ -28,47 +27,69 @@ inline void alert(std::string message)
 
 //------------------------------------------------------------
 
+inline QTreeWidgetItem *new_tree_group(std::string name)
+{
+    auto group = new QTreeWidgetItem;
+    group->setText(0, name.c_str());
+    group->setFlags(Qt::ItemIsEnabled);
+    return group;
+}
+
+//------------------------------------------------------------
+
+inline QTreeWidgetItem *new_tree_item(std::string name)
+{
+    auto item = new QTreeWidgetItem;
+    item->setText(0, name.c_str());
+    item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    return item;
+}
+
+//------------------------------------------------------------
+
 main_window::main_window(QWidget *parent): QMainWindow(parent)
 {
     QSplitter *main_splitter = new QSplitter(this);
     setCentralWidget(main_splitter);
 
+    m_objects_tree = new QTreeWidget;
+    m_objects_tree->setHeaderLabel("Objects selection");
+    main_splitter->addWidget(m_objects_tree);
+
     m_scene_view = new scene_view(this);
+    m_scene_view->update_objects_tree = std::bind(&main_window::update_objects_tree, this);
     main_splitter->addWidget(m_scene_view);
 
     QTabWidget *navigator = new QTabWidget;
     main_splitter->addWidget(navigator);
 
-    main_splitter->setSizes(QList<int>() << 1000 << 400);
+    main_splitter->setSizes(QList<int>() << 200 << 1000 << 400);
 
-    auto objects_tree = new QTreeWidget;
-    navigator->insertTab(scene_view::mode_add, objects_tree, "Add");
+    auto add_objects_tree = new QTreeWidget;
+    add_objects_tree->setHeaderLabel("Objects");
+    navigator->insertTab(scene_view::mode_add, add_objects_tree, "Add");
     auto &obj_list = game::get_objects_list();
     for (auto &o: obj_list)
     {
-        auto item = new QTreeWidgetItem;
-        item->setText(0, o.id.c_str());
-        item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+        auto item = new_tree_item(o.id);
         if (o.group.empty())
         {
-            objects_tree->addTopLevelItem(item);
+            add_objects_tree->addTopLevelItem(item);
             continue;
         }
 
-        QList<QTreeWidgetItem*> items = objects_tree->findItems(o.group.c_str(), Qt::MatchExactly, 0);
+        QList<QTreeWidgetItem*> items = add_objects_tree->findItems(o.group.c_str(), Qt::MatchExactly, 0);
         if (!items.empty())
         {
             items[0]->addChild(item);
             continue;
         }
 
-        auto group = new QTreeWidgetItem;
-        group->setText(0, o.group.c_str());
-        group->setFlags(Qt::ItemIsEnabled);
-        objects_tree->addTopLevelItem(group);
+        auto group = new_tree_group(o.group);
+        add_objects_tree->addTopLevelItem(group);
         group->addChild(item);
     }
-    connect(objects_tree,SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(on_tree_selected(QTreeWidgetItem*, int)));
+    connect(add_objects_tree, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(on_add_tree_selected(QTreeWidgetItem*, int)));
 
     m_edit_layout = new QFormLayout;
     QWidget *edit_widget = new QWidget;
@@ -102,7 +123,6 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     connect(navigator, SIGNAL(currentChanged(int)), this, SLOT(on_mode_changed(int)));
 
     m_scene_view->set_mode(scene_view::mode_add);
-
     setup_menu();
 }
 
@@ -159,7 +179,9 @@ void main_window::on_new_mission()
     if (idx < 0 || idx >= (int)list.size())
         return;
 
+    m_scene_view->clear_objects();
     m_scene_view->load_location(list[idx].first);
+    update_objects_tree();
 }
 
 //------------------------------------------------------------
@@ -184,6 +206,12 @@ void main_window::on_save_as_mission()
 
 void main_window::on_tree_selected(QTreeWidgetItem* item, int)
 {
+}
+
+//------------------------------------------------------------
+
+void main_window::on_add_tree_selected(QTreeWidgetItem* item, int)
+{
     if (item && item->parent())
         m_scene_view->set_selected_add(item->text(0).toUtf8().constData());
     else
@@ -198,6 +226,22 @@ void main_window::on_mode_changed(int idx)
         m_scene_view->set_mode(scene_view::mode_other);
     else
         m_scene_view->set_mode(scene_view::mode(idx));
+}
+
+//------------------------------------------------------------
+
+void main_window::update_objects_tree()
+{
+    m_objects_tree->clear();
+
+    auto objects = new_tree_group("objects");
+    m_objects_tree->addTopLevelItem(objects);
+
+    for (auto &o: m_scene_view->get_objects())
+        objects->addChild(new_tree_item(o.name + " (" + o.id + ")"));
+
+    m_objects_tree->addTopLevelItem(new_tree_item("player spawn"));
+    m_objects_tree->expandAll();
 }
 
 //------------------------------------------------------------

@@ -6,7 +6,7 @@
 
 #include <QMainWindow>
 #include <QFormLayout>
-#include <QTreeWidgetItem>
+#include <QTreeWidget>
 
 //------------------------------------------------------------
 
@@ -31,10 +31,15 @@ private slots:
     void on_save_as_mission();
     void on_mode_changed(int idx);
     void on_tree_selected(QTreeWidgetItem*, int);
+    void on_add_tree_selected(QTreeWidgetItem*, int);
+
+private:
+    void update_objects_tree();
 
 private:
     scene_view *m_scene_view;
     QFormLayout *m_edit_layout;
+    QTreeWidget *m_objects_tree;
 };
 
 //------------------------------------------------------------
