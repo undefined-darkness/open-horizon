@@ -7,3 +7,6 @@
 [submodule "deps/miso"]
 	path = deps/miso
 	url = https://github.com/antze-k/miso
+[submodule "deps/zip"]
+	path = deps/zip
+	url = https://github.com/kuba--/zip

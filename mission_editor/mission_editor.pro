@@ -28,6 +28,7 @@ MOC_DIR = $${OBJECTS_DIR}/
 
 INCLUDEPATH += ../
 INCLUDEPATH += $${DEPS_PATH}/pugixml-1.4/src/
+INCLUDEPATH += $${DEPS_PATH}/zip/src/
 
 QMAKE_TARGET_BUNDLE_PREFIX = open-horizon
 
@@ -50,7 +51,8 @@ SOURCES += \
     ../deps/pugixml-1.4/src/pugixml.cpp \
     ../phys/mesh.cpp \
     ../phys/physics.cpp \
-    ../phys/plane_params.cpp
+    ../phys/plane_params.cpp \
+    ../deps/zip/src/zip.c
 
 HEADERS += \
     ../containers/fhm.h \
@@ -78,6 +80,8 @@ HEADERS += \
     ../deps/pugixml-1.4/src/pugixml.hpp \
     ../phys/physics.h \
     ../phys/mesh.h \
-    ../phys/plane_params.h
+    ../phys/plane_params.h \
+    ../deps/zip/src/miniz.h \
+    ../deps/zip/src/zip.h
 
 #-------------------------------------------------

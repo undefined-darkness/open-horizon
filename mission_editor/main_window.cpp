@@ -16,6 +16,7 @@
 #include "scene_view.h"
 #include "game/locations_list.h"
 #include "game/objects.h"
+#include "zip.h"
 
 //------------------------------------------------------------
 
@@ -180,8 +181,9 @@ void main_window::on_new_mission()
     if (idx < 0 || idx >= (int)list.size())
         return;
 
+    m_location = list[idx].first;
     m_scene_view->clear_objects();
-    m_scene_view->load_location(list[idx].first);
+    m_scene_view->load_location(m_location);
     update_objects_tree();
 }
 
@@ -189,7 +191,7 @@ void main_window::on_new_mission()
 
 void main_window::on_load_mission()
 {
-    auto filename = QFileDialog::getOpenFileName(this, "Load mission", "", ".zip");
+    auto filename = QFileDialog::getOpenFileName(this, "Load mission", "missions", ".zip");
     if (!filename.length())
         return;
 
@@ -203,19 +205,53 @@ void main_window::on_load_mission()
 void main_window::on_save_mission()
 {
     if (m_filename.empty())
+    {
         on_save_as_mission();
+        return;
+    }
 
-    //ToDo
+    zip_t *zip = zip_open(m_filename.c_str(), ZIP_DEFAULT_COMPRESSION_LEVEL, 0);
+    if (!zip)
+    {
+        alert("Unable to save mission " + m_filename);
+        return;
+    }
+
+    std::string str = "<!--Open Horizon mission-->\n";
+    str += "<mission>\n";
+    str += "\t<location id=\"" + m_location + "\"/>\n\n";
+    for (auto &o: m_scene_view->get_objects())
+    {
+        str += "\t<object ";
+        str += "name=\"" + o.name + "\" ";
+        str += "id=\"" + o.id + "\" ";
+        str += "x=\"" + std::to_string(o.pos.x) + "\" ";
+        str += "y=\"" + std::to_string(o.pos.y + o.y) + "\" ";
+        str += "z=\"" + std::to_string(o.pos.z) + "\" ";
+        str += "yaw=\"" + std::to_string(o.yaw.get_deg()) + "\" ";
+        str += "editor_y=\"" + std::to_string(o.y) + "\" ";
+        str += "/>\n";
+    }
+
+    str += "</mission>\n";
+
+    zip_entry_open(zip, "objects.xml");
+    zip_entry_write(zip, str.c_str(), str.length());
+    zip_entry_close(zip);
+
+    zip_close(zip);
 }
 
 //------------------------------------------------------------
 
 void main_window::on_save_as_mission()
 {
-    auto filename = QFileDialog::getSaveFileName(this, "Save mission", "", ".zip");
+    auto filename = QFileDialog::getSaveFileName(this, "Save mission", "missions", ".zip");
     if (!filename.length())
         return;
 
+    if (!filename.endsWith(".zip", Qt::CaseInsensitive))
+        filename.append(".zip");
     m_filename.assign(filename.toUtf8().constData());
     on_save_mission();
 }
