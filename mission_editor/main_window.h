@@ -40,6 +40,7 @@ private:
     scene_view *m_scene_view;
     QFormLayout *m_edit_layout;
     QTreeWidget *m_objects_tree;
+    std::string m_filename;
 };
 
 //------------------------------------------------------------

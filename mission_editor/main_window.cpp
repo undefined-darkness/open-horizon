@@ -6,6 +6,7 @@
 #include <QSplitter>
 #include <QTabWidget>
 #include <QMenuBar>
+#include <QFileDialog>
 #include <QAction>
 #include <QVBoxLayout>
 #include <QSignalMapper>
@@ -188,18 +189,35 @@ void main_window::on_new_mission()
 
 void main_window::on_load_mission()
 {
+    auto filename = QFileDialog::getOpenFileName(this, "Load mission", "", ".zip");
+    if (!filename.length())
+        return;
+
+    m_filename.assign(filename.toUtf8().constData());
+
+    //ToDo
 }
 
 //------------------------------------------------------------
 
 void main_window::on_save_mission()
 {
+    if (m_filename.empty())
+        on_save_as_mission();
+
+    //ToDo
 }
 
 //------------------------------------------------------------
 
 void main_window::on_save_as_mission()
 {
+    auto filename = QFileDialog::getSaveFileName(this, "Save mission", "", ".zip");
+    if (!filename.length())
+        return;
+
+    m_filename.assign(filename.toUtf8().constData());
+    on_save_mission();
 }
 
 //------------------------------------------------------------
