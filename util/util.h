@@ -54,9 +54,8 @@ private:
 
 //------------------------------------------------------------
 
-inline nya_memory::tmp_buffer_ref load_resource(const char *name)
+inline nya_memory::tmp_buffer_ref load_resource(nya_resources::resource_data *res)
 {
-    nya_resources::resource_data *res = nya_resources::get_resources_provider().access(name);
     if (!res)
         return nya_memory::tmp_buffer_ref();
 
@@ -65,6 +64,13 @@ inline nya_memory::tmp_buffer_ref load_resource(const char *name)
     res->release();
 
     return buf;
+}
+
+//------------------------------------------------------------
+
+inline nya_memory::tmp_buffer_ref load_resource(const char *name)
+{
+    return load_resource(nya_resources::get_resources_provider().access(name));
 }
 
 //------------------------------------------------------------
@@ -298,7 +304,7 @@ inline void find_data(nya_resources::resources_provider &rp, float *f, size_t co
 
 //------------------------------------------------------------
 
-static std::vector<std::string> list_files(std::string folder)
+inline std::vector<std::string> list_files(std::string folder)
 {
     std::vector<std::string> result;
     auto app_path = nya_system::get_app_path();
@@ -323,7 +329,7 @@ static std::vector<std::string> list_files(std::string folder)
 
 //------------------------------------------------------------
 
-static void create_path(const char *dir)
+inline void create_path(const char *dir)
 {
     if (!dir)
         return;

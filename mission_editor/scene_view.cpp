@@ -25,6 +25,7 @@ static const nya_math::vec4 blue = nya_math::vec4(100,200,200,255)/255.0;
 
 void scene_view::load_location(std::string name)
 {
+    context()->makeCurrent();
     m_location = renderer::location();
     shared::clear_textures();
     m_location.load(name.c_str());
@@ -41,6 +42,21 @@ void scene_view::load_location(std::string name)
 void scene_view::set_selected_add(std::string str)
 {
     m_selected_add.id = str;
+    cache_mesh(str);
+}
+
+//------------------------------------------------------------
+
+void scene_view::add_object(const object &o)
+{
+    m_objects.push_back(o);
+    cache_mesh(o.id);
+}
+
+//------------------------------------------------------------
+
+void scene_view::cache_mesh(std::string str)
+{
     if (str.empty())
         return;
 

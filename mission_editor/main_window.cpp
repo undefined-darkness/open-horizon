@@ -17,6 +17,7 @@
 #include "game/locations_list.h"
 #include "game/objects.h"
 #include "zip.h"
+#include "extensions/zip_resources_provider.h"
 
 //------------------------------------------------------------
 
@@ -174,15 +175,16 @@ void main_window::on_new_mission()
 
     bool ok = false;
     QString item = QInputDialog::getItem(this, "Select location", "Location:", items, 0, false, &ok);
-    if (!ok && item.isEmpty())
+    if (!ok || item.isEmpty())
         return;
 
     const int idx = items.indexOf(item);
     if (idx < 0 || idx >= (int)list.size())
         return;
 
+    m_filename.clear();
+    clear_mission();
     m_location = list[idx].first;
-    m_scene_view->clear_objects();
     m_scene_view->load_location(m_location);
     update_objects_tree();
 }
@@ -191,13 +193,53 @@ void main_window::on_new_mission()
 
 void main_window::on_load_mission()
 {
-    auto filename = QFileDialog::getOpenFileName(this, "Load mission", "missions", ".zip");
+    auto filename = QFileDialog::getOpenFileName(this, "Load mission", "missions", "*.zip");
     if (!filename.length())
         return;
 
-    m_filename.assign(filename.toUtf8().constData());
+    std::string filename_str = filename.toUtf8().constData();
 
-    //ToDo
+    auto prov = &nya_resources::get_resources_provider();
+    nya_resources::file_resources_provider fprov;
+    nya_resources::set_resources_provider(&fprov);
+    nya_resources::zip_resources_provider zprov;
+    bool result = zprov.open_archive(filename_str.c_str());
+    nya_resources::set_resources_provider(prov);
+    if (!result)
+    {
+        alert("Unable to load location " + filename_str);
+        return;
+    }
+
+    m_filename.assign(filename_str);
+
+    pugi::xml_document doc;
+    if (!load_xml(zprov.access("objects.xml"), doc))
+        return;
+
+    auto root = doc.first_child();
+    std::string loc = root.attribute("location").as_string();
+    if (loc.empty())
+        return;
+
+    clear_mission();
+
+    m_location = loc;
+    m_scene_view->load_location(loc);
+
+    for (pugi::xml_node o = root.child("object"); o; o = o.next_sibling("object"))
+    {
+        scene_view::object obj;
+        obj.name = o.attribute("name").as_string();
+        obj.id = o.attribute("id").as_string();
+        obj.yaw = o.attribute("yaw").as_float();
+        obj.pos.set(o.attribute("x").as_float(), o.attribute("y").as_float(), o.attribute("z").as_float());
+        obj.y = o.attribute("editor_y").as_float();
+        obj.pos.y -= obj.y;
+        m_scene_view->add_object(obj);
+    }
+
+    update_objects_tree();
 }
 
 //------------------------------------------------------------
@@ -218,8 +260,7 @@ void main_window::on_save_mission()
     }
 
     std::string str = "<!--Open Horizon mission-->\n";
-    str += "<mission>\n";
-    str += "\t<location id=\"" + m_location + "\"/>\n\n";
+    str += "<mission location=\"" + m_location + "\">\n";
     for (auto &o: m_scene_view->get_objects())
     {
         str += "\t<object ";
@@ -246,12 +287,10 @@ void main_window::on_save_mission()
 
 void main_window::on_save_as_mission()
 {
-    auto filename = QFileDialog::getSaveFileName(this, "Save mission", "missions", ".zip");
+    auto filename = QFileDialog::getSaveFileName(this, "Save mission", "missions", "*.zip");
     if (!filename.length())
         return;
 
-    if (!filename.endsWith(".zip", Qt::CaseInsensitive))
-        filename.append(".zip");
     m_filename.assign(filename.toUtf8().constData());
     on_save_mission();
 }
@@ -296,6 +335,13 @@ void main_window::update_objects_tree()
 
     m_objects_tree->addTopLevelItem(new_tree_item("player spawn"));
     m_objects_tree->expandAll();
+}
+
+//------------------------------------------------------------
+
+void main_window::clear_mission()
+{
+    m_scene_view->clear_objects();
 }
 
 //------------------------------------------------------------

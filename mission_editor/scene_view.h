@@ -48,6 +48,7 @@ public:
 
     const std::vector<object> get_objects() const { return m_objects; }
     void clear_objects() { m_objects.clear(); }
+    void add_object(const object &o);
 
 private:
     virtual void initializeGL() override;
@@ -62,6 +63,7 @@ private:
 private:
     nya_math::vec3 world_cursor_pos() const;
     void draw(const object &o);
+    void cache_mesh(std::string name);
 
 private:
     renderer::location m_location;

@@ -146,21 +146,8 @@ public:
                 if (!zprov.open_archive(d.c_str()))
                     continue;
 
-                auto r = zprov.access("info.xml");
-                if (!r)
-                    continue;
-
-                nya_memory::tmp_buffer_scoped buf(r->get_size());
-                if (!r->read_all(buf.get_data()))
-                {
-                    r->release();
-                    continue;
-                }
-
-                r->release();
-
                 pugi::xml_document doc;
-                if (!doc.load_buffer((const char *)buf.get_data(), buf.get_size()))
+                if (!load_xml(zprov.access("info.xml"), doc))
                     continue;
 
                 auto root = doc.first_child();

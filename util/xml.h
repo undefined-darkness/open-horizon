@@ -10,12 +10,8 @@
 
 //------------------------------------------------------------
 
-inline bool load_xml(const char *name, pugi::xml_document &doc)
+inline bool load_xml(nya_resources::resource_data *res, pugi::xml_document &doc)
 {
-    if (!name)
-        return false;
-
-    nya_resources::resource_data *res = nya_resources::get_resources_provider().access(name);
     if (!res)
         return false;
 
@@ -24,6 +20,16 @@ inline bool load_xml(const char *name, pugi::xml_document &doc)
     res->release();
 
     return doc.load_buffer((const char *)buf.get_data(), buf.get_size());
+}
+
+//------------------------------------------------------------
+
+inline bool load_xml(const char *name, pugi::xml_document &doc)
+{
+    if (!name)
+        return false;
+
+    return load_xml(nya_resources::get_resources_provider().access(name), doc);
 }
 
 //------------------------------------------------------------

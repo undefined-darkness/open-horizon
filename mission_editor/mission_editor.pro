@@ -52,7 +52,8 @@ SOURCES += \
     ../phys/mesh.cpp \
     ../phys/physics.cpp \
     ../phys/plane_params.cpp \
-    ../deps/zip/src/zip.c
+    ../deps/zip/src/zip.c \
+    ../deps/nya-engine/extensions/zip_resources_provider.cpp
 
 HEADERS += \
     ../containers/fhm.h \
@@ -82,6 +83,7 @@ HEADERS += \
     ../phys/mesh.h \
     ../phys/plane_params.h \
     ../deps/zip/src/miniz.h \
-    ../deps/zip/src/zip.h
+    ../deps/zip/src/zip.h \
+    ../deps/nya-engine/extensions/zip_resources_provider.h
 
 #-------------------------------------------------

@@ -35,6 +35,7 @@ private slots:
 
 private:
     void update_objects_tree();
+    void clear_mission();
 
 private:
     scene_view *m_scene_view;
