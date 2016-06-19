@@ -7,6 +7,8 @@ QT += core gui opengl widgets
 LIBS += -lz
 win32: LIBS += -lopengl32 -lwinmm
 
+macx: LIBS += ../deps/lua-5.2.4/liblua52.a
+
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-parameter -Wno-reorder
 
@@ -29,6 +31,7 @@ MOC_DIR = $${OBJECTS_DIR}/
 INCLUDEPATH += ../
 INCLUDEPATH += $${DEPS_PATH}/pugixml-1.4/src/
 INCLUDEPATH += $${DEPS_PATH}/zip/src/
+INCLUDEPATH += $${DEPS_PATH}/lua-5.2.4/include/
 
 QMAKE_TARGET_BUNDLE_PREFIX = open-horizon
 
@@ -53,7 +56,8 @@ SOURCES += \
     ../phys/physics.cpp \
     ../phys/plane_params.cpp \
     ../deps/zip/src/zip.c \
-    ../deps/nya-engine/extensions/zip_resources_provider.cpp
+    ../deps/nya-engine/extensions/zip_resources_provider.cpp \
+    ../game/script.cpp
 
 HEADERS += \
     ../containers/fhm.h \
@@ -84,6 +88,7 @@ HEADERS += \
     ../phys/plane_params.h \
     ../deps/zip/src/miniz.h \
     ../deps/zip/src/zip.h \
-    ../deps/nya-engine/extensions/zip_resources_provider.h
+    ../deps/nya-engine/extensions/zip_resources_provider.h \
+    ../game/script.h
 
 #-------------------------------------------------

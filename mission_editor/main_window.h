@@ -6,7 +6,9 @@
 
 #include <QMainWindow>
 #include <QFormLayout>
+#include <QTextEdit>
 #include <QTreeWidget>
+#include <QSyntaxHighlighter>
 
 //------------------------------------------------------------
 
@@ -41,8 +43,25 @@ private:
     scene_view *m_scene_view;
     QFormLayout *m_edit_layout;
     QTreeWidget *m_objects_tree;
+    QTextEdit *m_script_edit, *m_script_errors;
     std::string m_location;
     std::string m_filename;
+};
+
+//------------------------------------------------------------
+
+class highlight_lua : public QSyntaxHighlighter
+{
+    Q_OBJECT
+
+public:
+    explicit highlight_lua(QTextDocument *parent);
+
+private:
+    void highlightBlock(const QString &text) override;
+    std::vector<std::pair<QRegExp, QColor> > m_rules;
+    QColor m_comment_color;
+    QRegExp m_comment_start, m_comment_end;
 };
 
 //------------------------------------------------------------

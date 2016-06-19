@@ -8,7 +8,6 @@
 #include "renderer/shared.h"
 #include <QMouseEvent>
 #include <QWheelEvent>
-#include <QMessageBox>
 
 //------------------------------------------------------------
 

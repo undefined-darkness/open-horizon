@@ -3,16 +3,7 @@
 //
 
 #include "main_window.h"
-#include <QSplitter>
-#include <QTabWidget>
-#include <QMenuBar>
-#include <QFileDialog>
-#include <QAction>
-#include <QVBoxLayout>
-#include <QSignalMapper>
-#include <QShortcut>
-#include <QInputDialog>
-#include <QMessageBox>
+#include <QtWidgets>
 #include "scene_view.h"
 #include "game/locations_list.h"
 #include "game/objects.h"
@@ -105,10 +96,14 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     QWidget *zone_widget = new QWidget;
     navigator->insertTab(scene_view::mode_zone, zone_widget, "Zone");
 
-    QVBoxLayout *script_layout = new QVBoxLayout;
-    QWidget *script_widget = new QWidget;
-    navigator->insertTab(scene_view::mode_other, script_widget, "Script");
-    script_widget->setLayout(script_layout);
+    auto *script_layout = new QSplitter(Qt::Vertical);
+    m_script_edit = new QTextEdit;
+    auto *highlight = new highlight_lua(m_script_edit->document());
+    script_layout->addWidget(m_script_edit);
+    m_script_errors = new QTextEdit;
+    script_layout->addWidget(m_script_errors);
+    script_layout->setSizes(QList<int>() << 1000 << 100);
+    navigator->insertTab(scene_view::mode_other, script_layout, "Script");
 
     auto info_layout = new QFormLayout;
     QWidget *info_widget = new QWidget;
@@ -342,6 +337,70 @@ void main_window::update_objects_tree()
 void main_window::clear_mission()
 {
     m_scene_view->clear_objects();
+}
+
+//------------------------------------------------------------
+
+highlight_lua::highlight_lua(QTextDocument *parent): QSyntaxHighlighter(parent)
+{
+    QColor keyword_color = QColor(0xcc, 0, 0xa1);
+    std::string keywords[] = {"and",    "break",  "do",   "else",     "elseif",
+                              "end",    "false",  "for",  "function", "if",
+                              "in",     "local",  "nil",  "not",      "or",
+                              "repeat", "return", "then", "true",     "until", "while"};
+    for (auto k: keywords)
+        m_rules.push_back({QRegExp(("\\b" + k + "\\b").c_str()), keyword_color});
+
+    m_rules.push_back({QRegExp("[0-9]"), QColor(0x5c, 0, 0xdd)});
+
+    m_rules.push_back({QRegExp("\\b[A-Za-z0-9_]+(?=\\()"), QColor(0x6f, 0, 0x8f)});
+
+    m_rules.push_back({QRegExp("\".*\""), QColor(0xe4, 0, 0x41)});
+    m_rules.push_back({QRegExp("\'.*\'"), QColor(0xe4, 0, 0x41)});
+
+    m_comment_color = QColor(0, 0x8e, 0);
+    m_rules.push_back({QRegExp("--[^\n]*"), m_comment_color});
+    m_comment_start = QRegExp("--\\[\\[");
+    m_comment_end = QRegExp("\\]\\]");
+}
+
+//------------------------------------------------------------
+
+void highlight_lua::highlightBlock(const QString& text)
+{
+    for (auto &r: m_rules)
+    {
+        QRegExp expression(r.first);
+        int index = expression.indexIn(text);
+        while (index >= 0)
+        {
+            int length = expression.matchedLength();
+            setFormat(index, length, r.second);
+            index = expression.indexIn(text, index + length);
+        }
+    }
+
+    setCurrentBlockState(0);
+
+    int start = 0;
+    if (previousBlockState() != 1)
+        start = m_comment_start.indexIn(text);
+
+    while (start >= 0)
+    {
+        int end = m_comment_end.indexIn(text, start);
+        int len;
+        if (end == -1)
+        {
+            setCurrentBlockState(1);
+            len = text.length() - start;
+        }
+        else
+            len = end - start + m_comment_end.matchedLength();
+
+        setFormat(start, len, m_comment_color);
+        start = m_comment_start.indexIn(text, start + len);
+    }
 }
 
 //------------------------------------------------------------
