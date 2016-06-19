@@ -34,6 +34,8 @@ private slots:
     void on_mode_changed(int idx);
     void on_tree_selected(QTreeWidgetItem*, int);
     void on_add_tree_selected(QTreeWidgetItem*, int);
+    void on_script_changed();
+    void on_compile_script();
 
 private:
     void update_objects_tree();
@@ -44,6 +46,7 @@ private:
     QFormLayout *m_edit_layout;
     QTreeWidget *m_objects_tree;
     QTextEdit *m_script_edit, *m_script_errors;
+    QTimer *m_compile_timer;
     std::string m_location;
     std::string m_filename;
 };

@@ -201,7 +201,9 @@ template<typename t> std::string new_name(std::string s, const std::vector<t> &o
 void scene_view::mousePressEvent(QMouseEvent *event)
 {
     auto btns = event->buttons();
-    if (btns.testFlag(Qt::LeftButton))
+    const bool mouse_left = btns.testFlag(Qt::LeftButton);
+
+    if (m_mode == mode_add && mouse_left && !m_selected_add.id.empty())
     {
         m_objects.push_back(m_selected_add);
         m_objects.back().name = new_name("object", m_objects);

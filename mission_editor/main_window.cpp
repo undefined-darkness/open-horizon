@@ -7,6 +7,7 @@
 #include "scene_view.h"
 #include "game/locations_list.h"
 #include "game/objects.h"
+#include "game/script.h"
 #include "zip.h"
 #include "extensions/zip_resources_provider.h"
 
@@ -98,10 +99,14 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
 
     auto *script_layout = new QSplitter(Qt::Vertical);
     m_script_edit = new QTextEdit;
-    auto *highlight = new highlight_lua(m_script_edit->document());
+    connect(m_script_edit, SIGNAL(textChanged()), this, SLOT(on_script_changed()));
+    new highlight_lua(m_script_edit->document());
     script_layout->addWidget(m_script_edit);
     m_script_errors = new QTextEdit;
+    m_script_errors->setReadOnly(true);
     script_layout->addWidget(m_script_errors);
+    m_compile_timer = new QTimer(this);
+    connect(m_compile_timer, SIGNAL(timeout()), this, SLOT(on_compile_script()));
     script_layout->setSizes(QList<int>() << 1000 << 100);
     navigator->insertTab(scene_view::mode_other, script_layout, "Script");
 
@@ -182,6 +187,11 @@ void main_window::on_new_mission()
     m_location = list[idx].first;
     m_scene_view->load_location(m_location);
     update_objects_tree();
+
+    m_script_edit->setText("--Open-Horizon mission script\n\n"
+                           "function init()\n"
+                           "    --do init here\n"
+                           "end\n");
 }
 
 //------------------------------------------------------------
@@ -234,6 +244,17 @@ void main_window::on_load_mission()
         m_scene_view->add_object(obj);
     }
 
+    auto script_res = zprov.access("script.lua");
+    if (script_res)
+    {
+        std::string script;
+        script.resize(script_res->get_size());
+        if (!script.empty())
+            script_res->read_all(&script[0]);
+        m_script_edit->setText(script.c_str());
+        script_res->release();
+    }
+
     update_objects_tree();
 }
 
@@ -275,6 +296,11 @@ void main_window::on_save_mission()
     zip_entry_write(zip, str.c_str(), str.length());
     zip_entry_close(zip);
 
+    std::string script = m_script_edit->toPlainText().toUtf8().constData();
+    zip_entry_open(zip, "script.lua");
+    zip_entry_write(zip, script.c_str(), script.size());
+    zip_entry_close(zip);
+
     zip_close(zip);
 }
 
@@ -314,6 +340,25 @@ void main_window::on_mode_changed(int idx)
         m_scene_view->set_mode(scene_view::mode_other);
     else
         m_scene_view->set_mode(scene_view::mode(idx));
+}
+
+//------------------------------------------------------------
+
+void main_window::on_script_changed()
+{
+    m_compile_timer->start(1000);
+}
+
+//------------------------------------------------------------
+
+void main_window::on_compile_script()
+{
+    m_compile_timer->stop();
+
+    auto t = m_script_edit->toPlainText();
+    game::script s;
+    s.load(t.toUtf8().constData());
+    m_script_errors->setText(s.get_error().c_str());
 }
 
 //------------------------------------------------------------
