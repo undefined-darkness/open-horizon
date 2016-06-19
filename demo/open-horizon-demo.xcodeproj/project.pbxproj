@@ -31,6 +31,7 @@
 		F586B6701CE8D14300A2B7BE /* libopenal.1.17.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F586B66B1CE8C4C700A2B7BE /* libopenal.1.17.2.dylib */; };
 		F586B67E1CF7774B00A2B7BE /* decals in CopyFiles */ = {isa = PBXBuildFile; fileRef = F586B67D1CF7773800A2B7BE /* decals */; };
 		F586B6821CF786DF00A2B7BE /* zip_resources_provider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F586B6811CF786DF00A2B7BE /* zip_resources_provider.cpp */; };
+		F594C7851D169D3400AA265B /* script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F594C7831D169D3400AA265B /* script.cpp */; };
 		F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E51F19048D4A00C3590A /* libnya_engine.a */; };
 		F5961A281CCCBFEE00B92BE4 /* network_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5961A241CCCBFEE00B92BE4 /* network_client.cpp */; };
 		F5961A291CCCBFEE00B92BE4 /* network_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5961A261CCCBFEE00B92BE4 /* network_server.cpp */; };
@@ -53,6 +54,7 @@
 		F5A2A2E51B05466C009765C1 /* deathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E11B05466C009765C1 /* deathmatch.cpp */; };
 		F5A2A2E61B05466C009765C1 /* free_flight.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E21B05466C009765C1 /* free_flight.cpp */; };
 		F5A2A2E71B05466C009765C1 /* team_deathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E31B05466C009765C1 /* team_deathmatch.cpp */; };
+		F5B9E0F11D16DC1C0046BA9E /* liblua52.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F5B9E0F01D16DC1C0046BA9E /* liblua52.a */; };
 		F5BE29E71CB39B3200345699 /* cpk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5BE29E51CB39B3200345699 /* cpk.cpp */; };
 		F5C3B6FE1B2C809000479524 /* particles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A334691B23688F00F3C9FC /* particles.cpp */; };
 		F5C6D3861AF9694D006FB7E6 /* demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C6D3851AF9694D006FB7E6 /* demo.cpp */; };
@@ -165,6 +167,8 @@
 		F586B6801CF786DF00A2B7BE /* zip_resources_provider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zip_resources_provider.h; path = "../deps/nya-engine/extensions/zip_resources_provider.h"; sourceTree = "<group>"; };
 		F586B6811CF786DF00A2B7BE /* zip_resources_provider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = zip_resources_provider.cpp; path = "../deps/nya-engine/extensions/zip_resources_provider.cpp"; sourceTree = "<group>"; };
 		F58E4F581C63F7410056B029 /* network_data.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = network_data.h; path = ../game/network_data.h; sourceTree = "<group>"; };
+		F594C7831D169D3400AA265B /* script.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = script.cpp; path = ../game/script.cpp; sourceTree = "<group>"; };
+		F594C7841D169D3400AA265B /* script.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = script.h; path = ../game/script.h; sourceTree = "<group>"; };
 		F5961A211CCCBE0300B92BE4 /* network_helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = network_helpers.h; path = ../game/network_helpers.h; sourceTree = "<group>"; };
 		F5961A241CCCBFEE00B92BE4 /* network_client.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_client.cpp; path = ../game/network_client.cpp; sourceTree = "<group>"; };
 		F5961A251CCCBFEE00B92BE4 /* network_client.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network_client.h; path = ../game/network_client.h; sourceTree = "<group>"; };
@@ -210,6 +214,7 @@
 		F5A2A2E81B0546EF009765C1 /* deathmatch.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = deathmatch.h; path = ../game/deathmatch.h; sourceTree = "<group>"; };
 		F5A334691B23688F00F3C9FC /* particles.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = particles.cpp; path = ../renderer/particles.cpp; sourceTree = "<group>"; };
 		F5A3346A1B23688F00F3C9FC /* particles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = particles.h; path = ../renderer/particles.h; sourceTree = "<group>"; };
+		F5B9E0F01D16DC1C0046BA9E /* liblua52.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua52.a; path = "../deps/lua-5.2.4/liblua52.a"; sourceTree = "<group>"; };
 		F5BE29E51CB39B3200345699 /* cpk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cpk.cpp; sourceTree = "<group>"; };
 		F5BE29E61CB39B3200345699 /* cpk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpk.h; sourceTree = "<group>"; };
 		F5C6D37C1AF968E7006FB7E6 /* params.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = params.h; path = ../util/params.h; sourceTree = "<group>"; };
@@ -267,6 +272,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F5B9E0F11D16DC1C0046BA9E /* liblua52.a in Frameworks */,
 				F586B6701CE8D14300A2B7BE /* libopenal.1.17.2.dylib in Frameworks */,
 				F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */,
 				F5DFAD8B19BB248C00786736 /* libz.dylib in Frameworks */,
@@ -310,6 +316,7 @@
 		F503E4D919048C6700C3590A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F5B9E0F01D16DC1C0046BA9E /* liblua52.a */,
 				F586B66B1CE8C4C700A2B7BE /* libopenal.1.17.2.dylib */,
 				F50EE62B1CD3BF3900DDED72 /* OpenAL.framework */,
 				F5DFAD8A19BB248C00786736 /* libz.dylib */,
@@ -415,6 +422,8 @@
 				F5961A261CCCBFEE00B92BE4 /* network_server.cpp */,
 				F5961A271CCCBFEE00B92BE4 /* network_server.h */,
 				F53EFF551D0FEFEE009B6A0A /* objects.h */,
+				F594C7831D169D3400AA265B /* script.cpp */,
+				F594C7841D169D3400AA265B /* script.h */,
 				F5A2A2E31B05466C009765C1 /* team_deathmatch.cpp */,
 				F5A2A2DF1B05466C009765C1 /* team_deathmatch.h */,
 			);
@@ -738,6 +747,7 @@
 				F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */,
 				F50D9C9C1C9F2E5700A56812 /* pac6.cpp in Sources */,
 				F578323E1AFBE859005FE829 /* ui.cpp in Sources */,
+				F594C7851D169D3400AA265B /* script.cpp in Sources */,
 				F50B755E1CABD1410004E04F /* platform.cpp in Sources */,
 				F59AB5A91AFA4F1800137527 /* fhm_mesh.cpp in Sources */,
 				F5961A291CCCBFEE00B92BE4 /* network_server.cpp in Sources */,
@@ -868,9 +878,10 @@
 					"$(inherited)",
 					"../deps/glfw-bin/lib",
 					"../deps/openal-soft",
+					"../deps/lua-5.2.4",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../deps/miso/include/ ../deps/openal-soft/include/ ../";
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../deps/miso/include/ ../deps/openal-soft/include/ ../deps/lua-5.2.4/include/ ../";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -886,9 +897,10 @@
 					"$(inherited)",
 					"../deps/glfw-bin/lib",
 					"../deps/openal-soft",
+					"../deps/lua-5.2.4",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../deps/miso/include/ ../deps/openal-soft/include/ ../";
+				USER_HEADER_SEARCH_PATHS = "../deps/glfw-bin/include/ ../deps/nya-engine/ ../deps/pugixml-1.4/src/ ../deps/miso/include/ ../deps/openal-soft/include/ ../deps/lua-5.2.4/include/ ../";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
