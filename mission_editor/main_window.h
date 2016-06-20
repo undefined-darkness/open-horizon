@@ -4,11 +4,7 @@
 
 #pragma once
 
-#include <QMainWindow>
-#include <QFormLayout>
-#include <QTextEdit>
-#include <QTreeWidget>
-#include <QSyntaxHighlighter>
+#include <QtWidgets>
 
 //------------------------------------------------------------
 
@@ -32,7 +28,7 @@ private slots:
     void on_save_mission();
     void on_save_as_mission();
     void on_mode_changed(int idx);
-    void on_tree_selected(QTreeWidgetItem*, int);
+    void on_tree_selected();
     void on_add_tree_selected(QTreeWidgetItem*, int);
     void on_script_changed();
     void on_compile_script();
@@ -43,6 +39,7 @@ private:
 
 private:
     scene_view *m_scene_view;
+    QTabWidget *m_navigator;
     QFormLayout *m_edit_layout;
     QTreeWidget *m_objects_tree;
     QTextEdit *m_script_edit, *m_script_errors;

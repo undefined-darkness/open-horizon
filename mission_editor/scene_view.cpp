@@ -67,7 +67,8 @@ void scene_view::cache_mesh(std::string str)
             if (m_models.find(str) == m_models.end())
                 m_models[str].load(o.model.c_str(), m_location.get_params());
 
-            m_selected_add.y = o.y, m_selected_add.dy = o.dy;
+            if (str == m_selected_add.id)
+                m_selected_add.y = o.y, m_selected_add.dy = o.dy;
             return;
         }
     }

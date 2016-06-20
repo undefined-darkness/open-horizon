@@ -3,7 +3,6 @@
 //
 
 #include "main_window.h"
-#include <QtWidgets>
 #include "scene_view.h"
 #include "game/locations_list.h"
 #include "game/objects.h"
@@ -12,6 +11,21 @@
 #include "extensions/zip_resources_provider.h"
 
 //------------------------------------------------------------
+
+namespace
+{
+enum modes
+{
+    mode_add = scene_view::mode_add,
+    mode_edit = scene_view::mode_edit,
+    mode_path = scene_view::mode_path,
+    mode_zone = scene_view::mode_zone,
+    mode_script = scene_view::mode_other,
+    mode_info,
+
+    modes_count
+};
+}
 
 inline void alert(std::string message)
 {
@@ -49,20 +63,22 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
 
     m_objects_tree = new QTreeWidget;
     m_objects_tree->setHeaderLabel("Objects selection");
+    m_objects_tree->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    connect(m_objects_tree, SIGNAL(itemSelectionChanged()), this, SLOT(on_tree_selected()));
     main_splitter->addWidget(m_objects_tree);
 
     m_scene_view = new scene_view(this);
     m_scene_view->update_objects_tree = std::bind(&main_window::update_objects_tree, this);
     main_splitter->addWidget(m_scene_view);
 
-    QTabWidget *navigator = new QTabWidget;
-    main_splitter->addWidget(navigator);
+    m_navigator = new QTabWidget;
+    main_splitter->addWidget(m_navigator);
 
     main_splitter->setSizes(QList<int>() << 200 << 1000 << 400);
 
     auto add_objects_tree = new QTreeWidget;
     add_objects_tree->setHeaderLabel("Objects");
-    navigator->insertTab(scene_view::mode_add, add_objects_tree, "Add");
+    m_navigator->insertTab(mode_add, add_objects_tree, "Add");
     auto &obj_list = game::get_objects_list();
     for (auto &o: obj_list)
     {
@@ -88,14 +104,14 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
 
     m_edit_layout = new QFormLayout;
     QWidget *edit_widget = new QWidget;
-    navigator->insertTab(scene_view::mode_edit, edit_widget, "Edit");
+    m_navigator->insertTab(mode_edit, edit_widget, "Edit");
     edit_widget->setLayout(m_edit_layout);
 
     QWidget *path_widget = new QWidget;
-    navigator->insertTab(scene_view::mode_path, path_widget, "Path");
+    m_navigator->insertTab(mode_path, path_widget, "Path");
 
     QWidget *zone_widget = new QWidget;
-    navigator->insertTab(scene_view::mode_zone, zone_widget, "Zone");
+    m_navigator->insertTab(mode_zone, zone_widget, "Zone");
 
     auto *script_layout = new QSplitter(Qt::Vertical);
     m_script_edit = new QTextEdit;
@@ -104,28 +120,29 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     script_layout->addWidget(m_script_edit);
     m_script_errors = new QTextEdit;
     m_script_errors->setReadOnly(true);
+    m_script_errors->setTextColor(Qt::red);
     script_layout->addWidget(m_script_errors);
     m_compile_timer = new QTimer(this);
     connect(m_compile_timer, SIGNAL(timeout()), this, SLOT(on_compile_script()));
     script_layout->setSizes(QList<int>() << 1000 << 100);
-    navigator->insertTab(scene_view::mode_other, script_layout, "Script");
+    m_navigator->insertTab(mode_script, script_layout, "Script");
 
     auto info_layout = new QFormLayout;
     QWidget *info_widget = new QWidget;
-    navigator->insertTab(scene_view::mode_other + 1, info_widget, "Info");
+    m_navigator->insertTab(mode_info, info_widget, "Info");
     info_widget->setLayout(info_layout);
 
     QSignalMapper *m = new QSignalMapper(this);
-    for (int i = 0; i < scene_view::mode_other + 2; ++i)
+    for (int i = 0; i < modes_count; ++i)
     {
         QShortcut *s = new QShortcut(QKeySequence(("Ctrl+" + std::to_string(i+1)).c_str()), this);
         connect(s, SIGNAL(activated()), m, SLOT(map()));
         m->setMapping(s, i);
     }
-    connect(m, SIGNAL(mapped(int)), navigator, SLOT(setCurrentIndex(int)));
-    connect(navigator, SIGNAL(currentChanged(int)), this, SLOT(on_mode_changed(int)));
+    connect(m, SIGNAL(mapped(int)), m_navigator, SLOT(setCurrentIndex(int)));
+    connect(m_navigator, SIGNAL(currentChanged(int)), this, SLOT(on_mode_changed(int)));
 
-    m_scene_view->set_mode(scene_view::mode_add);
+    m_scene_view->set_mode(scene_view::mode_other);
     setup_menu();
 }
 
@@ -192,6 +209,8 @@ void main_window::on_new_mission()
                            "function init()\n"
                            "    --do init here\n"
                            "end\n");
+
+    m_navigator->setCurrentIndex(mode_info);
 }
 
 //------------------------------------------------------------
@@ -256,6 +275,7 @@ void main_window::on_load_mission()
     }
 
     update_objects_tree();
+    m_navigator->setCurrentIndex(mode_info);
 }
 
 //------------------------------------------------------------
@@ -318,8 +338,38 @@ void main_window::on_save_as_mission()
 
 //------------------------------------------------------------
 
-void main_window::on_tree_selected(QTreeWidgetItem* item, int)
+void main_window::on_tree_selected()
 {
+    auto items = m_objects_tree->selectedItems();
+
+    //ToDo
+
+    if (items.empty())
+        return;
+
+    m_navigator->setCurrentIndex(mode_edit);
+
+    for (auto &item: items)
+    {
+        if (item->text(0) == "player_spawn")
+        {
+            //ToDo
+            continue;
+        }
+
+        for (int i = 0; i < m_objects_tree->topLevelItemCount(); ++i)
+        {
+           QTreeWidgetItem *p = m_objects_tree->topLevelItem(i);
+           const int idx = p->indexOfChild(item);
+           if (idx < 0)
+               continue;
+
+           if (p->text(0) == "objects")
+           {
+               //ToDo
+           }
+        }
+    }
 }
 
 //------------------------------------------------------------
@@ -336,7 +386,7 @@ void main_window::on_add_tree_selected(QTreeWidgetItem* item, int)
 
 void main_window::on_mode_changed(int idx)
 {
-    if (idx >= scene_view::mode_other)
+    if (m_location.empty() || idx >= scene_view::mode_other)
         m_scene_view->set_mode(scene_view::mode_other);
     else
         m_scene_view->set_mode(scene_view::mode(idx));
