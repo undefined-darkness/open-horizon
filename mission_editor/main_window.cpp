@@ -340,36 +340,37 @@ void main_window::on_save_as_mission()
 
 void main_window::on_tree_selected()
 {
+    m_scene_view->clear_selection();
+
     auto items = m_objects_tree->selectedItems();
-
-    //ToDo
-
     if (items.empty())
+    {
+        m_scene_view->update();
         return;
+    }
 
     m_navigator->setCurrentIndex(mode_edit);
 
     for (auto &item: items)
     {
-        if (item->text(0) == "player_spawn")
-        {
-            //ToDo
-            continue;
-        }
-
         for (int i = 0; i < m_objects_tree->topLevelItemCount(); ++i)
         {
            QTreeWidgetItem *p = m_objects_tree->topLevelItem(i);
+           if (item == p)
+           {
+               m_scene_view->select(p->text(0).toUtf8().constData(), 0);
+               break;
+           }
+
            const int idx = p->indexOfChild(item);
            if (idx < 0)
                continue;
 
-           if (p->text(0) == "objects")
-           {
-               //ToDo
-           }
+           m_scene_view->select(p->text(0).toUtf8().constData(), idx);
         }
     }
+
+    m_scene_view->update();
 }
 
 //------------------------------------------------------------
@@ -390,6 +391,11 @@ void main_window::on_mode_changed(int idx)
         m_scene_view->set_mode(scene_view::mode_other);
     else
         m_scene_view->set_mode(scene_view::mode(idx));
+
+    if (idx != scene_view::mode_edit)
+        m_objects_tree->clearSelection();
+
+    m_scene_view->update();
 }
 
 //------------------------------------------------------------

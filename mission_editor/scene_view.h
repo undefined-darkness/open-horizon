@@ -11,6 +11,7 @@
 #include "render/debug_draw.h"
 #include "game/objects.h"
 #include <functional>
+#include <set>
 
 //------------------------------------------------------------
 
@@ -36,6 +37,9 @@ public:
 
     void set_mode(mode m) { m_mode = m; }
     void set_selected_add(std::string str);
+
+    void clear_selection();
+    void select(std::string group, int idx);
 
     struct object
     {
@@ -77,6 +81,8 @@ private:
     object m_selected_add;
     std::map<std::string, renderer::model> m_models;
     std::vector<object> m_objects;
+
+    std::map<std::string, std::set<int> > m_selection;
 };
 
 //------------------------------------------------------------

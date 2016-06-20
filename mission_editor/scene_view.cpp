@@ -76,6 +76,22 @@ void scene_view::cache_mesh(std::string str)
 
 //------------------------------------------------------------
 
+
+void scene_view::clear_selection()
+{
+    for (auto &s: m_selection)
+        s.second.clear();
+}
+
+//------------------------------------------------------------
+
+void scene_view::select(std::string group, int idx)
+{
+    m_selection[group].insert(idx);
+}
+
+//------------------------------------------------------------
+
 scene_view::scene_view(QWidget *parent): QGLWidget(parent)
 {
     setFocusPolicy(Qt::StrongFocus);
@@ -125,10 +141,16 @@ void scene_view::paintGL()
 
     m_dd.clear();
 
-    for (auto &o: m_objects)
+    if (m_mode == mode_add || m_mode == mode_edit)
     {
-        m_dd.add_line(o.pos, o.pos + nya_math::vec3(0, o.y, 0), green);
-        m_dd.add_point(o.pos, green);
+        const auto &sel_objects = m_selection["objects"];
+        int idx = 0;
+        for (auto &o: m_objects)
+        {
+            auto color = (m_mode == mode_edit && sel_objects.find(idx++) != sel_objects.end()) ? red : green;
+            m_dd.add_line(o.pos, o.pos + nya_math::vec3(0, o.y, 0), color);
+            m_dd.add_point(o.pos, color);
+        }
     }
 
     if (m_mode == mode_add)
