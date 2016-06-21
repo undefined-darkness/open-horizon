@@ -154,27 +154,39 @@ void main_window::setup_menu()
 
     QAction *new_mission = new QAction("New mission", this);
     new_mission->setShortcut(QKeySequence::New);
-    this->addAction(new_mission);
     file_menu->addAction(new_mission);
     connect(new_mission, SIGNAL(triggered()), this, SLOT(on_new_mission()));
 
     QAction *load_mission = new QAction("Load mission", this);
     load_mission->setShortcut(QKeySequence::Open);
-    this->addAction(load_mission);
     file_menu->addAction(load_mission);
     connect(load_mission, SIGNAL(triggered()), this, SLOT(on_load_mission()));
 
     QAction *save_mission = new QAction("Save mission", this);
     save_mission->setShortcut(QKeySequence::Save);
-    this->addAction(save_mission);
     file_menu->addAction(save_mission);
     connect(save_mission, SIGNAL(triggered()), this, SLOT(on_save_mission()));
 
     QAction *save_as_mission = new QAction("Save as mission", this);
     save_as_mission->setShortcut(QKeySequence::SaveAs);
-    this->addAction(save_as_mission);
     file_menu->addAction(save_as_mission);
     connect(save_as_mission, SIGNAL(triggered()), this, SLOT(on_save_as_mission()));
+
+    QMenu *edit_menu = menuBar()->addMenu("Edit");
+
+    QAction *select_all = new QAction("Select all", this);
+    select_all->setShortcut(QKeySequence::SelectAll);
+    edit_menu->addAction(select_all);
+    connect(select_all, SIGNAL(triggered()), m_objects_tree, SLOT(selectAll()));
+
+    QAction *delete_selected = new QAction("Delete selected", this);
+#ifdef Q_OS_MAC
+    delete_selected->setShortcut(QKeySequence("Backspace"));
+#else
+    delete_selected->setShortcut(QKeySequence::Delete);
+#endif
+    edit_menu->addAction(delete_selected);
+    connect(delete_selected, SIGNAL(triggered()), this, SLOT(on_delete()));
 }
 
 //------------------------------------------------------------
@@ -328,6 +340,9 @@ void main_window::on_save_mission()
 
 void main_window::on_save_as_mission()
 {
+    if (m_location.empty())
+        return;
+
     auto filename = QFileDialog::getSaveFileName(this, "Save mission", "missions", "*.zip");
     if (!filename.length())
         return;
@@ -381,6 +396,13 @@ void main_window::on_add_tree_selected(QTreeWidgetItem* item, int)
         m_scene_view->set_selected_add(item->text(0).toUtf8().constData());
     else
         m_scene_view->set_selected_add("");
+}
+
+//------------------------------------------------------------
+
+void main_window::on_delete()
+{
+    m_scene_view->delete_selected();
 }
 
 //------------------------------------------------------------
@@ -457,7 +479,9 @@ highlight_lua::highlight_lua(QTextDocument *parent): QSyntaxHighlighter(parent)
     m_rules.push_back({QRegExp("\\b[A-Za-z0-9_]+(?=\\()"), QColor(0x6f, 0, 0x8f)});
 
     m_rules.push_back({QRegExp("\".*\""), QColor(0xe4, 0, 0x41)});
+    m_rules.back().first.setMinimal(true);
     m_rules.push_back({QRegExp("\'.*\'"), QColor(0xe4, 0, 0x41)});
+    m_rules.back().first.setMinimal(true);
 
     m_comment_color = QColor(0, 0x8e, 0);
     m_rules.push_back({QRegExp("--[^\n]*"), m_comment_color});

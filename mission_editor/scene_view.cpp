@@ -92,6 +92,26 @@ void scene_view::select(std::string group, int idx)
 
 //------------------------------------------------------------
 
+void scene_view::delete_selected()
+{
+    if (m_mode != mode_edit)
+        return;
+
+    const auto &sel_objects = m_selection["objects"];
+    for (auto o = sel_objects.rbegin(); o != sel_objects.rend(); ++o)
+    {
+        if (*o >= m_objects.size())
+            continue;
+
+        m_objects.erase(m_objects.begin() + *o);
+    }
+
+    update_objects_tree();
+    update();
+}
+
+//------------------------------------------------------------
+
 scene_view::scene_view(QWidget *parent): QGLWidget(parent)
 {
     setFocusPolicy(Qt::StrongFocus);

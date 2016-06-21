@@ -41,6 +41,8 @@ public:
     void clear_selection();
     void select(std::string group, int idx);
 
+    void delete_selected();
+
     struct object
     {
         std::string name;
