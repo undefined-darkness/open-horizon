@@ -218,7 +218,7 @@ void world::update_planes(int dt, const hit_hunction &on_hit)
         box.origin = pt;
         box.delta.set(r, r, r);
 
-        bool hit = pt.y < get_height(pt.x, pt.z) + 5.0f;
+        bool hit = pt.y < get_height(pt.x, pt.z, false) + 5.0f;
         if (!hit)
         {
             static std::vector<int> insts;
@@ -288,7 +288,7 @@ void world::update_missiles(int dt, const hit_hunction &on_hit)
 
         const auto pt = m->pos + m->vel * (dt * 0.001f);
 
-        bool hit = pt.y < get_height(pt.x, pt.z) + 1.0f;
+        bool hit = pt.y < get_height(pt.x, pt.z, false) + 1.0f;
         if (!hit)
         {
             static std::vector<int> insts;
@@ -341,7 +341,7 @@ void world::update_bullets(int dt)
 
 //------------------------------------------------------------
 
-float world::get_height(float x, float z) const
+float world::get_height(float x, float z, bool include_objects) const
 {
     if (m_heights.empty())
         return 0.0f;
@@ -393,7 +393,33 @@ float world::get_height(float x, float z) const
     const float h00_h10 = nya_math::lerp(h00, h10, kx);
     const float h01_h11 = nya_math::lerp(h01, h11, kx);
 
-    return nya_math::lerp(h00_h10, h01_h11, kz);
+    float height = nya_math::lerp(h00_h10, h01_h11, kz);
+
+    if (!include_objects)
+        return height;
+
+    const float max_height = 16000.0f;
+    vec3 pos(x, max_height, z), to(x, 0.0f, z);
+    static std::vector<int> insts;
+    if (m_qtree.get_objects((int)x, (int)z, insts))
+    {
+        for (auto &i:insts)
+        {
+            const auto &mi = m_instances[i];
+            const auto lpt = mi.transform_inv(to), lpf = mi.transform_inv(pos);
+            auto &m = m_meshes[mi.mesh_idx];
+
+            float h;
+            if(!m.trace(lpf, lpt, h))
+                continue;
+
+            h = max_height * (1.0f - h);
+            if(h > height)
+                height = h;
+        }
+    }
+
+    return height;
 }
 
 //------------------------------------------------------------

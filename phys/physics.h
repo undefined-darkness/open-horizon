@@ -120,7 +120,7 @@ public:
 
     const std::vector<bullet> &get_bullets() const { return m_bullets; }
 
-    float get_height(float x, float z) const;
+    float get_height(float x, float z, bool include_objects) const;
 
 private:
     std::vector<plane_ptr> m_planes;

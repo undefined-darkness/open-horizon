@@ -124,7 +124,8 @@ void scene_view::initializeGL()
 {
     nya_render::set_clear_color(0.2f,0.4f,0.5f,0.0f);
     nya_render::apply_state(true);
-    m_dd.set_point_size(3.0f);
+    m_dd.set_point_size(4.0f);
+    m_dd.set_line_width(1.5f);
 }
 
 //------------------------------------------------------------
@@ -139,7 +140,7 @@ void scene_view::resizeGL(int w, int h)
 
 void scene_view::paintGL()
 {
-    const float height = m_location_phys.get_height(m_camera_pos.x, m_camera_pos.z);
+    const float height = m_location_phys.get_height(m_camera_pos.x, m_camera_pos.z, false);
 
     nya_scene::get_camera_proxy()->set_rot(m_camera_yaw, m_camera_pitch, 0.0f);
     nya_scene::get_camera_proxy()->set_pos(m_camera_pos + nya_math::vec3(0, height, 0));
@@ -178,6 +179,17 @@ void scene_view::paintGL()
         m_dd.add_line(m_cursor_pos, m_cursor_pos + nya_math::vec3(0, m_selected_add.y, 0), red);
         m_dd.add_point(m_cursor_pos, red);
     }
+
+    auto color = (m_mode == mode_edit && !m_selection["player spawn"].empty()) ? red : blue;
+    auto player_up = m_player.pos + nya_math::vec3(0, m_player.y, 0);
+    m_dd.add_line(m_player.pos, player_up, color);
+    m_dd.add_point(m_player.pos, color);
+    auto player_fw = nya_math::vec2(0.0f, 1.0f).rotate(-m_player.yaw) * 4.0f;
+    auto player_fw3 = nya_math::vec3(player_fw.x, 0, player_fw.y) * 2.0;
+    m_dd.add_line(player_up - player_fw3, player_up + player_fw3, color);
+    nya_math::vec3 player_r3(player_fw.y, 0, -player_fw.x);
+    m_dd.add_line(player_up + player_fw3, player_up + player_r3, color);
+    m_dd.add_line(player_up + player_fw3, player_up - player_r3, color);
 
     nya_render::set_state(nya_render::state());
     nya_render::depth_test::disable();
@@ -293,17 +305,72 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
             m_camera_pos.z = nya_math::clamp(m_camera_pos.z, -location_size, location_size);
         }
     }
+    else if (btns.testFlag(Qt::LeftButton))
+    {
+        nya_math::vec2 dpos(x - m_mouse_x, y - m_mouse_y);
+        dpos.rotate(m_camera_yaw);
+        dpos *= m_camera_pos.y / 300.0f;
+        if (shift)
+            dpos *= 10.0f;
+
+        if (m_mode == mode_edit)
+        {
+            for (auto &o: m_selection["objects"])
+            {
+                if (o >= m_objects.size())
+                    continue;
+
+                auto &obj = m_objects[o];
+                obj.pos.x += dpos.x, obj.pos.z += dpos.y;
+                obj.pos.y = m_location_phys.get_height(obj.pos.x, obj.pos.z, true);
+            }
+
+            if (!m_selection["player spawn"].empty())
+            {
+                m_player.pos.x += dpos.x, m_player.pos.z += dpos.y;
+                m_player.pos.y = m_location_phys.get_height(m_player.pos.x, m_player.pos.z, true);
+            }
+        }
+    }
     else if (alt)
     {
-        m_selected_add.y -= (y - m_mouse_y) * (shift ? 10.0f : 1.0f);
-        m_selected_add.y = nya_math::clamp(m_selected_add.y, 0.0f, 10000.0f);
+        const float add = -(y - m_mouse_y) * (shift ? 10.0f : 1.0f);
         lock_mouse = true;
+
+        if (m_mode == mode_add)
+            m_selected_add.y = nya_math::clamp(m_selected_add.y + add, 0.0f, 10000.0f);
+
+        if (m_mode == mode_edit)
+        {
+            for (auto &o: m_selection["objects"])
+            {
+                if (o < m_objects.size())
+                    m_objects[o].y = nya_math::clamp(m_objects[o].y + add, 0.0f, 10000.0f);
+            }
+
+            if (!m_selection["player spawn"].empty())
+                m_player.y = nya_math::clamp(m_player.y + add, 0.0f, 10000.0f);
+        }
     }
     else if (shift)
     {
-        m_selected_add.yaw += (y - m_mouse_y) * 4.0f;
-        m_selected_add.yaw.normalize();
+        const float add = (y - m_mouse_y) * 4.0f;
         lock_mouse = true;
+
+        if (m_mode == mode_add)
+            m_selected_add.yaw = (m_selected_add.yaw + add).normalize();
+
+        if (m_mode == mode_edit)
+        {
+            for (auto &o: m_selection["objects"])
+            {
+                if (o < m_objects.size())
+                    m_objects[o].yaw = (m_objects[o].yaw + add).normalize();
+            }
+
+            if (!m_selection["player spawn"].empty())
+                m_player.yaw = (m_player.yaw + add).normalize();
+        }
     }
 
     if (lock_mouse)

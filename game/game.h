@@ -219,7 +219,7 @@ public:
     int get_missiles_count() const { return (int)m_missiles.size(); }
     missile_ptr get_missile(int idx);
 
-    float get_height(float x, float z) const { return m_phys_world.get_height(x, z); }
+    float get_height(float x, float z) const { return m_phys_world.get_height(x, z, false); }
 
     bool is_ally(const plane_ptr &a, const plane_ptr &b);
     typedef std::function<bool(const plane_ptr &a, const plane_ptr &b)> is_ally_handler;

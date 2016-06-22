@@ -55,6 +55,10 @@ public:
     const std::vector<object> get_objects() const { return m_objects; }
     void clear_objects() { m_objects.clear(); }
     void add_object(const object &o);
+    const object &get_player() const { return m_player; }
+    void set_player(const object &p) { m_player = p; }
+
+    float get_height(float x, float z) const { return m_location_phys.get_height(x, z, true); }
 
 private:
     virtual void initializeGL() override;
@@ -80,10 +84,10 @@ private:
     int m_mouse_x = 0, m_mouse_y = 0;
     nya_math::vec3 m_cursor_pos;
     mode m_mode;
-    object m_selected_add;
     std::map<std::string, renderer::model> m_models;
+    object m_selected_add;
+    object m_player;
     std::vector<object> m_objects;
-
     std::map<std::string, std::set<int> > m_selection;
 };
 

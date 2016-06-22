@@ -215,6 +215,10 @@ void main_window::on_new_mission()
     clear_mission();
     m_location = list[idx].first;
     m_scene_view->load_location(m_location);
+    scene_view::object p;
+    p.pos.y = m_scene_view->get_height(p.pos.x, p.pos.z);
+    p.y = 100.0f;
+    m_scene_view->set_player(p);
     update_objects_tree();
 
     m_script_edit->setText("--Open-Horizon mission script\n\n"
@@ -263,7 +267,15 @@ void main_window::on_load_mission()
     m_location = loc;
     m_scene_view->load_location(loc);
 
-    for (pugi::xml_node o = root.child("object"); o; o = o.next_sibling("object"))
+    auto p = root.child("player");
+    scene_view::object plr;
+    plr.yaw = p.attribute("yaw").as_float();
+    plr.pos.set(p.attribute("x").as_float(), p.attribute("y").as_float(), p.attribute("z").as_float());
+    plr.y = p.attribute("editor_y").as_float();
+    plr.pos.y -= plr.y;
+    m_scene_view->set_player(plr);
+
+    for (auto o = root.child("object"); o; o = o.next_sibling("object"))
     {
         scene_view::object obj;
         obj.name = o.attribute("name").as_string();
@@ -309,6 +321,16 @@ void main_window::on_save_mission()
 
     std::string str = "<!--Open Horizon mission-->\n";
     str += "<mission location=\"" + m_location + "\">\n";
+
+    auto &p = m_scene_view->get_player();
+    str += "\t<player ";
+    str += "x=\"" + std::to_string(p.pos.x) + "\" ";
+    str += "y=\"" + std::to_string(p.pos.y + p.y) + "\" ";
+    str += "z=\"" + std::to_string(p.pos.z) + "\" ";
+    str += "yaw=\"" + std::to_string(p.yaw.get_deg()) + "\" ";
+    str += "editor_y=\"" + std::to_string(p.y) + "\" ";
+    str += "/>\n";
+
     for (auto &o: m_scene_view->get_objects())
     {
         str += "\t<object ";
