@@ -64,7 +64,9 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     m_objects_tree = new QTreeWidget;
     m_objects_tree->setHeaderLabel("Objects selection");
     m_objects_tree->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    connect(m_objects_tree, SIGNAL(itemSelectionChanged()), this, SLOT(on_tree_selected()));
+    connect(m_objects_tree, SIGNAL(itemSelectionChanged()), this, SLOT(on_obj_selected()));
+    connect(m_objects_tree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(on_obj_focus(QTreeWidgetItem*, int)));
+
     main_splitter->addWidget(m_objects_tree);
 
     m_scene_view = new scene_view(this);
@@ -375,7 +377,7 @@ void main_window::on_save_as_mission()
 
 //------------------------------------------------------------
 
-void main_window::on_tree_selected()
+void main_window::on_obj_selected()
 {
     m_scene_view->clear_selection();
 
@@ -408,6 +410,28 @@ void main_window::on_tree_selected()
     }
 
     m_scene_view->update();
+}
+
+//------------------------------------------------------------
+
+void main_window::on_obj_focus(QTreeWidgetItem *item, int)
+{
+    for (int i = 0; i < m_objects_tree->topLevelItemCount(); ++i)
+    {
+       QTreeWidgetItem *p = m_objects_tree->topLevelItem(i);
+       if (item == p)
+       {
+           m_scene_view->set_focus(p->text(0).toUtf8().constData(), 0);
+           return;
+       }
+
+       const int idx = p->indexOfChild(item);
+       if (idx < 0)
+           continue;
+
+       m_scene_view->set_focus(p->text(0).toUtf8().constData(), idx);
+       return;
+    }
 }
 
 //------------------------------------------------------------

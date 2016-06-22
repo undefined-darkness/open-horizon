@@ -92,6 +92,28 @@ void scene_view::select(std::string group, int idx)
 
 //------------------------------------------------------------
 
+void scene_view::set_focus(std::string group, int idx)
+{
+    object *o = 0;
+    if (group == "objects" && idx < m_objects.size())
+        o = &m_objects[idx];
+    else if (group == "player spawn")
+        o = &m_player;
+
+    if (!o)
+        return;
+
+    nya_math::vec2 dpos(0.0f, 100.0f);
+    dpos.rotate(m_camera_yaw);
+
+    m_camera_pos = o->pos + nya_math::vec3(dpos.x, o->y + 50.0, dpos.y);
+    m_camera_pitch = 30;
+
+    update();
+}
+
+//------------------------------------------------------------
+
 void scene_view::delete_selected()
 {
     if (m_mode != mode_edit)
@@ -264,6 +286,9 @@ void scene_view::mousePressEvent(QMouseEvent *event)
         m_objects.back().name = new_name("object", m_objects);
         update_objects_tree();
     }
+
+    m_mouse_x = event->localPos().x();
+    m_mouse_y = event->localPos().y();
 
     update();
 }

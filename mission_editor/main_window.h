@@ -29,7 +29,8 @@ private slots:
     void on_save_as_mission();
     void on_mode_changed(int idx);
     void on_delete();
-    void on_tree_selected();
+    void on_obj_selected();
+    void on_obj_focus(QTreeWidgetItem *, int);
     void on_add_tree_selected(QTreeWidgetItem*, int);
     void on_script_changed();
     void on_compile_script();
