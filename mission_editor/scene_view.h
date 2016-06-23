@@ -69,6 +69,17 @@ public:
 
     std::vector<path> &get_paths() { return m_paths; }
 
+    struct zone
+    {
+        std::string name;
+        nya_math::vec3 pos;
+        float radius = 50.0f;
+    };
+
+    const std::vector<zone> get_zones() const { return m_zones; }
+    void clear_zones() { m_zones.clear(), m_zones_internal.clear(); }
+    void add_zone(const zone &z);
+
     float get_height(float x, float z) const { return m_location_phys.get_height(x, z, true); }
 
 private:
@@ -85,6 +96,9 @@ private:
     nya_math::vec3 world_cursor_pos() const;
     void draw(const object &o);
     void cache_mesh(std::string name);
+    struct zone_internal;
+    void update_zone(const zone &z, zone_internal &zi);
+    void add_to_draw(const zone_internal &zi, nya_math::vec4 color);
 
 private:
     renderer::location m_location;
@@ -100,6 +114,11 @@ private:
     object m_player;
     std::vector<object> m_objects;
     std::vector<path> m_paths;
+    struct zone_internal { std::vector<nya_math::vec3> verts; };
+    std::vector<zone_internal> m_zones_internal;
+    std::vector<zone> m_zones;
+    zone m_zone_add;
+
     std::map<std::string, std::set<int> > m_selection;
 };
 

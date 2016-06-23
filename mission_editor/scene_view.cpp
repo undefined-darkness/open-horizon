@@ -77,6 +77,30 @@ void scene_view::cache_mesh(std::string str)
 
 //------------------------------------------------------------
 
+void scene_view::update_zone(const zone &z, zone_internal &zi)
+{
+    zi.verts.clear();
+    const int num_segments = 18;
+    for(int i = 0; i < num_segments; ++i)
+    {
+        const float a = 2.0f * nya_math::constants::pi * float(i) / float(num_segments);
+        nya_math::vec3 p(z.radius * cosf(a), 0.0f, z.radius * sinf(a));
+        p += z.pos;
+        p.y = m_location_phys.get_height(p.x, p.z, false);
+        zi.verts.push_back(p);
+    }
+}
+
+//------------------------------------------------------------
+
+void scene_view::add_to_draw(const zone_internal &zi, nya_math::vec4 color)
+{
+    for (int i = 0; i < (int)zi.verts.size(); ++i)
+        m_dd.add_line(zi.verts[i], zi.verts[(i + 1) % zi.verts.size()], color);
+}
+
+//------------------------------------------------------------
+
 void scene_view::clear_selection()
 {
     for (auto &s: m_selection)
@@ -210,6 +234,14 @@ void scene_view::paintGL()
     }
 
     m_dd.clear();
+
+    if (m_mode == mode_zone)
+    {
+        m_zone_add.pos = m_cursor_pos;
+        static zone_internal zi;
+        update_zone(m_zone_add, zi);
+        add_to_draw(zi, red);
+    }
 
     const auto &sel_paths = m_selection["paths"];
     int idx = 0;
@@ -467,6 +499,9 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
 
         if (m_mode == mode_add || m_mode == mode_path)
             m_selected_add.y = nya_math::clamp(m_selected_add.y + add, 0.0f, 10000.0f);
+
+        if (m_mode == mode_zone)
+            m_zone_add.radius = nya_math::clamp(m_zone_add.radius + add, 1.0f, 10000.0f);
 
         if (m_mode == mode_edit)
         {
