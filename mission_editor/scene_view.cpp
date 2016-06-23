@@ -482,7 +482,7 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
     }
     else if (shift)
     {
-        const float add = (y - m_mouse_y) * 4.0f;
+        const nya_math::angle_deg add = (y - m_mouse_y) * 4.0f;
         lock_mouse = true;
 
         if (m_mode == mode_add)
@@ -490,14 +490,61 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
 
         if (m_mode == mode_edit)
         {
+            const float far = 100000.0f;
+            nya_math::vec3 vmin(far,far,far), vmax(-far,-far,-far);
+
             for (auto &o: m_selection["objects"])
             {
-                if (o < m_objects.size())
-                    m_objects[o].yaw = (m_objects[o].yaw + add).normalize();
+                if (o >= m_objects.size())
+                    continue;
+
+                m_objects[o].yaw = (m_objects[o].yaw + add).normalize();
+                vmin = nya_math::vec3::min(vmin, m_objects[o].pos);
+                vmax = nya_math::vec3::max(vmax, m_objects[o].pos);
+            }
+
+            for (auto &o: m_selection["paths"])
+            {
+                if (o >= m_paths.size())
+                    continue;
+
+                for (auto &p: m_paths[o].points)
+                {
+                    vmin = nya_math::vec3::min(vmin, p.xyz());
+                    vmax = nya_math::vec3::max(vmax, p.xyz());
+                }
             }
 
             if (!m_selection["player spawn"].empty())
+            {
                 m_player.yaw = (m_player.yaw + add).normalize();
+                vmin = nya_math::vec3::min(vmin, m_player.pos);
+                vmax = nya_math::vec3::max(vmax, m_player.pos);
+            }
+
+            auto c = vmin + (vmax - vmin) * 0.5;
+
+            const nya_math::quat rot(nya_math::angle_deg(), add, 0);
+
+            for (auto &o: m_selection["objects"])
+            {
+                if (o >= m_objects.size())
+                    continue;
+
+                m_objects[o].pos = c + rot.rotate(m_objects[o].pos - c);
+            }
+
+            for (auto &o: m_selection["paths"])
+            {
+                if (o >= m_paths.size())
+                    continue;
+
+                for (auto &p: m_paths[o].points)
+                    p.xyz() = c + rot.rotate(p.xyz() - c);
+            }
+
+            if (!m_selection["player spawn"].empty())
+                m_player.pos = c + rot.rotate(m_player.pos - c);
         }
     }
 
