@@ -37,6 +37,7 @@ private slots:
 
 private:
     void update_objects_tree();
+    void select_path(int idx);
     void clear_mission();
 
 private:

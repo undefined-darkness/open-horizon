@@ -16,6 +16,7 @@ static const float location_size = 256 * 256.0f;
 //------------------------------------------------------------
 
 static const nya_math::vec4 white = nya_math::vec4(255,255,255,255)/255.0;
+static const nya_math::vec4 yellow = nya_math::vec4(223,255,103,255)/255.0;
 static const nya_math::vec4 green = nya_math::vec4(103,223,144,255)/255.0;
 static const nya_math::vec4 red = nya_math::vec4(200,0,0,255)/255.0;
 static const nya_math::vec4 blue = nya_math::vec4(100,200,200,255)/255.0;
@@ -75,7 +76,6 @@ void scene_view::cache_mesh(std::string str)
 }
 
 //------------------------------------------------------------
-
 
 void scene_view::clear_selection()
 {
@@ -165,7 +165,7 @@ void scene_view::paintGL()
     const float height = m_location_phys.get_height(m_camera_pos.x, m_camera_pos.z, false);
 
     nya_scene::get_camera_proxy()->set_rot(m_camera_yaw, m_camera_pitch, 0.0f);
-    nya_scene::get_camera_proxy()->set_pos(m_camera_pos + nya_math::vec3(0, height, 0));
+    nya_scene::get_camera_proxy()->set_pos(pos_h(m_camera_pos, height));
 
     nya_render::clear(true, true);
     m_location.update_tree_texture();
@@ -184,14 +184,50 @@ void scene_view::paintGL()
 
     m_dd.clear();
 
+    const auto &sel_paths = m_selection["paths"];
+    int idx = 0;
+    for (auto &p: m_paths)
+    {
+        auto &color = (m_mode == mode_edit && sel_paths.find(idx++) != sel_paths.end()) ? red : yellow;
+        for (int i = 0; i < (int)p.points.size(); ++i)
+        {
+            auto &p0 = p.points[i];
+            m_dd.add_point(pos_h(p0.xyz(), p0.w), color);
+            m_dd.add_line(pos_h(p0.xyz(), p0.w), p0.xyz(), color * 0.5);
+            if (i > 0)
+            {
+                auto &p1 = p.points[i - 1];
+                m_dd.add_line(pos_h(p0.xyz(), p0.w), pos_h(p1.xyz(), p1.w), color);
+            }
+        }
+    }
+
+    if (m_mode == mode_path)
+    {
+        auto p1 = pos_h(m_cursor_pos, m_selected_add.y);
+        if (!sel_paths.empty())
+        {
+            int idx = *sel_paths.rbegin();
+            if (idx < (int)m_paths.size() && !m_paths[idx].points.empty())
+            {
+                auto &p0 = m_paths[idx].points.back();
+                m_dd.add_line(pos_h(p0.xyz(), p0.w), p1, red);
+            }
+        }
+
+        m_dd.add_line(m_cursor_pos, p1, red);
+        m_dd.add_point(p1, red);
+    }
+
     if (m_mode == mode_add || m_mode == mode_edit)
     {
+
         const auto &sel_objects = m_selection["objects"];
-        int idx = 0;
+        idx = 0;
         for (auto &o: m_objects)
         {
             auto color = (m_mode == mode_edit && sel_objects.find(idx++) != sel_objects.end()) ? red : green;
-            m_dd.add_line(o.pos, o.pos + nya_math::vec3(0, o.y, 0), color);
+            m_dd.add_line(o.pos, pos_h(o.pos, o.y), color);
             m_dd.add_point(o.pos, color);
         }
     }
@@ -231,7 +267,7 @@ void scene_view::draw(const object &o)
         return;
 
     auto &m = it->second;
-    m.set_pos(o.pos + nya_math::vec3(0, o.y + o.dy, 0));
+    m.set_pos(pos_h(o.pos, o.y));
     m.set_rot(nya_math::quat(nya_math::angle_deg(), o.yaw, 0.0f));
     m.draw(0);
 }
@@ -285,6 +321,30 @@ void scene_view::mousePressEvent(QMouseEvent *event)
         m_objects.push_back(m_selected_add);
         m_objects.back().name = new_name("object", m_objects);
         update_objects_tree();
+    }
+
+    if (m_mode == mode_path && mouse_left)
+    {
+        auto p0 = nya_math::vec4(m_cursor_pos, m_selected_add.y);
+        const auto &sel_paths = m_selection["paths"];
+        if (sel_paths.empty())
+        {
+            path p;
+            p.name = new_name("path", m_paths);
+            p.points.push_back(p0);
+            m_paths.push_back(p);
+            update_objects_tree();
+            select_path(m_paths.size() - 1);
+        }
+        else
+        {
+            int idx = *sel_paths.rbegin();
+            if (idx < (int)m_paths.size())
+            {
+                m_paths[idx].points.push_back(p0);
+                select_path(idx);
+            }
+        }
     }
 
     m_mouse_x = event->localPos().x();
@@ -362,7 +422,7 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
         const float add = -(y - m_mouse_y) * (shift ? 10.0f : 1.0f);
         lock_mouse = true;
 
-        if (m_mode == mode_add)
+        if (m_mode == mode_add || m_mode == mode_path)
             m_selected_add.y = nya_math::clamp(m_selected_add.y + add, 0.0f, 10000.0f);
 
         if (m_mode == mode_edit)

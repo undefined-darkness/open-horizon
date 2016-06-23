@@ -71,12 +71,13 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
 
     m_scene_view = new scene_view(this);
     m_scene_view->update_objects_tree = std::bind(&main_window::update_objects_tree, this);
+    m_scene_view->select_path = std::bind(&main_window::select_path, this, std::placeholders::_1);
     main_splitter->addWidget(m_scene_view);
 
     m_navigator = new QTabWidget;
     main_splitter->addWidget(m_navigator);
 
-    main_splitter->setSizes(QList<int>() << 200 << 1000 << 400);
+    main_splitter->setSizes(QList<int>() << 200 << 1000 << 450);
 
     auto add_objects_tree = new QTreeWidget;
     add_objects_tree->setHeaderLabel("Objects");
@@ -388,7 +389,8 @@ void main_window::on_obj_selected()
         return;
     }
 
-    m_navigator->setCurrentIndex(mode_edit);
+    if (m_navigator->currentIndex() != mode_path)
+        m_navigator->setCurrentIndex(mode_edit);
 
     for (auto &item: items)
     {
@@ -497,8 +499,36 @@ void main_window::update_objects_tree()
     for (auto &o: m_scene_view->get_objects())
         objects->addChild(new_tree_item(o.name + " (" + o.id + ")"));
 
+    auto paths = new_tree_group("paths");
+    m_objects_tree->addTopLevelItem(paths);
+
+    for (auto &p: m_scene_view->get_paths())
+        paths->addChild(new_tree_item(p.name));
+
     m_objects_tree->addTopLevelItem(new_tree_item("player spawn"));
     m_objects_tree->expandAll();
+}
+
+//------------------------------------------------------------
+
+void main_window::select_path(int idx)
+{
+    m_objects_tree->clearSelection();
+    if (idx < 0)
+        return;
+
+    for (int i = 0; i < m_objects_tree->topLevelItemCount(); ++i)
+    {
+       QTreeWidgetItem *p = m_objects_tree->topLevelItem(i);
+       if (p->text(0) == "paths")
+       {
+           if (idx >= p->childCount())
+               return;
+
+           p->child(idx)->setSelected(true);
+           return;
+       }
+    }
 }
 
 //------------------------------------------------------------

@@ -22,6 +22,7 @@ class scene_view : public QGLWidget
 public:
     scene_view(QWidget *parent = NULL);
     std::function<void()> update_objects_tree;
+    std::function<void(int)> select_path;
 
 public:
     void load_location(std::string name);
@@ -60,6 +61,14 @@ public:
     const object &get_player() const { return m_player; }
     void set_player(const object &p) { m_player = p; }
 
+    struct path
+    {
+        std::string name;
+        std::vector<nya_math::vec4> points; //point, height
+    };
+
+    std::vector<path> &get_paths() { return m_paths; }
+
     float get_height(float x, float z) const { return m_location_phys.get_height(x, z, true); }
 
 private:
@@ -90,7 +99,17 @@ private:
     object m_selected_add;
     object m_player;
     std::vector<object> m_objects;
+    std::vector<path> m_paths;
     std::map<std::string, std::set<int> > m_selection;
 };
+
+//------------------------------------------------------------
+
+inline nya_math::vec3 pos_h(const nya_math::vec3 &pos, float height)
+{
+    nya_math::vec3 r = pos;
+    r.y += height;
+    return r;
+}
 
 //------------------------------------------------------------
