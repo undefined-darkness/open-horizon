@@ -295,6 +295,15 @@ void main_window::on_load_mission()
         m_scene_view->add_object(obj);
     }
 
+    for (auto z = root.child("zone"); z; z = z.next_sibling("zone"))
+    {
+        scene_view::zone zn;
+        zn.name = z.attribute("name").as_string();
+        zn.radius = z.attribute("radius").as_float();
+        zn.pos.set(z.attribute("x").as_float(), z.attribute("y").as_float(), z.attribute("z").as_float());
+        m_scene_view->add_zone(zn);
+    }
+
     for (auto p = root.child("path"); p; p = p.next_sibling("path"))
     {
         scene_view::path pth;
@@ -364,6 +373,17 @@ void main_window::on_save_mission()
         str += "z=\"" + std::to_string(o.pos.z) + "\" ";
         str += "yaw=\"" + std::to_string(o.yaw.get_deg()) + "\" ";
         str += "editor_y=\"" + std::to_string(o.y) + "\" ";
+        str += "/>\n";
+    }
+
+    for (auto &z: m_scene_view->get_zones())
+    {
+        str += "\t<zone ";
+        str += "name=\"" + z.name + "\" ";
+        str += "x=\"" + std::to_string(z.pos.x) + "\" ";
+        str += "y=\"" + std::to_string(z.pos.y) + "\" ";
+        str += "z=\"" + std::to_string(z.pos.z) + "\" ";
+        str += "radius=\"" + std::to_string(z.radius) + "\" ";
         str += "/>\n";
     }
 
@@ -578,6 +598,7 @@ void main_window::select_path(int idx)
 void main_window::clear_mission()
 {
     m_scene_view->clear_objects();
+    m_scene_view->clear_zones();
     m_scene_view->get_paths().clear();
 }
 
