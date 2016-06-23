@@ -295,6 +295,21 @@ void main_window::on_load_mission()
         m_scene_view->add_object(obj);
     }
 
+    for (auto p = root.child("path"); p; p = p.next_sibling("path"))
+    {
+        scene_view::path pth;
+        pth.name = p.attribute("name").as_string();
+        for (auto p0 = p.child("point"); p0; p0 = p0.next_sibling("point"))
+        {
+            nya_math::vec4 p;
+            p.xyz().set(p0.attribute("x").as_float(), p0.attribute("y").as_float(), p0.attribute("z").as_float());
+            p.w = p0.attribute("editor_y").as_float();
+            p.y -= p.w;
+            pth.points.push_back(p);
+        }
+        m_scene_view->get_paths().push_back(pth);
+    }
+
     auto script_res = zprov.access("script.lua");
     if (script_res)
     {
@@ -350,6 +365,25 @@ void main_window::on_save_mission()
         str += "yaw=\"" + std::to_string(o.yaw.get_deg()) + "\" ";
         str += "editor_y=\"" + std::to_string(o.y) + "\" ";
         str += "/>\n";
+    }
+
+    for (auto &pth: m_scene_view->get_paths())
+    {
+        str += "\t<path ";
+        str += "name=\"" + pth.name + "\" ";
+        str += ">\n";
+
+        for (auto &p: pth.points)
+        {
+            str += "\t\t<point ";
+            str += "x=\"" + std::to_string(p.x) + "\" ";
+            str += "y=\"" + std::to_string(p.y + p.w) + "\" ";
+            str += "z=\"" + std::to_string(p.z) + "\" ";
+            str += "editor_y=\"" + std::to_string(p.w) + "\" ";
+            str += "/>\n";
+        }
+
+        str += "\t</path>\n";
     }
 
     str += "</mission>\n";
@@ -541,6 +575,7 @@ void main_window::select_path(int idx)
 void main_window::clear_mission()
 {
     m_scene_view->clear_objects();
+    m_scene_view->get_paths().clear();
 }
 
 //------------------------------------------------------------

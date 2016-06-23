@@ -17,7 +17,7 @@ static const float location_size = 256 * 256.0f;
 
 static const nya_math::vec4 white = nya_math::vec4(255,255,255,255)/255.0;
 static const nya_math::vec4 yellow = nya_math::vec4(223,255,103,255)/255.0;
-static const nya_math::vec4 green = nya_math::vec4(103,223,144,255)/255.0;
+static const nya_math::vec4 green = nya_math::vec4(103,255,144,255)/255.0;
 static const nya_math::vec4 red = nya_math::vec4(200,0,0,255)/255.0;
 static const nya_math::vec4 blue = nya_math::vec4(100,200,200,255)/255.0;
 
@@ -215,12 +215,14 @@ void scene_view::paintGL()
     int idx = 0;
     for (auto &p: m_paths)
     {
-        auto &color = (m_mode == mode_edit && sel_paths.find(idx++) != sel_paths.end()) ? red : yellow;
+        auto color = (m_mode == mode_edit && sel_paths.find(idx++) != sel_paths.end()) ? red : yellow;
+        if (m_mode != mode_path && m_mode != mode_edit)
+            color.w *= 0.3f;
         for (int i = 0; i < (int)p.points.size(); ++i)
         {
             auto &p0 = p.points[i];
             m_dd.add_point(pos_h(p0.xyz(), p0.w), color);
-            m_dd.add_line(pos_h(p0.xyz(), p0.w), p0.xyz(), color * 0.5);
+            m_dd.add_line(pos_h(p0.xyz(), p0.w), p0.xyz(), color * 0.7);
             if (i > 0)
             {
                 auto &p1 = p.points[i - 1];
@@ -246,17 +248,15 @@ void scene_view::paintGL()
         m_dd.add_point(p1, red);
     }
 
-    if (m_mode == mode_add || m_mode == mode_edit)
+    const auto &sel_objects = m_selection["objects"];
+    idx = 0;
+    for (auto &o: m_objects)
     {
-
-        const auto &sel_objects = m_selection["objects"];
-        idx = 0;
-        for (auto &o: m_objects)
-        {
-            auto color = (m_mode == mode_edit && sel_objects.find(idx++) != sel_objects.end()) ? red : green;
-            m_dd.add_line(o.pos, pos_h(o.pos, o.y), color);
-            m_dd.add_point(o.pos, color);
-        }
+        auto color = (m_mode == mode_edit && sel_objects.find(idx++) != sel_objects.end()) ? red : green;
+        if (m_mode != mode_add && m_mode != mode_edit)
+            color.w *= 0.3f;
+        m_dd.add_line(o.pos, pos_h(o.pos, o.y), color);
+        m_dd.add_point(o.pos, color);
     }
 
     if (m_mode == mode_add)
@@ -266,6 +266,8 @@ void scene_view::paintGL()
     }
 
     auto color = (m_mode == mode_edit && !m_selection["player spawn"].empty()) ? red : blue;
+    if (m_mode != mode_add && m_mode != mode_edit)
+        color.w *= 0.3f;
     auto player_up = m_player.pos + nya_math::vec3(0, m_player.y, 0);
     m_dd.add_line(m_player.pos, player_up, color);
     m_dd.add_point(m_player.pos, color);
@@ -278,6 +280,7 @@ void scene_view::paintGL()
 
     nya_render::set_state(nya_render::state());
     nya_render::depth_test::disable();
+    nya_render::blend::enable(nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
     m_dd.draw();
 }
