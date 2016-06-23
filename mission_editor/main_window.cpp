@@ -534,13 +534,16 @@ void main_window::update_objects_tree()
 
     auto objects = new_tree_group("objects");
     m_objects_tree->addTopLevelItem(objects);
-
     for (auto &o: m_scene_view->get_objects())
         objects->addChild(new_tree_item(o.name + " (" + o.id + ")"));
 
+    auto zones = new_tree_group("zones");
+    m_objects_tree->addTopLevelItem(zones);
+    for (auto &z: m_scene_view->get_zones())
+        zones->addChild(new_tree_item(z.name));
+
     auto paths = new_tree_group("paths");
     m_objects_tree->addTopLevelItem(paths);
-
     for (auto &p: m_scene_view->get_paths())
         paths->addChild(new_tree_item(p.name));
 

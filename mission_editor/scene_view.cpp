@@ -55,6 +55,15 @@ void scene_view::add_object(const object &o)
 
 //------------------------------------------------------------
 
+void scene_view::add_zone(const zone &z)
+{
+    m_zones.push_back(z);
+    m_zones_internal.push_back({});
+    update_zone(z, m_zones_internal.back());
+}
+
+//------------------------------------------------------------
+
 void scene_view::cache_mesh(std::string str)
 {
     if (str.empty())
@@ -95,8 +104,15 @@ void scene_view::update_zone(const zone &z, zone_internal &zi)
 
 void scene_view::add_to_draw(const zone_internal &zi, nya_math::vec4 color)
 {
+    nya_math::vec3 h(0, 10000.0f, 0);
+    auto scolor = color;
+    scolor.w *= 0.1f;
     for (int i = 0; i < (int)zi.verts.size(); ++i)
-        m_dd.add_line(zi.verts[i], zi.verts[(i + 1) % zi.verts.size()], color);
+    {
+        auto &p0 = zi.verts[i], &p1 = zi.verts[(i + 1) % zi.verts.size()];
+        m_dd.add_line(p0, p1, color);
+        m_dd.add_quad(p0, p1, p1 + h, p0 + h, scolor);
+    }
 }
 
 //------------------------------------------------------------
@@ -162,6 +178,24 @@ void scene_view::delete_selected()
     if (m_mode != mode_edit)
         return;
 
+    for (auto p = sel_paths.rbegin(); p != sel_paths.rend(); ++p)
+    {
+        if (*p >= m_paths.size())
+            continue;
+
+        m_paths.erase(m_paths.begin() + *p);
+    }
+
+    const auto &sel_zones = m_selection["zones"];
+    for (auto z = sel_zones.rbegin(); z != sel_zones.rend(); ++z)
+    {
+        if (*z >= m_zones.size())
+            continue;
+
+        m_zones.erase(m_zones.begin() + *z);
+        m_zones_internal.erase(m_zones_internal.begin() + *z);
+    }
+
     const auto &sel_objects = m_selection["objects"];
     for (auto o = sel_objects.rbegin(); o != sel_objects.rend(); ++o)
     {
@@ -169,14 +203,6 @@ void scene_view::delete_selected()
             continue;
 
         m_objects.erase(m_objects.begin() + *o);
-    }
-
-    for (auto p = sel_paths.rbegin(); p != sel_paths.rend(); ++p)
-    {
-        if (*p >= m_paths.size())
-            continue;
-
-        m_paths.erase(m_paths.begin() + *p);
     }
 
     update_objects_tree();
@@ -243,8 +269,18 @@ void scene_view::paintGL()
         add_to_draw(zi, red);
     }
 
-    const auto &sel_paths = m_selection["paths"];
+    const auto &sel_zones = m_selection["zones"];
     int idx = 0;
+    for (auto &z: m_zones_internal)
+    {
+        auto color = (m_mode == mode_edit && sel_zones.find(idx++) != sel_zones.end()) ? red : green;
+        if (m_mode != mode_zone && m_mode != mode_edit)
+            color.w *= 0.3f;
+        add_to_draw(z, color);
+    }
+
+    const auto &sel_paths = m_selection["paths"];
+    idx = 0;
     for (auto &p: m_paths)
     {
         auto color = (m_mode == mode_edit && sel_paths.find(idx++) != sel_paths.end()) ? red : yellow;
@@ -382,6 +418,13 @@ void scene_view::mousePressEvent(QMouseEvent *event)
     {
         m_objects.push_back(m_selected_add);
         m_objects.back().name = new_name("object", m_objects);
+        update_objects_tree();
+    }
+
+    if (m_mode == mode_zone && mouse_left)
+    {
+        add_zone(m_zone_add);
+        m_zones.back().name = new_name("zone", m_zones);
         update_objects_tree();
     }
 
