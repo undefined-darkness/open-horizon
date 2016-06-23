@@ -182,6 +182,11 @@ void main_window::setup_menu()
     edit_menu->addAction(select_all);
     connect(select_all, SIGNAL(triggered()), m_objects_tree, SLOT(selectAll()));
 
+    QAction *select_none = new QAction("Select none", this);
+    select_none->setShortcut(QKeySequence("Ctrl+D")); //QKeySequence::Deselect
+    edit_menu->addAction(select_none);
+    connect(select_none, SIGNAL(triggered()), m_objects_tree, SLOT(clearSelection()));
+
     QAction *delete_selected = new QAction("Delete selected", this);
 #ifdef Q_OS_MAC
     delete_selected->setShortcut(QKeySequence("Backspace"));

@@ -116,6 +116,25 @@ void scene_view::set_focus(std::string group, int idx)
 
 void scene_view::delete_selected()
 {
+    const auto &sel_paths = m_selection["paths"];
+
+    if (m_mode == mode_path && !sel_paths.empty())
+    {
+        int idx = *sel_paths.rbegin();
+        if (idx >= (int)m_paths.size())
+            return;
+
+        if (!m_paths[idx].points.empty())
+            m_paths[idx].points.pop_back();
+
+        if (m_paths[idx].points.empty())
+        {
+            m_paths.erase(m_paths.begin() + idx);
+            update_objects_tree();
+        }
+        update();
+    }
+
     if (m_mode != mode_edit)
         return;
 
@@ -126,6 +145,14 @@ void scene_view::delete_selected()
             continue;
 
         m_objects.erase(m_objects.begin() + *o);
+    }
+
+    for (auto p = sel_paths.rbegin(); p != sel_paths.rend(); ++p)
+    {
+        if (*p >= m_paths.size())
+            continue;
+
+        m_paths.erase(m_paths.begin() + *p);
     }
 
     update_objects_tree();
@@ -408,6 +435,19 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
                 auto &obj = m_objects[o];
                 obj.pos.x += dpos.x, obj.pos.z += dpos.y;
                 obj.pos.y = m_location_phys.get_height(obj.pos.x, obj.pos.z, true);
+            }
+
+            for (auto &o: m_selection["paths"])
+            {
+                if (o >= m_paths.size())
+                    continue;
+
+                auto &pth = m_paths[o];
+                for (auto &p: pth.points)
+                {
+                    p.x += dpos.x, p.z += dpos.y;
+                    p.y = m_location_phys.get_height(p.x, p.z, true);
+                }
             }
 
             if (!m_selection["player spawn"].empty())
