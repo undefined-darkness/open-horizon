@@ -25,6 +25,16 @@ enum modes
 
     modes_count
 };
+
+enum edit_modes
+{
+    edit_none,
+    edit_multiple,
+    edit_object,
+    edit_path,
+    edit_zone
+};
+
 }
 
 inline void alert(std::string message)
@@ -107,10 +117,38 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     }
     connect(add_objects_tree, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(on_add_tree_selected(QTreeWidgetItem*, int)));
 
-    m_edit_layout = new QFormLayout;
-    QWidget *edit_widget = new QWidget;
-    m_navigator->insertTab(mode_edit, edit_widget, "Edit");
-    edit_widget->setLayout(m_edit_layout);
+    m_edit = new QStackedWidget;
+    m_navigator->insertTab(mode_edit, m_edit, "Edit");
+
+    auto edit_none = new QLabel;
+    edit_none->setText("\nNo editable object selected");
+    edit_none->setAlignment(Qt::AlignTop);
+    m_edit->addWidget(edit_none);
+    auto edit_multiple = new QLabel;
+    edit_multiple->setText("\nMultiple objects selected");
+    edit_multiple->setAlignment(Qt::AlignTop);
+    m_edit->addWidget(edit_multiple);
+
+    auto edit_obj_l = new QFormLayout;
+    auto edit_obj_name = new QLineEdit;
+    edit_obj_l->addRow("Name:", edit_obj_name);
+    auto edit_obj_w = new QWidget;
+    edit_obj_w->setLayout(edit_obj_l);
+    m_edit->addWidget(edit_obj_w);
+
+    auto edit_path_l = new QFormLayout;
+    auto edit_path_name = new QLineEdit;
+    edit_path_l->addRow("Name:", edit_path_name);
+    auto edit_path_w = new QWidget;
+    edit_path_w->setLayout(edit_path_l);
+    m_edit->addWidget(edit_path_w);
+
+    auto edit_zone_l = new QFormLayout;
+    auto edit_zone_name = new QLineEdit;
+    edit_zone_l->addRow("Name:", edit_zone_name);
+    auto edit_zone_w = new QWidget;
+    edit_zone_w->setLayout(edit_zone_l);
+    m_edit->addWidget(edit_zone_w);
 
     QWidget *path_widget = new QWidget;
     m_navigator->insertTab(mode_path, path_widget, "Path");
@@ -478,8 +516,29 @@ void main_window::on_obj_selected()
     if (items.empty())
     {
         m_scene_view->update();
+        m_edit->setCurrentIndex(edit_none);
         return;
     }
+
+    if (items.size() == 1)
+    {
+        auto *p = items[0]->parent();
+        if (p)
+        {
+            if (p->text(0) == "objects")
+                m_edit->setCurrentIndex(edit_object);
+            else if (p->text(0) == "paths")
+                m_edit->setCurrentIndex(edit_path);
+            else if (p->text(0) == "zones")
+                m_edit->setCurrentIndex(edit_zone);
+            else
+                m_edit->setCurrentIndex(edit_none);
+        }
+        else
+            m_edit->setCurrentIndex(edit_none);
+    }
+    else
+        m_edit->setCurrentIndex(edit_multiple);
 
     if (m_navigator->currentIndex() != mode_path)
         m_navigator->setCurrentIndex(mode_edit);

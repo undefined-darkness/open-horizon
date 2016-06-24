@@ -43,7 +43,7 @@ private:
 private:
     scene_view *m_scene_view;
     QTabWidget *m_navigator;
-    QFormLayout *m_edit_layout;
+    QStackedWidget *m_edit;
     QTreeWidget *m_objects_tree;
     QTextEdit *m_script_edit, *m_script_errors;
     QLineEdit *m_mission_title, *m_mission_author, *m_mission_email;
