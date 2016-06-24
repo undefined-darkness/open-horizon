@@ -22,7 +22,7 @@ class scene_view : public QGLWidget
 public:
     scene_view(QWidget *parent = NULL);
     std::function<void()> update_objects_tree;
-    std::function<void(int)> select_path;
+    std::function<void(std::string, int)> set_selection;
 
 public:
     void load_location(std::string name);
@@ -41,6 +41,8 @@ public:
 
     void clear_selection();
     void select(std::string group, int idx);
+    const char *get_selected_name();
+    void set_selected_name(const char *name);
 
     void set_focus(std::string group, int idx);
 

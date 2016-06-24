@@ -83,7 +83,7 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
 
     m_scene_view = new scene_view(this);
     m_scene_view->update_objects_tree = std::bind(&main_window::update_objects_tree, this);
-    m_scene_view->select_path = std::bind(&main_window::select_path, this, std::placeholders::_1);
+    m_scene_view->set_selection = std::bind(&main_window::set_selection, this, std::placeholders::_1, std::placeholders::_2);
     main_splitter->addWidget(m_scene_view);
 
     m_navigator = new QTabWidget;
@@ -130,22 +130,25 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     m_edit->addWidget(edit_multiple);
 
     auto edit_obj_l = new QFormLayout;
-    auto edit_obj_name = new QLineEdit;
-    edit_obj_l->addRow("Name:", edit_obj_name);
+    m_edit_obj_name = new QLineEdit;
+    connect(m_edit_obj_name, SIGNAL(textChanged(const QString &)), this, SLOT(on_name_changed(const QString &)));
+    edit_obj_l->addRow("Name:", m_edit_obj_name);
     auto edit_obj_w = new QWidget;
     edit_obj_w->setLayout(edit_obj_l);
     m_edit->addWidget(edit_obj_w);
 
     auto edit_path_l = new QFormLayout;
-    auto edit_path_name = new QLineEdit;
-    edit_path_l->addRow("Name:", edit_path_name);
+    m_edit_path_name = new QLineEdit;
+    connect(m_edit_path_name, SIGNAL(textChanged(const QString &)), this, SLOT(on_name_changed(const QString &)));
+    edit_path_l->addRow("Name:", m_edit_path_name);
     auto edit_path_w = new QWidget;
     edit_path_w->setLayout(edit_path_l);
     m_edit->addWidget(edit_path_w);
 
     auto edit_zone_l = new QFormLayout;
-    auto edit_zone_name = new QLineEdit;
-    edit_zone_l->addRow("Name:", edit_zone_name);
+    m_edit_zone_name = new QLineEdit;
+    connect(m_edit_zone_name, SIGNAL(textChanged(const QString &)), this, SLOT(on_name_changed(const QString &)));
+    edit_zone_l->addRow("Name:", m_edit_zone_name);
     auto edit_zone_w = new QWidget;
     edit_zone_w->setLayout(edit_zone_l);
     m_edit->addWidget(edit_zone_w);
@@ -520,29 +523,6 @@ void main_window::on_obj_selected()
         return;
     }
 
-    if (items.size() == 1)
-    {
-        auto *p = items[0]->parent();
-        if (p)
-        {
-            if (p->text(0) == "objects")
-                m_edit->setCurrentIndex(edit_object);
-            else if (p->text(0) == "paths")
-                m_edit->setCurrentIndex(edit_path);
-            else if (p->text(0) == "zones")
-                m_edit->setCurrentIndex(edit_zone);
-            else
-                m_edit->setCurrentIndex(edit_none);
-        }
-        else
-            m_edit->setCurrentIndex(edit_none);
-    }
-    else
-        m_edit->setCurrentIndex(edit_multiple);
-
-    if (m_navigator->currentIndex() != mode_path)
-        m_navigator->setCurrentIndex(mode_edit);
-
     for (auto &item: items)
     {
         for (int i = 0; i < m_objects_tree->topLevelItemCount(); ++i)
@@ -561,6 +541,38 @@ void main_window::on_obj_selected()
            m_scene_view->select(to_str(p->text(0)), idx);
         }
     }
+
+    if (items.size() == 1)
+    {
+        auto *p = items[0]->parent();
+        if (p)
+        {
+            if (p->text(0) == "objects")
+            {
+                m_edit_obj_name->setText(m_scene_view->get_selected_name());
+                m_edit->setCurrentIndex(edit_object);
+            }
+            else if (p->text(0) == "paths")
+            {
+                m_edit_path_name->setText(m_scene_view->get_selected_name());
+                m_edit->setCurrentIndex(edit_path);
+            }
+            else if (p->text(0) == "zones")
+            {
+                m_edit_zone_name->setText(m_scene_view->get_selected_name());
+                m_edit->setCurrentIndex(edit_zone);
+            }
+            else
+                m_edit->setCurrentIndex(edit_none);
+        }
+        else
+            m_edit->setCurrentIndex(edit_none);
+    }
+    else
+        m_edit->setCurrentIndex(edit_multiple);
+
+    if (m_navigator->currentIndex() != mode_path)
+        m_navigator->setCurrentIndex(mode_edit);
 
     m_scene_view->update();
 }
@@ -621,6 +633,13 @@ void main_window::on_mode_changed(int idx)
 
 //------------------------------------------------------------
 
+void main_window::on_name_changed(const QString &s)
+{
+    m_scene_view->set_selected_name(to_str(s));
+}
+
+//------------------------------------------------------------
+
 void main_window::on_script_changed()
 {
     m_compile_timer->start(1000);
@@ -665,7 +684,7 @@ void main_window::update_objects_tree()
 
 //------------------------------------------------------------
 
-void main_window::select_path(int idx)
+void main_window::set_selection(std::string group, int idx)
 {
     m_objects_tree->clearSelection();
     if (idx < 0)
@@ -674,12 +693,12 @@ void main_window::select_path(int idx)
     for (int i = 0; i < m_objects_tree->topLevelItemCount(); ++i)
     {
        QTreeWidgetItem *p = m_objects_tree->topLevelItem(i);
-       if (p->text(0) == "paths")
+       if (p->text(0) == group.c_str())
        {
            if (idx >= p->childCount())
                return;
 
-           p->child(idx)->setSelected(true);
+           m_objects_tree->setCurrentItem(p->child(idx));
            return;
        }
     }

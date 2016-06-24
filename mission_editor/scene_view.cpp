@@ -132,6 +132,55 @@ void scene_view::select(std::string group, int idx)
 
 //------------------------------------------------------------
 
+const char *scene_view::get_selected_name()
+{
+    if (!m_selection["objects"].empty())
+        return m_objects[*m_selection["objects"].begin()].name.c_str();
+    if (!m_selection["paths"].empty())
+        return m_paths[*m_selection["paths"].begin()].name.c_str();
+    if (!m_selection["zones"].empty())
+        return m_zones[*m_selection["zones"].begin()].name.c_str();
+
+    return "";
+}
+
+//------------------------------------------------------------
+
+void scene_view::set_selected_name(const char *name)
+{
+    if (!name)
+        return;
+
+    if (!m_selection["objects"].empty())
+    {
+        auto idx = *m_selection["objects"].begin();
+        m_objects[idx].name = name;
+        update_objects_tree();
+        set_selection("objects", idx);
+        return;
+    }
+
+    if (!m_selection["paths"].empty())
+    {
+        auto idx = *m_selection["paths"].begin();
+        m_paths[idx].name = name;
+        update_objects_tree();
+        set_selection("paths", idx);
+        return;
+    }
+
+    if (!m_selection["zones"].empty())
+    {
+        auto idx = *m_selection["zones"].begin();
+        m_zones[idx].name = name;
+        update_objects_tree();
+        set_selection("zones", idx);
+        return;
+    }
+}
+
+//------------------------------------------------------------
+
 void scene_view::set_focus(std::string group, int idx)
 {
     object *o = 0;
@@ -439,7 +488,7 @@ void scene_view::mousePressEvent(QMouseEvent *event)
             p.points.push_back(p0);
             m_paths.push_back(p);
             update_objects_tree();
-            select_path(m_paths.size() - 1);
+            set_selection("paths", m_paths.size() - 1);
         }
         else
         {
@@ -447,7 +496,7 @@ void scene_view::mousePressEvent(QMouseEvent *event)
             if (idx < (int)m_paths.size())
             {
                 m_paths[idx].points.push_back(p0);
-                select_path(idx);
+                set_selection("paths", idx);
             }
         }
     }

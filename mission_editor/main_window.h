@@ -32,18 +32,20 @@ private slots:
     void on_obj_selected();
     void on_obj_focus(QTreeWidgetItem *, int);
     void on_add_tree_selected(QTreeWidgetItem*, int);
+    void on_name_changed(const QString &s);
     void on_script_changed();
     void on_compile_script();
 
 private:
     void update_objects_tree();
-    void select_path(int idx);
+    void set_selection(std::string, int idx);
     void clear_mission();
 
 private:
     scene_view *m_scene_view;
     QTabWidget *m_navigator;
     QStackedWidget *m_edit;
+    QLineEdit *m_edit_obj_name, *m_edit_path_name, *m_edit_zone_name;
     QTreeWidget *m_objects_tree;
     QTextEdit *m_script_edit, *m_script_errors;
     QLineEdit *m_mission_title, *m_mission_author, *m_mission_email;
