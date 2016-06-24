@@ -41,18 +41,17 @@ public:
 
     void clear_selection();
     void select(std::string group, int idx);
-    const char *get_selected_name();
-    void set_selected_name(const char *name);
-
     void set_focus(std::string group, int idx);
-
     void delete_selected();
 
     struct base
     {
         std::string name;
+        bool active = true;
         std::map<std::string, std::string> attributes;
     };
+
+    base &get_selected();
 
     struct object: public base
     {

@@ -33,6 +33,7 @@ private slots:
     void on_obj_focus(QTreeWidgetItem *, int);
     void on_add_tree_selected(QTreeWidgetItem*, int);
     void on_name_changed(const QString &s);
+    void on_active_changed(int state);
     void on_script_changed();
     void on_compile_script();
 
@@ -46,6 +47,7 @@ private:
     QTabWidget *m_navigator;
     QStackedWidget *m_edit;
     QLineEdit *m_edit_obj_name, *m_edit_path_name, *m_edit_zone_name;
+    QCheckBox *m_edit_obj_active, *m_edit_path_active, *m_edit_zone_active;
     QTreeWidget *m_objects_tree;
     QTextEdit *m_script_edit, *m_script_errors;
     QLineEdit *m_mission_title, *m_mission_author, *m_mission_email;

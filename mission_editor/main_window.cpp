@@ -133,6 +133,9 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     m_edit_obj_name = new QLineEdit;
     connect(m_edit_obj_name, SIGNAL(textChanged(const QString &)), this, SLOT(on_name_changed(const QString &)));
     edit_obj_l->addRow("Name:", m_edit_obj_name);
+    m_edit_obj_active = new QCheckBox;
+    connect(m_edit_obj_active, SIGNAL(stateChanged(int)), this, SLOT(on_active_changed(int)));
+    edit_obj_l->addRow("Active:", m_edit_obj_active);
     auto edit_obj_w = new QWidget;
     edit_obj_w->setLayout(edit_obj_l);
     m_edit->addWidget(edit_obj_w);
@@ -141,6 +144,9 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     m_edit_path_name = new QLineEdit;
     connect(m_edit_path_name, SIGNAL(textChanged(const QString &)), this, SLOT(on_name_changed(const QString &)));
     edit_path_l->addRow("Name:", m_edit_path_name);
+    m_edit_path_active = new QCheckBox;
+    connect(m_edit_path_active, SIGNAL(stateChanged(int)), this, SLOT(on_active_changed(int)));
+    edit_path_l->addRow("Active:", m_edit_path_active);
     auto edit_path_w = new QWidget;
     edit_path_w->setLayout(edit_path_l);
     m_edit->addWidget(edit_path_w);
@@ -149,6 +155,9 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     m_edit_zone_name = new QLineEdit;
     connect(m_edit_zone_name, SIGNAL(textChanged(const QString &)), this, SLOT(on_name_changed(const QString &)));
     edit_zone_l->addRow("Name:", m_edit_zone_name);
+    m_edit_zone_active = new QCheckBox;
+    connect(m_edit_zone_active, SIGNAL(stateChanged(int)), this, SLOT(on_active_changed(int)));
+    edit_zone_l->addRow("Active:", m_edit_zone_active);
     auto edit_zone_w = new QWidget;
     edit_zone_w->setLayout(edit_zone_l);
     m_edit->addWidget(edit_zone_w);
@@ -337,6 +346,7 @@ void main_window::on_load_mission()
         scene_view::object obj;
         obj.name = o.attribute("name").as_string();
         obj.id = o.attribute("id").as_string();
+        obj.active = o.attribute("active").as_bool();
         obj.yaw = o.attribute("yaw").as_float();
         obj.pos.set(o.attribute("x").as_float(), o.attribute("y").as_float(), o.attribute("z").as_float());
         obj.y = o.attribute("editor_y").as_float();
@@ -348,6 +358,7 @@ void main_window::on_load_mission()
     {
         scene_view::zone zn;
         zn.name = z.attribute("name").as_string();
+        zn.active = z.attribute("active").as_bool();
         zn.radius = z.attribute("radius").as_float();
         zn.pos.set(z.attribute("x").as_float(), z.attribute("y").as_float(), z.attribute("z").as_float());
         m_scene_view->add_zone(zn);
@@ -357,6 +368,7 @@ void main_window::on_load_mission()
     {
         scene_view::path pth;
         pth.name = p.attribute("name").as_string();
+        pth.active = p.attribute("active").as_bool();
         for (auto p0 = p.child("point"); p0; p0 = p0.next_sibling("point"))
         {
             nya_math::vec4 p;
@@ -397,6 +409,10 @@ void main_window::on_load_mission()
 
 //------------------------------------------------------------
 
+inline std::string to_string(bool b) { return b ? "true" : "false"; }
+
+//------------------------------------------------------------
+
 void main_window::on_save_mission()
 {
     if (m_filename.empty())
@@ -429,6 +445,7 @@ void main_window::on_save_mission()
         str += "\t<object ";
         str += "name=\"" + o.name + "\" ";
         str += "id=\"" + o.id + "\" ";
+        str += "active=\"" + to_string(o.active) + "\" ";
         str += "x=\"" + std::to_string(o.pos.x) + "\" ";
         str += "y=\"" + std::to_string(o.pos.y + o.y) + "\" ";
         str += "z=\"" + std::to_string(o.pos.z) + "\" ";
@@ -441,6 +458,7 @@ void main_window::on_save_mission()
     {
         str += "\t<zone ";
         str += "name=\"" + z.name + "\" ";
+        str += "active=\"" + to_string(z.active) + "\" ";
         str += "x=\"" + std::to_string(z.pos.x) + "\" ";
         str += "y=\"" + std::to_string(z.pos.y) + "\" ";
         str += "z=\"" + std::to_string(z.pos.z) + "\" ";
@@ -452,6 +470,7 @@ void main_window::on_save_mission()
     {
         str += "\t<path ";
         str += "name=\"" + pth.name + "\" ";
+        str += "active=\"" + to_string(pth.active) + "\" ";
         str += ">\n";
 
         for (auto &p: pth.points)
@@ -547,19 +566,24 @@ void main_window::on_obj_selected()
         auto *p = items[0]->parent();
         if (p)
         {
+            auto &s = m_scene_view->get_selected();
+
             if (p->text(0) == "objects")
             {
-                m_edit_obj_name->setText(m_scene_view->get_selected_name());
+                m_edit_obj_name->setText(s.name.c_str());
+                m_edit_obj_active->setChecked(s.active);
                 m_edit->setCurrentIndex(edit_object);
             }
             else if (p->text(0) == "paths")
             {
-                m_edit_path_name->setText(m_scene_view->get_selected_name());
+                m_edit_path_name->setText(s.name.c_str());
+                m_edit_path_active->setChecked(s.active);
                 m_edit->setCurrentIndex(edit_path);
             }
             else if (p->text(0) == "zones")
             {
-                m_edit_zone_name->setText(m_scene_view->get_selected_name());
+                m_edit_zone_name->setText(s.name.c_str());
+                m_edit_zone_active->setChecked(s.active);
                 m_edit->setCurrentIndex(edit_zone);
             }
             else
@@ -635,7 +659,7 @@ void main_window::on_mode_changed(int idx)
 
 void main_window::on_name_changed(const QString &s)
 {
-    m_scene_view->set_selected_name(to_str(s));
+    m_scene_view->get_selected().name = to_str(s);
     auto c = m_objects_tree->currentItem();
     if (!c)
         return;
@@ -650,6 +674,13 @@ void main_window::on_name_changed(const QString &s)
     auto &objs = m_scene_view->get_objects();
     if (idx < objs.size())
         c->setText(0, (std::string(to_str(s)) + " (" + objs[idx].id + ")").c_str());
+}
+
+//------------------------------------------------------------
+
+void main_window::on_active_changed(int state)
+{
+    m_scene_view->get_selected().active = state > 0;
 }
 
 //------------------------------------------------------------

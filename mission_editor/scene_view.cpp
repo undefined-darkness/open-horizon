@@ -132,45 +132,16 @@ void scene_view::select(std::string group, int idx)
 
 //------------------------------------------------------------
 
-const char *scene_view::get_selected_name()
+scene_view::base &scene_view::get_selected()
 {
     if (!m_selection["objects"].empty())
-        return m_objects[*m_selection["objects"].begin()].name.c_str();
+        return m_objects[*m_selection["objects"].begin()];
     if (!m_selection["paths"].empty())
-        return m_paths[*m_selection["paths"].begin()].name.c_str();
+        return m_paths[*m_selection["paths"].begin()];
     if (!m_selection["zones"].empty())
-        return m_zones[*m_selection["zones"].begin()].name.c_str();
+        return m_zones[*m_selection["zones"].begin()];
 
-    return "";
-}
-
-//------------------------------------------------------------
-
-void scene_view::set_selected_name(const char *name)
-{
-    if (!name)
-        return;
-
-    if (!m_selection["objects"].empty())
-    {
-        auto idx = *m_selection["objects"].begin();
-        m_objects[idx].name = name;
-        return;
-    }
-
-    if (!m_selection["paths"].empty())
-    {
-        auto idx = *m_selection["paths"].begin();
-        m_paths[idx].name = name;
-        return;
-    }
-
-    if (!m_selection["zones"].empty())
-    {
-        auto idx = *m_selection["zones"].begin();
-        m_zones[idx].name = name;
-        return;
-    }
+    return nya_memory::invalid_object<base>();
 }
 
 //------------------------------------------------------------
