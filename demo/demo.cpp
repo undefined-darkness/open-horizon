@@ -346,6 +346,13 @@ int main()
                 auto p = world.get_player();
                 if (p->change_target_hold_time >= game::plane::change_target_hold_max_time && !p->targets.empty() && !p->targets.front().target_plane.expired())
                 {
+                    static auto last_target = p->targets.front().target_plane;
+                    if (last_target.expired() || last_target.lock() != p->targets.front().target_plane.lock())
+                    {
+                        last_target = p->targets.front().target_plane;
+                        p->change_target_hold_time = game::plane::change_target_hold_max_time;
+                    }
+
                     auto t = p->targets.front().target_plane.lock();
                     auto tdir = t->get_pos() - p->get_pos();
                     nya_math::quat q(nya_math::vec3::forward(), tdir);
@@ -354,7 +361,7 @@ int main()
                     auto da = q.get_euler();
                     scene.camera.reset_delta_rot();
 
-                    const float k = nya_math::min((p->change_target_hold_time - game::plane::change_target_hold_max_time ) / 200.0f, 1.0);
+                    const float k = nya_math::min((p->change_target_hold_time - game::plane::change_target_hold_max_time) / 500.0f, 1.0);
 
                     scene.camera.add_delta_rot(da.x * k, -da.y * k);
                     reset_camera = true;
