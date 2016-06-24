@@ -46,6 +46,8 @@ private:
     QFormLayout *m_edit_layout;
     QTreeWidget *m_objects_tree;
     QTextEdit *m_script_edit, *m_script_errors;
+    QLineEdit *m_mission_title, *m_mission_author, *m_mission_email;
+    QTextEdit *m_mission_description;
     QTimer *m_compile_timer;
     std::string m_location;
     std::string m_filename;

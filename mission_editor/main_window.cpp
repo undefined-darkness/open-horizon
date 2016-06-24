@@ -34,6 +34,8 @@ inline void alert(std::string message)
     m->exec();
 }
 
+inline const char *to_str(const QString &s) { return s.toUtf8().constData(); }
+
 //------------------------------------------------------------
 
 inline QTreeWidgetItem *new_tree_group(std::string name)
@@ -134,6 +136,10 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     QWidget *info_widget = new QWidget;
     m_navigator->insertTab(mode_info, info_widget, "Info");
     info_widget->setLayout(info_layout);
+    info_layout->addRow("Title:", m_mission_title = new QLineEdit);
+    info_layout->addRow("Author:", m_mission_author = new QLineEdit);
+    info_layout->addRow("Email:", m_mission_email = new QLineEdit);
+    info_layout->addRow("Desc:", m_mission_description = new QTextEdit);
 
     QSignalMapper *m = new QSignalMapper(this);
     for (int i = 0; i < modes_count; ++i)
@@ -234,6 +240,8 @@ void main_window::on_new_mission()
                            "    --do init here\n"
                            "end\n");
 
+    m_mission_title->setText("Mission");
+
     m_navigator->setCurrentIndex(mode_info);
 }
 
@@ -245,7 +253,7 @@ void main_window::on_load_mission()
     if (!filename.length())
         return;
 
-    std::string filename_str = filename.toUtf8().constData();
+    std::string filename_str = to_str(filename);
 
     auto prov = &nya_resources::get_resources_provider();
     nya_resources::file_resources_provider fprov;
@@ -330,6 +338,18 @@ void main_window::on_load_mission()
         script_res->release();
     }
 
+    if (load_xml(zprov.access("info.xml"), doc))
+    {
+        auto root = doc.first_child();
+
+        m_mission_title->setText(root.attribute("name").as_string());
+        m_mission_description->setText(root.child("description").first_child().value());
+
+        auto author = root.child("author");
+        m_mission_author->setText(author.attribute("name").as_string());
+        m_mission_email->setText(author.attribute("email").as_string());
+    }
+
     update_objects_tree();
     m_navigator->setCurrentIndex(mode_info);
 }
@@ -412,9 +432,22 @@ void main_window::on_save_mission()
     zip_entry_write(zip, str.c_str(), str.length());
     zip_entry_close(zip);
 
-    std::string script = m_script_edit->toPlainText().toUtf8().constData();
+    std::string script = to_str(m_script_edit->toPlainText());
     zip_entry_open(zip, "script.lua");
     zip_entry_write(zip, script.c_str(), script.size());
+    zip_entry_close(zip);
+
+    std::string info = "<!--Open Horizon mission info-->\n";
+    info += "<info ";
+    info += "name=\"" + std::string(to_str(m_mission_title->text())) + "\">\n";
+    info += "\t<author name=\"" + std::string(to_str(m_mission_author->text())) + "\" ";
+    info += "email=\"" + std::string(to_str(m_mission_email->text())) + "\"/>\n";
+    info += "\t<description>";
+    info += to_str(m_mission_description->toPlainText());
+    info += "</description>\n";
+    info += "</info>\n";
+    zip_entry_open(zip, "info.xml");
+    zip_entry_write(zip, info.c_str(), info.size());
     zip_entry_close(zip);
 
     zip_close(zip);
@@ -431,7 +464,7 @@ void main_window::on_save_as_mission()
     if (!filename.length())
         return;
 
-    m_filename.assign(filename.toUtf8().constData());
+    m_filename.assign(to_str(filename));
     on_save_mission();
 }
 
@@ -458,7 +491,7 @@ void main_window::on_obj_selected()
            QTreeWidgetItem *p = m_objects_tree->topLevelItem(i);
            if (item == p)
            {
-               m_scene_view->select(p->text(0).toUtf8().constData(), 0);
+               m_scene_view->select(to_str(p->text(0)), 0);
                break;
            }
 
@@ -466,7 +499,7 @@ void main_window::on_obj_selected()
            if (idx < 0)
                continue;
 
-           m_scene_view->select(p->text(0).toUtf8().constData(), idx);
+           m_scene_view->select(to_str(p->text(0)), idx);
         }
     }
 
@@ -482,7 +515,7 @@ void main_window::on_obj_focus(QTreeWidgetItem *item, int)
        QTreeWidgetItem *p = m_objects_tree->topLevelItem(i);
        if (item == p)
        {
-           m_scene_view->set_focus(p->text(0).toUtf8().constData(), 0);
+           m_scene_view->set_focus(to_str(p->text(0)), 0);
            return;
        }
 
@@ -490,7 +523,7 @@ void main_window::on_obj_focus(QTreeWidgetItem *item, int)
        if (idx < 0)
            continue;
 
-       m_scene_view->set_focus(p->text(0).toUtf8().constData(), idx);
+       m_scene_view->set_focus(to_str(p->text(0)), idx);
        return;
     }
 }
@@ -500,7 +533,7 @@ void main_window::on_obj_focus(QTreeWidgetItem *item, int)
 void main_window::on_add_tree_selected(QTreeWidgetItem* item, int)
 {
     if (item && item->parent())
-        m_scene_view->set_selected_add(item->text(0).toUtf8().constData());
+        m_scene_view->set_selected_add(to_str(item->text(0)));
     else
         m_scene_view->set_selected_add("");
 }
@@ -542,7 +575,7 @@ void main_window::on_compile_script()
 
     auto t = m_script_edit->toPlainText();
     game::script s;
-    s.load(t.toUtf8().constData());
+    s.load(to_str(t));
     m_script_errors->setText(s.get_error().c_str());
 }
 
@@ -597,6 +630,11 @@ void main_window::select_path(int idx)
 
 void main_window::clear_mission()
 {
+    m_mission_title->setText("");
+    m_mission_author->setText("");
+    m_mission_email->setText("");
+    m_mission_description->setText("");
+
     m_scene_view->clear_objects();
     m_scene_view->clear_zones();
     m_scene_view->get_paths().clear();
