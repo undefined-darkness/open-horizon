@@ -48,9 +48,14 @@ public:
 
     void delete_selected();
 
-    struct object
+    struct base
     {
         std::string name;
+        std::map<std::string, std::string> attributes;
+    };
+
+    struct object: public base
+    {
         std::string id;
         nya_math::vec3 pos;
         nya_math::angle_deg yaw;
@@ -63,17 +68,15 @@ public:
     const object &get_player() const { return m_player; }
     void set_player(const object &p) { m_player = p; }
 
-    struct path
+    struct path: public base
     {
-        std::string name;
         std::vector<nya_math::vec4> points; //point, height
     };
 
     std::vector<path> &get_paths() { return m_paths; }
 
-    struct zone
+    struct zone: public base
     {
-        std::string name;
         nya_math::vec3 pos;
         float radius = 50.0f;
     };

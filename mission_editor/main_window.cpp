@@ -636,6 +636,20 @@ void main_window::on_mode_changed(int idx)
 void main_window::on_name_changed(const QString &s)
 {
     m_scene_view->set_selected_name(to_str(s));
+    auto c = m_objects_tree->currentItem();
+    if (!c)
+        return;
+
+    if (!c->parent() || c->parent()->text(0) != "objects")
+    {
+        c->setText(0, s);
+        return;
+    }
+
+    const int idx = c->parent()->indexOfChild(c);
+    auto &objs = m_scene_view->get_objects();
+    if (idx < objs.size())
+        c->setText(0, (std::string(to_str(s)) + " (" + objs[idx].id + ")").c_str());
 }
 
 //------------------------------------------------------------

@@ -155,8 +155,6 @@ void scene_view::set_selected_name(const char *name)
     {
         auto idx = *m_selection["objects"].begin();
         m_objects[idx].name = name;
-        update_objects_tree();
-        set_selection("objects", idx);
         return;
     }
 
@@ -164,8 +162,6 @@ void scene_view::set_selected_name(const char *name)
     {
         auto idx = *m_selection["paths"].begin();
         m_paths[idx].name = name;
-        update_objects_tree();
-        set_selection("paths", idx);
         return;
     }
 
@@ -173,8 +169,6 @@ void scene_view::set_selected_name(const char *name)
     {
         auto idx = *m_selection["zones"].begin();
         m_zones[idx].name = name;
-        update_objects_tree();
-        set_selection("zones", idx);
         return;
     }
 }
