@@ -934,7 +934,7 @@ void plane::update_targets(world &w)
     }
 
     if (targets.size() > 2)
-        std::sort(std::next(targets.begin(), 1), targets.end(), [](target_lock &a, target_lock &b) { return a.dist < b.dist; });
+        std::sort(std::next(targets.begin(), 1), targets.end(), [](const target_lock &a, const target_lock &b) { return a.dist < b.dist; });
 }
 
 //------------------------------------------------------------
