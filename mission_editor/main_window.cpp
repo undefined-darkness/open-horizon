@@ -367,6 +367,10 @@ void main_window::on_load_mission()
         obj.pos.set(o.attribute("x").as_float(), o.attribute("y").as_float(), o.attribute("z").as_float());
         obj.y = o.attribute("editor_y").as_float();
         obj.pos.y -= obj.y;
+
+        auto at = o.child("attribute");
+        for (auto a = at.attributes_begin(); a != at.attributes_end(); ++a)
+            obj.attributes[a->name()] = a->value();
         m_scene_view->add_object(obj);
     }
 
@@ -377,6 +381,9 @@ void main_window::on_load_mission()
         zn.active = z.attribute("active").as_bool();
         zn.radius = z.attribute("radius").as_float();
         zn.pos.set(z.attribute("x").as_float(), z.attribute("y").as_float(), z.attribute("z").as_float());
+        auto at = z.child("attribute");
+        for (auto a = at.attributes_begin(); a != at.attributes_end(); ++a)
+            zn.attributes[a->name()] = a->value();
         m_scene_view->add_zone(zn);
     }
 
@@ -458,7 +465,7 @@ void main_window::on_save_mission()
 
     for (auto &o: m_scene_view->get_objects())
     {
-        str += "\t<object ";
+        str += "\n\t<object ";
         str += "name=\"" + o.name + "\" ";
         str += "id=\"" + o.id + "\" ";
         str += "active=\"" + to_string(o.active) + "\" ";
@@ -467,24 +474,40 @@ void main_window::on_save_mission()
         str += "z=\"" + std::to_string(o.pos.z) + "\" ";
         str += "yaw=\"" + std::to_string(o.yaw.get_deg()) + "\" ";
         str += "editor_y=\"" + std::to_string(o.y) + "\" ";
+        str += ">\n";
+        str += "\t\t<attribute ";
+        for (auto &a: o.attributes)
+        {
+            if (!a.second.empty())
+                str += a.first + "=\"" + a.second + "\" ";
+        }
         str += "/>\n";
+        str += "\t</object>\n";
     }
 
     for (auto &z: m_scene_view->get_zones())
     {
-        str += "\t<zone ";
+        str += "\n\t<zone ";
         str += "name=\"" + z.name + "\" ";
         str += "active=\"" + to_string(z.active) + "\" ";
         str += "x=\"" + std::to_string(z.pos.x) + "\" ";
         str += "y=\"" + std::to_string(z.pos.y) + "\" ";
         str += "z=\"" + std::to_string(z.pos.z) + "\" ";
         str += "radius=\"" + std::to_string(z.radius) + "\" ";
+        str += ">\n";
+        str += "\t\t<attribute ";
+        for (auto &a: z.attributes)
+        {
+            if (!a.second.empty())
+                str += a.first + "=\"" + a.second + "\" ";
+        }
         str += "/>\n";
+        str += "\t</zone>\n";
     }
 
     for (auto &pth: m_scene_view->get_paths())
     {
-        str += "\t<path ";
+        str += "\n\t<path ";
         str += "name=\"" + pth.name + "\" ";
         str += ">\n";
 
