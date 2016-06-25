@@ -10,7 +10,7 @@ win32: LIBS += -lopengl32 -lwinmm
 macx: LIBS += ../deps/lua-5.2.4/liblua52.a
 
 QMAKE_CXXFLAGS += -std=c++11
-QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-parameter -Wno-reorder
+macx: QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-parameter -Wno-reorder
 
 TARGET = mission_editor
 TEMPLATE = app

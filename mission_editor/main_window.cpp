@@ -34,8 +34,6 @@ enum edit_modes
     edit_zone
 };
 
-const char *align_id[] = {"target", "enemy", "ally", "neutral", "static"};
-
 }
 
 inline void alert(std::string message)
@@ -138,6 +136,7 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     connect(m_edit_obj_active, SIGNAL(stateChanged(int)), this, SLOT(on_active_changed(int)));
     edit_obj_l->addRow("Active:", m_edit_obj_active);
     m_edit_obj_align = new QComboBox();
+    const char *align_id[] = {"target", "enemy", "ally", "neutral"};
     for (auto a: align_id)
         m_edit_obj_align->addItem(a);
     QObject::connect(m_edit_obj_align, SIGNAL(activated(int)), this, SLOT(on_align_changed(int)));
@@ -601,13 +600,7 @@ void main_window::on_obj_selected()
             {
                 m_edit_obj_name->setText(s.name.c_str());
                 m_edit_obj_active->setChecked(s.active);
-                m_edit_obj_align->setCurrentIndex(0);
-                for (int i = 0; i < sizeof(align_id) / sizeof(align_id[0]); ++i)
-                {
-                    if (s.attributes["align"] == align_id[i])
-                        m_edit_obj_align->setCurrentIndex(i);
-                }
-
+                m_edit_obj_align->setCurrentText(s.attributes["align"].c_str());
                 m_edit_obj_init->setText(s.attributes["on_init"].c_str());
                 m_edit_obj_destroy->setText(s.attributes["on_destroy"].c_str());
                 m_edit->setCurrentIndex(edit_object);
@@ -726,8 +719,7 @@ void main_window::on_active_changed(int state)
 
 void main_window::on_align_changed(int state)
 {
-    if (state < sizeof(align_id) / sizeof(align_id[0]))
-        m_scene_view->get_selected().attributes["align"] = align_id[state];
+    m_scene_view->get_selected().attributes["align"] = to_str(m_edit_obj_align->itemText(state));
 }
 
 //------------------------------------------------------------

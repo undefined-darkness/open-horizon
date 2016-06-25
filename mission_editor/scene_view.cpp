@@ -334,7 +334,15 @@ void scene_view::paintGL()
     idx = 0;
     for (auto &o: m_objects)
     {
-        auto color = (m_mode == mode_edit && sel_objects.find(idx++) != sel_objects.end()) ? red : green;
+        auto color = green;
+        auto &a = o.attributes["align"];
+        if (a == "ally")
+            color = blue;
+        else if (a == "neutral")
+            color = white;
+
+        if ((m_mode == mode_edit && sel_objects.find(idx++) != sel_objects.end()))
+            color = red;
         if (m_mode != mode_add && m_mode != mode_edit)
             color.w *= 0.3f;
         m_dd.add_line(o.pos, pos_h(o.pos, o.y), color);
