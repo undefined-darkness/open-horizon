@@ -14,7 +14,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setStyle(QStyleFactory::create("fusion"));
 
-    setup_resources();
+    if (!setup_resources())
+        return -1;
 
     main_window w;
     w.setWindowTitle("Open-Horizon mission editor");

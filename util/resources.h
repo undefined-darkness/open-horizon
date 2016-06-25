@@ -19,6 +19,11 @@
     #include <unistd.h>
 #endif
 
+#ifdef QT_GUI_LIB
+    #include <QMessageBox.h>
+    #include <QFileDialog.h>
+#endif
+
 //------------------------------------------------------------
 
 static bool setup_resources()
@@ -32,17 +37,32 @@ static bool setup_resources()
     static qdf_resources_provider qdfp;
     if (!qdfp.open_archive((config::get_var("acah_path") + "datafile.qdf").c_str()))
     {
-#ifndef QT_GUI_LIB
-        if (platform::show_msgbox("You are running Open Horizon outside of the Assault Horizon folder.\n"
-                                  "Please specify the path to the Assault Horizon folder.\n"
-                                  "It will be saved automatically."))
+        static const char message[] = "You are running Open Horizon outside of the Assault Horizon folder.\n"
+                                      "Please specify the path to the Assault Horizon folder.\n"
+                                      "It will be saved automatically.";
+#ifdef QT_GUI_LIB
+        auto m = new QMessageBox;
+        m->setText(message);
+        if (m->exec() != QMessageBox::Cancel)
+#else
+        if (platform::show_msgbox(message))
+#endif
         {
-            config::set_var("acah_path", platform::open_folder_dialog());
+#ifdef QT_GUI_LIB
+            std::string folder = QFileDialog::getExistingDirectory(Q_NULLPTR, "Specify path").toUtf8().constData();
+            folder.append("/");
+#else
+            std::string folder = platform::open_folder_dialog();
+#endif
+            if (!folder.length())
+                return false;
+
+            config::set_var("acah_path", folder);
+
             if (!qdfp.open_archive((config::get_var("acah_path") + "datafile.qdf").c_str()))
                 return false;
         }
         else
-#endif
             return false;
     }
 

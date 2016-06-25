@@ -56,14 +56,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WIN32_WINNT=0x0501;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/miso/include/;../deps/openal-soft/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/miso/include/;../deps/openal-soft/include/;../deps/lua-5.2.4/include/</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4018;4244;4305</DisableSpecificWarnings>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2015_x86_debug/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;../deps/openal-soft/OpenAL32.lib;OpenGL32.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2015_x86_release/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;../deps/openal-soft/OpenAL32.lib;../deps/lua-5.2.4/lua52.lib;OpenGL32.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(SolutionDir)..\resources" "$(TargetDir)*" /e
@@ -80,7 +80,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_WIN32_WINNT=0x0501;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/miso/include/;../deps/openal-soft/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;../deps/nya-engine/;../deps/glfw-bin/include/;../deps/pugixml-1.4/src/;../deps/zlib-1.2.8/;../deps/miso/include/;../deps/openal-soft/include/;../deps/lua-5.2.4/include/</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4018;4244;4305;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
@@ -89,7 +89,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2015_x86_release/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;../deps/openal-soft/OpenAL32.lib;OpenGL32.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../deps/nya-engine/bin/windsk_vs2015_x86_release/nya_engine_desktop_opengl.lib;../deps/glfw-bin/lib-msvc110/glfw3.lib;../deps/zlib-1.2.8/zlib.lib;../deps/openal-soft/OpenAL32.lib;../deps/lua-5.2.4/lua52.lib;OpenGL32.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y "$(SolutionDir)..\resources" "$(TargetDir)*" /e
@@ -122,6 +122,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClCompile Include="..\game\network.cpp" />
     <ClCompile Include="..\game\network_client.cpp" />
     <ClCompile Include="..\game\network_server.cpp" />
+    <ClCompile Include="..\game\script.cpp" />
     <ClCompile Include="..\game\team_deathmatch.cpp" />
     <ClCompile Include="..\gui\hud.cpp" />
     <ClCompile Include="..\gui\menu.cpp" />
@@ -199,6 +200,8 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClInclude Include="..\game\network_data.h" />
     <ClInclude Include="..\game\network_helpers.h" />
     <ClInclude Include="..\game\network_server.h" />
+    <ClInclude Include="..\game\objects.h" />
+    <ClInclude Include="..\game\script.h" />
     <ClInclude Include="..\game\team_deathmatch.h" />
     <ClInclude Include="..\gui\hud.h" />
     <ClInclude Include="..\gui\menu.h" />
