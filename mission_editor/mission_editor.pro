@@ -4,12 +4,16 @@
 #-------------------------------------------------
 
 QT += core gui opengl widgets
-LIBS += -lz
 win32: LIBS += -lopengl32 -lwinmm
+macx: LIBS += -lz
+win32: LIBS += ../deps/zlib-1.2.8/zlib.lib
 
 macx: LIBS += ../deps/lua-5.2.4/liblua52.a
+win32: LIBS += ../deps/lua-5.2.4/lua52.lib
 
 QMAKE_CXXFLAGS += -std=c++11
+QMAKE_CXXFLAGS += -msse -msse2
+
 macx: QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-parameter -Wno-reorder
 
 TARGET = mission_editor
@@ -32,6 +36,7 @@ INCLUDEPATH += ../
 INCLUDEPATH += $${DEPS_PATH}/pugixml-1.4/src/
 INCLUDEPATH += $${DEPS_PATH}/zip/src/
 INCLUDEPATH += $${DEPS_PATH}/lua-5.2.4/include/
+win32: INCLUDEPATH += $${DEPS_PATH}/zlib-1.2.8/
 
 QMAKE_TARGET_BUNDLE_PREFIX = open-horizon
 

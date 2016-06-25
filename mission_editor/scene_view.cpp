@@ -590,8 +590,8 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
 
         if (m_mode == mode_edit)
         {
-            const float far = 100000.0f;
-            nya_math::vec3 vmin(far,far,far), vmax(-far,-far,-far);
+            const float far_dist = 100000.0f;
+            nya_math::vec3 vmin(far_dist, far_dist, far_dist), vmax(-far_dist, -far_dist, -far_dist);
 
             for (auto &o: m_selection["objects"])
             {

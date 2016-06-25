@@ -17,6 +17,7 @@ xcschememanagement.plist
 *.opensdf
 *.VC.db
 *.VC.opendb
-mission_editor/Makefile
+mission_editor/Makefile*
+build-mission_editor-Desktop*
 *.stash
 *.user
