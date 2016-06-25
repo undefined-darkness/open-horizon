@@ -35,6 +35,8 @@ enum edit_modes
     edit_zone
 };
 
+const char *align_id[] = {"target", "enemy", "ally", "neutral", "static"};
+
 }
 
 inline void alert(std::string message)
@@ -136,6 +138,17 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     m_edit_obj_active = new QCheckBox;
     connect(m_edit_obj_active, SIGNAL(stateChanged(int)), this, SLOT(on_active_changed(int)));
     edit_obj_l->addRow("Active:", m_edit_obj_active);
+    m_edit_obj_align = new QComboBox();
+    for (auto a: align_id)
+        m_edit_obj_align->addItem(a);
+    QObject::connect(m_edit_obj_align, SIGNAL(activated(int)), this, SLOT(on_align_changed(int)));
+    edit_obj_l->addRow("Align:", m_edit_obj_align);
+    m_edit_obj_init = new QLineEdit;
+    connect(m_edit_obj_init, SIGNAL(textChanged(const QString &)), this, SLOT(on_init_changed(const QString &)));
+    edit_obj_l->addRow("On init:", m_edit_obj_init);
+    m_edit_obj_destroy = new QLineEdit;
+    connect(m_edit_obj_destroy, SIGNAL(textChanged(const QString &)), this, SLOT(on_destroy_changed(const QString &)));
+    edit_obj_l->addRow("On destroy:", m_edit_obj_destroy);
     auto edit_obj_w = new QWidget;
     edit_obj_w->setLayout(edit_obj_l);
     m_edit->addWidget(edit_obj_w);
@@ -144,9 +157,6 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     m_edit_path_name = new QLineEdit;
     connect(m_edit_path_name, SIGNAL(textChanged(const QString &)), this, SLOT(on_name_changed(const QString &)));
     edit_path_l->addRow("Name:", m_edit_path_name);
-    m_edit_path_active = new QCheckBox;
-    connect(m_edit_path_active, SIGNAL(stateChanged(int)), this, SLOT(on_active_changed(int)));
-    edit_path_l->addRow("Active:", m_edit_path_active);
     auto edit_path_w = new QWidget;
     edit_path_w->setLayout(edit_path_l);
     m_edit->addWidget(edit_path_w);
@@ -158,6 +168,12 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     m_edit_zone_active = new QCheckBox;
     connect(m_edit_zone_active, SIGNAL(stateChanged(int)), this, SLOT(on_active_changed(int)));
     edit_zone_l->addRow("Active:", m_edit_zone_active);
+    m_edit_zone_enter = new QLineEdit;
+    connect(m_edit_zone_enter, SIGNAL(textChanged(const QString &)), this, SLOT(on_zone_enter_changed(const QString &)));
+    edit_zone_l->addRow("On enter:", m_edit_zone_enter);
+    m_edit_zone_leave = new QLineEdit;
+    connect(m_edit_zone_leave, SIGNAL(textChanged(const QString &)), this, SLOT(on_zone_leave_changed(const QString &)));
+    edit_zone_l->addRow("On leave:", m_edit_zone_leave);
     auto edit_zone_w = new QWidget;
     edit_zone_w->setLayout(edit_zone_l);
     m_edit->addWidget(edit_zone_w);
@@ -470,7 +486,6 @@ void main_window::on_save_mission()
     {
         str += "\t<path ";
         str += "name=\"" + pth.name + "\" ";
-        str += "active=\"" + to_string(pth.active) + "\" ";
         str += ">\n";
 
         for (auto &p: pth.points)
@@ -572,18 +587,28 @@ void main_window::on_obj_selected()
             {
                 m_edit_obj_name->setText(s.name.c_str());
                 m_edit_obj_active->setChecked(s.active);
+                m_edit_obj_align->setCurrentIndex(0);
+                for (int i = 0; i < sizeof(align_id) / sizeof(align_id[0]); ++i)
+                {
+                    if (s.attributes["align"] == align_id[i])
+                        m_edit_obj_align->setCurrentIndex(i);
+                }
+
+                m_edit_obj_init->setText(s.attributes["on_init"].c_str());
+                m_edit_obj_destroy->setText(s.attributes["on_destroy"].c_str());
                 m_edit->setCurrentIndex(edit_object);
             }
             else if (p->text(0) == "paths")
             {
                 m_edit_path_name->setText(s.name.c_str());
-                m_edit_path_active->setChecked(s.active);
                 m_edit->setCurrentIndex(edit_path);
             }
             else if (p->text(0) == "zones")
             {
                 m_edit_zone_name->setText(s.name.c_str());
                 m_edit_zone_active->setChecked(s.active);
+                m_edit_zone_enter->setText(s.attributes["on_enter"].c_str());
+                m_edit_zone_leave->setText(s.attributes["on_leave"].c_str());
                 m_edit->setCurrentIndex(edit_zone);
             }
             else
@@ -681,6 +706,42 @@ void main_window::on_name_changed(const QString &s)
 void main_window::on_active_changed(int state)
 {
     m_scene_view->get_selected().active = state > 0;
+}
+
+//------------------------------------------------------------
+
+void main_window::on_align_changed(int state)
+{
+    if (state < sizeof(align_id) / sizeof(align_id[0]))
+        m_scene_view->get_selected().attributes["align"] = align_id[state];
+}
+
+//------------------------------------------------------------
+
+void main_window::on_init_changed(const QString &s)
+{
+    m_scene_view->get_selected().attributes["on_init"] = to_str(s);
+}
+
+//------------------------------------------------------------
+
+void main_window::on_destroy_changed(const QString &s)
+{
+    m_scene_view->get_selected().attributes["on_destroy"] = to_str(s);
+}
+
+//------------------------------------------------------------
+
+void main_window::on_zone_enter_changed(const QString &s)
+{
+    m_scene_view->get_selected().attributes["on_enter"] = to_str(s);
+}
+
+//------------------------------------------------------------
+
+void main_window::on_zone_leave_changed(const QString &s)
+{
+    m_scene_view->get_selected().attributes["on_leave"] = to_str(s);
 }
 
 //------------------------------------------------------------
