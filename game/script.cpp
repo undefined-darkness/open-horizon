@@ -96,6 +96,21 @@ bool script::call(std::string function, const std::vector<value> &values)
 
 //------------------------------------------------------------
 
+bool script::has_function(std::string function)
+{
+    if (!m_state)
+        return false;
+
+    lua_getglobal(m_state, function.c_str());
+    if (lua_type(m_state, -1) != LUA_TFUNCTION)
+        return false;
+
+    lua_pop(m_state, 1);
+    return true;
+}
+
+//------------------------------------------------------------
+
 void script::unload()
 {
     if (m_state)

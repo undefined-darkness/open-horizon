@@ -6,7 +6,6 @@
 #include "scene_view.h"
 #include "game/locations_list.h"
 #include "game/objects.h"
-#include "game/script.h"
 #include "zip.h"
 #include "extensions/zip_resources_provider.h"
 
@@ -143,12 +142,8 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
         m_edit_obj_align->addItem(a);
     QObject::connect(m_edit_obj_align, SIGNAL(activated(int)), this, SLOT(on_align_changed(int)));
     edit_obj_l->addRow("Align:", m_edit_obj_align);
-    m_edit_obj_init = new QLineEdit;
-    connect(m_edit_obj_init, SIGNAL(textChanged(const QString &)), this, SLOT(on_init_changed(const QString &)));
-    edit_obj_l->addRow("On init:", m_edit_obj_init);
-    m_edit_obj_destroy = new QLineEdit;
-    connect(m_edit_obj_destroy, SIGNAL(textChanged(const QString &)), this, SLOT(on_destroy_changed(const QString &)));
-    edit_obj_l->addRow("On destroy:", m_edit_obj_destroy);
+    edit_obj_l->addRow("On init:", m_edit_obj_init = new function_edit(this, "on_init"));
+    edit_obj_l->addRow("On destroy:", m_edit_obj_destroy = new function_edit(this, "on_destroy"));
     auto edit_obj_w = new QWidget;
     edit_obj_w->setLayout(edit_obj_l);
     m_edit->addWidget(edit_obj_w);
@@ -168,12 +163,8 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     m_edit_zone_active = new QCheckBox;
     connect(m_edit_zone_active, SIGNAL(stateChanged(int)), this, SLOT(on_active_changed(int)));
     edit_zone_l->addRow("Active:", m_edit_zone_active);
-    m_edit_zone_enter = new QLineEdit;
-    connect(m_edit_zone_enter, SIGNAL(textChanged(const QString &)), this, SLOT(on_zone_enter_changed(const QString &)));
-    edit_zone_l->addRow("On enter:", m_edit_zone_enter);
-    m_edit_zone_leave = new QLineEdit;
-    connect(m_edit_zone_leave, SIGNAL(textChanged(const QString &)), this, SLOT(on_zone_leave_changed(const QString &)));
-    edit_zone_l->addRow("On leave:", m_edit_zone_leave);
+    edit_zone_l->addRow("On enter:", m_edit_zone_enter = new function_edit(this, "on_enter"));
+    edit_zone_l->addRow("On leave:", m_edit_zone_leave = new function_edit(this, "on_leave"));
     auto edit_zone_w = new QWidget;
     edit_zone_w->setLayout(edit_zone_l);
     m_edit->addWidget(edit_zone_w);
@@ -741,34 +732,6 @@ void main_window::on_align_changed(int state)
 
 //------------------------------------------------------------
 
-void main_window::on_init_changed(const QString &s)
-{
-    m_scene_view->get_selected().attributes["on_init"] = to_str(s);
-}
-
-//------------------------------------------------------------
-
-void main_window::on_destroy_changed(const QString &s)
-{
-    m_scene_view->get_selected().attributes["on_destroy"] = to_str(s);
-}
-
-//------------------------------------------------------------
-
-void main_window::on_zone_enter_changed(const QString &s)
-{
-    m_scene_view->get_selected().attributes["on_enter"] = to_str(s);
-}
-
-//------------------------------------------------------------
-
-void main_window::on_zone_leave_changed(const QString &s)
-{
-    m_scene_view->get_selected().attributes["on_leave"] = to_str(s);
-}
-
-//------------------------------------------------------------
-
 void main_window::on_script_changed()
 {
     m_compile_timer->start(1000);
@@ -781,9 +744,8 @@ void main_window::on_compile_script()
     m_compile_timer->stop();
 
     auto t = m_script_edit->toPlainText();
-    game::script s;
-    s.load(to_str(t));
-    m_script_errors->setText(s.get_error().c_str());
+    m_script.load(to_str(t));
+    m_script_errors->setText(m_script.get_error().c_str());
 }
 
 //------------------------------------------------------------
@@ -845,6 +807,36 @@ void main_window::clear_mission()
     m_scene_view->clear_objects();
     m_scene_view->clear_zones();
     m_scene_view->get_paths().clear();
+}
+
+//------------------------------------------------------------
+
+bool main_window::has_script_function(std::string function)
+{
+    return m_script.has_function(function);
+}
+
+//------------------------------------------------------------
+
+void main_window::update_attribute(std::string id, std::string value)
+{
+    m_scene_view->get_selected().attributes[id] = value;
+}
+
+//------------------------------------------------------------
+
+void main_window::goto_script_function(std::string function)
+{
+    if (function.empty())
+        return;
+
+    if (!m_script.has_function(function))
+        m_script_edit->append(("\nfunction " + function + "(id)\n  --ToDo\nend\n").c_str());
+
+    m_script_edit->moveCursor(QTextCursor::Start);
+    m_script_edit->find(function.c_str());
+
+    m_navigator->setCurrentIndex(mode_script);
 }
 
 //------------------------------------------------------------
@@ -911,6 +903,35 @@ void highlight_lua::highlightBlock(const QString& text)
         setFormat(start, len, m_comment_color);
         start = m_comment_start.indexIn(text, start + len);
     }
+}
+
+//------------------------------------------------------------
+
+function_edit::function_edit(main_window *m, std::string id): m_window(m), m_id(id)
+{
+    connect(this, SIGNAL(textChanged(const QString &)), this, SLOT(on_changed(const QString &)));
+}
+
+//------------------------------------------------------------
+
+void function_edit::keyPressEvent(QKeyEvent *event)
+{
+    if(event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return)
+    {
+        m_window->goto_script_function(to_str(text()));
+    }
+    else
+        QLineEdit::keyPressEvent(event);
+}
+
+//------------------------------------------------------------
+
+void function_edit::on_changed(const QString &s)
+{
+    static QPalette black, red;
+    red.setColor(QPalette::Text, Qt::red);
+    setPalette(m_window->has_script_function(to_str(s)) ? black : red);
+    m_window->update_attribute(m_id, to_str(s));
 }
 
 //------------------------------------------------------------

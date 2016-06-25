@@ -36,6 +36,7 @@ public:
     };
 
     bool call(std::string function, const std::vector<value> &values = {});
+    bool has_function(std::string function);
 
 private:
     void on_error();
