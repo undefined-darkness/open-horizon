@@ -58,6 +58,7 @@ private:
     std::map<std::string, std::string> m_vars;
     menu_controls m_prev_controls;
     std::wstring m_title;
+    std::vector<std::wstring> m_desc;
     std::wstring m_error;
 
     struct entry

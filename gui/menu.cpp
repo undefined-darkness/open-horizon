@@ -7,6 +7,7 @@
 #include "renderer/aircraft.h"
 #include "game/game.h"
 #include "game/locations_list.h"
+#include "game/missions_list.h"
 
 namespace gui
 {
@@ -54,7 +55,7 @@ void menu::draw(const render &r)
 
     if (m_screens.back() == "main")
         m_bkg.draw_tx(r, 0, 0, sr, white);
-    else if (m_screens.back() == "map_select" || m_screens.back() == "mp"
+    else if (m_screens.back() == "mission_select" ||  m_screens.back() == "map_select" || m_screens.back() == "mp"
              || m_screens.back() == "mp_create" || m_screens.back() == "mp_connect")
         m_bkg.draw_tx(r, 0, 2, sr, white);
     else if (m_screens.back() == "ac_select" || m_screens.back() == "color_select" || m_screens.back() == "settings" || m_screens.back() == "joystick")
@@ -85,6 +86,13 @@ void menu::draw(const render &r)
     }
 
     m_fonts.draw_text(r, m_error.c_str(), "ZurichBD_M", x, r.get_height() - 30, nya_math::vec4(1.0, 0.1, 0.1, 1.0));
+
+    x = 700, y = 155;
+    for (auto &d: m_desc)
+    {
+        m_fonts.draw_text(r, d.c_str(), "ZurichBD_M", x, y, font_color);
+        y += 34;
+    }
 
     //m_fonts.draw_text(r, L"ASDFGHJKLasdfghjklQWERTYUIOPqwertyuiopZXCVBNMzxcvbnm\"\'*_-=.,0123456789", "NowGE24", 50, 200, white);
     //m_fonts.draw_text(r, L"This is a test. The quick brown fox jumps over the lazy dog's back 1234567890", "NowGE24", 50, 100, white);
@@ -389,6 +397,12 @@ void menu::set_screen(const std::string &screen)
     if (screen == "main")
     {
         m_title = L"MAIN MENU";
+        if (!game::get_missions_list().empty())
+        {
+            add_entry(L"Mission", {"mode=ms", "screen=mission_select", "multiplayer=no"});
+            send_event("mission=");
+        }
+
         add_entry(L"Deathmatch", {"mode=dm", "screen=map_select", "multiplayer=no"});
         add_entry(L"Team deathmatch", {"mode=tdm", "screen=map_select", "multiplayer=no"});
         add_entry(L"Free flight", {"mode=ff", "screen=map_select", "multiplayer=no"});
@@ -476,9 +490,20 @@ void menu::set_screen(const std::string &screen)
     {
         m_title = L"LOCATION";
 
-        auto &locations = game::get_locations_list();
-        for (auto &l: locations)
+        for (auto &l: game::get_locations_list())
             add_entry(l.second, {"map=" + l.first});
+
+        for (auto &e: m_entries)
+            e.events.push_back("screen=ac_select");
+    }
+    else if (screen == "mission_select")
+    {
+        m_title = L"MISSION";
+
+        m_desc.clear();
+
+        for (auto &m: game::get_missions_list())
+            add_entry(m.name, {"mission=" + m.id, "update_ms_desc"});
 
         for (auto &e: m_entries)
             e.events.push_back("screen=ac_select");
@@ -637,7 +662,7 @@ void menu::send_event(const std::string &event)
         for (auto &e: m_entries)
         {
             if (e.input_event == var)
-                e.input = std::wstring(value.begin(), value.end());
+                e.input = to_wstring(value);
         }
 
         return;
@@ -667,6 +692,23 @@ void menu::send_event(const std::string &event)
         return;
     }
 
+    if (event == "update_ms_desc")
+    {
+        m_desc.clear();
+        for (auto &m: game::get_missions_list())
+        {
+            if (m.id == get_var("mission"))
+            {
+                std::wstringstream wss(m.description);
+                std::wstring l;
+                while (std::getline(wss, l, L'\n'))
+                    m_desc.push_back(l);
+                break;
+            }
+        }
+        return;
+    }
+
     if (m_on_action)
         m_on_action(event);
 }
@@ -675,7 +717,7 @@ void menu::send_event(const std::string &event)
 
 void menu::set_error(const std::string &error)
 {
-    m_error = std::wstring(error.begin(), error.end());
+    m_error = to_wstring(error);
 }
 
 //------------------------------------------------------------

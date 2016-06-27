@@ -14,6 +14,8 @@
 #include <vector>
 #include <algorithm>
 #include <stdint.h>
+#include <locale>
+#include <codecvt>
 
 #ifdef _WIN32
     #include <direct.h>
@@ -71,6 +73,14 @@ inline nya_memory::tmp_buffer_ref load_resource(nya_resources::resource_data *re
 inline nya_memory::tmp_buffer_ref load_resource(const char *name)
 {
     return load_resource(nya_resources::get_resources_provider().access(name));
+}
+
+//------------------------------------------------------------
+
+inline std::wstring to_wstring(const std::string &s)
+{
+    static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
+    return converter.from_bytes(s);
 }
 
 //------------------------------------------------------------
