@@ -10,6 +10,8 @@ namespace game
 {
 //------------------------------------------------------------
 
+namespace { mission *current_mission = 0; }
+
 void mission::start(const char *plane, int color, const char *mission)
 {
     nya_resources::zip_resources_provider zprov;
@@ -35,7 +37,28 @@ void mission::start(const char *plane, int color, const char *mission)
     world::is_ally_handler fia = std::bind(&mission::is_ally, std::placeholders::_1, std::placeholders::_2);
     m_world.set_ally_handler(fia);
 
+    auto script_res = zprov.access("script.lua");
+    if (script_res)
+    {
+        std::string script;
+        script.resize(script_res->get_size());
+        if (!script.empty())
+            script_res->read_all(&script[0]);
+        m_script.load(script);
+        script_res->release();
+    }
+
+    m_script.add_callback("mission_clear", mission_clear);
+    m_script.add_callback("mission_fail", mission_fail);
+
+    m_script.add_callback("start_timer", start_timer);
+    m_script.add_callback("setup_timer", setup_timer);
+    m_script.add_callback("stop_timer", stop_timer);
+
+    current_mission = this;
     m_finished = false;
+
+    m_script.call("init");
 }
 
 //------------------------------------------------------------
@@ -47,16 +70,15 @@ void mission::update(int dt, const plane_controls &player_controls)
 
     m_player->controls = player_controls;
 
-    m_world.update(dt);
+    current_mission = this;
 
-    if (!m_world.is_host())
-        return;
+    m_world.update(dt);
 
     for (int i = 0; i < m_world.get_planes_count(); ++i)
     {
         auto p = m_world.get_plane(i);
         if (p->hp <= 0)
-            mission_fail();
+            mission_fail(0);
     }
 }
 
@@ -69,24 +91,56 @@ void mission::end()
 
 //------------------------------------------------------------
 
-void mission::mission_clear()
+int mission::mission_clear(lua_State *state)
 {
-    if (m_finished)
-        return;
+    if (current_mission->m_finished)
+        return 0;
 
-    m_world.popup_mission_clear();
-    m_finished = true;
+    current_mission->m_world.popup_mission_clear();
+    current_mission->m_finished = true;
+    return 0;
 }
 
 //------------------------------------------------------------
 
-void mission::mission_fail()
+int mission::mission_fail(lua_State *state)
 {
-    if (m_finished)
-        return;
+    if (current_mission->m_finished)
+        return 0;
 
-    m_world.popup_mission_fail();
-    m_finished = true;
+    current_mission->m_world.popup_mission_fail();
+    current_mission->m_finished = true;
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::start_timer(lua_State *state)
+{
+    std::string id = script::get_string(state, 0);
+    int time = script::get_int(state, 1);
+    std::string f = script::get_string(state, 2);
+
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::setup_timer(lua_State *state)
+{
+    std::string id = script::get_string(state, 0);
+    std::string name = script::get_string(state, 1);
+
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::stop_timer(lua_State *state)
+{
+    std::string id = script::get_string(state, 0);
+
+    return 0;
 }
 
 //------------------------------------------------------------

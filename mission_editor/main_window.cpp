@@ -342,7 +342,7 @@ void main_window::on_load_mission()
     auto p = root.child("player");
     scene_view::object plr;
     plr.yaw = p.attribute("yaw").as_float();
-    plr.pos.set(p.attribute("x").as_float(), p.attribute("y").as_float(), p.attribute("z").as_float());
+    plr.pos = read_vec3(p);
     plr.y = p.attribute("editor_y").as_float();
     plr.pos.y -= plr.y;
     m_scene_view->set_player(plr);
@@ -354,7 +354,7 @@ void main_window::on_load_mission()
         obj.id = o.attribute("id").as_string();
         obj.active = o.attribute("active").as_bool();
         obj.yaw = o.attribute("yaw").as_float();
-        obj.pos.set(o.attribute("x").as_float(), o.attribute("y").as_float(), o.attribute("z").as_float());
+        obj.pos = read_vec3(o);
         obj.y = o.attribute("editor_y").as_float();
         obj.pos.y -= obj.y;
 
@@ -370,7 +370,7 @@ void main_window::on_load_mission()
         zn.name = z.attribute("name").as_string();
         zn.active = z.attribute("active").as_bool();
         zn.radius = z.attribute("radius").as_float();
-        zn.pos.set(z.attribute("x").as_float(), z.attribute("y").as_float(), z.attribute("z").as_float());
+        zn.pos = read_vec3(z);
         auto at = z.child("attribute");
         for (auto a = at.attributes_begin(); a != at.attributes_end(); ++a)
             zn.attributes[a->name()] = a->value();
@@ -385,7 +385,7 @@ void main_window::on_load_mission()
         for (auto p0 = p.child("point"); p0; p0 = p0.next_sibling("point"))
         {
             nya_math::vec4 p;
-            p.xyz().set(p0.attribute("x").as_float(), p0.attribute("y").as_float(), p0.attribute("z").as_float());
+            p.xyz() = read_vec3(p0);
             p.w = p0.attribute("editor_y").as_float();
             p.y -= p.w;
             pth.points.push_back(p);

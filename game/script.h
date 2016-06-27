@@ -18,6 +18,11 @@ public:
     bool load(std::string text);
     void unload();
 
+    typedef int(*callback)(lua_State *);
+    void add_callback(std::string name, callback f);
+    static std::string get_string(lua_State *s, int arg_idx);
+    static int get_int(lua_State *s, int arg_idx);
+
     const std::string &get_error() const { return m_error; }
 
     struct value

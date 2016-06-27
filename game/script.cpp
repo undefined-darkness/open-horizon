@@ -32,8 +32,7 @@ bool script::load(std::string text)
 
     m_state = luaL_newstate();
 
-    lua_pushcfunction(m_state, func_print);
-    lua_setglobal(m_state, "print");
+    add_callback("print", func_print);
 
     if (luaL_dostring(m_state, text.c_str()) != 0)
     {
@@ -47,6 +46,35 @@ bool script::load(std::string text)
     lua_pcall(m_state, 0, 0, 0);
 
     return true;
+}
+
+//------------------------------------------------------------
+
+void script::add_callback(std::string name, callback f)
+{
+    if (!m_state)
+        return;
+
+    lua_pushcfunction(m_state, f);
+    lua_setglobal(m_state, name.c_str());
+}
+
+//------------------------------------------------------------
+
+std::string script::get_string(lua_State *state, int arg_idx)
+{
+    if (!state)
+        return "";
+
+    const char *s = luaL_checkstring(state, arg_idx + 1);
+    return s ? s : "";
+}
+
+//------------------------------------------------------------
+
+int script::get_int(lua_State *state, int arg_idx)
+{
+    return state ? luaL_checkint(state, arg_idx + 1) : 0;
 }
 
 //------------------------------------------------------------

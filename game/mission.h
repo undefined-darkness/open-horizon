@@ -5,6 +5,7 @@
 #pragma once
 
 #include "game.h"
+#include "script.h"
 
 namespace game
 {
@@ -21,10 +22,16 @@ public:
 
 protected:
     static bool is_ally(const plane_ptr &a, const plane_ptr &b) { return true; }
-    void mission_clear();
-    void mission_fail();
+
+    static int mission_clear(lua_State *state);
+    static int mission_fail(lua_State *state);
+
+    static int start_timer(lua_State *state);
+    static int setup_timer(lua_State *state);
+    static int stop_timer(lua_State *state);
 
     plane_ptr m_player;
+    script m_script;
     bool m_finished = false;
 };
 
