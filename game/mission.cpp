@@ -34,6 +34,8 @@ void mission::start(const char *plane, int color, const char *mission)
 
     world::is_ally_handler fia = std::bind(&mission::is_ally, std::placeholders::_1, std::placeholders::_2);
     m_world.set_ally_handler(fia);
+
+    m_finished = false;
 }
 
 //------------------------------------------------------------
@@ -54,9 +56,7 @@ void mission::update(int dt, const plane_controls &player_controls)
     {
         auto p = m_world.get_plane(i);
         if (p->hp <= 0)
-        {
-            //ToDo
-        }
+            mission_fail();
     }
 }
 
@@ -65,6 +65,28 @@ void mission::update(int dt, const plane_controls &player_controls)
 void mission::end()
 {
     m_player.reset();
+}
+
+//------------------------------------------------------------
+
+void mission::mission_clear()
+{
+    if (m_finished)
+        return;
+
+    m_world.popup_mission_clear();
+    m_finished = true;
+}
+
+//------------------------------------------------------------
+
+void mission::mission_fail()
+{
+    if (m_finished)
+        return;
+
+    m_world.popup_mission_fail();
+    m_finished = true;
 }
 
 //------------------------------------------------------------

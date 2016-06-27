@@ -21,8 +21,11 @@ public:
 
 protected:
     static bool is_ally(const plane_ptr &a, const plane_ptr &b) { return true; }
+    void mission_clear();
+    void mission_fail();
 
     plane_ptr m_player;
+    bool m_finished = false;
 };
 
 //------------------------------------------------------------

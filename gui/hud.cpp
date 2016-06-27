@@ -106,7 +106,7 @@ void hud::update(int dt)
     m_anim_time += dt;
     m_anim_time = m_anim_time % 1000;
 
-    if (m_popup_time > 0)
+    if (m_popup_time > 0 && m_popup_priority < popup_priority_mission_result)
         m_popup_time -= dt;
 }
 
@@ -114,6 +114,26 @@ void hud::update(int dt)
 
 void hud::draw(const render &r)
 {
+    if (m_popup_time > 0)
+    {
+        if (m_hide && m_popup_priority < popup_priority_mission_result)
+            return;
+
+        const int popup_pos_y = r.get_height() / 2 - 71;
+        const int twidth = m_fonts.get_text_width(m_popup_text.c_str(), "Zurich30");
+
+        static std::vector<vec2> popup_quad(5);
+        const int popup_width = twidth + 20;
+        popup_quad[0].x = (r.get_width() - popup_width) / 2, popup_quad[0].y = popup_pos_y;
+        popup_quad[1].x = (r.get_width() - popup_width) / 2, popup_quad[1].y = popup_pos_y + 30;
+        popup_quad[2].x = (r.get_width() + popup_width) / 2, popup_quad[2].y = popup_pos_y + 30;
+        popup_quad[3].x = (r.get_width() + popup_width) / 2, popup_quad[3].y = popup_pos_y;
+        popup_quad[4] = popup_quad[0];
+        r.draw(popup_quad, m_popup_color);
+
+        m_fonts.draw_text(r, m_popup_text.c_str(), "Zurich30", (r.get_width() - twidth)/ 2, popup_pos_y - 2, m_popup_color);
+    }
+
     if (m_hide)
         return;
 
@@ -533,23 +553,6 @@ void hud::draw(const render &r)
 
     for (auto &t: m_texts)
         m_fonts.draw_text(r, t.t.c_str(), t.f.c_str(), t.x, t.y, green);
-
-    if (m_popup_time > 0)
-    {
-        const int popup_pos_y = r.get_height() / 2 - 71;
-        const int twidth = m_fonts.get_text_width(m_popup_text.c_str(), "Zurich30");
-
-        static std::vector<vec2> popup_quad(5);
-        const int popup_width = twidth + 20;
-        popup_quad[0].x = (r.get_width() - popup_width) / 2, popup_quad[0].y = popup_pos_y;
-        popup_quad[1].x = (r.get_width() - popup_width) / 2, popup_quad[1].y = popup_pos_y + 30;
-        popup_quad[2].x = (r.get_width() + popup_width) / 2, popup_quad[2].y = popup_pos_y + 30;
-        popup_quad[3].x = (r.get_width() + popup_width) / 2, popup_quad[3].y = popup_pos_y;
-        popup_quad[4] = popup_quad[0];
-        r.draw(popup_quad, m_popup_color);
-
-        m_fonts.draw_text(r, m_popup_text.c_str(), "Zurich30", (r.get_width() - twidth)/ 2, popup_pos_y - 2, m_popup_color);
-    }
 }
 
 //------------------------------------------------------------

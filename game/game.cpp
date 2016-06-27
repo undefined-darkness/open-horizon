@@ -414,6 +414,9 @@ void world::set_location(const char *name)
 
     if (m_sounds_ui.cues.empty())
         m_sounds_ui.load("sound/game_common.acb");
+
+    if (m_sounds_common.cues.empty())
+        m_sounds_common.load("sound/common.acb");
 }
 
 //------------------------------------------------------------
@@ -794,7 +797,8 @@ namespace
         popup_priority_miss,
         popup_priority_hit,
         popup_priority_assist,
-        popup_priority_destroyed
+        popup_priority_destroyed,
+        popup_priority_mission_result = gui::hud::popup_priority_mission_result
     };
 }
 
@@ -813,6 +817,21 @@ void world::popup_hit(bool destroyed)
 void world::popup_miss()
 {
     m_hud.popup(L"MISS", popup_priority_miss, gui::hud::red);
+}
+
+//------------------------------------------------------------
+
+void world::popup_mission_clear()
+{
+    m_hud.popup(L"MISSION ACCOMPLISHED", popup_priority_mission_result);
+    m_sound_world.play_ui(m_sounds_common.get("MISSION_CLEAR"));
+}
+
+//------------------------------------------------------------
+
+void world::popup_mission_fail()
+{
+    m_hud.popup(L"MISSION FAILED", popup_priority_mission_result, gui::hud::red);
 }
 
 //------------------------------------------------------------

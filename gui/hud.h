@@ -82,6 +82,7 @@ public:
     void clear_texts() { m_texts.clear(); }
     void add_text(int idx, const std::wstring &text, const std::string &font, int x, int y, const color &c);
 
+    enum { popup_priority_mission_result = 200 };
     void popup(const std::wstring &text, int priority, const color &c = green);
 
     hud(): m_common_loaded(false), m_hide(false) {}

@@ -234,6 +234,8 @@ public:
     gui::hud &get_hud() { return m_hud; }
     void popup_hit(bool destroyed);
     void popup_miss();
+    void popup_mission_clear();
+    void popup_mission_fail();
 
     void update(int dt);
 
@@ -269,6 +271,7 @@ private:
     sound::world &m_sound_world;
     sound::pack m_sounds;
     sound::pack m_sounds_ui;
+    sound::pack m_sounds_common;
 
     is_ally_handler m_ally_handler;
     on_kill_handler m_on_kill_handler;
