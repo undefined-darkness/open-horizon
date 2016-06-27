@@ -24,6 +24,8 @@ const std::wstring &get_aircraft_name(const std::string &id);
 
 typedef nya_math::vec3 vec3;
 typedef nya_math::quat quat;
+typedef nya_math::angle_deg angle_deg;
+typedef nya_math::angle_rad angle_rad;
 typedef params::fvalue fvalue;
 typedef params::uvalue uvalue;
 typedef params::value<int> ivalue;

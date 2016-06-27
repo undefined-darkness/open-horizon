@@ -398,10 +398,7 @@ void menu::set_screen(const std::string &screen)
     {
         m_title = L"MAIN MENU";
         if (!game::get_missions_list().empty())
-        {
             add_entry(L"Mission", {"mode=ms", "screen=mission_select", "multiplayer=no"});
-            send_event("mission=");
-        }
 
         add_entry(L"Deathmatch", {"mode=dm", "screen=map_select", "multiplayer=no"});
         add_entry(L"Team deathmatch", {"mode=tdm", "screen=map_select", "multiplayer=no"});
@@ -511,7 +508,7 @@ void menu::set_screen(const std::string &screen)
     else if (screen == "ac_select")
     {
         std::vector<std::string> roles;
-        if (get_var("mode") == "ff")
+        if (get_var("mode") == "ff" || get_var("mode") == "ms")
             roles = {"fighter", "multirole", "attacker", "bomber"};
         else
             roles = {"fighter", "multirole"};

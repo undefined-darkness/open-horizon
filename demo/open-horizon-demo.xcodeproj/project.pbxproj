@@ -55,6 +55,7 @@
 		F5A2A2E61B05466C009765C1 /* free_flight.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E21B05466C009765C1 /* free_flight.cpp */; };
 		F5A2A2E71B05466C009765C1 /* team_deathmatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A2A2E31B05466C009765C1 /* team_deathmatch.cpp */; };
 		F5A55F361D1FC9C800A7889B /* texture_gim.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A55F341D1FC9C800A7889B /* texture_gim.cpp */; };
+		F5A55F3C1D21200800A7889B /* mission.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A55F3A1D21200800A7889B /* mission.cpp */; };
 		F5B9E0F11D16DC1C0046BA9E /* liblua52.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F5B9E0F01D16DC1C0046BA9E /* liblua52.a */; };
 		F5BE29E71CB39B3200345699 /* cpk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5BE29E51CB39B3200345699 /* cpk.cpp */; };
 		F5C3B6FE1B2C809000479524 /* particles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A334691B23688F00F3C9FC /* particles.cpp */; };
@@ -218,6 +219,8 @@
 		F5A55F341D1FC9C800A7889B /* texture_gim.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = texture_gim.cpp; path = ../renderer/texture_gim.cpp; sourceTree = "<group>"; };
 		F5A55F351D1FC9C800A7889B /* texture_gim.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = texture_gim.h; path = ../renderer/texture_gim.h; sourceTree = "<group>"; };
 		F5A55F391D21092500A7889B /* missions_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = missions_list.h; path = ../game/missions_list.h; sourceTree = "<group>"; };
+		F5A55F3A1D21200800A7889B /* mission.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = mission.cpp; path = ../game/mission.cpp; sourceTree = "<group>"; };
+		F5A55F3B1D21200800A7889B /* mission.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mission.h; path = ../game/mission.h; sourceTree = "<group>"; };
 		F5B9E0F01D16DC1C0046BA9E /* liblua52.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = liblua52.a; path = "../deps/lua-5.2.4/liblua52.a"; sourceTree = "<group>"; };
 		F5BE29E51CB39B3200345699 /* cpk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cpk.cpp; sourceTree = "<group>"; };
 		F5BE29E61CB39B3200345699 /* cpk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cpk.h; sourceTree = "<group>"; };
@@ -417,6 +420,8 @@
 				F50DADAA1C3047D5000DD3EA /* hangar.cpp */,
 				F50DADAB1C3047D5000DD3EA /* hangar.h */,
 				F53EFF501D0EE6FF009B6A0A /* locations_list.h */,
+				F5A55F3A1D21200800A7889B /* mission.cpp */,
+				F5A55F3B1D21200800A7889B /* mission.h */,
 				F5A55F391D21092500A7889B /* missions_list.h */,
 				F504CB1C1C5B9FA200FBB72D /* network.cpp */,
 				F504CB1D1C5B9FA200FBB72D /* network.h */,
@@ -790,6 +795,7 @@
 				F50BFC621C53BBCB000B8500 /* sky.cpp in Sources */,
 				F5D20A0B1CC2228100189814 /* server_tcp.cpp in Sources */,
 				F5BE29E71CB39B3200345699 /* cpk.cpp in Sources */,
+				F5A55F3C1D21200800A7889B /* mission.cpp in Sources */,
 				F59AB5A71AFA4F1800137527 /* scene.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
