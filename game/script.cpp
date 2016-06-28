@@ -93,7 +93,7 @@ void script::on_error()
 bool script::call(std::string function, const std::vector<value> &values)
 {
     m_error.clear();
-    if (!m_state)
+    if (!m_state || function.empty())
         return false;
 
     lua_getglobal(m_state, function.c_str());

@@ -55,9 +55,8 @@ void mission::start(const char *plane, int color, const char *mission)
     m_script.add_callback("setup_timer", setup_timer);
     m_script.add_callback("stop_timer", stop_timer);
 
-    current_mission = this;
     m_finished = false;
-
+    current_mission = this;
     m_script.call("init");
 }
 
@@ -69,8 +68,25 @@ void mission::update(int dt, const plane_controls &player_controls)
         return;
 
     m_player->controls = player_controls;
-
     current_mission = this;
+
+    static std::vector<std::pair<std::string, std::string> > to_call;
+    to_call.clear();
+    for (auto &t: m_timers)
+    {
+        if (!t.active)
+            continue;
+
+        if ((t.time -= dt) > 0)
+            continue;
+
+        t.time = 0;
+        t.active = false;
+        to_call.push_back({t.func, t.id});
+    }
+
+    for (auto &t: to_call)
+        m_script.call(t.first, {t.second});
 
     m_world.update(dt);
 
@@ -79,6 +95,21 @@ void mission::update(int dt, const plane_controls &player_controls)
         auto p = m_world.get_plane(i);
         if (p->hp <= 0)
             mission_fail(0);
+    }
+
+    m_world.get_hud().clear_texts();
+    int last_text_idx = 0;
+    for (auto &t: m_timers)
+    {
+        if (!t.active || t.name.empty())
+            continue;
+
+        int s = t.time / 1000;
+        wchar_t buf[255];
+        swprintf(buf, sizeof(buf), L": %d:%02d", s/60, s % 60);
+
+        m_world.get_hud().add_text(last_text_idx, t.name + buf, "Zurich20", 1000, 150 + last_text_idx * 30, gui::hud::green);
+        ++last_text_idx;
     }
 }
 
@@ -118,9 +149,16 @@ int mission::mission_fail(lua_State *state)
 int mission::start_timer(lua_State *state)
 {
     std::string id = script::get_string(state, 0);
-    int time = script::get_int(state, 1);
-    std::string f = script::get_string(state, 2);
+    if (id.empty())
+        return 0;
 
+    auto t = std::find_if(current_mission->m_timers.begin(), current_mission->m_timers.end(), [id](const timer &t){ return t.id == id; });
+    if (t == current_mission->m_timers.end())
+        t = current_mission->m_timers.insert(t, timer()), t->id = id;
+
+    t->time = script::get_int(state, 1) * 1000;
+    t->func = script::get_string(state, 2);
+    t->active = true;
     return 0;
 }
 
@@ -129,8 +167,14 @@ int mission::start_timer(lua_State *state)
 int mission::setup_timer(lua_State *state)
 {
     std::string id = script::get_string(state, 0);
-    std::string name = script::get_string(state, 1);
+    if (id.empty())
+        return 0;
 
+    auto t = std::find_if(current_mission->m_timers.begin(), current_mission->m_timers.end(), [id](const timer &t){ return t.id == id; });
+    if (t == current_mission->m_timers.end())
+        t = current_mission->m_timers.insert(t, timer()), t->id = id;
+
+    t->name = to_wstring(script::get_string(state, 1));
     return 0;
 }
 
@@ -139,6 +183,12 @@ int mission::setup_timer(lua_State *state)
 int mission::stop_timer(lua_State *state)
 {
     std::string id = script::get_string(state, 0);
+    if (id.empty())
+        return 0;
+
+    auto t = std::find_if(current_mission->m_timers.begin(), current_mission->m_timers.end(), [id](const timer &t){ return t.id == id; });
+    if (t != current_mission->m_timers.end())
+        t->active = false;
 
     return 0;
 }

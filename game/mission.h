@@ -30,6 +30,19 @@ protected:
     static int setup_timer(lua_State *state);
     static int stop_timer(lua_State *state);
 
+private:
+    struct timer
+    {
+        std::string id;
+        std::wstring name;
+        int time = 0;
+        std::string func;
+        bool active = false;
+    };
+
+    std::vector<timer> m_timers;
+
+private:
     plane_ptr m_player;
     script m_script;
     bool m_finished = false;
