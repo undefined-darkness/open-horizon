@@ -48,12 +48,14 @@ void mission::start(const char *plane, int color, const char *mission)
         script_res->release();
     }
 
-    m_script.add_callback("mission_clear", mission_clear);
-    m_script.add_callback("mission_fail", mission_fail);
-
     m_script.add_callback("start_timer", start_timer);
     m_script.add_callback("setup_timer", setup_timer);
     m_script.add_callback("stop_timer", stop_timer);
+
+    m_script.add_callback("set_hud_visible", set_hud_visible);
+
+    m_script.add_callback("mission_clear", mission_clear);
+    m_script.add_callback("mission_fail", mission_fail);
 
     m_finished = false;
     current_mission = this;
@@ -111,6 +113,9 @@ void mission::update(int dt, const plane_controls &player_controls)
         m_world.get_hud().add_text(last_text_idx, t.name + buf, "Zurich20", 1000, 150 + last_text_idx * 30, gui::hud::green);
         ++last_text_idx;
     }
+
+    if (m_hide_hud)
+        m_world.get_hud().set_hide(true);
 }
 
 //------------------------------------------------------------
@@ -118,30 +123,6 @@ void mission::update(int dt, const plane_controls &player_controls)
 void mission::end()
 {
     m_player.reset();
-}
-
-//------------------------------------------------------------
-
-int mission::mission_clear(lua_State *state)
-{
-    if (current_mission->m_finished)
-        return 0;
-
-    current_mission->m_world.popup_mission_clear();
-    current_mission->m_finished = true;
-    return 0;
-}
-
-//------------------------------------------------------------
-
-int mission::mission_fail(lua_State *state)
-{
-    if (current_mission->m_finished)
-        return 0;
-
-    current_mission->m_world.popup_mission_fail();
-    current_mission->m_finished = true;
-    return 0;
 }
 
 //------------------------------------------------------------
@@ -190,6 +171,41 @@ int mission::stop_timer(lua_State *state)
     if (t != current_mission->m_timers.end())
         t->active = false;
 
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::set_hud_visible(lua_State *state)
+{
+    if (current_mission->m_finished)
+        return 0;
+
+    current_mission->m_hide_hud = script::get_int(state, 0) == 0;
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::mission_clear(lua_State *state)
+{
+    if (current_mission->m_finished)
+        return 0;
+
+    current_mission->m_world.popup_mission_clear();
+    current_mission->m_finished = true;
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::mission_fail(lua_State *state)
+{
+    if (current_mission->m_finished)
+        return 0;
+
+    current_mission->m_world.popup_mission_fail();
+    current_mission->m_finished = true;
     return 0;
 }
 

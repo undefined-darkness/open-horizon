@@ -23,12 +23,14 @@ public:
 protected:
     static bool is_ally(const plane_ptr &a, const plane_ptr &b) { return true; }
 
-    static int mission_clear(lua_State *state);
-    static int mission_fail(lua_State *state);
-
     static int start_timer(lua_State *state);
     static int setup_timer(lua_State *state);
     static int stop_timer(lua_State *state);
+
+    static int set_hud_visible(lua_State *state);
+
+    static int mission_clear(lua_State *state);
+    static int mission_fail(lua_State *state);
 
 private:
     struct timer
@@ -46,6 +48,7 @@ private:
     plane_ptr m_player;
     script m_script;
     bool m_finished = false;
+    bool m_hide_hud = false;
 };
 
 //------------------------------------------------------------
