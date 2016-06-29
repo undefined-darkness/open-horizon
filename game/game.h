@@ -52,6 +52,7 @@ struct object
 };
 
 typedef ptr<object> object_ptr;
+typedef w_ptr<object> object_wptr;
 
 //------------------------------------------------------------
 
@@ -205,20 +206,38 @@ typedef w_ptr<unit> unit_wptr;
 
 struct unit: public object
 {
-    virtual void set_active(bool active) {}
+    virtual void set_active(bool a) { m_active = a; }
 
-    virtual void set_path(const std::vector<vec3> &path) {}
-    virtual void set_follow(unit_wptr target) {}
-    virtual void set_target(unit_wptr target) {}
+    typedef const std::vector<vec3> path;
+    virtual void set_path(const path &p, bool loop) {}
+    virtual void set_follow(object_wptr target) {}
+    virtual void set_target(object_wptr target) {}
 
     enum align { align_target, align_enemy, align_ally, align_neutral };
-    virtual void set_align(align a) {}
+    virtual void set_align(align a) { m_align = a; }
 
-    virtual void set_pos(const vec3 &p) {}
-    virtual void set_yaw(angle_deg yaw) {}
+    virtual void set_pos(const vec3 &p) { if (m_render.is_valid()) m_render->mdl.set_pos(p + m_dpos); }
+    virtual void set_yaw(angle_deg yaw) { if (m_render.is_valid()) m_render->mdl.set_rot(quat(0.0f, yaw, 0.0f)); }
 
-    virtual vec3 get_pos() const { return vec3(); }
-    virtual angle_deg get_yaw() const { return 0.0f; }
+    bool is_active() const { return m_active; }
+    align get_align() const { return m_align; }
+    vec3 get_pos() const { return m_render.is_valid() ? m_render->mdl.get_pos() - m_dpos : vec3(); }
+    quat get_rot() const { return m_render.is_valid() ? m_render->mdl.get_rot() : quat(); }
+
+public:
+    virtual void load_model(std::string model, float dy, renderer::world &w)
+    {
+        m_render = w.add_object(model.c_str());
+        m_dpos.y = dy;
+    }
+
+    virtual void update(int dt, world &w) {}
+
+protected:
+    bool m_active = true;
+    renderer::object_ptr m_render;
+    vec3 m_dpos;
+    align m_align;
 };
 
 typedef ptr<unit> unit_ptr;
@@ -233,7 +252,7 @@ public:
 
     plane_ptr add_plane(const char *preset, const char *player_name, int color, bool player, net_plane_ptr ptr = net_plane_ptr());
     missile_ptr add_missile(const plane_ptr &p, net_missile_ptr ptr = net_missile_ptr());
-    unit_ptr add_unit(const char *id);
+    unit_ptr add_unit(const char *name, const char *id);
 
     void spawn_explosion(const vec3 &pos, float radius, bool net_src = true);
     void spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, const plane_ptr &owner);
@@ -250,7 +269,7 @@ public:
 
     int get_units_count() const { return m_units.get_size(); }
     unit_ptr get_unit(int idx) { return m_units.get_by_idx(idx); }
-    unit_ptr get_unit(const char *id) const { return m_units.get_by_key(id); }
+    unit_ptr get_unit(const char *name) const { return m_units.get_by_key(name); }
 
     float get_height(float x, float z) const { return m_phys_world.get_height(x, z, false); }
 

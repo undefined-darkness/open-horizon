@@ -3,6 +3,7 @@
 //
 
 #include "game.h"
+#include "objects.h"
 #include "network_helpers.h"
 #include "math/scalar.h"
 #include "util/util.h"
@@ -304,12 +305,82 @@ plane_ptr world::add_plane(const char *preset, const char *player_name, int colo
 
 //------------------------------------------------------------
 
-unit_ptr world::add_unit(const char *id)
+struct unit_vehicle: public unit
 {
-    if (!id)
+public:
+    virtual void set_path(const path &p, bool loop) override { m_path = p; m_path_loop = loop; }
+
+    virtual void update(int dt, world &w) override
+    {
+        unit::update(dt, w);
+
+        //ToDo
+    }
+
+protected:
+    std::vector<vec3> m_path;
+    bool m_path_loop = false;
+};
+
+//------------------------------------------------------------
+
+struct unit_plane: public unit_vehicle
+{
+    virtual void set_follow(object_wptr f) override { m_follow = f; m_target.reset(); }
+    virtual void set_target(object_wptr t) override { m_target = t; m_follow.reset(); }
+
+    virtual void set_pos(const vec3 &p) override { unit_vehicle::set_pos(p); m_need_update_gear = true; }
+
+    virtual void update(int dt, world &w) override
+    {
+        unit::update(dt, w);
+
+        if (m_need_update_gear)
+        {
+            if (w.get_height(get_pos().x, get_pos().z) < 5.0f)
+            {
+                m_dpos = vec3();
+                //ToDo: gear anim
+            }
+
+            m_need_update_gear = false;
+        }
+
+        //ToDo
+    }
+
+protected:
+    bool m_need_update_gear = false;
+    object_wptr m_target;
+    object_wptr m_follow;
+};
+
+//------------------------------------------------------------
+
+unit_ptr world::add_unit(const char *name, const char *id)
+{
+    if (!name || !id)
         return unit_ptr();
 
-    //ToDo
+    auto &objs = get_objects_list();
+    for (auto &o: objs)
+    {
+        if (o.id != id)
+            continue;
+
+        auto &u = m_units.add(name);
+
+        if (o.type=="vehicle")
+            u = std::make_shared<unit>(unit_vehicle());
+        else if (o.type=="plane")
+            u = std::make_shared<unit>(unit_plane());
+        else
+            u = std::make_shared<unit>(unit());
+
+        u->load_model(o.model, o.dy, m_render_world);
+
+        return u;
+    }
 
     return unit_ptr();
 }

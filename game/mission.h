@@ -58,7 +58,7 @@ private:
     std::vector<timer> m_timers;
 
 private:
-    std::map<std::string, std::vector<vec3> > m_paths;
+    std::map<std::string, std::pair<std::vector<vec3>, bool> > m_paths;
 
 private:
     plane_ptr m_player;

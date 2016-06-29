@@ -43,8 +43,42 @@ void mission::start(const char *plane, int color, const char *mission)
             continue;
 
         auto &pth = m_paths[name];
+        pth.second = p.attribute("loop").as_bool();
         for (auto p0 = p.child("point"); p0; p0 = p0.next_sibling("point"))
-            pth.push_back(read_vec3(p0));
+            pth.first.push_back(read_vec3(p0));
+    }
+
+    for (auto o = root.child("object"); o; o = o.next_sibling("object"))
+    {
+        std::string name = o.attribute("name").as_string();
+        if (name.empty())
+            continue;
+
+        auto u = m_world.add_unit(name.c_str(), o.attribute("id").as_string());
+        if (!u)
+            continue;
+
+        u->set_active(o.attribute("active").as_bool());
+        u->set_pos(read_vec3(o));
+        u->set_yaw(o.attribute("yaw").as_float());
+
+        auto a = o.child("attribute");
+        std::string align = a.attribute("align").as_string();
+
+        if (align == "target")
+            u->set_align(unit::align_target);
+        else if (align == "enemy")
+            u->set_align(unit::align_enemy);
+        else if (align == "ally")
+            u->set_align(unit::align_ally);
+        else
+            u->set_align(unit::align_neutral);
+
+        auto p = m_paths.find(a.attribute("path").as_string());
+        if (p != m_paths.end())
+            u->set_path(p->second.first, p->second.second);
+
+        //ToDo: on_init, on_destroy
     }
 
     world::is_ally_handler fia = std::bind(&mission::is_ally, std::placeholders::_1, std::placeholders::_2);
@@ -261,9 +295,9 @@ int mission::set_path(lua_State *state)
 
     auto p = current_mission->m_paths.find(script::get_string(state, 1));
     if (p == current_mission->m_paths.end())
-        u->set_path({});
+        u->set_path({}, false);
     else
-        u->set_path(p->second);
+        u->set_path(p->second.first, p->second.second);
 
     return 0;
 }
