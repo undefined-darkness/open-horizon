@@ -550,6 +550,17 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
                 }
             }
 
+            for (auto &o: m_selection["zones"])
+            {
+                if (o >= m_zones.size())
+                    continue;
+
+                auto &z = m_zones[o];
+                z.pos.x += dpos.x, z.pos.z += dpos.y;
+                z.pos.y = m_location_phys.get_height(z.pos.x, z.pos.z, false);
+                update_zone(z, m_zones_internal[o]);
+            }
+
             if (!m_selection["player spawn"].empty())
             {
                 m_player.pos.x += dpos.x, m_player.pos.z += dpos.y;
@@ -574,6 +585,15 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
             {
                 if (o < m_objects.size())
                     m_objects[o].y = nya_math::clamp(m_objects[o].y + add, 0.0f, 10000.0f);
+            }
+
+            for (auto &o: m_selection["zones"])
+            {
+                if (o >= m_zones.size())
+                    continue;
+
+                m_zones[o].radius = nya_math::clamp(m_zones[o].radius + add, 1.0f, 10000.0f);
+                update_zone(m_zones[o], m_zones_internal[o]);
             }
 
             if (!m_selection["player spawn"].empty())
@@ -615,6 +635,15 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
                 }
             }
 
+            for (auto &o: m_selection["zones"])
+            {
+                if (o >= m_zones.size())
+                    continue;
+
+                vmin = nya_math::vec3::min(vmin, m_zones[o].pos);
+                vmax = nya_math::vec3::max(vmax, m_zones[o].pos);
+            }
+
             if (!m_selection["player spawn"].empty())
             {
                 m_player.yaw = (m_player.yaw + add).normalize();
@@ -641,6 +670,15 @@ void scene_view::mouseMoveEvent(QMouseEvent *event)
 
                 for (auto &p: m_paths[o].points)
                     p.xyz() = c + rot.rotate(p.xyz() - c);
+            }
+
+            for (auto &o: m_selection["zones"])
+            {
+                if (o >= m_zones.size())
+                    continue;
+
+                m_zones[o].pos = c + rot.rotate(m_zones[o].pos - c);
+                update_zone(m_zones[o], m_zones_internal[o]);
             }
 
             if (!m_selection["player spawn"].empty())
