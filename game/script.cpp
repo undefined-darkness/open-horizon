@@ -61,6 +61,16 @@ void script::add_callback(std::string name, callback f)
 
 //------------------------------------------------------------
 
+int script::get_args_count(lua_State *state)
+{
+    if (!state)
+        return 0;
+
+    return lua_gettop(state);
+}
+
+//------------------------------------------------------------
+
 std::string script::get_string(lua_State *state, int arg_idx)
 {
     if (!state)
@@ -75,6 +85,13 @@ std::string script::get_string(lua_State *state, int arg_idx)
 int script::get_int(lua_State *state, int arg_idx)
 {
     return state ? luaL_checkint(state, arg_idx + 1) : 0;
+}
+
+//------------------------------------------------------------
+
+int script::get_bool(lua_State *state, int arg_idx)
+{
+    return lua_isboolean(state, arg_idx + 1) ? lua_toboolean(state, arg_idx + 1) : false;
 }
 
 //------------------------------------------------------------

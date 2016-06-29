@@ -304,6 +304,18 @@ plane_ptr world::add_plane(const char *preset, const char *player_name, int colo
 
 //------------------------------------------------------------
 
+unit_ptr world::add_unit(const char *id)
+{
+    if (!id)
+        return unit_ptr();
+
+    //ToDo
+
+    return unit_ptr();
+}
+
+//------------------------------------------------------------
+
 void world::spawn_explosion(const nya_math::vec3 &pos, float radius, bool net_src)
 {
     m_render_world.spawn_explosion(pos, radius);

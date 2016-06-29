@@ -2,6 +2,7 @@
 // open horizon -- undefined_darkness@outlook.com
 //
 
+#include "game/mission.h"
 #include "game/deathmatch.h"
 #include "game/team_deathmatch.h"
 #include "game/free_flight.h"
@@ -62,6 +63,7 @@ int main()
     renderer::scene scene;
     sound::world sound_world;
     game::world world(scene, sound_world, scene.hud);
+    game::mission game_mode_ms(world);
     game::free_flight game_mode_ff(world);
     game::deathmatch game_mode_dm(world);
     game::team_deathmatch game_mode_tdm(world);
@@ -132,7 +134,12 @@ int main()
                 is_client = true;
             }
 
-            if (mode == "dm")
+            if (mode == "ms")
+            {
+                active_game_mode = &game_mode_ms;
+                game_mode_ms.start(plane.c_str(), color,  menu.get_var("mission").c_str());
+            }
+            else if (mode == "dm")
             {
                 const int bots_count = (is_client || is_server) ? 0 : 11;
 

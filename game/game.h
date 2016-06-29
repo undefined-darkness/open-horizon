@@ -199,6 +199,31 @@ typedef ptr<missile> missile_ptr;
 
 //------------------------------------------------------------
 
+struct unit;
+typedef w_ptr<unit> unit_wptr;
+
+struct unit: public object
+{
+    virtual void set_active(bool active) {}
+
+    virtual void set_path(const std::vector<vec3> &path) {}
+    virtual void set_follow(unit_wptr target) {}
+    virtual void set_target(unit_wptr target) {}
+
+    enum align { align_target, align_enemy, align_ally, align_neutral };
+    virtual void set_align(align a) {}
+
+    virtual void set_pos(const vec3 &p) {}
+    virtual void set_yaw(angle_deg yaw) {}
+
+    virtual vec3 get_pos() const { return vec3(); }
+    virtual angle_deg get_yaw() const { return 0.0f; }
+};
+
+typedef ptr<unit> unit_ptr;
+
+//------------------------------------------------------------
+
 class world
 {
 public:
@@ -207,6 +232,7 @@ public:
 
     plane_ptr add_plane(const char *preset, const char *player_name, int color, bool player, net_plane_ptr ptr = net_plane_ptr());
     missile_ptr add_missile(const plane_ptr &p, net_missile_ptr ptr = net_missile_ptr());
+    unit_ptr add_unit(const char *id);
 
     void spawn_explosion(const vec3 &pos, float radius, bool net_src = true);
     void spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, const plane_ptr &owner);

@@ -27,6 +27,19 @@ protected:
     static int setup_timer(lua_State *state);
     static int stop_timer(lua_State *state);
 
+    static int set_active(lua_State *state);
+    static int set_path(lua_State *state);
+    static int set_follow(lua_State *state);
+    static int set_target(lua_State *state);
+    static int set_align(lua_State *state);
+
+    static int get_height(lua_State *state);
+
+    static int destroy(lua_State *state);
+
+    static int setup_radio(lua_State *state);
+    static int add_radio(lua_State *state);
+
     static int set_hud_visible(lua_State *state);
 
     static int mission_clear(lua_State *state);

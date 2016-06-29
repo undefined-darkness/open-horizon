@@ -20,8 +20,10 @@ public:
 
     typedef int(*callback)(lua_State *);
     void add_callback(std::string name, callback f);
+    static int get_args_count(lua_State *s);
     static std::string get_string(lua_State *s, int arg_idx);
     static int get_int(lua_State *s, int arg_idx);
+    static int get_bool(lua_State *s, int arg_idx);
 
     const std::string &get_error() const { return m_error; }
 

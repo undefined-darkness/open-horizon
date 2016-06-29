@@ -52,6 +52,16 @@ void mission::start(const char *plane, int color, const char *mission)
     m_script.add_callback("setup_timer", setup_timer);
     m_script.add_callback("stop_timer", stop_timer);
 
+    m_script.add_callback("set_active", set_active);
+    m_script.add_callback("set_path", set_path);
+    m_script.add_callback("set_follow", set_follow);
+    m_script.add_callback("set_target", set_target);
+    m_script.add_callback("set_align", set_align);
+
+    m_script.add_callback("get_height", get_height);
+
+    m_script.add_callback("destroy", destroy);
+
     m_script.add_callback("set_hud_visible", set_hud_visible);
 
     m_script.add_callback("mission_clear", mission_clear);
@@ -129,6 +139,13 @@ void mission::end()
 
 int mission::start_timer(lua_State *state)
 {
+    auto args_count = script::get_args_count(state);
+    if (args_count < 2)
+    {
+        printf("invalid args count in function start_timer\n");
+        return 0;
+    }
+
     std::string id = script::get_string(state, 0);
     if (id.empty())
         return 0;
@@ -138,7 +155,12 @@ int mission::start_timer(lua_State *state)
         t = current_mission->m_timers.insert(t, timer()), t->id = id;
 
     t->time = script::get_int(state, 1) * 1000;
-    t->func = script::get_string(state, 2);
+
+    if (args_count > 2)
+        t->func = script::get_string(state, 2);
+    else
+        t->func.clear();
+
     t->active = true;
     return 0;
 }
@@ -147,6 +169,13 @@ int mission::start_timer(lua_State *state)
 
 int mission::setup_timer(lua_State *state)
 {
+    auto args_count = script::get_args_count(state);
+    if (args_count < 1)
+    {
+        printf("invalid args count in function setup_timer\n");
+        return 0;
+    }
+
     std::string id = script::get_string(state, 0);
     if (id.empty())
         return 0;
@@ -155,7 +184,10 @@ int mission::setup_timer(lua_State *state)
     if (t == current_mission->m_timers.end())
         t = current_mission->m_timers.insert(t, timer()), t->id = id;
 
-    t->name = to_wstring(script::get_string(state, 1));
+    if (args_count > 1)
+        t->name = to_wstring(script::get_string(state, 1));
+    else
+        t->name.clear();
     return 0;
 }
 
@@ -163,6 +195,12 @@ int mission::setup_timer(lua_State *state)
 
 int mission::stop_timer(lua_State *state)
 {
+    if (script::get_args_count(state) < 1)
+    {
+        printf("invalid args count in function stop_timer\n");
+        return 0;
+    }
+
     std::string id = script::get_string(state, 0);
     if (id.empty())
         return 0;
@@ -176,12 +214,90 @@ int mission::stop_timer(lua_State *state)
 
 //------------------------------------------------------------
 
+int mission::set_active(lua_State *state)
+{
+    //ToDo
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::set_path(lua_State *state)
+{
+    //ToDo
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::set_follow(lua_State *state)
+{
+    //ToDo
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::set_target(lua_State *state)
+{
+    //ToDo
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::set_align(lua_State *state)
+{
+    //ToDo
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::get_height(lua_State *state)
+{
+    //ToDo
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::destroy(lua_State *state)
+{
+    //ToDo
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::setup_radio(lua_State *state)
+{
+    //ToDo
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::add_radio(lua_State *state)
+{
+    //ToDo
+    return 0;
+}
+
+//------------------------------------------------------------
+
 int mission::set_hud_visible(lua_State *state)
 {
+    if (script::get_args_count(state) < 1)
+    {
+        printf("invalid args count in function set_hud_visible\n");
+        return 0;
+    }
+
     if (current_mission->m_finished)
         return 0;
 
-    current_mission->m_hide_hud = script::get_int(state, 0) == 0;
+    current_mission->m_hide_hud = !script::get_bool(state, 0);
     return 0;
 }
 
