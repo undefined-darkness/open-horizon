@@ -23,7 +23,8 @@ public:
     static int get_args_count(lua_State *s);
     static std::string get_string(lua_State *s, int arg_idx);
     static int get_int(lua_State *s, int arg_idx);
-    static int get_bool(lua_State *s, int arg_idx);
+    static bool get_bool(lua_State *s, int arg_idx);
+    static void push_float(lua_State *s, float value);
 
     const std::string &get_error() const { return m_error; }
 

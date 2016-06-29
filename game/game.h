@@ -8,6 +8,7 @@
 #include "renderer/scene.h"
 #include "sound/sound.h"
 #include "gui/hud.h"
+#include "memory/indexed_map.h"
 #include "network_data.h"
 #include <memory>
 #include <list>
@@ -247,6 +248,10 @@ public:
     int get_missiles_count() const { return (int)m_missiles.size(); }
     missile_ptr get_missile(int idx);
 
+    int get_units_count() const { return m_units.get_size(); }
+    unit_ptr get_unit(int idx) { return m_units.get_by_idx(idx); }
+    unit_ptr get_unit(const char *id) const { return m_units.get_by_key(id); }
+
     float get_height(float x, float z) const { return m_phys_world.get_height(x, z, false); }
 
     bool is_ally(const plane_ptr &a, const plane_ptr &b);
@@ -291,6 +296,7 @@ private:
     std::vector<plane_ptr> m_planes;
     w_ptr<plane> m_player;
     std::vector<missile_ptr> m_missiles;
+    nya_memory::indexed_map<unit_ptr> m_units;
     renderer::world &m_render_world;
     gui::hud &m_hud;
     phys::world m_phys_world;

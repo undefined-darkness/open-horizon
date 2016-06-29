@@ -195,7 +195,8 @@ int mission::setup_timer(lua_State *state)
 
 int mission::stop_timer(lua_State *state)
 {
-    if (script::get_args_count(state) < 1)
+    auto args_count = script::get_args_count(state);
+    if (args_count < 2)
     {
         printf("invalid args count in function stop_timer\n");
         return 0;
@@ -216,7 +217,16 @@ int mission::stop_timer(lua_State *state)
 
 int mission::set_active(lua_State *state)
 {
-    //ToDo
+    auto args_count = script::get_args_count(state);
+    if (args_count < 1)
+    {
+        printf("invalid args count in function set_active\n");
+        return 0;
+    }
+
+    auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
+    if (u)
+        u->set_active(args_count < 2 ? true : script::get_bool(state, 1));
     return 0;
 }
 
@@ -224,6 +234,12 @@ int mission::set_active(lua_State *state)
 
 int mission::set_path(lua_State *state)
 {
+    if (script::get_args_count(state) < 2)
+    {
+        printf("invalid args count in function set_path\n");
+        return 0;
+    }
+
     //ToDo
     return 0;
 }
@@ -232,7 +248,16 @@ int mission::set_path(lua_State *state)
 
 int mission::set_follow(lua_State *state)
 {
-    //ToDo
+    if (script::get_args_count(state) < 2)
+    {
+        printf("invalid args count in function set_follow\n");
+        return 0;
+    }
+
+    auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
+    if (u)
+        u->set_follow(current_mission->m_world.get_unit(script::get_string(state, 1).c_str()));
+
     return 0;
 }
 
@@ -240,7 +265,16 @@ int mission::set_follow(lua_State *state)
 
 int mission::set_target(lua_State *state)
 {
-    //ToDo
+    if (script::get_args_count(state) < 2)
+    {
+        printf("invalid args count in function set_target\n");
+        return 0;
+    }
+
+    auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
+    if (u)
+        u->set_target(current_mission->m_world.get_unit(script::get_string(state, 1).c_str()));
+
     return 0;
 }
 
@@ -248,7 +282,26 @@ int mission::set_target(lua_State *state)
 
 int mission::set_align(lua_State *state)
 {
-    //ToDo
+    if (script::get_args_count(state) < 2)
+    {
+        printf("invalid args count in function set_align\n");
+        return 0;
+    }
+
+    auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
+    if (!u)
+        return 0;
+
+    auto align = script::get_string(state, 1);
+    if (align == "target")
+        u->set_align(unit::align_target);
+    else if (align == "enemy")
+        u->set_align(unit::align_enemy);
+    else if (align == "ally")
+        u->set_align(unit::align_ally);
+    else if (align == "neutral")
+        u->set_align(unit::align_neutral);
+
     return 0;
 }
 
@@ -256,15 +309,39 @@ int mission::set_align(lua_State *state)
 
 int mission::get_height(lua_State *state)
 {
-    //ToDo
-    return 0;
+    if (script::get_args_count(state) < 1)
+    {
+        printf("invalid args count in function get_height\n");
+        return 0;
+    }
+
+    auto id = script::get_string(state, 0);
+    if (id == "player")
+    {
+        auto p = current_mission->m_world.get_player();
+        script::push_float(state, p ? p->get_pos().y : 0.0f);
+        return 1;
+    }
+
+    auto u = current_mission->m_world.get_unit(id.c_str());
+    script::push_float(state, u ? u->get_pos().y : 0.0f);
+    return 1;
 }
 
 //------------------------------------------------------------
 
 int mission::destroy(lua_State *state)
 {
-    //ToDo
+    if (script::get_args_count(state) < 1)
+    {
+        printf("invalid args count in function get_height\n");
+        return 0;
+    }
+
+    auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
+    if (u)
+        u->take_damage(9000, current_mission->m_world);
+
     return 0;
 }
 
