@@ -132,6 +132,9 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     m_edit_obj_name = new QLineEdit;
     connect(m_edit_obj_name, SIGNAL(textChanged(const QString &)), this, SLOT(on_name_changed(const QString &)));
     edit_obj_l->addRow("Name:", m_edit_obj_name);
+    m_edit_obj_path = new QLineEdit;
+    connect(m_edit_obj_path, SIGNAL(textChanged(const QString &)), this, SLOT(on_obj_path_changed(const QString &)));
+    edit_obj_l->addRow("Path:", m_edit_obj_path);
     m_edit_obj_active = new QCheckBox;
     connect(m_edit_obj_active, SIGNAL(stateChanged(int)), this, SLOT(on_active_changed(int)));
     edit_obj_l->addRow("Active:", m_edit_obj_active);
@@ -381,7 +384,6 @@ void main_window::on_load_mission()
     {
         scene_view::path pth;
         pth.name = p.attribute("name").as_string();
-        pth.active = p.attribute("active").as_bool();
         for (auto p0 = p.child("point"); p0; p0 = p0.next_sibling("point"))
         {
             nya_math::vec4 p;
@@ -601,6 +603,7 @@ void main_window::on_obj_selected()
                 m_edit_obj_name->setText(s.name.c_str());
                 m_edit_obj_active->setChecked(s.active);
                 m_edit_obj_align->setCurrentText(s.attributes["align"].c_str());
+                m_edit_obj_path->setText(s.attributes["path"].c_str());
                 m_edit_obj_init->setText(s.attributes["on_init"].c_str());
                 m_edit_obj_destroy->setText(s.attributes["on_destroy"].c_str());
                 m_edit->setCurrentIndex(edit_object);
@@ -706,6 +709,20 @@ void main_window::on_name_changed(const QString &s)
     auto &objs = m_scene_view->get_objects();
     if (idx < objs.size())
         c->setText(0, (std::string(to_str(s)) + " (" + objs[idx].id + ")").c_str());
+}
+
+//------------------------------------------------------------
+
+void main_window::on_obj_path_changed(const QString &s)
+{
+    auto id = to_str(s);
+    m_scene_view->get_selected().attributes["path"] = id;
+    auto &pths = m_scene_view->get_paths();
+    bool found = std::find_if(pths.begin(), pths.end(),
+                              [id](const scene_view::path &p) { return p.name == id; }) != pths.end();
+    static QPalette black, red;
+    red.setColor(QPalette::Text, Qt::red);
+    m_edit_obj_path->setPalette(found ? black : red);
 }
 
 //------------------------------------------------------------

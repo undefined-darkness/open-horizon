@@ -58,6 +58,9 @@ private:
     std::vector<timer> m_timers;
 
 private:
+    std::map<std::string, std::vector<vec3> > m_paths;
+
+private:
     plane_ptr m_player;
     script m_script;
     bool m_finished = false;

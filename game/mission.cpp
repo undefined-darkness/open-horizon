@@ -14,6 +14,8 @@ namespace { mission *current_mission = 0; }
 
 void mission::start(const char *plane, int color, const char *mission)
 {
+    m_paths.clear();
+
     nya_resources::zip_resources_provider zprov;
     if (!zprov.open_archive(mission))
         return;
@@ -32,6 +34,17 @@ void mission::start(const char *plane, int color, const char *mission)
         m_player = m_world.add_plane(plane, m_world.get_player_name(), color, true);
         m_player->set_pos(read_vec3(p));
         m_player->set_rot(quat(0.0, angle_deg(p.attribute("yaw").as_float()), 0.0));
+    }
+
+    for (auto p = root.child("path"); p; p = p.next_sibling("path"))
+    {
+        std::string name = p.attribute("name").as_string();
+        if (name.empty())
+            continue;
+
+        auto &pth = m_paths[name];
+        for (auto p0 = p.child("point"); p0; p0 = p0.next_sibling("point"))
+            pth.push_back(read_vec3(p0));
     }
 
     world::is_ally_handler fia = std::bind(&mission::is_ally, std::placeholders::_1, std::placeholders::_2);
@@ -188,6 +201,7 @@ int mission::setup_timer(lua_State *state)
         t->name = to_wstring(script::get_string(state, 1));
     else
         t->name.clear();
+
     return 0;
 }
 
@@ -227,6 +241,7 @@ int mission::set_active(lua_State *state)
     auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
     if (u)
         u->set_active(args_count < 2 ? true : script::get_bool(state, 1));
+
     return 0;
 }
 
@@ -240,7 +255,16 @@ int mission::set_path(lua_State *state)
         return 0;
     }
 
-    //ToDo
+    auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
+    if (!u)
+        return 0;
+
+    auto p = current_mission->m_paths.find(script::get_string(state, 1));
+    if (p == current_mission->m_paths.end())
+        u->set_path({});
+    else
+        u->set_path(p->second);
+
     return 0;
 }
 
