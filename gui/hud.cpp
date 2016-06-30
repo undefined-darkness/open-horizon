@@ -146,20 +146,35 @@ void hud::draw(const render &r)
 
         const int nwidth = m_fonts.get_text_width(m_radio_name.c_str(), "Zurich30");
         m_fonts.draw_text(r, m_radio_name.c_str(), "Zurich30", (r.get_width() - nwidth)/ 2, radio_pos_y, m_radio_color);
-
         radio_pos_y += 35;
 
         static std::vector<vec2> radio_line(2);
         radio_line[0].x = (r.get_width() - nwidth) / 2, radio_line[0].y = radio_pos_y;
         radio_line[1].x = (r.get_width() + nwidth) / 2, radio_line[1].y = radio_pos_y;
         r.draw(radio_line, m_radio_color);
-
         radio_pos_y += 10;
 
+        size_t idx = 0;
         for (auto &t: m_radio_text)
         {
-            const int twidth = m_fonts.get_text_width(t.c_str(), "Zurich30");
-            m_fonts.draw_text(r, t.c_str(), "Zurich30", (r.get_width() - twidth)/ 2, radio_pos_y, white);
+            int twidth = m_fonts.get_text_width(t.c_str(), "Zurich30");
+
+            ++idx;
+            if (idx == 1)
+                twidth += m_fonts.get_text_width(L"<< ", "Zurich30");
+            if (idx == m_radio_text.size())
+                twidth += m_fonts.get_text_width(L" >>", "Zurich30");
+
+            int x = (r.get_width() - twidth)/ 2;
+
+            if (idx == 1)
+                x += m_fonts.draw_text(r, L"<< ", "Zurich30", x, radio_pos_y, m_radio_color);
+
+            x += m_fonts.draw_text(r, t.c_str(), "Zurich30", x, radio_pos_y, white);
+
+            if (idx == m_radio_text.size())
+                m_fonts.draw_text(r, L" >>", "Zurich30", x, radio_pos_y, m_radio_color);
+
             radio_pos_y += 35;
         }
     }

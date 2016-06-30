@@ -34,6 +34,7 @@ void mission::start(const char *plane, int color, const char *mission)
         m_player = m_world.add_plane(plane, m_world.get_player_name(), color, true);
         m_player->set_pos(read_vec3(p));
         m_player->set_rot(quat(0.0, angle_deg(p.attribute("yaw").as_float()), 0.0));
+        m_player->reset_state();
     }
 
     for (auto p = root.child("path"); p; p = p.next_sibling("path"))
@@ -130,6 +131,9 @@ void mission::update(int dt, const plane_controls &player_controls)
     if (!m_player)
         return;
 
+    if (dt > 100)
+        dt = 100;
+
     m_player->controls = player_controls;
     current_mission = this;
 
@@ -150,6 +154,18 @@ void mission::update(int dt, const plane_controls &player_controls)
 
     for (auto &t: to_call)
         m_script.call(t.first, {t.second});
+
+    if (!m_radio_messages.empty())
+    {
+        auto &t = m_radio_messages.front().time;
+        t -= dt;
+        if (t < 0)
+        {
+            m_radio_messages.erase(m_radio_messages.begin());
+            if(!m_radio_messages.empty())
+                set_radio_message(m_radio_messages.front());
+        }
+    }
 
     m_world.update(dt);
 
@@ -440,6 +456,7 @@ int mission::setup_radio(lua_State *state)
 int mission::clear_radio(lua_State *state)
 {
     current_mission->m_radio.clear();
+    current_mission->set_radio_message({});
     return 0;
 }
 
@@ -453,14 +470,16 @@ int mission::add_radio(lua_State *state)
         return 0;
     }
 
-    auto r = current_mission->m_radio.find(script::get_string(state, 0));
+    auto id = script::get_string(state, 0);
+    auto r = current_mission->m_radio.find(id);
     if (r == current_mission->m_radio.end())
         return 0;
 
     const int time = script::get_args_count(state) > 2 ? script::get_int(state, 2) * 1000 : 2000;
+    current_mission->m_radio_messages.push_back({id, to_wstring(script::get_string(state, 1)), time});
 
-    //ToDo
-    current_mission->m_world.get_hud().set_radio(r->second.first, to_wstring(script::get_string(state, 1)), time, r->second.second);
+    if (current_mission->m_radio_messages.size() == 1)
+        current_mission->set_radio_message(current_mission->m_radio_messages.back());
     return 0;
 }
 
@@ -503,6 +522,17 @@ int mission::mission_fail(lua_State *state)
     current_mission->m_world.popup_mission_fail();
     current_mission->m_finished = true;
     return 0;
+}
+
+//------------------------------------------------------------
+
+void mission::set_radio_message(const radio_message &m)
+{
+    auto r = m_radio.find(m.id);
+    if (r == m_radio.end())
+        return;
+
+    m_world.get_hud().set_radio(r->second.first, m.message, m.time, r->second.second);
 }
 
 //------------------------------------------------------------

@@ -64,6 +64,8 @@ private:
     struct radio_message { std::string id; std::wstring message; int time; };
     std::vector<radio_message> m_radio_messages;
 
+    void set_radio_message(const radio_message &m);
+
 private:
     std::map<std::string, std::pair<std::vector<vec3>, bool> > m_paths;
 
