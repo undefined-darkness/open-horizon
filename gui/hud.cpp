@@ -108,6 +108,9 @@ void hud::update(int dt)
 
     if (m_popup_time > 0 && m_popup_priority < popup_priority_mission_result)
         m_popup_time -= dt;
+
+    if (m_radio_time > 0)
+        m_radio_time -= dt;
 }
 
 //------------------------------------------------------------
@@ -136,6 +139,30 @@ void hud::draw(const render &r)
 
     if (m_hide)
         return;
+
+    if (m_radio_time > 0)
+    {
+        int radio_pos_y = 50;
+
+        const int nwidth = m_fonts.get_text_width(m_radio_name.c_str(), "Zurich30");
+        m_fonts.draw_text(r, m_radio_name.c_str(), "Zurich30", (r.get_width() - nwidth)/ 2, radio_pos_y, m_radio_color);
+
+        radio_pos_y += 35;
+
+        static std::vector<vec2> radio_line(2);
+        radio_line[0].x = (r.get_width() - nwidth) / 2, radio_line[0].y = radio_pos_y;
+        radio_line[1].x = (r.get_width() + nwidth) / 2, radio_line[1].y = radio_pos_y;
+        r.draw(radio_line, m_radio_color);
+
+        radio_pos_y += 10;
+
+        for (auto &t: m_radio_text)
+        {
+            const int twidth = m_fonts.get_text_width(t.c_str(), "Zurich30");
+            m_fonts.draw_text(r, t.c_str(), "Zurich30", (r.get_width() - twidth)/ 2, radio_pos_y, white);
+            radio_pos_y += 35;
+        }
+    }
 
     const float anim = fabsf(m_anim_time / 500.0f - 1.0);
 
@@ -719,6 +746,26 @@ void hud::popup(const std::wstring &text, int priority, const color &c)
     m_popup_time = 2000;
     m_popup_color = c;
     m_popup_priority = priority;
+}
+
+//------------------------------------------------------------
+
+void hud::set_radio(std::wstring name, std::wstring message, int time, const color &c)
+{
+    m_radio_name = name;
+    if (name.empty())
+    {
+        m_radio_time = 0;
+        return;
+    }
+
+    m_radio_color = c;
+    m_radio_time = time;
+    m_radio_text.clear();
+    std::wstringstream wss(message);
+    std::wstring l;
+    while (std::getline(wss, l, L'\n'))
+        m_radio_text.push_back(l);
 }
 
 //------------------------------------------------------------

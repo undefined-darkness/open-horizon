@@ -38,6 +38,7 @@ protected:
     static int destroy(lua_State *state);
 
     static int setup_radio(lua_State *state);
+    static int clear_radio(lua_State *state);
     static int add_radio(lua_State *state);
 
     static int set_hud_visible(lua_State *state);
@@ -56,6 +57,12 @@ private:
     };
 
     std::vector<timer> m_timers;
+
+private:
+    std::map<std::string, std::pair<std::wstring, gui::hud::color> > m_radio;
+
+    struct radio_message { std::string id; std::wstring message; int time; };
+    std::vector<radio_message> m_radio_messages;
 
 private:
     std::map<std::string, std::pair<std::vector<vec3>, bool> > m_paths;

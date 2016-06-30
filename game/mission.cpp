@@ -109,6 +109,10 @@ void mission::start(const char *plane, int color, const char *mission)
 
     m_script.add_callback("destroy", destroy);
 
+    m_script.add_callback("setup_radio", setup_radio);
+    m_script.add_callback("clear_radio", clear_radio);
+    m_script.add_callback("add_radio", add_radio);
+
     m_script.add_callback("set_hud_visible", set_hud_visible);
 
     m_script.add_callback("mission_clear", mission_clear);
@@ -407,7 +411,35 @@ int mission::destroy(lua_State *state)
 
 int mission::setup_radio(lua_State *state)
 {
-    //ToDo
+    if (script::get_args_count(state) < 3)
+    {
+        printf("invalid args count in function setup_radio\n");
+        return 0;
+    }
+
+    auto id = script::get_string(state, 0);
+    if (id.empty())
+        return 0;
+
+    auto &r = current_mission->m_radio[id];
+    r.first = to_wstring(script::get_string(state, 1));
+    r.second = gui::hud::white;
+    auto cs = script::get_string(state, 2);
+    if (cs == "green")
+        r.second = gui::hud::green;
+    else if (cs == "blue")
+        r.second = gui::hud::blue;
+    else if (cs == "red")
+        r.second = gui::hud::red;
+
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::clear_radio(lua_State *state)
+{
+    current_mission->m_radio.clear();
     return 0;
 }
 
@@ -415,7 +447,20 @@ int mission::setup_radio(lua_State *state)
 
 int mission::add_radio(lua_State *state)
 {
+    if (script::get_args_count(state) < 2)
+    {
+        printf("invalid args count in function add_radio\n");
+        return 0;
+    }
+
+    auto r = current_mission->m_radio.find(script::get_string(state, 0));
+    if (r == current_mission->m_radio.end())
+        return 0;
+
+    const int time = script::get_args_count(state) > 2 ? script::get_int(state, 2) * 1000 : 2000;
+
     //ToDo
+    current_mission->m_world.get_hud().set_radio(r->second.first, to_wstring(script::get_string(state, 1)), time, r->second.second);
     return 0;
 }
 

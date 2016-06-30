@@ -85,6 +85,8 @@ public:
     enum { popup_priority_mission_result = 200 };
     void popup(const std::wstring &text, int priority, const color &c = green);
 
+    void set_radio(std::wstring name, std::wstring message, int time, const color &c = white);
+
     hud(): m_common_loaded(false), m_hide(false) {}
 
 private:
@@ -172,6 +174,12 @@ private:
     color m_popup_color;
     ivalue m_popup_time;
     ivalue m_popup_priority;
+
+private:
+    std::wstring m_radio_name;
+    std::vector<std::wstring> m_radio_text;
+    color m_radio_color;
+    ivalue m_radio_time;
 };
 
 //------------------------------------------------------------
