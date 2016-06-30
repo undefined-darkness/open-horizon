@@ -154,6 +154,9 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     m_edit_path_name = new QLineEdit;
     connect(m_edit_path_name, SIGNAL(textChanged(const QString &)), this, SLOT(on_name_changed(const QString &)));
     edit_path_l->addRow("Name:", m_edit_path_name);
+    m_edit_path_loop = new QCheckBox;
+    connect(m_edit_path_loop, SIGNAL(stateChanged(int)), this, SLOT(on_path_loop_changed(int)));
+    edit_path_l->addRow("Loop:", m_edit_path_loop);
     auto edit_path_w = new QWidget;
     edit_path_w->setLayout(edit_path_l);
     m_edit->addWidget(edit_path_w);
@@ -611,6 +614,7 @@ void main_window::on_obj_selected()
             else if (p->text(0) == "paths")
             {
                 m_edit_path_name->setText(s.name.c_str());
+                m_edit_path_loop->setChecked(s.attributes["loop"] == "true");
                 m_edit->setCurrentIndex(edit_path);
             }
             else if (p->text(0) == "zones")
@@ -737,6 +741,13 @@ void main_window::on_active_changed(int state)
 void main_window::on_align_changed(int state)
 {
     m_scene_view->get_selected().attributes["align"] = to_str(m_edit_obj_align->itemText(state));
+}
+
+//------------------------------------------------------------
+
+void main_window::on_path_loop_changed(int state)
+{
+    m_scene_view->get_selected().attributes["loop"] = state ? "true" : "false";
 }
 
 //------------------------------------------------------------

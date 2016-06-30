@@ -38,6 +38,7 @@ private slots:
     void on_obj_path_changed(const QString &s);
     void on_active_changed(int state);
     void on_align_changed(int state);
+    void on_path_loop_changed(int state);
     void on_script_changed();
     void on_compile_script();
 
@@ -56,7 +57,7 @@ private:
     QTabWidget *m_navigator;
     QStackedWidget *m_edit;
     QLineEdit *m_edit_obj_name, *m_edit_path_name, *m_edit_zone_name;
-    QCheckBox *m_edit_obj_active, *m_edit_zone_active;
+    QCheckBox *m_edit_obj_active, *m_edit_path_loop, *m_edit_zone_active;
     QComboBox *m_edit_obj_align;
     QLineEdit *m_edit_obj_path;
     function_edit *m_edit_obj_init, *m_edit_obj_destroy;
