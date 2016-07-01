@@ -27,7 +27,7 @@ private:
 
 private:
     w_ptr<plane> m_plane;
-    w_ptr<plane> m_target;
+    object_wptr m_target;
 
     enum state
     {

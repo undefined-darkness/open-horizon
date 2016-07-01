@@ -45,13 +45,18 @@ template <typename t> using w_ptr = std::weak_ptr<t>;
 
 struct object
 {
-    ivalue max_hp;
-    ivalue hp;
+    virtual vec3 get_pos() { return vec3(); }
+    virtual vec3 get_vel() { return vec3(); }
+    virtual quat get_rot() { return quat(); }
+    virtual std::wstring get_name() { return L""; }
+    virtual std::wstring get_type_name() { return L""; }
+    virtual bool is_targetable(bool ground, bool air) { return false; }
 
+    ivalue hp, max_hp;
     virtual void take_damage(int damage, world &w, bool net_src = true) { hp = damage < hp ? hp - damage : 0; }
+    virtual float get_hit_radius() { return 0.0f; }
 };
 
-typedef ptr<object> object_ptr;
 typedef w_ptr<object> object_wptr;
 
 //------------------------------------------------------------
@@ -140,7 +145,7 @@ struct plane: public object, public std::enable_shared_from_this<plane>
 
     struct target_lock
     {
-        w_ptr<plane> target_plane;
+        object_wptr target;
         ivalue locked;
         fvalue dist;
         fvalue cos;
@@ -156,15 +161,22 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     void reset_state();
     void set_pos(const vec3 &pos) { if (phys) phys->pos = pos; }
     void set_rot(const quat &rot) { if (phys) phys->rot = rot; }
-    const vec3 &get_pos() { if (phys) return phys->pos; static vec3 p; return p; }
-    const quat &get_rot() { if (phys) return phys->rot; static quat r; return r; }
     vec3 get_dir() { return get_rot().rotate(vec3::forward()); }
-    void select_target(const object_ptr &o);
+    void select_target(const object_wptr &o);
     void update(int dt, world &w);
     void update_hud(world &w, gui::hud &h);
     bool is_ecm_active() const { return special.id=="ECM" && ecm_time > 0;}
 
+    //object
+public:
+    virtual vec3 get_pos() override { return phys ? phys->pos : vec3(); }
+    virtual vec3 get_vel() override { return phys ? phys->vel : vec3(); }
+    virtual quat get_rot() override { return phys ? phys->rot : quat(); }
+    virtual std::wstring get_name() override { return player_name; }
+    virtual std::wstring get_type_name() override { return name; }
+    virtual bool is_targetable(bool ground, bool air) override { return air && hp > 0; }
     virtual void take_damage(int damage, world &w, bool net_src = true) override;
+    virtual float get_hit_radius() override { return hit_radius; }
 
 private:
     void update_sound(world &w, std::string name, bool enabled, float volume = 1.0f);
@@ -181,14 +193,14 @@ typedef ptr<plane> plane_ptr;
 
 //------------------------------------------------------------
 
-struct missile: public object
+struct missile
 {
     net_missile_ptr net;
     phys::missile_ptr phys;
     renderer::missile_ptr render;
     ivalue time;
     w_ptr<plane> owner;
-    w_ptr<plane> target;
+    object_wptr target;
     fvalue homing_angle_cos;
     bvalue is_saam;
 
@@ -221,8 +233,11 @@ struct unit: public object
 
     bool is_active() const { return m_active; }
     align get_align() const { return m_align; }
-    vec3 get_pos() const { return m_render.is_valid() ? m_render->mdl.get_pos() - m_dpos : vec3(); }
-    quat get_rot() const { return m_render.is_valid() ? m_render->mdl.get_rot() : quat(); }
+
+    //object
+public:
+    virtual vec3 get_pos() override { return m_render.is_valid() ? m_render->mdl.get_pos() - m_dpos : vec3(); }
+    virtual quat get_rot() override { return m_render.is_valid() ? m_render->mdl.get_rot() : quat(); }
 
 public:
     virtual void load_model(std::string model, float dy, renderer::world &w)
@@ -261,6 +276,7 @@ public:
 
     int get_planes_count() const { return (int)m_planes.size(); }
     plane_ptr get_plane(int idx);
+    plane_ptr get_plane(object_wptr t);
     plane_ptr get_player() { return m_player.lock(); }
     const char *get_player_name() const;
 

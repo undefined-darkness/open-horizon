@@ -476,6 +476,23 @@ plane_ptr world::get_plane(int idx)
 
 //------------------------------------------------------------
 
+plane_ptr world::get_plane(object_wptr o)
+{
+    if (o.expired())
+        return plane_ptr();
+
+    auto ol = o.lock();
+    for (auto &p: m_planes)
+    {
+        if (p == ol)
+            return p;
+    }
+
+    return plane_ptr();
+}
+
+//------------------------------------------------------------
+
 missile_ptr world::get_missile(int idx)
 {
     if (idx < 0 || idx >= (int)m_planes.size())
@@ -688,7 +705,7 @@ void world::update(int dt)
     {
         m_planes.erase(removed_planes, m_planes.end());
         for (auto &p: m_planes)
-            p->targets.erase(remove_if(p->targets.begin(), p->targets.end(), [](const plane::target_lock &t){ return t.target_plane.expired(); }), p->targets.end());
+            p->targets.erase(remove_if(p->targets.begin(), p->targets.end(), [](const plane::target_lock &t){ return t.target.expired(); }), p->targets.end());
     }
 
     m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m) { return (m->net && !m->net->source) ? m->net.unique() : m->time <= 0; }), m_missiles.end());
@@ -807,7 +824,10 @@ void world::update(int dt)
                 continue;
 
             m->net->target_dir = m->phys->target_dir;
-            m->net->target = m->target.expired() ? invalid_id : m_network->get_plane_id(m->target.lock()->net);
+
+            auto p = get_plane(m->target);
+            m->net->target = p ? m_network->get_plane_id(p->net) : invalid_id;
+
             m->net->engine_started = m->phys->accel_started;
         }
 
@@ -979,11 +999,11 @@ void plane::reset_state()
 
 //------------------------------------------------------------
 
-void plane::select_target(const object_ptr &o)
+void plane::select_target(const object_wptr &o)
 {
     for (auto &t: targets)
     {
-        if (std::static_pointer_cast<object>(t.target_plane.lock()) != o)
+        if (t.target.lock() != o.lock())
             continue;
 
         std::swap(t, targets.front());
@@ -1008,7 +1028,7 @@ void plane::update_targets(world &w)
 
         auto target_dir = p->get_pos() - me->get_pos();
         const float dist = target_dir.length();
-        auto t = std::find_if(targets.begin(), targets.end(), [p](target_lock &t) { return p == t.target_plane.lock(); });
+        auto t = std::find_if(targets.begin(), targets.end(), [p](target_lock &t) { return p == t.target.lock(); });
 
         if (dist > 12000.0f || p->hp <= 0)
         {
@@ -1027,7 +1047,7 @@ void plane::update_targets(world &w)
         if (t == targets.end())
         {
             target_lock l;
-            l.target_plane = p;
+            l.target = p;
             t = targets.insert(targets.end(), l);
         }
 
@@ -1372,7 +1392,7 @@ void plane::update(int dt, world &w)
             {
                 auto m = saam_missile.lock();
                 if (!targets.empty() && targets.front().locked > 0)
-                    m->target = targets.begin()->target_plane;
+                    m->target = targets.begin()->target;
                 else
                     m->target.reset();
             }
@@ -1436,11 +1456,11 @@ void plane::update(int dt, world &w)
 
             special_mount_cooldown.resize(render->get_special_mount_count());
 
-            std::vector<w_ptr<plane> > locked_targets;
+            std::vector<object_wptr> locked_targets;
             for (auto &t: targets)
             {
                 for (int j = 0; j < t.locked; ++j)
-                    locked_targets.push_back(t.target_plane);
+                    locked_targets.push_back(t.target);
                 t.locked = 0;
             }
 
@@ -1512,7 +1532,7 @@ void plane::update(int dt, world &w)
 
                 m->phys->target_dir = m->phys->rot.rotate(vec3(0.0f, 0.0f, 1.0f));
                 if (!targets.empty() && targets.front().locked > 0)
-                    m->target = targets.front().target_plane;
+                    m->target = targets.front().target;
 
                 --missile_count;
 
@@ -1678,14 +1698,14 @@ void plane::update_hud(world &w, gui::hud &h)
     int t_idx = 0;
     for (auto &t: targets)
     {
-        auto p = t.target_plane.lock();
+        auto p = t.target.lock();
         auto type = t.locked > 0 ? gui::hud::target_air_lock : gui::hud::target_air;
         auto select = ++t_idx == 1 ? gui::hud::select_current : (t_idx == 2 ? gui::hud::select_next : gui::hud::select_not);
-        h.add_target(p->name, p->player_name, p->get_pos(), p->get_rot().get_euler().y, type, select);
+        h.add_target(p->get_type_name(), p->get_name(), p->get_pos(), p->get_rot().get_euler().y, type, select);
     }
 
     if (!targets.empty())
-        h.set_target_arrow(true, vec3::normalize(targets.front().target_plane.lock()->get_pos() - get_pos()));
+        h.set_target_arrow(true, vec3::normalize(targets.front().target.lock()->get_pos() - get_pos()));
     else
         h.set_target_arrow(false);
 
@@ -1741,11 +1761,9 @@ void missile::update_homing(int dt, world &w)
 {
     if (net && !net->source)
     {
-        if (!target.expired())
-        {
-            auto t = target.lock();
-            t->alert_dirs.push_back(t->get_pos() - phys->pos);
-        }
+        auto p = w.get_plane(target);
+        if (p)
+            p->alert_dirs.push_back(p->get_pos() - phys->pos);
         return;
     }
 
@@ -1761,11 +1779,13 @@ void missile::update_homing(int dt, world &w)
     const vec3 dir = phys->rot.rotate(vec3::forward());
     auto t = target.lock();
     auto diff = t->get_pos() - phys->pos;
-    const vec3 target_dir = (diff + (t->phys->vel - phys->vel) * dt * 0.001f).normalize();
-    if (dir.dot(target_dir) > homing_angle_cos || t->hp <= 0)
+    const vec3 target_dir = (diff + (t->get_vel() - phys->vel) * dt * 0.001f).normalize();
+    if (dir.dot(target_dir) > homing_angle_cos || !t->is_targetable(true, true))
     {
         phys->target_dir = target_dir;
-        t->alert_dirs.push_back(diff);
+        auto p = w.get_plane(target);
+        if (p)
+            p->alert_dirs.push_back(diff);
     }
     else
     {
@@ -1793,7 +1813,7 @@ void missile::update(int dt, world &w)
     if (!target.expired())
     {
         auto t = target.lock();
-        bool hit = line_sphere_intersect(phys->pos, phys->pos + phys->vel * (dt * 0.001f), t->get_pos(), t->hit_radius * 0.5f);
+        bool hit = line_sphere_intersect(phys->pos, phys->pos + phys->vel * (dt * 0.001f), t->get_pos(), t->get_hit_radius() * 0.5f);
 
         if (!hit)
         {
@@ -1813,7 +1833,11 @@ void missile::update(int dt, world &w)
                 t->take_damage(missile_damage, w);
                 const bool destroyed = t->hp <= 0;
                 if (destroyed)
-                    w.on_kill(owner.lock(), t);
+                {
+                    auto p = w.get_plane(t);
+                    if (p)
+                        w.on_kill(owner.lock(), p);
+                }
 
                 if (owner.lock() == w.get_player())
                     w.popup_hit(destroyed);

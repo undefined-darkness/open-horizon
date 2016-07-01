@@ -24,7 +24,7 @@ void ai::update(const world &w, int dt)
 
     if (m_state == state_pursuit)
     {
-        if ((m_target.expired() || m_target.lock()->hp <= 0) && m_state != state_follow)
+        if ((m_target.expired() || !m_target.lock()->is_targetable(true, true)) && m_state != state_follow)
             m_state = state_wander;
     }
 
@@ -33,13 +33,13 @@ void ai::update(const world &w, int dt)
 
     if (!m_target.expired())
     {
-        p->select_target(std::static_pointer_cast<object>(m_target.lock()));
+        p->select_target(m_target.lock());
 
         auto t = m_target.lock();
-        auto target_pos = t->phys->pos + t->phys->vel * (dt * 0.001f);
+        auto target_pos = t->get_pos() + t->get_vel() * (dt * 0.001f);
 
         if (m_state == state_pursuit)
-            go_to(target_pos - 20.0 * vec3::normalize(t->phys->vel), dt); //6 o'clock
+            go_to(target_pos - 20.0 * vec3::normalize(t->get_vel()), dt); //6 o'clock
         else
             go_to(target_pos, dt);
     }
@@ -155,18 +155,18 @@ void ai::find_best_target()
         {
             if (t.locked)
             {
-                m_target = t.target_plane;
+                m_target = t.target;
                 return;
             }
 
-            if (t.target_plane.expired())
+            if (t.target.expired())
                 continue;
 
-            auto tp = t.target_plane.lock();
-            if (tp->hp <= 0)
+            auto tp = t.target.lock();
+            if (!tp->is_targetable(true, true))
                 continue;
 
-            auto tdir = tp->phys->pos - p->phys->pos;
+            auto tdir = tp->get_pos() - p->phys->pos;
             const bool in_front = tdir.dot(dir) < 0.0;
             if ((i == 0) == in_front)
                 return;
@@ -176,12 +176,12 @@ void ai::find_best_target()
                 continue;
 
             best_dir = d;
-            m_target = t.target_plane;
+            m_target = t.target;
             if (m_state == state_follow)
                 continue;
 
             m_state = state_approach;
-            if (i == 0 && p->phys->vel.dot(tp->phys->vel) >=0)
+            if (i == 0 && p->phys->vel.dot(tp->get_vel()) >=0)
                 m_state = state_pursuit;
         }
     }

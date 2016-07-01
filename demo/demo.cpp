@@ -351,17 +351,17 @@ int main()
             if (world.get_player())
             {
                 auto p = world.get_player();
-                if (p->change_target_hold_time >= game::plane::change_target_hold_max_time && !p->targets.empty() && !p->targets.front().target_plane.expired())
+                if (p->change_target_hold_time >= game::plane::change_target_hold_max_time && !p->targets.empty() && !p->targets.front().target.expired())
                 {
-                    static auto last_target = p->targets.front().target_plane;
-                    if (last_target.expired() || last_target.lock() != p->targets.front().target_plane.lock())
+                    static auto last_target = p->targets.front().target;
+                    if (last_target.expired() || last_target.lock() != p->targets.front().target.lock())
                     {
-                        last_target = p->targets.front().target_plane;
+                        last_target = p->targets.front().target;
                         p->change_target_hold_time = game::plane::change_target_hold_max_time;
                     }
 
-                    auto t = p->targets.front().target_plane.lock();
-                    auto tdir = t->get_pos() - p->get_pos();
+                    auto t = p->targets.front().target.lock();
+                    auto tdir = t->get_pos() - p->get_pos(); // + (t->get_vel() - p->get_vel()) * (dt * 0.001f)
                     nya_math::quat q(nya_math::vec3::forward(), tdir);
                     q = nya_math::quat::invert(p->get_rot()) * q;
 
