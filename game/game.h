@@ -58,6 +58,7 @@ struct object
 };
 
 typedef w_ptr<object> object_wptr;
+typedef ptr<object> object_ptr;
 
 //------------------------------------------------------------
 
@@ -238,6 +239,7 @@ struct unit: public object
 public:
     virtual vec3 get_pos() override { return m_render.is_valid() ? m_render->mdl.get_pos() - m_dpos : vec3(); }
     virtual quat get_rot() override { return m_render.is_valid() ? m_render->mdl.get_rot() : quat(); }
+    virtual bool is_targetable(bool air, bool ground) override { return hp > 0 && m_align == align_target || m_align == align_enemy; }
 
 public:
     virtual void load_model(std::string model, float dy, renderer::world &w)

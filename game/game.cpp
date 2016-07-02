@@ -378,6 +378,7 @@ unit_ptr world::add_unit(const char *name, const char *id)
             u = std::make_shared<unit>(unit());
 
         u->load_model(o.model, o.dy, m_render_world);
+        u->hp = o.hp;
 
         return u;
     }
@@ -1019,35 +1020,42 @@ void plane::update_targets(world &w)
     const vec3 dir = get_dir();
     jammed = false;
 
-    for (int i = 0; i < w.get_planes_count(); ++i)
+    bool lock_air = special_weapon_selected ? (bool)special.lockon_air : true;
+    bool lock_ground = special_weapon_selected ? (bool)special.lockon_ground : true;
+
+    for (int i = 0; i < w.get_planes_count() + w.get_units_count(); ++i)
     {
-        auto p = w.get_plane(i);
+        const object_ptr &o = i < w.get_planes_count() ? (object_ptr)w.get_plane(i) : w.get_unit(i - w.get_planes_count());
 
-        if (w.is_ally(me, p))
-            continue;
-
-        auto target_dir = p->get_pos() - me->get_pos();
+        auto t = std::find_if(targets.begin(), targets.end(), [o](target_lock &t) { return o == t.target.lock(); });
+        auto target_dir = o->get_pos() - me->get_pos();
         const float dist = target_dir.length();
-        auto t = std::find_if(targets.begin(), targets.end(), [p](target_lock &t) { return p == t.target.lock(); });
 
-        if (dist > 12000.0f || p->hp <= 0)
+        if (dist > 12000.0f || !o->is_targetable(lock_air, lock_ground))
         {
             if (t != targets.end())
                 targets.erase(t);
             continue;
         }
 
-        if (p->is_ecm_active() && dist < p->special.action_range)
+        if (i < w.get_planes_count())
         {
-            jammed = true;
-            targets.clear();
-            break;
+            auto p = w.get_plane(i);
+            if (w.is_ally(me, p))
+                continue;
+
+            if (p->is_ecm_active() && dist < p->special.action_range)
+            {
+                jammed = true;
+                targets.clear();
+                break;
+            }
         }
 
         if (t == targets.end())
         {
             target_lock l;
-            l.target = p;
+            l.target = o;
             t = targets.insert(targets.end(), l);
         }
 

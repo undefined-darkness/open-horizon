@@ -19,6 +19,7 @@ struct object_desc
     std::string group;
     std::string model;
     float y = 0.0f, dy = 0.0f;
+    int hp = 0;
 };
 
 typedef std::vector<object_desc> objects_list;
@@ -36,6 +37,7 @@ static const objects_list &get_objects_list()
         for (pugi::xml_node g = root.child("group"); g; g = g.next_sibling("group"))
         {
             std::string group = g.attribute("name").as_string();
+            int hp = g.attribute("hp").as_int();
             for (pugi::xml_node o = g.child("object"); o; o = o.next_sibling("object"))
             {
                 object_desc obj;
@@ -45,6 +47,7 @@ static const objects_list &get_objects_list()
                 obj.model = o.attribute("model").as_string();
                 obj.y = o.attribute("y").as_float(0.0f);
                 obj.dy = o.attribute("dy").as_float(0.0f);
+                obj.hp = o.attribute("hp").as_int(hp);
                 list.push_back(obj);
             }
         }
