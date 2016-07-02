@@ -317,6 +317,8 @@ public:
         //ToDo
     }
 
+    virtual bool is_targetable(bool air, bool ground) override { return hp > 0 && ground; }
+
 protected:
     std::vector<vec3> m_path;
     bool m_path_loop = false;
@@ -349,10 +351,19 @@ struct unit_plane: public unit_vehicle
         //ToDo
     }
 
+    virtual bool is_targetable(bool air, bool ground) override { return hp > 0 && air; }
+
 protected:
     bool m_need_update_gear = false;
     object_wptr m_target;
     object_wptr m_follow;
+};
+
+//------------------------------------------------------------
+
+struct unit_object: public unit
+{
+    virtual bool is_targetable(bool air, bool ground) override { return hp > 0 && ground; }
 };
 
 //------------------------------------------------------------
@@ -370,10 +381,12 @@ unit_ptr world::add_unit(const char *name, const char *id)
 
         auto &u = m_units.add(name);
 
-        if (o.type=="vehicle")
-            u = std::make_shared<unit>(unit_vehicle());
-        else if (o.type=="plane")
-            u = std::make_shared<unit>(unit_plane());
+        if (o.type=="vehicle" || o.type=="ship")
+            u = std::make_shared<unit_vehicle>(unit_vehicle());
+        else if (o.type=="plane" || o.type=="fighter" || o.type=="attacker" || o.type=="bomber")
+            u = std::make_shared<unit_plane>(unit_plane());
+        else if (o.type=="object" || o.type=="turret")
+            u = std::make_shared<unit_object>(unit_object());
         else
             u = std::make_shared<unit>(unit());
 
@@ -1027,6 +1040,8 @@ void plane::update_targets(world &w)
     bool lock_air = special_weapon_selected ? (bool)special.lockon_air : true;
     bool lock_ground = special_weapon_selected ? (bool)special.lockon_ground : true;
 
+    bool first_target = targets.empty();
+
     for (int i = 0; i < w.get_planes_count() + w.get_units_count(); ++i)
     {
         const object_ptr &o = i < w.get_planes_count() ? (object_ptr)w.get_plane(i) : w.get_unit(i - w.get_planes_count());
@@ -1066,8 +1081,8 @@ void plane::update_targets(world &w)
         t->cos = target_dir.dot(dir) / dist;
     }
 
-    if (targets.size() > 2)
-        std::sort(std::next(targets.begin(), 1), targets.end(), [](const target_lock &a, const target_lock &b) { return a.dist > b.dist; });
+    if (targets.size() > 1)
+        std::sort(first_target ? targets.begin() : std::next(targets.begin()), targets.end(), [](const target_lock &a, const target_lock &b) { return a.dist < b.dist; });
 }
 
 //------------------------------------------------------------
@@ -1561,7 +1576,7 @@ void plane::update(int dt, world &w)
             if (!special_weapon_selected || special.lockon_count == 1)
                 targets.front().locked = 0;
 
-            std::swap(targets.front(), targets.back());
+            std::swap(targets.front(), targets[1]);
         }
 
         change_target_hold_time = 0;

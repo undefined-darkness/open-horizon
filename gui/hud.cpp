@@ -363,14 +363,17 @@ void hud::draw(const render &r)
         if (is_far)
             icon = 121;
 
-        if (t.t == target_air_lock)
+        if (t.t == target_air_lock || t.t == target_ground_lock)
         {
             const bool is_special = !m_locks.empty();
             color = red;
             m_common.draw(r, is_special ? 101 : 100, proj_pos.x, proj_pos.y, red);
         }
 
-        if (t.t == target_air_ally)
+        if (t.t == target_ground || t.t == target_ground_lock)
+            icon = is_far ? 123 : 104;
+
+        if (t.t == target_air_ally || t.t == target_ground_ally)
         {
             icon = 106;
             color = blue;
@@ -478,7 +481,10 @@ void hud::draw(const render &r)
             int icon = 181;
             auto color = white;
 
-            if (t.t == target_air_ally)
+            if (t.t == target_ground || t.t == target_ground_lock || t.t == target_ground_ally)
+                icon = 187;
+
+            if (t.t == target_air_ally || t.t == target_ground_ally)
                 color = blue;
             else if (t.t == target_missile)
                 color = white, icon = 209;

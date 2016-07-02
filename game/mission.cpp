@@ -199,6 +199,7 @@ void mission::update(int dt, const plane_controls &player_controls)
 
 void mission::end()
 {
+    m_world.remove_units();
     m_player.reset();
 }
 

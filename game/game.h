@@ -244,7 +244,6 @@ struct unit: public object
 public:
     virtual vec3 get_pos() override { return m_render.is_valid() ? m_render->mdl.get_pos() - m_dpos : vec3(); }
     virtual quat get_rot() override { return m_render.is_valid() ? m_render->mdl.get_rot() : quat(); }
-    virtual bool is_targetable(bool air, bool ground) override { return hp > 0; }
     virtual bool is_ally(const plane_ptr &p, world &w) override { return m_align > align_enemy; }
 
 public:
@@ -294,6 +293,7 @@ public:
     int get_units_count() const { return m_units.get_size(); }
     unit_ptr get_unit(int idx) { return m_units.get_by_idx(idx); }
     unit_ptr get_unit(const char *name) const { return m_units.get_by_key(name); }
+    void remove_units() { m_units.clear(); }
 
     float get_height(float x, float z) const { return m_phys_world.get_height(x, z, false); }
 
