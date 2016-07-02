@@ -62,6 +62,9 @@ public:
         target_air,
         target_air_lock,
         target_air_ally,
+        target_ground,
+        target_ground_lock,
+        target_ground_ally,
         target_missile
     };
 

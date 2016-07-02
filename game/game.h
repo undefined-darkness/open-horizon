@@ -43,6 +43,11 @@ template <typename t> using w_ptr = std::weak_ptr<t>;
 
 //------------------------------------------------------------
 
+struct plane;
+typedef ptr<plane> plane_ptr;
+
+//------------------------------------------------------------
+
 struct object
 {
     virtual vec3 get_pos() { return vec3(); }
@@ -50,7 +55,8 @@ struct object
     virtual quat get_rot() { return quat(); }
     virtual std::wstring get_name() { return L""; }
     virtual std::wstring get_type_name() { return L""; }
-    virtual bool is_targetable(bool ground, bool air) { return false; }
+    virtual bool is_targetable(bool air, bool ground) { return false; }
+    virtual bool is_ally(const plane_ptr &p, world &w) { return false; }
 
     ivalue hp, max_hp;
     virtual void take_damage(int damage, world &w, bool net_src = true) { hp = damage < hp ? hp - damage : 0; }
@@ -175,7 +181,8 @@ public:
     virtual quat get_rot() override { return phys ? phys->rot : quat(); }
     virtual std::wstring get_name() override { return player_name; }
     virtual std::wstring get_type_name() override { return name; }
-    virtual bool is_targetable(bool ground, bool air) override { return air && hp > 0; }
+    virtual bool is_targetable(bool air, bool ground) override { return air && hp > 0; }
+    virtual bool is_ally(const plane_ptr &p, world &w) override;
     virtual void take_damage(int damage, world &w, bool net_src = true) override;
     virtual float get_hit_radius() override { return hit_radius; }
 
@@ -189,8 +196,6 @@ private:
     bool is_mg_bay_ready();
     bool is_special_bay_ready();
 };
-
-typedef ptr<plane> plane_ptr;
 
 //------------------------------------------------------------
 
@@ -239,7 +244,8 @@ struct unit: public object
 public:
     virtual vec3 get_pos() override { return m_render.is_valid() ? m_render->mdl.get_pos() - m_dpos : vec3(); }
     virtual quat get_rot() override { return m_render.is_valid() ? m_render->mdl.get_rot() : quat(); }
-    virtual bool is_targetable(bool air, bool ground) override { return hp > 0 && m_align == align_target || m_align == align_enemy; }
+    virtual bool is_targetable(bool air, bool ground) override { return hp > 0; }
+    virtual bool is_ally(const plane_ptr &p, world &w) override { return m_align > align_enemy; }
 
 public:
     virtual void load_model(std::string model, float dy, renderer::world &w)

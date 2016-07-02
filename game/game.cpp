@@ -968,6 +968,10 @@ void world::play_sound(std::string name, int idx, vec3 pos)
 
 //------------------------------------------------------------
 
+bool plane::is_ally(const plane_ptr &p, world &w) { return w.is_ally(p, shared_from_this()); }
+
+//------------------------------------------------------------
+
 void plane::reset_state()
 {
     hp = max_hp;
@@ -1026,6 +1030,8 @@ void plane::update_targets(world &w)
     for (int i = 0; i < w.get_planes_count() + w.get_units_count(); ++i)
     {
         const object_ptr &o = i < w.get_planes_count() ? (object_ptr)w.get_plane(i) : w.get_unit(i - w.get_planes_count());
+        if (o->is_ally(me, w))
+            continue;
 
         auto t = std::find_if(targets.begin(), targets.end(), [o](target_lock &t) { return o == t.target.lock(); });
         auto target_dir = o->get_pos() - me->get_pos();
@@ -1041,9 +1047,6 @@ void plane::update_targets(world &w)
         if (i < w.get_planes_count())
         {
             auto p = w.get_plane(i);
-            if (w.is_ally(me, p))
-                continue;
-
             if (p->is_ecm_active() && dist < p->special.action_range)
             {
                 jammed = true;
@@ -1064,7 +1067,7 @@ void plane::update_targets(world &w)
     }
 
     if (targets.size() > 2)
-        std::sort(std::next(targets.begin(), 1), targets.end(), [](const target_lock &a, const target_lock &b) { return a.dist < b.dist; });
+        std::sort(std::next(targets.begin(), 1), targets.end(), [](const target_lock &a, const target_lock &b) { return a.dist > b.dist; });
 }
 
 //------------------------------------------------------------
@@ -1707,7 +1710,9 @@ void plane::update_hud(world &w, gui::hud &h)
     for (auto &t: targets)
     {
         auto p = t.target.lock();
-        auto type = t.locked > 0 ? gui::hud::target_air_lock : gui::hud::target_air;
+        bool ground = p->is_targetable(false, true);
+        auto type = t.locked > 0 ? (ground ? gui::hud::target_ground_lock : gui::hud::target_air_lock) :
+                                   (ground ? gui::hud::target_ground : gui::hud::target_air);
         auto select = ++t_idx == 1 ? gui::hud::select_current : (t_idx == 2 ? gui::hud::select_next : gui::hud::select_not);
         h.add_target(p->get_type_name(), p->get_name(), p->get_pos(), p->get_rot().get_euler().y, type, select);
     }
@@ -1732,7 +1737,21 @@ void plane::update_hud(world &w, gui::hud &h)
         if (p->hp <= 0)
             continue;
 
-        h.add_target(p->name, p->player_name, p->get_pos(), p->get_rot().get_euler().y, gui::hud::target_air_ally, gui::hud::select_not);
+        h.add_target(p->get_type_name(), p->get_name(), p->get_pos(), p->get_rot().get_euler().y, gui::hud::target_air_ally, gui::hud::select_not);
+    }
+
+    for (int i = 0; i < w.get_units_count(); ++i)
+    {
+        auto u = w.get_unit(i);
+        if (u->hp <= 0)
+            continue;
+
+        if (!u->is_ally(me, w))
+            continue;
+
+        bool ground = u->is_targetable(false, true);
+        auto type = ground ? gui::hud::target_ground_ally : gui::hud::target_air_ally;
+        h.add_target(u->get_type_name(), u->get_name(), u->get_pos(), u->get_rot().get_euler().y, type, gui::hud::select_not);
     }
 }
 
