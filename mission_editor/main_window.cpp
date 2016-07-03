@@ -132,6 +132,9 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     m_edit_obj_name = new QLineEdit;
     connect(m_edit_obj_name, SIGNAL(textChanged(const QString &)), this, SLOT(on_name_changed(const QString &)));
     edit_obj_l->addRow("Name:", m_edit_obj_name);
+    m_edit_obj_follow = new QLineEdit;
+    connect(m_edit_obj_follow, SIGNAL(textChanged(const QString &)), this, SLOT(on_obj_follow_changed(const QString &)));
+    edit_obj_l->addRow("Follow:", m_edit_obj_follow);
     m_edit_obj_path = new QLineEdit;
     connect(m_edit_obj_path, SIGNAL(textChanged(const QString &)), this, SLOT(on_obj_path_changed(const QString &)));
     edit_obj_l->addRow("Path:", m_edit_obj_path);
@@ -606,6 +609,7 @@ void main_window::on_obj_selected()
                 m_edit_obj_name->setText(s.name.c_str());
                 m_edit_obj_active->setChecked(s.active);
                 m_edit_obj_align->setCurrentText(s.attributes["align"].c_str());
+                m_edit_obj_follow->setText(s.attributes["follow"].c_str());
                 m_edit_obj_path->setText(s.attributes["path"].c_str());
                 m_edit_obj_init->setText(s.attributes["on_init"].c_str());
                 m_edit_obj_destroy->setText(s.attributes["on_destroy"].c_str());
@@ -713,6 +717,23 @@ void main_window::on_name_changed(const QString &s)
     auto &objs = m_scene_view->get_objects();
     if (idx < objs.size())
         c->setText(0, (std::string(to_str(s)) + " (" + objs[idx].id + ")").c_str());
+}
+
+//------------------------------------------------------------
+
+void main_window::on_obj_follow_changed(const QString &s)
+{
+    std::string id = to_str(s);
+    m_scene_view->get_selected().attributes["follow"] = id;
+    auto &objs = m_scene_view->get_objects();
+    bool found = std::find_if(objs.begin(), objs.end(),
+                              [id](const scene_view::object &o) { return o.name == id; }) != objs.end();
+    if (id == "player")
+        found = true;
+
+    static QPalette black, red;
+    red.setColor(QPalette::Text, Qt::red);
+    m_edit_obj_follow->setPalette(found ? black : red);
 }
 
 //------------------------------------------------------------
