@@ -309,54 +309,52 @@ struct unit_vehicle: public unit
 {
 public:
     virtual void set_path(const path &p, bool loop) override { m_path = p; m_path_loop = loop; }
+    virtual void set_follow(object_wptr f) override { m_follow = f; m_target.reset(); }
+    virtual void set_target(object_wptr t) override { m_target = t; m_follow.reset(); }
 
     virtual void update(int dt, world &w) override
     {
         unit::update(dt, w);
 
+        if (m_first_update)
+        {
+            m_first_update = false;
+
+            m_ground = (get_pos().y - w.get_height(get_pos().x, get_pos().z)) < 5.0f;
+            if (m_ground)
+            {
+                //ToDo: gear anim
+            }
+            else
+            {
+                if (m_params.speed_min > 0.01f)
+                    m_vel = get_rot().rotate(vec3::forward() * m_params.speed_cruise);
+                m_dpos = vec3();
+            }
+        }
+
+        float kdt = dt * 0.001f;
+
+        set_pos(get_pos() + m_vel * kdt);
+
         //ToDo
     }
 
-    virtual bool is_targetable(bool air, bool ground) override { return hp > 0 && ground; }
+    virtual bool is_targetable(bool air, bool ground) override { return hp > 0 && (ground == m_ground || air != m_ground); }
+
+    unit_vehicle(const object_params &p): m_params(p) {}
+
+    vec3 get_vel() override { return m_vel; }
 
 protected:
     std::vector<vec3> m_path;
     bool m_path_loop = false;
-};
-
-//------------------------------------------------------------
-
-struct unit_plane: public unit_vehicle
-{
-    virtual void set_follow(object_wptr f) override { m_follow = f; m_target.reset(); }
-    virtual void set_target(object_wptr t) override { m_target = t; m_follow.reset(); }
-
-    virtual void set_pos(const vec3 &p) override { unit_vehicle::set_pos(p); m_need_update_gear = true; }
-
-    virtual void update(int dt, world &w) override
-    {
-        unit::update(dt, w);
-
-        if (m_need_update_gear)
-        {
-            if (w.get_height(get_pos().x, get_pos().z) < 5.0f)
-            {
-                m_dpos = vec3();
-                //ToDo: gear anim
-            }
-
-            m_need_update_gear = false;
-        }
-
-        //ToDo
-    }
-
-    virtual bool is_targetable(bool air, bool ground) override { return hp > 0 && air; }
-
-protected:
-    bool m_need_update_gear = false;
+    bool m_ground = true;
     object_wptr m_target;
     object_wptr m_follow;
+    bool m_first_update = true;
+    object_params m_params;
+    vec3 m_vel;
 };
 
 //------------------------------------------------------------
@@ -381,17 +379,15 @@ unit_ptr world::add_unit(const char *name, const char *id)
 
         auto &u = m_units.add(name);
 
-        if (o.type=="vehicle" || o.type=="ship")
-            u = std::make_shared<unit_vehicle>(unit_vehicle());
-        else if (o.type=="plane" || o.type=="fighter" || o.type=="attacker" || o.type=="bomber")
-            u = std::make_shared<unit_plane>(unit_plane());
-        else if (o.type=="object" || o.type=="turret")
+        if (o.params.speed_max > 0.01f)
+            u = std::make_shared<unit_vehicle>(unit_vehicle(o.params));
+        else if (o.params.hp > 0)
             u = std::make_shared<unit_object>(unit_object());
         else
             u = std::make_shared<unit>(unit());
 
         u->load_model(o.model, o.dy, m_render_world);
-        u->hp = o.hp;
+        u->hp = o.params.hp;
 
         return u;
     }
@@ -742,6 +738,9 @@ void world::update(int dt)
             }
         }
     });
+
+    for (int i = 0; i < m_units.get_size(); ++i)
+        m_units.get_by_idx(i)->update(dt, *this);
 
     for (auto &p: m_planes)
         p->alert_dirs.clear();
