@@ -15,7 +15,7 @@ namespace game
 struct object_params
 {
     int hp = 0;
-    float speed_min = 0.0f, speed_cruise = 0.0f, speed_max = 0.0f;
+    float speed_min = 0.0f, speed_cruise = 0.0f, speed_max = 0.0f, accel = 0.0f, deccel = 0.0f;
     float turn_speed = 0.0f, turn_roll = 0.0f;
 };
 
@@ -59,6 +59,8 @@ static const objects_list &get_objects_list()
                 tp.speed_min = s.attribute("min").as_float() * kmph_to_meps;
                 tp.speed_cruise = s.attribute("cruise").as_float() * kmph_to_meps;
                 tp.speed_max = s.attribute("max").as_float() * kmph_to_meps;
+                tp.accel = s.attribute("accel").as_float() * kmph_to_meps;
+                tp.deccel = s.attribute("deccel").as_float() * kmph_to_meps;
             }
 
             auto tt = t.child("turn");

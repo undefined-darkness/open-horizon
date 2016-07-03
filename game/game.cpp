@@ -346,7 +346,22 @@ public:
         vec3 target_dir;
         bool has_target = false;
 
-        if (!m_follow.expired())
+        if (!m_path.empty())
+        {
+            has_target = true;
+            target_dir = m_path.front() - get_pos();
+            if (target_dir.length() < m_vel.length() * kdt * 2.0)
+            {
+                if (m_path_loop)
+                    m_path.push_back(m_path.front());
+                m_path.pop_front();
+                if (m_path.empty())
+                    has_target = false;
+                else
+                    target_dir = m_path.front() - get_pos();
+            }
+        }
+        else if (!m_follow.expired())
         {
             has_target = true;
             auto f = m_follow.lock();
@@ -355,6 +370,12 @@ public:
 
         if (has_target)
         {
+            if (target_dir.dot(m_vel) < 0)
+            {
+                if (target_dir.length() < m_vel.length() * kdt)
+                    target_dir = -target_dir;
+            }
+
             const float eps=1.0e-6f;
             const vec3 v=vec3::normalize(target_dir);
             const float xz_sqdist=v.x*v.x+v.z*v.z;
@@ -363,29 +384,20 @@ public:
 
             const nya_math::angle_rad new_yaw=(xz_sqdist>eps*eps)? (atan2(v.x,v.z)) : pyr.y;
             const nya_math::angle_rad new_pitch=(fabsf(v.y)>eps)? (-atan2(v.y,sqrtf(xz_sqdist))) : 0.0f;
+            nya_math::angle_rad new_roll;
+            if (!m_follow.expired())
+                new_roll = m_follow.lock()->get_rot().get_euler().z;
 
-            nya_math::angle_rad yaw_diff = new_yaw - pyr.y;
-            nya_math::angle_rad pitch_diff = new_pitch - pyr.x;
-    /*
-            if (rot_max > eps)
-            {
-                const nya_math::angle_rad angle_clamp = rot_max * kdt;
-                yaw_diff.normalize().clamp(-angle_clamp, angle_clamp);
-                pitch_diff.normalize().clamp(-angle_clamp, angle_clamp);
-            }
-    */
-            m_render->mdl.set_rot(quat(pyr.x + pitch_diff, pyr.y + yaw_diff, 0.0f));
+            //auto tend_yaw = tend_angle(pyr.y, new_yaw, m_params.turn_speed * kdt);
+            //m_render->mdl.set_rot(quat(tend_angle(pyr.x, new_pitch, m_params.turn_speed * kdt), tend_yaw, (tend_yaw - pyr.y) * m_params.turn_roll));
+            m_render->mdl.set_rot(quat(new_pitch, new_yaw, new_roll));
 
-            float speed = m_vel.length();// + accel * kdt;
-            //if (speed > max_speed)
-            //    speed = max_speed;
-
+            const float want_speed = nya_math::clamp(target_dir.length() / kdt, m_params.speed_min, m_params.speed_max);
+            const float speed = tend(m_vel.length(), want_speed, m_params.accel * kdt, m_params.deccel * kdt);
             m_vel = get_rot().rotate(vec3(0.0, 0.0, speed));
         }
 
         set_pos(get_pos() + m_vel * kdt);
-
-        //ToDo
     }
 
     virtual bool is_targetable(bool air, bool ground) override { return hp > 0 && (ground == m_ground || air != m_ground); }
@@ -393,6 +405,24 @@ public:
     unit_vehicle(const object_params &p): m_params(p) {}
 
     vec3 get_vel() override { return m_vel; }
+
+protected:
+    float tend(float value, float target, float accel, float deccel)
+    {
+        const float diff = target - value;
+        if (diff > accel) return value + accel;
+        if (-diff > deccel) return value - deccel;
+        return target;
+    }
+
+    inline angle_rad tend_angle(angle_rad value, angle_rad target, float speed)
+    {
+        auto diff = target - value;
+        diff.normalize();
+        if (diff > speed) return value + speed;
+        if (-diff > speed) return value - speed;
+        return target;
+    }
 
 protected:
     unit::path m_path;
