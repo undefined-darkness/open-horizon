@@ -79,6 +79,15 @@ void mission::start(const char *plane, int color, const char *mission)
         if (p != m_paths.end())
             u->set_path(p->second.first, p->second.second);
 
+        std::string follow = a.attribute("follow").as_string();
+        if (!follow.empty())
+        {
+            if (follow == "player")
+                u->set_follow(m_world.get_player());
+            else
+                u->set_follow(m_world.get_unit(follow.c_str()));
+        }
+
         //ToDo: on_init, on_destroy
     }
 
@@ -201,6 +210,10 @@ void mission::end()
 {
     m_world.remove_units();
     m_player.reset();
+    m_paths.clear();
+    m_radio.clear();
+    m_radio_messages.clear();
+    m_timers.clear();
 }
 
 //------------------------------------------------------------
@@ -335,7 +348,13 @@ int mission::set_follow(lua_State *state)
 
     auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
     if (u)
-        u->set_follow(current_mission->m_world.get_unit(script::get_string(state, 1).c_str()));
+    {
+        auto id = script::get_string(state, 1);
+        if (id == "player")
+            u->set_follow(current_mission->m_world.get_player());
+        else
+            u->set_follow(current_mission->m_world.get_unit(id.c_str()));
+    }
 
     return 0;
 }
@@ -352,7 +371,13 @@ int mission::set_target(lua_State *state)
 
     auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
     if (u)
-        u->set_target(current_mission->m_world.get_unit(script::get_string(state, 1).c_str()));
+    {
+        auto id = script::get_string(state, 1);
+        if (id == "player")
+            u->set_target(current_mission->m_world.get_player());
+        else
+            u->set_target(current_mission->m_world.get_unit(id.c_str()));
+    }
 
     return 0;
 }
@@ -417,7 +442,14 @@ int mission::destroy(lua_State *state)
         return 0;
     }
 
-    auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
+    std::string id = script::get_string(state, 0);
+    if (id == "player")
+    {
+        current_mission->m_world.get_player()->take_damage(9000, current_mission->m_world);
+        return 0;
+    }
+
+    auto u = current_mission->m_world.get_unit(id.c_str());
     if (u)
         u->take_damage(9000, current_mission->m_world);
 

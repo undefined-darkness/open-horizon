@@ -67,7 +67,7 @@ private:
     void set_radio_message(const radio_message &m);
 
 private:
-    std::map<std::string, std::pair<std::vector<vec3>, bool> > m_paths;
+    std::map<std::string, std::pair<unit::path, bool> > m_paths;
 
 private:
     plane_ptr m_player;

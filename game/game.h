@@ -226,7 +226,7 @@ struct unit: public object
 {
     virtual void set_active(bool a) { m_active = a; }
 
-    typedef const std::vector<vec3> path;
+    typedef std::list<vec3> path;
     virtual void set_path(const path &p, bool loop) {}
     virtual void set_follow(object_wptr target) {}
     virtual void set_target(object_wptr target) {}

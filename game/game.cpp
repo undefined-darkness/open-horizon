@@ -320,6 +320,14 @@ public:
         {
             m_first_update = false;
 
+            if (!m_follow.expired())
+            {
+                auto f = m_follow.lock();
+                vec3 diff = get_pos() - f->get_pos();
+                if (diff.length() < 100.0f)
+                    m_formation_offset = f->get_rot().rotate_inv(diff);
+            }
+
             m_ground = (get_pos().y - w.get_height(get_pos().x, get_pos().z)) < 5.0f;
             if (m_ground)
             {
@@ -335,6 +343,46 @@ public:
 
         float kdt = dt * 0.001f;
 
+        vec3 target_dir;
+        bool has_target = false;
+
+        if (!m_follow.expired())
+        {
+            has_target = true;
+            auto f = m_follow.lock();
+            target_dir = f->get_pos() + f->get_rot().rotate(m_formation_offset) - get_pos();
+        }
+
+        if (has_target)
+        {
+            const float eps=1.0e-6f;
+            const vec3 v=vec3::normalize(target_dir);
+            const float xz_sqdist=v.x*v.x+v.z*v.z;
+
+            auto pyr = get_rot().get_euler();
+
+            const nya_math::angle_rad new_yaw=(xz_sqdist>eps*eps)? (atan2(v.x,v.z)) : pyr.y;
+            const nya_math::angle_rad new_pitch=(fabsf(v.y)>eps)? (-atan2(v.y,sqrtf(xz_sqdist))) : 0.0f;
+
+            nya_math::angle_rad yaw_diff = new_yaw - pyr.y;
+            nya_math::angle_rad pitch_diff = new_pitch - pyr.x;
+    /*
+            if (rot_max > eps)
+            {
+                const nya_math::angle_rad angle_clamp = rot_max * kdt;
+                yaw_diff.normalize().clamp(-angle_clamp, angle_clamp);
+                pitch_diff.normalize().clamp(-angle_clamp, angle_clamp);
+            }
+    */
+            m_render->mdl.set_rot(quat(pyr.x + pitch_diff, pyr.y + yaw_diff, 0.0f));
+
+            float speed = m_vel.length();// + accel * kdt;
+            //if (speed > max_speed)
+            //    speed = max_speed;
+
+            m_vel = get_rot().rotate(vec3(0.0, 0.0, speed));
+        }
+
         set_pos(get_pos() + m_vel * kdt);
 
         //ToDo
@@ -347,7 +395,7 @@ public:
     vec3 get_vel() override { return m_vel; }
 
 protected:
-    std::vector<vec3> m_path;
+    unit::path m_path;
     bool m_path_loop = false;
     bool m_ground = true;
     object_wptr m_target;
@@ -355,6 +403,7 @@ protected:
     bool m_first_update = true;
     object_params m_params;
     vec3 m_vel;
+    vec3 m_formation_offset;
 };
 
 //------------------------------------------------------------
