@@ -254,7 +254,7 @@ plane_ptr world::add_plane(const char *preset, const char *player_name, int colo
 
     p->hp = p->max_hp = int(p->phys->params.misc.maxHp);
 
-    p->hit_radius = preset[0] == 'b' ? 12.0f : 7.0f;
+    p->hit_radius = preset[0] == 'b' ? 6.0f : 3.5f;
 
     time_t now = time(NULL);
     struct tm *tm_now = localtime(&now);
@@ -421,11 +421,13 @@ public:
         set_pos(get_pos() + m_vel * kdt);
     }
 
-    virtual bool is_targetable(bool air, bool ground) override { return hp > 0 && (ground == m_ground || air != m_ground); }
-
     unit_vehicle(const object_params &p): m_params(p) {}
 
+    //object
+public:
     vec3 get_vel() override { return m_vel; }
+    virtual bool is_targetable(bool air, bool ground) override { return hp > 0 && (ground == m_ground || air != m_ground); }
+    virtual float get_hit_radius() override { return m_params.hit_radius; }
 
 protected:
     float tend(float value, float target, float accel, float deccel)
@@ -517,17 +519,20 @@ void world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, con
 
     if (!owner->net || owner->net->source)
     {
-        for (auto &p: m_planes)
+        for (int i = 0; i < get_planes_count() + get_units_count(); ++i)
         {
-            if (p->hp <= 0 || is_ally(owner, p))
+            auto t = i < get_planes_count() ? (object_ptr)m_planes[i] : m_units.get_by_idx(i - get_planes_count());
+            if (t->hp <= 0 || t->is_ally(owner, *this))
                 continue;
 
-            if (line_sphere_intersect(pos, r, p->get_pos(), p->hit_radius))
+            const float spread_coeff = 2.0f;
+            if (line_sphere_intersect(pos, r, t->get_pos(), t->get_hit_radius() * spread_coeff))
             {
-                p->take_damage(60, *this);
-                const bool destroyed = p->hp <= 0;
-                if (destroyed)
-                    on_kill(owner, p);
+                t->take_damage(60, *this);
+                const bool destroyed = t->hp <= 0;
+
+                if(destroyed && i < get_planes_count())
+                    on_kill(owner, m_planes[i]);
 
                 if (owner == get_player())
                     popup_hit(destroyed);
@@ -1945,7 +1950,7 @@ void missile::update(int dt, world &w)
     if (!target.expired())
     {
         auto t = target.lock();
-        bool hit = line_sphere_intersect(phys->pos, phys->pos + phys->vel * (dt * 0.001f), t->get_pos(), t->get_hit_radius() * 0.5f);
+        bool hit = line_sphere_intersect(phys->pos, phys->pos + phys->vel * (dt * 0.001f), t->get_pos(), t->get_hit_radius());
 
         if (!hit)
         {

@@ -15,6 +15,7 @@ namespace game
 struct object_params
 {
     int hp = 0;
+    float hit_radius = 0.0f;
     float speed_min = 0.0f, speed_cruise = 0.0f, speed_max = 0.0f, accel = 0.0f, decel = 0.0f;
     float turn_speed = 0.0f, turn_roll = 0.0f;
 };
@@ -52,6 +53,7 @@ static const objects_list &get_objects_list()
         {
             auto &tp = types[t.attribute("id").as_string()];
             tp.hp = t.attribute("hp").as_int();
+            tp.hit_radius = t.attribute("hit_radius").as_float();
             auto s = t.child("speed");
             if (s)
             {

@@ -1,22 +1,32 @@
 <!--models from target/model_id/mech/-->
 
 <objects>
-    <type id="bomber" hp="200">
+    <type id="bomber" hp="200" hit_radius="6">
         <speed min="300" cruise="600" max="1500" accel="50" decel="1000"/>
         <turn speed="0.1" turn_roll="30.0"/>
     </type>
 
-    <type id="fighter" hp="100">
+    <type id="transport" hp="200" hit_radius="6">
+        <speed min="300" cruise="600" max="1200" accel="50" decel="1000"/>
+        <turn speed="0.1" turn_roll="30.0"/>
+    </type>
+
+    <type id="fighter" hp="100" hit_radius="3.5">
         <speed min="300" cruise="600" max="2000" accel="100" decel="1000"/>
         <turn speed="0.3" turn_roll="50.0"/>
     </type>
 
-    <type id="tank" hp="60">
+    <type id="attacker" hp="100" hit_radius="3.5">
+        <speed min="300" cruise="600" max="2000" accel="100" decel="1000"/>
+        <turn speed="0.3" turn_roll="50.0"/>
+    </type>
+
+    <type id="tank" hp="60" hit_radius="3">
         <speed cruise="60" max="80" accel="30" decel="50"/>
         <turn speed="0.5"/>
     </type>
 
-    <type id="truck" hp="30">
+    <type id="truck" hp="30" hit_radius="3">
         <speed cruise="60" max="80" accel="30" decel="50"/>
         <turn speed="0.5"/>
     </type>
