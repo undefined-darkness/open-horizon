@@ -365,22 +365,19 @@ public:
         {
             has_target = true;
             auto f = m_follow.lock();
-            target_dir = f->get_pos() + f->get_rot().rotate(m_formation_offset) - get_pos();
+            target_dir = f->get_pos() + f->get_rot().rotate(m_formation_offset) - (get_pos() + get_vel() * kdt);
+            //+ f->get_vel() * kdt //player's plane is already updated, ToDo
         }
 
         if (has_target)
         {
-            if (target_dir.dot(m_vel) < 0)
-            {
-                if (target_dir.length() < m_vel.length() * kdt)
-                    target_dir = -target_dir;
-            }
-
             const float eps=1.0e-6f;
-            const vec3 v=vec3::normalize(target_dir);
+            const float target_dist = target_dir.length();
+            const vec3 v=target_dir / target_dist;
             const float xz_sqdist=v.x*v.x+v.z*v.z;
 
-            auto pyr = get_rot().get_euler();
+            auto rot = get_rot();
+            auto pyr = rot.get_euler();
 
             const nya_math::angle_rad new_yaw=(xz_sqdist>eps*eps)? (atan2(v.x,v.z)) : pyr.y;
             const nya_math::angle_rad new_pitch=(fabsf(v.y)>eps)? (-atan2(v.y,sqrtf(xz_sqdist))) : 0.0f;
@@ -388,13 +385,37 @@ public:
             if (!m_follow.expired())
                 new_roll = m_follow.lock()->get_rot().get_euler().z;
 
-            //auto tend_yaw = tend_angle(pyr.y, new_yaw, m_params.turn_speed * kdt);
-            //m_render->mdl.set_rot(quat(tend_angle(pyr.x, new_pitch, m_params.turn_speed * kdt), tend_yaw, (tend_yaw - pyr.y) * m_params.turn_roll));
-            m_render->mdl.set_rot(quat(new_pitch, new_yaw, new_roll));
+            auto ideal_rot = quat(new_pitch, new_yaw, new_roll);
 
-            const float want_speed = nya_math::clamp(target_dir.length() / kdt, m_params.speed_min, m_params.speed_max);
-            const float speed = tend(m_vel.length(), want_speed, m_params.accel * kdt, m_params.deccel * kdt);
+            const float angle_diff = rot.rotate(vec3::forward()).angle(target_dir).get_deg();
+            if (fabsf(angle_diff) > 0.001f)
+            {
+                const float turn_k = nya_math::clamp((180.0f / angle_diff) * m_params.turn_speed * kdt, 0.0, 1.0);
+                m_render->mdl.set_rot(quat::slerp(rot, ideal_rot, turn_k));
+            }
+
+            float speed = m_vel.length();
+            float want_speed = target_dist / kdt;
+            if (!m_follow.expired())
+            {
+                const float target_speed = m_follow.lock()->get_vel().length();
+                float decel_time = (speed - target_speed) / m_params.decel;
+                if (target_dist / (speed + m_params.accel * kdt) < decel_time)
+                    want_speed = target_speed;
+            }
+
+            want_speed = nya_math::clamp(want_speed, m_params.speed_min, m_params.speed_max);
+            speed = tend(speed, want_speed, m_params.accel * kdt, m_params.decel * kdt);
             m_vel = get_rot().rotate(vec3(0.0, 0.0, speed));
+        }
+        else if (m_params.speed_min < 0.01f)
+        {
+            float speed = m_vel.length();
+            if (speed > 0.0f)
+            {
+                speed = tend(speed, 0.0f, m_params.accel * kdt, m_params.decel * kdt);
+                m_vel = get_rot().rotate(vec3(0.0, 0.0, speed));
+            }
         }
 
         set_pos(get_pos() + m_vel * kdt);
@@ -412,15 +433,6 @@ protected:
         const float diff = target - value;
         if (diff > accel) return value + accel;
         if (-diff > deccel) return value - deccel;
-        return target;
-    }
-
-    inline angle_rad tend_angle(angle_rad value, angle_rad target, float speed)
-    {
-        auto diff = target - value;
-        diff.normalize();
-        if (diff > speed) return value + speed;
-        if (-diff > speed) return value - speed;
         return target;
     }
 

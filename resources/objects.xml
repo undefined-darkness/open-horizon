@@ -2,22 +2,22 @@
 
 <objects>
     <type id="bomber" hp="200">
-        <speed min="400" cruise="600" max="1500" accel="50" deccel="100"/>
-        <turn speed="0.5" turn_roll="30.0"/>
+        <speed min="300" cruise="600" max="1500" accel="50" decel="1000"/>
+        <turn speed="0.1" turn_roll="30.0"/>
     </type>
 
     <type id="fighter" hp="100">
-        <speed min="400" cruise="600" max="2000" accel="100" deccel="200"/>
-        <turn speed="1.0" turn_roll="50.0"/>
+        <speed min="300" cruise="600" max="2000" accel="100" decel="1000"/>
+        <turn speed="0.3" turn_roll="50.0"/>
     </type>
 
     <type id="tank" hp="60">
-        <speed cruise="60" max="80" accel="30" deccel="50"/>
+        <speed cruise="60" max="80" accel="30" decel="50"/>
         <turn speed="0.5"/>
     </type>
 
     <type id="truck" hp="30">
-        <speed cruise="60" max="80" accel="30" deccel="50"/>
+        <speed cruise="60" max="80" accel="30" decel="50"/>
         <turn speed="0.5"/>
     </type>
 
