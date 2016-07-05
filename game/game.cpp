@@ -1825,7 +1825,7 @@ void plane::update_hud(world &w, gui::hud &h)
         auto type = t.locked > 0 ? (ground ? gui::hud::target_ground_lock : gui::hud::target_air_lock) :
                                    (ground ? gui::hud::target_ground : gui::hud::target_air);
         auto select = ++t_idx == 1 ? gui::hud::select_current : (t_idx == 2 ? gui::hud::select_next : gui::hud::select_not);
-        h.add_target(p->get_type_name(), p->get_name(), p->get_pos(), p->get_rot().get_euler().y, type, select);
+        h.add_target(p->get_type_name(), p->get_name(), p->get_pos(), p->get_rot().get_euler().y, type, select, p->get_tgt());
     }
 
     if (!targets.empty())
@@ -1848,7 +1848,7 @@ void plane::update_hud(world &w, gui::hud &h)
         if (p->hp <= 0)
             continue;
 
-        h.add_target(p->get_type_name(), p->get_name(), p->get_pos(), p->get_rot().get_euler().y, gui::hud::target_air_ally, gui::hud::select_not);
+        h.add_target(p->get_type_name(), p->get_name(), p->get_pos(), p->get_rot().get_euler().y, gui::hud::target_air_ally, gui::hud::select_not, p->get_tgt());
     }
 
     for (int i = 0; i < w.get_units_count(); ++i)
@@ -1862,7 +1862,7 @@ void plane::update_hud(world &w, gui::hud &h)
 
         bool ground = u->is_targetable(false, true);
         auto type = ground ? gui::hud::target_ground_ally : gui::hud::target_air_ally;
-        h.add_target(u->get_type_name(), u->get_name(), u->get_pos(), u->get_rot().get_euler().y, type, gui::hud::select_not);
+        h.add_target(u->get_type_name(), u->get_name(), u->get_pos(), u->get_rot().get_euler().y, type, gui::hud::select_not, u->get_tgt());
     }
 }
 

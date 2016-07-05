@@ -394,6 +394,9 @@ void hud::draw(const render &r)
             m_fonts.draw_text(r, buf, "Zurich14", proj_pos.x + 17, proj_pos.y - 25, color);
         }
 
+        if (t.tgt)
+            m_fonts.draw_text(r, L"TGT", "Zurich14", proj_pos.x - 40, proj_pos.y - 25, red);
+
         m_fonts.draw_text(r, t.name.c_str(), "Zurich14", proj_pos.x + 17, proj_pos.y - 10, color);
         m_fonts.draw_text(r, t.player_name.c_str(), "Zurich14", proj_pos.x + 17, proj_pos.y + 4, color);
     }
@@ -746,14 +749,14 @@ void hud::set_missile_reload(int idx, float value)
 
 void hud::add_target(const nya_math::vec3 &pos, float yaw, target_type target, select_type select)
 {
-    m_targets.push_back({L"", L"", pos, yaw, target, select});
+    m_targets.push_back({L"", L"", pos, yaw, target, select, false});
 }
 
 //------------------------------------------------------------
 
-void hud::add_target(const std::wstring &name, const std::wstring &player_name, const nya_math::vec3 &pos, float yaw, target_type target, select_type select)
+void hud::add_target(const std::wstring &name, const std::wstring &player_name, const nya_math::vec3 &pos, float yaw, target_type target, select_type select, bool tgt)
 {
-    m_targets.push_back({name, player_name, pos, yaw, target, select});
+    m_targets.push_back({name, player_name, pos, yaw, target, select, tgt});
 }
 
 //------------------------------------------------------------

@@ -60,7 +60,7 @@ public:
         nya_math::angle_deg yaw;
         float y = 0.0f, dy = 0.0f;
 
-        object() { attributes["align"] = "target"; }
+        object() { attributes["align"] = "enemy"; }
     };
 
     const std::vector<object> get_objects() const { return m_objects; }
