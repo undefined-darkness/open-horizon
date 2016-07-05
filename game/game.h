@@ -284,6 +284,8 @@ public:
     void spawn_explosion(const vec3 &pos, float radius, bool net_src = true);
     void spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, const plane_ptr &owner);
 
+    bool area_damage(const vec3 &pos, float radius, int damage, const plane_ptr &owner);
+
     void respawn(const plane_ptr &p, const vec3 &pos, const quat &rot);
 
     int get_planes_count() const { return (int)m_planes.size(); }

@@ -16,6 +16,15 @@ namespace game
 {
 //------------------------------------------------------------
 
+namespace
+{
+     //ToDo
+    const int missile_damage = 80;
+    const float missile_dmg_radius = 20;
+}
+
+//------------------------------------------------------------
+
 namespace { const static params::text_params &get_arms_param() { static params::text_params ap("Arms/ArmsParam.txt"); return ap; } }
 
 //------------------------------------------------------------
@@ -549,6 +558,37 @@ void world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, con
 
 //------------------------------------------------------------
 
+bool world::area_damage(const vec3 &pos, float radius, int damage, const plane_ptr &owner)
+{
+    bool hit = false;
+
+    for (auto &p: m_planes)
+    {
+        if (!p || p->hp <= 0 || is_ally(owner, p) || (p->get_pos() - pos).length() > radius)
+            continue;
+
+        p->take_damage(damage, *this);
+        hit = true;
+
+        if (p->hp <= 0)
+            on_kill(owner, p);
+    }
+
+    for (int i = 0; i < m_units.get_size(); ++i)
+    {
+        auto &u = m_units.get_by_idx(i);
+        if (!u || u->hp <= 0 || u->is_ally(owner, *this) || (u->get_pos() - pos).length() > radius)
+            continue;
+
+        u->take_damage(damage, *this);
+        hit = true;
+    }
+
+    return hit;
+}
+
+//------------------------------------------------------------
+
 void world::respawn(const plane_ptr &p, const vec3 &pos, const quat &rot)
 {
     if (!p)
@@ -850,11 +890,17 @@ void world::update(int dt)
         auto m = this->get_missile(a);
         if (m && m->time > 0)
         {
-            this->spawn_explosion(m->phys->pos, 10.0);
+            this->spawn_explosion(m->phys->pos, missile_dmg_radius / 2);
             m->time = 0;
-
-            if (m->owner.lock() == get_player() && !m->target.expired())
-                this->popup_miss();
+            const bool target_alive = !m->target.expired() && m->target.lock()->hp > 0;
+            const bool hit = area_damage(m->phys->pos, missile_dmg_radius, missile_damage, m->owner.lock());
+            if (m->owner.lock() == get_player() && target_alive)
+            {
+                if (hit)
+                    this->popup_hit(m->target.lock()->hp <= 0);
+                else
+                    this->popup_miss();
+            }
         }
     });
 
@@ -1961,27 +2007,25 @@ void missile::update(int dt, world &w)
 
         if(hit)
         {
-            int missile_damage = 80; //ToDo
             time = 0;
             //if (vec3::normalize(target.lock()->phys->vel) * dir.normalize() < -0.5)  //direct shoot
             //    missile_damage *= 3;
 
-            if (t->hp > 0)
+            w.spawn_explosion(phys->pos, missile_dmg_radius / 2);
+
+            const bool target_alive = t->hp > 0;
+            const bool hit = w.area_damage(phys->pos, missile_dmg_radius, missile_damage, owner.lock());
+            if (!hit && target_alive)
             {
                 t->take_damage(missile_damage, w);
-                const bool destroyed = t->hp <= 0;
-                if (destroyed)
-                {
-                    auto p = w.get_plane(t);
-                    if (p)
-                        w.on_kill(owner.lock(), p);
-                }
-
-                if (owner.lock() == w.get_player())
-                    w.popup_hit(destroyed);
+                auto p = w.get_plane(t);
+                if (p && p->hp <= 0 )
+                    w.on_kill(owner.lock(), p);
             }
 
-            w.spawn_explosion(phys->pos, 10.0);
+            const bool destroyed = t->hp <= 0;
+            if (owner.lock() == w.get_player() && target_alive)
+                w.popup_hit(destroyed);
         }
 
         if (t->hp < 0)

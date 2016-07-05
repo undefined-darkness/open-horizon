@@ -21,7 +21,7 @@
         <turn speed="0.3" turn_roll="50.0"/>
     </type>
 
-    <type id="tank" hp="60" hit_radius="3">
+    <type id="tank" hp="100" hit_radius="3">
         <speed cruise="60" max="80" accel="30" decel="50"/>
         <turn speed="0.5"/>
     </type>
