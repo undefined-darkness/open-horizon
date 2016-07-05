@@ -445,9 +445,9 @@ protected:
     object_wptr m_target;
     object_wptr m_follow;
     bool m_first_update = true;
-    object_params m_params;
     vec3 m_vel;
     vec3 m_formation_offset;
+    object_params m_params;
 };
 
 //------------------------------------------------------------
@@ -480,6 +480,7 @@ unit_ptr world::add_unit(const char *name, const char *id)
             u = std::make_shared<unit>(unit());
 
         u->load_model(o.model, o.dy, m_render_world);
+        u->set_type_name(o.name);
         u->hp = o.params.hp;
 
         return u;

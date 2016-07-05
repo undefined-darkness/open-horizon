@@ -25,6 +25,7 @@ struct object_params
 struct object_desc
 {
     std::string id;
+    std::wstring name;
     std::string type;
     std::string group;
     std::string model;
@@ -80,6 +81,7 @@ static const objects_list &get_objects_list()
             {
                 object_desc obj;
                 obj.id = o.attribute("id").as_string();
+                obj.name = to_wstring(o.attribute("name").as_string());
                 obj.type = o.attribute("type").as_string();
                 obj.params = types[obj.type];
                 obj.group = group;
