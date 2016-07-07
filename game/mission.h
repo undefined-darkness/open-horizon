@@ -47,6 +47,9 @@ protected:
     static int mission_fail(lua_State *state);
 
 private:
+    object_ptr get_object(std::string id) const;
+
+private:
     struct timer
     {
         std::string id;
@@ -68,6 +71,16 @@ private:
 
 private:
     std::map<std::string, std::pair<unit::path, bool> > m_paths;
+
+private:
+    struct mission_unit
+    {
+        std::string name;
+        unit_ptr u;
+        std::string on_init, on_destroy;
+    };
+
+    std::vector<mission_unit> m_units;
 
 private:
     plane_ptr m_player;

@@ -8,7 +8,6 @@
 #include "renderer/scene.h"
 #include "sound/sound.h"
 #include "gui/hud.h"
-#include "memory/indexed_map.h"
 #include "network_data.h"
 #include <memory>
 #include <list>
@@ -279,7 +278,7 @@ public:
 
     plane_ptr add_plane(const char *preset, const char *player_name, int color, bool player, net_plane_ptr ptr = net_plane_ptr());
     missile_ptr add_missile(const plane_ptr &p, net_missile_ptr ptr = net_missile_ptr());
-    unit_ptr add_unit(const char *name, const char *id);
+    unit_ptr add_unit(const char *id);
 
     void spawn_explosion(const vec3 &pos, float radius, bool net_src = true);
     void spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, const plane_ptr &owner);
@@ -297,10 +296,8 @@ public:
     int get_missiles_count() const { return (int)m_missiles.size(); }
     missile_ptr get_missile(int idx);
 
-    int get_units_count() const { return m_units.get_size(); }
-    unit_ptr get_unit(int idx) { return m_units.get_by_idx(idx); }
-    unit_ptr get_unit(const char *name) const { return m_units.get_by_key(name); }
-    void remove_units() { m_units.clear(); }
+    int get_units_count() const { return (int)m_units.size(); }
+    unit_ptr get_unit(int idx);
 
     float get_height(float x, float z) const { return m_phys_world.get_height(x, z, false); }
 
@@ -346,7 +343,7 @@ private:
     std::vector<plane_ptr> m_planes;
     w_ptr<plane> m_player;
     std::vector<missile_ptr> m_missiles;
-    nya_memory::indexed_map<unit_ptr> m_units;
+    std::vector<unit_ptr> m_units;
     renderer::world &m_render_world;
     gui::hud &m_hud;
     phys::world m_phys_world;

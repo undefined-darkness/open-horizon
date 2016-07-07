@@ -468,9 +468,9 @@ struct unit_object: public unit
 
 //------------------------------------------------------------
 
-unit_ptr world::add_unit(const char *name, const char *id)
+unit_ptr world::add_unit(const char *id)
 {
-    if (!name || !id)
+    if (!id)
         return unit_ptr();
 
     auto &objs = get_objects_list();
@@ -479,7 +479,8 @@ unit_ptr world::add_unit(const char *name, const char *id)
         if (o.id != id)
             continue;
 
-        auto &u = m_units.add(name);
+        m_units.resize(m_units.size() + 1);
+        auto &u = m_units.back();
 
         if (o.params.speed_max > 0.01f)
             u = std::make_shared<unit_vehicle>(unit_vehicle(o.params));
@@ -531,7 +532,7 @@ void world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, con
     {
         for (int i = 0; i < get_planes_count() + get_units_count(); ++i)
         {
-            auto t = i < get_planes_count() ? (object_ptr)m_planes[i] : m_units.get_by_idx(i - get_planes_count());
+            auto t = i < get_planes_count() ? (object_ptr)m_planes[i] : m_units[i - get_planes_count()];
             if (t->hp <= 0 || t->is_ally(owner, *this))
                 continue;
 
@@ -574,9 +575,8 @@ bool world::area_damage(const vec3 &pos, float radius, int damage, const plane_p
             on_kill(owner, p);
     }
 
-    for (int i = 0; i < m_units.get_size(); ++i)
+    for (auto &u: m_units)
     {
-        auto &u = m_units.get_by_idx(i);
         if (!u || u->hp <= 0 || u->is_ally(owner, *this) || (u->get_pos() - pos).length() > radius)
             continue;
 
@@ -646,6 +646,16 @@ missile_ptr world::get_missile(int idx)
         return missile_ptr();
 
     return m_missiles[idx];
+}
+
+//------------------------------------------------------------
+
+unit_ptr world::get_unit(int idx)
+{
+    if (idx < 0 || idx >= (int)m_units.size())
+        return unit_ptr();
+
+    return m_units[idx];
 }
 
 //------------------------------------------------------------
@@ -857,6 +867,8 @@ void world::update(int dt)
 
     m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m) { return (m->net && !m->net->source) ? m->net.unique() : m->time <= 0; }), m_missiles.end());
 
+    m_units.erase(std::remove_if(m_units.begin(), m_units.end(), [](const unit_ptr &u) { return u.unique(); }), m_units.end());
+
     for (auto &p: m_planes)
         p->phys->controls = p->controls;
 
@@ -876,8 +888,8 @@ void world::update(int dt)
         }
     });
 
-    for (int i = 0; i < m_units.get_size(); ++i)
-        m_units.get_by_idx(i)->update(dt, *this);
+    for (auto &u: m_units)
+        u->update(dt, *this);
 
     for (auto &p: m_planes)
         p->alert_dirs.clear();

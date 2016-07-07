@@ -51,13 +51,13 @@ void mission::start(const char *plane, int color, const char *mission)
 
     for (auto o = root.child("object"); o; o = o.next_sibling("object"))
     {
-        std::string name = o.attribute("name").as_string();
-        if (name.empty())
-            continue;
-
-        auto u = m_world.add_unit(name.c_str(), o.attribute("id").as_string());
+        auto u = m_world.add_unit(o.attribute("id").as_string());
         if (!u)
             continue;
+
+        mission_unit mu;
+        mu.name = o.attribute("name").as_string();
+        mu.u = u;
 
         u->set_active(o.attribute("active").as_bool());
         u->set_pos(read_vec3(o));
@@ -65,6 +65,9 @@ void mission::start(const char *plane, int color, const char *mission)
 
         auto a = o.child("attribute");
         std::string align = a.attribute("align").as_string();
+
+        mu.on_init = a.attribute("on_init").as_string();
+        mu.on_destroy = a.attribute("on_destroy").as_string();
 
         if (align == "target")
             u->set_align(unit::align_target);
@@ -79,16 +82,13 @@ void mission::start(const char *plane, int color, const char *mission)
         if (p != m_paths.end())
             u->set_path(p->second.first, p->second.second);
 
-        std::string follow = a.attribute("follow").as_string();
-        if (!follow.empty())
-        {
-            if (follow == "player")
-                u->set_follow(m_world.get_player());
-            else
-                u->set_follow(m_world.get_unit(follow.c_str()));
-        }
+        auto follow = get_object(a.attribute("follow").as_string());
+        if (follow)
+            u->set_follow(follow);
 
-        //ToDo: on_init, on_destroy
+        m_units.push_back(mu);
+
+        //ToDo: active, zones, on_enter, on_leave
     }
 
     world::is_ally_handler fia = std::bind(&mission::is_ally, std::placeholders::_1, std::placeholders::_2);
@@ -208,7 +208,7 @@ void mission::update(int dt, const plane_controls &player_controls)
 
 void mission::end()
 {
-    m_world.remove_units();
+    m_units.clear();
     m_player.reset();
     m_paths.clear();
     m_radio.clear();
@@ -306,9 +306,9 @@ int mission::set_active(lua_State *state)
         return 0;
     }
 
-    auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
-    if (u)
-        u->set_active(args_count < 2 ? true : script::get_bool(state, 1));
+    auto name = script::get_string(state, 0);
+    bool active = args_count < 2 ? true : script::get_bool(state, 1);
+    for (auto &u: current_mission->m_units) if (u.name == name && u.u) u.u->set_active(active);
 
     return 0;
 }
@@ -323,15 +323,18 @@ int mission::set_path(lua_State *state)
         return 0;
     }
 
-    auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
-    if (!u)
-        return 0;
-
+    auto name = script::get_string(state, 0);
     auto p = current_mission->m_paths.find(script::get_string(state, 1));
-    if (p == current_mission->m_paths.end())
-        u->set_path({}, false);
-    else
-        u->set_path(p->second.first, p->second.second);
+    for (auto &u: current_mission->m_units)
+    {
+        if (u.name == name && u.u)
+        {
+            if (p == current_mission->m_paths.end())
+                u.u->set_path({}, false);
+            else
+                u.u->set_path(p->second.first, p->second.second);
+        }
+    }
 
     return 0;
 }
@@ -346,15 +349,9 @@ int mission::set_follow(lua_State *state)
         return 0;
     }
 
-    auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
-    if (u)
-    {
-        auto id = script::get_string(state, 1);
-        if (id == "player")
-            u->set_follow(current_mission->m_world.get_player());
-        else
-            u->set_follow(current_mission->m_world.get_unit(id.c_str()));
-    }
+    auto name = script::get_string(state, 0);
+    auto f = current_mission->get_object(script::get_string(state, 1));
+    for (auto &u: current_mission->m_units) if (u.name == name && u.u) u.u->set_follow(f);
 
     return 0;
 }
@@ -369,15 +366,9 @@ int mission::set_target(lua_State *state)
         return 0;
     }
 
-    auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
-    if (u)
-    {
-        auto id = script::get_string(state, 1);
-        if (id == "player")
-            u->set_target(current_mission->m_world.get_player());
-        else
-            u->set_target(current_mission->m_world.get_unit(id.c_str()));
-    }
+    auto name = script::get_string(state, 0);
+    auto t = current_mission->get_object(script::get_string(state, 1));
+    for (auto &u: current_mission->m_units) if (u.name == name && u.u) u.u->set_target(t);
 
     return 0;
 }
@@ -392,19 +383,22 @@ int mission::set_align(lua_State *state)
         return 0;
     }
 
-    auto u = current_mission->m_world.get_unit(script::get_string(state, 0).c_str());
-    if (!u)
-        return 0;
+    auto name = script::get_string(state, 0);
 
+    unit::align a;
     auto align = script::get_string(state, 1);
     if (align == "target")
-        u->set_align(unit::align_target);
+        a = unit::align_target;
     else if (align == "enemy")
-        u->set_align(unit::align_enemy);
+        a = unit::align_enemy;
     else if (align == "ally")
-        u->set_align(unit::align_ally);
+        a = unit::align_ally;
     else if (align == "neutral")
-        u->set_align(unit::align_neutral);
+        a = unit::align_neutral;
+    else
+        return 0;
+
+    for (auto &u: current_mission->m_units) if (u.name == name && u.u) u.u->set_align(a);
 
     return 0;
 }
@@ -427,8 +421,8 @@ int mission::get_height(lua_State *state)
         return 1;
     }
 
-    auto u = current_mission->m_world.get_unit(id.c_str());
-    script::push_float(state, u ? u->get_pos().y : 0.0f);
+    auto o = current_mission->get_object(id);
+    script::push_float(state, o ? o->get_pos().y : 0.0f);
     return 1;
 }
 
@@ -449,9 +443,7 @@ int mission::destroy(lua_State *state)
         return 0;
     }
 
-    auto u = current_mission->m_world.get_unit(id.c_str());
-    if (u)
-        u->take_damage(9000, current_mission->m_world);
+    for (auto &u: current_mission->m_units) if (u.name == id && u.u) u.u->take_damage(9000, current_mission->m_world);
 
     return 0;
 }
@@ -566,6 +558,21 @@ void mission::set_radio_message(const radio_message &m)
         return;
 
     m_world.get_hud().set_radio(r->second.first, m.message, m.time, r->second.second);
+}
+
+//------------------------------------------------------------
+
+object_ptr mission::get_object(std::string id) const
+{
+    if (id.empty())
+        return object_ptr();
+
+    if (id == "player")
+        return m_world.get_player();
+
+    for (auto &u: m_units) if (u.name == id) return u.u;
+
+    return object_ptr();
 }
 
 //------------------------------------------------------------
