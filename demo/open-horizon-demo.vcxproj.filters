@@ -155,6 +155,9 @@
     <ClCompile Include="..\util\platform.cpp">
       <Filter>Source Files\util</Filter>
     </ClCompile>
+    <ClCompile Include="..\util\platform_dialogs.cpp">
+        <Filter>Source Files\util</Filter>
+    </ClCompile>
     <ClCompile Include="..\deps\pugixml-1.4\src\pugixml.cpp">
       <Filter>Source Files\deps\pugi</Filter>
     </ClCompile>

@@ -62,7 +62,8 @@ SOURCES += \
     ../phys/plane_params.cpp \
     ../deps/zip/src/zip.c \
     ../deps/nya-engine/extensions/zip_resources_provider.cpp \
-    ../game/script.cpp
+    ../game/script.cpp \
+    ../util/platform_dialogs.cpp
 
 HEADERS += \
     ../containers/fhm.h \

@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F591D4D31D2E79BF00DD8D98 /* qdf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F591D4D11D2E79BF00DD8D98 /* qdf.cpp */; };
 		F5B2EE781901FC18007794DF /* qdf_tool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5B2EE771901FC18007794DF /* qdf_tool.cpp */; };
-		F5B2EE7B1901FC3F007794DF /* qdf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5B2EE7A1901FC3F007794DF /* qdf.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,10 +24,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F591D4D11D2E79BF00DD8D98 /* qdf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qdf.cpp; path = ../containers/qdf.cpp; sourceTree = "<group>"; };
+		F591D4D21D2E79BF00DD8D98 /* qdf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qdf.h; path = ../containers/qdf.h; sourceTree = "<group>"; };
 		F5B2EE6B1901FBE5007794DF /* qdf_tool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = qdf_tool; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5B2EE771901FC18007794DF /* qdf_tool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = qdf_tool.cpp; sourceTree = SOURCE_ROOT; };
-		F5B2EE791901FC3F007794DF /* qdf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = qdf.h; path = ../qdf.h; sourceTree = "<group>"; };
-		F5B2EE7A1901FC3F007794DF /* qdf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = qdf.cpp; path = ../qdf.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,9 +44,9 @@
 		F5B2EE621901FBE5007794DF = {
 			isa = PBXGroup;
 			children = (
+				F591D4D11D2E79BF00DD8D98 /* qdf.cpp */,
+				F591D4D21D2E79BF00DD8D98 /* qdf.h */,
 				F5B2EE771901FC18007794DF /* qdf_tool.cpp */,
-				F5B2EE791901FC3F007794DF /* qdf.h */,
-				F5B2EE7A1901FC3F007794DF /* qdf.cpp */,
 				F5B2EE6C1901FBE5007794DF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -110,7 +110,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F5B2EE781901FC18007794DF /* qdf_tool.cpp in Sources */,
-				F5B2EE7B1901FC3F007794DF /* qdf.cpp in Sources */,
+				F591D4D31D2E79BF00DD8D98 /* qdf.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

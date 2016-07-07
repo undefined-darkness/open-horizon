@@ -19,11 +19,6 @@
     #include <unistd.h>
 #endif
 
-#ifdef QT_GUI_LIB
-    #include <QMessageBox.h>
-    #include <QFileDialog.h>
-#endif
-
 //------------------------------------------------------------
 
 static bool setup_resources()
@@ -40,20 +35,10 @@ static bool setup_resources()
         static const char message[] = "You are running Open Horizon outside of the Assault Horizon folder.\n"
                                       "Please specify the path to the Assault Horizon folder.\n"
                                       "It will be saved automatically.";
-#ifdef QT_GUI_LIB
-        auto m = new QMessageBox;
-        m->setText(message);
-        if (m->exec() != QMessageBox::Cancel)
-#else
+
         if (platform::show_msgbox(message))
-#endif
         {
-#ifdef QT_GUI_LIB
-            std::string folder = QFileDialog::getExistingDirectory(Q_NULLPTR, "Specify path").toUtf8().constData();
-            folder.append("/");
-#else
             std::string folder = platform::open_folder_dialog();
-#endif
             if (!folder.length())
                 return false;
 
