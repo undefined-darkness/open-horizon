@@ -21,7 +21,7 @@ public:
     deathmatch(world &w): game_mode(w) {}
 
 protected:
-    void on_kill(const plane_ptr &k, const plane_ptr &v);
+    void on_kill(const object_ptr &k, const object_ptr &v);
     virtual void update_scores();
     virtual void respawn(plane_ptr p);
 

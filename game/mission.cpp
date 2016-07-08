@@ -91,8 +91,8 @@ void mission::start(const char *plane, int color, const char *mission)
         //ToDo: active, zones, on_enter, on_leave
     }
 
-    world::is_ally_handler fia = std::bind(&mission::is_ally, std::placeholders::_1, std::placeholders::_2);
-    m_world.set_ally_handler(fia);
+    m_world.set_ally_handler(std::bind(&mission::is_ally, std::placeholders::_1, std::placeholders::_2));
+    m_world.set_on_kill_handler(std::bind(&mission::on_kill, this, std::placeholders::_1, std::placeholders::_2));
 
     auto script_res = zprov.access("script.lua");
     if (script_res)
@@ -216,6 +216,24 @@ void mission::end()
     m_radio.clear();
     m_radio_messages.clear();
     m_timers.clear();
+}
+
+//------------------------------------------------------------
+
+void mission::on_kill(const object_ptr &k, const object_ptr &v)
+{
+    if (!v)
+        return;
+
+    for (auto &u: m_units)
+    {
+        if (u.u != v)
+            continue;
+
+        if (!u.on_destroy.empty())
+            m_script.call(u.on_destroy);
+        break;
+    }
 }
 
 //------------------------------------------------------------

@@ -22,6 +22,7 @@ public:
 
 protected:
     static bool is_ally(const plane_ptr &a, const plane_ptr &b) { return true; }
+    void on_kill(const object_ptr &k, const object_ptr &v);
 
     static int start_timer(lua_State *state);
     static int setup_timer(lua_State *state);

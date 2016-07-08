@@ -18,11 +18,8 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
 {
     m_world.set_location(location);
 
-    world::is_ally_handler fia = std::bind(&team_deathmatch::is_ally, this, std::placeholders::_1, std::placeholders::_2);
-    m_world.set_ally_handler(fia);
-
-    world::on_kill_handler fok = std::bind(&team_deathmatch::on_kill, this, std::placeholders::_1, std::placeholders::_2);
-    m_world.set_on_kill_handler(fok);
+    m_world.set_ally_handler(std::bind(&team_deathmatch::is_ally, this, std::placeholders::_1, std::placeholders::_2));
+    m_world.set_on_kill_handler(std::bind(&team_deathmatch::on_kill, this, std::placeholders::_1, std::placeholders::_2));
 
     for (int t = 0; t < 2; ++t)
     {
@@ -105,6 +102,8 @@ void team_deathmatch::respawn(plane_ptr p)
 void team_deathmatch::end()
 {
     m_planes.clear();
+    m_world.set_ally_handler(0);
+    m_world.set_on_kill_handler(0);
 }
 
 //------------------------------------------------------------
@@ -178,18 +177,20 @@ void team_deathmatch::update_scores()
 
 //------------------------------------------------------------
 
-void team_deathmatch::on_kill(const plane_ptr &k, const plane_ptr &v)
+void team_deathmatch::on_kill(const object_ptr &k, const object_ptr &v)
 {
-    if (!v)
+    auto vp = m_world.get_plane(v);
+    if (!vp)
         return;
 
-    if (k)
+    auto kp = m_world.get_plane(k);
+    if (kp)
     {
-        if (!is_ally(k, v))
-            k->net_game_data.set("score", k->net_game_data.get<int>("score") + 1);
+        if (!is_ally(kp, vp))
+            kp->net_game_data.set("score", kp->net_game_data.get<int>("score") + 1);
     }
     else
-        v->net_game_data.set("score", v->net_game_data.get<int>("score") - 1);
+        vp->net_game_data.set("score", vp->net_game_data.get<int>("score") - 1);
 }
 
 //------------------------------------------------------------

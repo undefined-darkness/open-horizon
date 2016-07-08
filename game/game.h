@@ -303,11 +303,11 @@ public:
 
     bool is_ally(const plane_ptr &a, const plane_ptr &b);
     typedef std::function<bool(const plane_ptr &a, const plane_ptr &b)> is_ally_handler;
-    void set_ally_handler(is_ally_handler &handler) { m_ally_handler = handler; }
+    void set_ally_handler(const is_ally_handler &handler) { m_ally_handler = handler; }
 
-    void on_kill(const plane_ptr &a, const plane_ptr &b);
-    typedef std::function<void(const plane_ptr &k, const plane_ptr &v)> on_kill_handler;
-    void set_on_kill_handler(on_kill_handler &handler) { m_on_kill_handler = handler; }
+    void on_kill(const object_ptr &a, const object_ptr &b);
+    typedef std::function<void(const object_ptr &k, const object_ptr &v)> on_kill_handler;
+    void set_on_kill_handler(const on_kill_handler &handler) { m_on_kill_handler = handler; }
 
     gui::hud &get_hud() { return m_hud; }
     void popup_hit(bool destroyed);

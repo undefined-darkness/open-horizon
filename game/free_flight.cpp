@@ -14,8 +14,7 @@ void free_flight::start(const char *plane, int color, const char *location)
     set_location(location);
     m_respawn_time = 0;
 
-    world::is_ally_handler fia = std::bind(&free_flight::is_ally, std::placeholders::_1, std::placeholders::_2);
-    m_world.set_ally_handler(fia);
+    m_world.set_ally_handler(std::bind(&free_flight::is_ally, std::placeholders::_1, std::placeholders::_2));
 
     m_spawn_pos.x = -300.0f, m_spawn_pos.z = 2000.0f;
     m_spawn_pos.y = m_world.get_height(m_spawn_pos.x, m_spawn_pos.z) + 100.0f;
@@ -60,6 +59,7 @@ void free_flight::update(int dt, const plane_controls &player_controls)
 void free_flight::end()
 {
     m_player.reset();
+    m_world.set_ally_handler(0);
 }
 
 //------------------------------------------------------------

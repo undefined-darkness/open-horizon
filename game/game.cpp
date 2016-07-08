@@ -540,8 +540,8 @@ void world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, con
                 t->take_damage(60, *this);
                 const bool destroyed = t->hp <= 0;
 
-                if(destroyed && i < get_planes_count())
-                    on_kill(owner, m_planes[i]);
+                if (destroyed)
+                    on_kill(owner, t);
 
                 if (owner == get_player())
                     popup_hit(destroyed);
@@ -580,6 +580,9 @@ bool world::area_damage(const vec3 &pos, float radius, int damage, const plane_p
 
         u->take_damage(damage, *this);
         hit = true;
+
+        if (u->hp <= 0)
+            on_kill(owner, u);
     }
 
     return hit;
@@ -879,7 +882,7 @@ void world::update(int dt)
             if (p->hp > 0)
             {
                 p->take_damage(9000, *this);
-                on_kill(plane_ptr(), p);
+                on_kill(object_ptr(), p);
                 p->render->set_hide(true);
                 play_sound("PLAYER_CRASH_AIRPLANE", 0, p->get_pos());
             }
@@ -1024,7 +1027,7 @@ bool world::is_ally(const plane_ptr &a, const plane_ptr &b)
 
 //------------------------------------------------------------
 
-void world::on_kill(const plane_ptr &k, const plane_ptr &v)
+void world::on_kill(const object_ptr &k, const object_ptr &v)
 {
     if (m_on_kill_handler)
         m_on_kill_handler(k, v);
@@ -1034,6 +1037,9 @@ void world::on_kill(const plane_ptr &k, const plane_ptr &v)
 
 plane_ptr world::get_plane(const phys::object_ptr &o)
 {
+    if (!o)
+        return plane_ptr();
+
     for (auto &p: m_planes)
     {
         if (p->phys == o)
@@ -2027,9 +2033,8 @@ void missile::update(int dt, world &w)
             if (!hit && target_alive)
             {
                 t->take_damage(missile_damage, w);
-                auto p = w.get_plane(t);
-                if (p && p->hp <= 0 )
-                    w.on_kill(owner.lock(), p);
+                if (t->hp <= 0 )
+                    w.on_kill(owner.lock(), t);
             }
 
             const bool destroyed = t->hp <= 0;

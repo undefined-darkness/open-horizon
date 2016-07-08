@@ -21,7 +21,7 @@ public:
 
 protected:
     bool is_ally(const plane_ptr &a, const plane_ptr &b);
-    void on_kill(const plane_ptr &k, const plane_ptr &v);
+    void on_kill(const object_ptr &k, const object_ptr &v);
     virtual void respawn(plane_ptr p);
     virtual void update_scores() override;
     void rebalance();

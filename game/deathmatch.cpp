@@ -16,8 +16,7 @@ void deathmatch::start(const char *plane, int color, int special, const char *lo
     world::is_ally_handler fia;
     m_world.set_ally_handler(fia);
 
-    world::on_kill_handler fok = std::bind(&deathmatch::on_kill, this, std::placeholders::_1, std::placeholders::_2);
-    m_world.set_on_kill_handler(fok);
+    m_world.set_on_kill_handler(std::bind(&deathmatch::on_kill, this, std::placeholders::_1, std::placeholders::_2));
 
     m_respawn_points.resize(8);
     for (int i = 0; i < (int)m_respawn_points.size(); ++i)
@@ -113,6 +112,7 @@ void deathmatch::respawn(plane_ptr p)
 void deathmatch::end()
 {
     m_planes.clear();
+    m_world.set_on_kill_handler(0);
 }
 
 //------------------------------------------------------------
@@ -127,15 +127,17 @@ deathmatch::respawn_point deathmatch::get_respawn_point()
 
 //------------------------------------------------------------
 
-void deathmatch::on_kill(const plane_ptr &k, const plane_ptr &v)
+void deathmatch::on_kill(const object_ptr &k, const object_ptr &v)
 {
-    if (!v)
+    auto vp = m_world.get_plane(v);
+    if (!vp)
         return;
 
-    if (k)
-        k->net_game_data.set("score", k->net_game_data.get<int>("score") + 1);
+    auto kp = m_world.get_plane(k);
+    if (kp)
+        kp->net_game_data.set("score", kp->net_game_data.get<int>("score") + 1);
     else
-        v->net_game_data.set("score", v->net_game_data.get<int>("score") - 1);
+        vp->net_game_data.set("score", vp->net_game_data.get<int>("score") - 1);
 }
 
 //------------------------------------------------------------
