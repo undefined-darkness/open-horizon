@@ -241,7 +241,10 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
     if (t.has("objects"))
     {
         for (auto &o:m_objects)
-            o->mdl.draw(0);
+        {
+            if (o->visible)
+                o->mdl.draw(0);
+        }
     }
     if (t.has("aircrafts"))
     {

@@ -323,8 +323,6 @@ public:
 
     virtual void update(int dt, world &w) override
     {
-        unit::update(dt, w);
-
         if (m_first_update)
         {
             m_first_update = false;
@@ -888,8 +886,7 @@ void world::update(int dt)
         }
     });
 
-    for (auto &u: m_units)
-        u->update(dt, *this);
+    for (auto &u: m_units) if (u->is_active()) u->update(dt, *this);
 
     for (auto &p: m_planes)
         p->alert_dirs.clear();

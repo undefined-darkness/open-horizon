@@ -131,6 +131,8 @@ void mission::start(const char *plane, int color, const char *mission)
     m_finished = false;
     current_mission = this;
     m_script.call("init");
+
+    for (auto &u: m_units) if (u.u->is_active() && !u.on_init.empty()) m_script.call(u.on_init), u.on_init.clear();
 }
 
 //------------------------------------------------------------
@@ -308,7 +310,15 @@ int mission::set_active(lua_State *state)
 
     auto name = script::get_string(state, 0);
     bool active = args_count < 2 ? true : script::get_bool(state, 1);
-    for (auto &u: current_mission->m_units) if (u.name == name && u.u) u.u->set_active(active);
+    for (auto &u: current_mission->m_units)
+    {
+        if (u.name != name || !u.u)
+            continue;
+
+        u.u->set_active(active);
+        if (!u.on_init.empty())
+            current_mission->m_script.call(u.on_init), u.on_init.clear();
+    }
 
     return 0;
 }

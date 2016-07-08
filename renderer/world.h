@@ -42,6 +42,7 @@ private:
 
 struct object
 {
+    bool visible = true;
     model mdl;
 };
 

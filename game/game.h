@@ -224,7 +224,7 @@ typedef w_ptr<unit> unit_wptr;
 
 struct unit: public object
 {
-    virtual void set_active(bool a) { m_active = a; }
+    virtual void set_active(bool a) { m_active = a; if (m_render.is_valid()) m_render->visible = a; }
 
     typedef std::list<vec3> path;
     virtual void set_path(const path &p, bool loop) {}
