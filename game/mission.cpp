@@ -114,6 +114,8 @@ void mission::start(const char *plane, int color, const char *mission)
     m_script.add_callback("set_follow", set_follow);
     m_script.add_callback("set_target", set_target);
     m_script.add_callback("set_align", set_align);
+    m_script.add_callback("set_speed", set_speed);
+    m_script.add_callback("set_speed_limit", set_speed_limit);
 
     m_script.add_callback("get_height", get_height);
 
@@ -327,6 +329,9 @@ int mission::set_active(lua_State *state)
     }
 
     auto name = script::get_string(state, 0);
+    if (name.empty())
+        return 0;
+
     bool active = args_count < 2 ? true : script::get_bool(state, 1);
     for (auto &u: current_mission->m_units)
     {
@@ -352,6 +357,9 @@ int mission::set_path(lua_State *state)
     }
 
     auto name = script::get_string(state, 0);
+    if (name.empty())
+        return 0;
+
     auto p = current_mission->m_paths.find(script::get_string(state, 1));
     for (auto &u: current_mission->m_units)
     {
@@ -378,6 +386,9 @@ int mission::set_follow(lua_State *state)
     }
 
     auto name = script::get_string(state, 0);
+    if (name.empty())
+        return 0;
+
     auto f = current_mission->get_object(script::get_string(state, 1));
     for (auto &u: current_mission->m_units) if (u.name == name && u.u) u.u->set_follow(f);
 
@@ -395,6 +406,9 @@ int mission::set_target(lua_State *state)
     }
 
     auto name = script::get_string(state, 0);
+    if (name.empty())
+        return 0;
+
     auto t = current_mission->get_object(script::get_string(state, 1));
     for (auto &u: current_mission->m_units) if (u.name == name && u.u) u.u->set_target(t);
 
@@ -412,6 +426,8 @@ int mission::set_align(lua_State *state)
     }
 
     auto name = script::get_string(state, 0);
+    if (name.empty())
+        return 0;
 
     unit::align a;
     auto align = script::get_string(state, 1);
@@ -427,6 +443,46 @@ int mission::set_align(lua_State *state)
         return 0;
 
     for (auto &u: current_mission->m_units) if (u.name == name && u.u) u.u->set_align(a);
+
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::set_speed(lua_State *state)
+{
+    if (script::get_args_count(state) < 2)
+    {
+        printf("invalid args count in function set_align\n");
+        return 0;
+    }
+
+    auto name = script::get_string(state, 0);
+    if (name.empty())
+        return 0;
+
+    const float speed = script::get_int(state, 1);
+    for (auto &u: current_mission->m_units) if (u.name == name && u.u) u.u->set_speed(speed);
+
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::set_speed_limit(lua_State *state)
+{
+    if (script::get_args_count(state) < 2)
+    {
+        printf("invalid args count in function set_align\n");
+        return 0;
+    }
+
+    auto name = script::get_string(state, 0);
+    if (name.empty())
+        return 0;
+
+    const float speed = script::get_int(state, 1);
+    for (auto &u: current_mission->m_units) if (u.name == name && u.u) u.u->set_speed_limit(speed);
 
     return 0;
 }
@@ -464,14 +520,17 @@ int mission::destroy(lua_State *state)
         return 0;
     }
 
-    std::string id = script::get_string(state, 0);
-    if (id == "player")
+    std::string name = script::get_string(state, 0);
+    if (name == "player")
     {
         current_mission->m_world.get_player()->take_damage(9000, current_mission->m_world);
         return 0;
     }
 
-    for (auto &u: current_mission->m_units) if (u.name == id && u.u) u.u->take_damage(9000, current_mission->m_world);
+    if (name.empty())
+        return 0;
+
+    for (auto &u: current_mission->m_units) if (u.name == name && u.u) u.u->take_damage(9000, current_mission->m_world);
 
     return 0;
 }

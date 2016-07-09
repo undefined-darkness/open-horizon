@@ -33,6 +33,8 @@ protected:
     static int set_follow(lua_State *state);
     static int set_target(lua_State *state);
     static int set_align(lua_State *state);
+    static int set_speed(lua_State *state);
+    static int set_speed_limit(lua_State *state);
 
     static int get_height(lua_State *state);
 
@@ -82,6 +84,16 @@ private:
     };
 
     std::vector<mission_unit> m_units;
+
+private:
+    struct zone
+    {
+        std::string name;
+        std::string on_enter, on_leave;
+        bool m_active = true;
+    };
+
+    std::vector<zone> m_zones;
 
 private:
     plane_ptr m_player;

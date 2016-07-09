@@ -314,12 +314,27 @@ plane_ptr world::add_plane(const char *preset, const char *player_name, int colo
 
 //------------------------------------------------------------
 
+static const float kmph_to_meps = 1.0 / 3.6f;
+
+//------------------------------------------------------------
+
 struct unit_vehicle: public unit
 {
 public:
     virtual void set_path(const path &p, bool loop) override { m_path = p; m_path_loop = loop; }
     virtual void set_follow(object_wptr f) override { m_follow = f; m_target.reset(); }
     virtual void set_target(object_wptr t) override { m_target = t; m_follow.reset(); }
+
+    virtual void set_speed(float speed) override
+    {
+        m_vel = m_vel.normalize() * nya_math::clamp(speed * kmph_to_meps, m_params.speed_min, std::min(m_params.speed_max, m_speed_limit));
+    }
+
+    virtual void set_speed_limit(float speed) override
+    {
+        m_speed_limit = speed * kmph_to_meps;
+        set_speed(std::min(m_vel.length(), m_speed_limit));
+    }
 
     virtual void update(int dt, world &w) override
     {
@@ -411,7 +426,7 @@ public:
                     want_speed = target_speed;
             }
 
-            want_speed = nya_math::clamp(want_speed, m_params.speed_min, m_params.speed_max);
+            want_speed = nya_math::clamp(want_speed, m_params.speed_min, std::min(m_params.speed_max, m_speed_limit));
             speed = tend(speed, want_speed, m_params.accel * kdt, m_params.decel * kdt);
             m_vel = get_rot().rotate(vec3(0.0, 0.0, speed));
         }
@@ -455,6 +470,7 @@ protected:
     vec3 m_vel;
     vec3 m_formation_offset;
     object_params m_params;
+    float m_speed_limit = 9000.0f;
 };
 
 //------------------------------------------------------------

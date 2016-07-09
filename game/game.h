@@ -238,6 +238,9 @@ struct unit: public object
     virtual void set_pos(const vec3 &p) { if (m_render.is_valid()) m_render->mdl.set_pos(p + m_dpos); }
     virtual void set_yaw(angle_deg yaw) { if (m_render.is_valid()) m_render->mdl.set_rot(quat(0.0f, yaw, 0.0f)); }
 
+    virtual void set_speed(float speed) {}
+    virtual void set_speed_limit(float speed) {}
+
     bool is_active() const { return m_active; }
     align get_align() const { return m_align; }
 
