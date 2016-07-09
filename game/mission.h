@@ -90,7 +90,12 @@ private:
     {
         std::string name;
         std::string on_enter, on_leave;
-        bool m_active = true;
+        vec3 pos;
+        float radius = 0.0f, radius_sq = 0.0f;
+        bool active = true;
+        std::vector<object_wptr> inside;
+
+        bool is_inside(const object_ptr &p);
     };
 
     std::vector<zone> m_zones;

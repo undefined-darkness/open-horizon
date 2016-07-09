@@ -87,8 +87,23 @@ void mission::start(const char *plane, int color, const char *mission)
             u->set_follow(follow);
 
         m_units.push_back(mu);
+    }
 
-        //ToDo: active, zones, on_enter, on_leave
+    for (auto o = root.child("zone"); o; o = o.next_sibling("zone"))
+    {
+        zone z;
+
+        z.name = o.attribute("name").as_string();
+        z.active = o.attribute("active").as_bool();
+        z.pos = read_vec3(o);
+        z.radius = o.attribute("radius").as_float();
+        z.radius_sq = z.radius * z.radius;
+
+        auto a = o.child("attribute");
+        z.on_enter = a.attribute("on_enter").as_string();
+        z.on_leave = a.attribute("on_leave").as_string();
+
+        m_zones.push_back(z);
     }
 
     m_world.set_ally_handler(std::bind(&mission::is_ally, std::placeholders::_1, std::placeholders::_2));
@@ -139,6 +154,22 @@ void mission::start(const char *plane, int color, const char *mission)
 
 //------------------------------------------------------------
 
+inline float dist_xz_sq(const vec3 &a, const vec3 &b)
+{
+    const float x = a.x - b.x, z = a.z - b.z;
+    return x * x + z * z;
+}
+
+//------------------------------------------------------------
+
+bool mission::zone::is_inside(const object_ptr &p)
+{
+    for (auto &i: inside) if (p == i.lock()) return true;
+    return false;
+}
+
+//------------------------------------------------------------
+
 void mission::update(int dt, const plane_controls &player_controls)
 {
     if (!m_player)
@@ -163,6 +194,69 @@ void mission::update(int dt, const plane_controls &player_controls)
         t.time = 0;
         t.active = false;
         to_call.push_back({t.func, t.id});
+    }
+
+    for (auto &z: m_zones)
+    {
+        const float treshold = 0.5f;
+
+        //outside
+
+        if (dist_xz_sq(z.pos, m_player->get_pos()) < z.radius_sq - treshold)
+        {
+            if (!z.is_inside(m_player) && !z.on_enter.empty())
+            {
+                to_call.push_back({z.on_enter, "player"});
+                z.inside.push_back(m_player);
+            }
+        }
+
+        for (auto &u: m_units)
+        {
+            if (dist_xz_sq(z.pos, u.u->get_pos()) < z.radius_sq - treshold)
+            {
+                if (!z.is_inside(u.u) && !z.on_enter.empty())
+                {
+                    to_call.push_back({z.on_enter, u.name});
+                    z.inside.push_back(u.u);
+                }
+            }
+        }
+
+        //inside
+
+        bool erase = false;
+
+        for (auto &i: z.inside)
+        {
+            if (i.expired())
+            {
+                erase = true;
+                continue;
+            }
+
+            auto il = i.lock();
+            if (dist_xz_sq(z.pos, il->get_pos()) > z.radius_sq + treshold)
+            {
+                if (!z.on_leave.empty())
+                {
+                    for (auto &u: m_units)
+                    {
+                        if (u.u == il)
+                        {
+                            to_call.push_back({z.on_leave, u.name});
+                            break;
+                        }
+                    }
+                }
+
+                i.reset();
+                erase = true;
+            }
+        }
+
+        if (erase)
+            z.inside.erase(std::remove_if(z.inside.begin(), z.inside.end(), [](object_wptr &a){ return a.expired(); }),z.inside.end());
     }
 
     for (auto &t: to_call)
@@ -567,7 +661,7 @@ int mission::setup_radio(lua_State *state)
 
 int mission::clear_radio(lua_State *state)
 {
-    current_mission->m_radio.clear();
+    current_mission->m_radio_messages.clear();
     current_mission->set_radio_message({});
     return 0;
 }
