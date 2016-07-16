@@ -82,6 +82,10 @@ void mission::start(const char *plane, int color, const char *mission)
         if (p != m_paths.end())
             u->set_path(p->second.first, p->second.second);
 
+        auto target = get_object(a.attribute("target").as_string());
+        if (target)
+            u->set_target(target);
+
         auto follow = get_object(a.attribute("follow").as_string());
         if (follow)
             u->set_follow(follow);
