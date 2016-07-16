@@ -250,7 +250,7 @@ struct unit: public object
         if (!u)
             return false;
 
-        if (get_align() == unit::align_neutral || u->get_align() == unit::align_neutral)
+        if (get_align() == align_neutral || u->get_align() == align_neutral)
             return true;
 
         if (u->get_align() == get_align())
@@ -294,6 +294,7 @@ public:
 
     plane_ptr add_plane(const char *preset, const char *player_name, int color, bool player, net_plane_ptr ptr = net_plane_ptr());
     missile_ptr add_missile(const plane_ptr &p, net_missile_ptr ptr = net_missile_ptr());
+    missile_ptr add_missile(const char *id, const renderer::model &m, net_missile_ptr ptr = net_missile_ptr());
     unit_ptr add_unit(const char *id);
 
     void spawn_explosion(const vec3 &pos, float radius, bool net_src = true);

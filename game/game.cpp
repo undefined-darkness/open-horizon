@@ -217,7 +217,7 @@ missile_ptr world::add_missile(const char *id, const renderer::model &mdl, bool 
 
     const std::string pref = "." + std::string(id) + ".action.";
     m->time = param.get_float(pref + "endTime") * 1000;
-    m->homing_angle_cos = cosf(param.get_float(".MISSILE.action.hormingAng"));
+    m->homing_angle_cos = cosf(param.get_float(pref + "hormingAng"));
     if (strcmp(id, "SAAM") == 0)
         m->is_saam = true;
 
@@ -241,6 +241,21 @@ missile_ptr world::add_missile(const plane_ptr &p, net_missile_ptr ptr)
 
     if (m_network)
         m->net = ptr ? ptr : m_network->add_missile(p->net, p->special_weapon_selected);
+
+    return m;
+}
+
+//------------------------------------------------------------
+
+missile_ptr world::add_missile(const char *id, const renderer::model &mdl, net_missile_ptr ptr)
+{
+    const bool add_to_world = !(ptr && !ptr->source);
+    auto m = add_missile(id, mdl, add_to_world);
+    if (!m)
+        return missile_ptr();
+
+    //if (m_network)
+    //    m->net = ptr ? ptr : m_network->add_missile(m_player.lock()->net, false); //ToDo
 
     return m;
 }
@@ -370,9 +385,9 @@ public:
         vec3 target_dir;
         bool has_target = false;
 
-        if (m_ai == ai_air_to_air)
+        if (m_target.expired())
         {
-            if (m_target.expired())
+            if (m_ai == ai_air_to_air)
             {
                 float min_dist = 10000.0f;
                 for (int i = 0; i < w.get_planes_count() + w.get_units_count(); ++i)
@@ -398,7 +413,7 @@ public:
                     if (t->hp <= 0)
                         continue;
 
-                    float dist = (t->get_pos() - get_pos()).length();
+                    const float dist = (t->get_pos() - get_pos()).length();
                     if(dist >= min_dist)
                         continue;
 
@@ -407,6 +422,13 @@ public:
                 }
             }
         }
+        else
+        {
+            if (m_target.lock()->hp <= 0)
+                m_target.reset();
+        }
+
+        bool not_path_not_follow = false;
 
         if (!m_path.empty())
         {
@@ -430,11 +452,43 @@ public:
             target_dir = f->get_pos() + f->get_rot().rotate(m_formation_offset) - (get_pos() + get_vel() * kdt);
             //+ f->get_vel() * kdt //player's plane is already updated, ToDo
         }
-        else if (!m_target.expired())
+        else
+            not_path_not_follow = true;
+
+        if (!m_target.expired())
         {
-            has_target = true;
             auto t = m_target.lock();
-            target_dir = t->get_pos() + t->get_rot().rotate(vec3(0, 0, -20.0)) - (get_pos() + get_vel() * kdt);
+            const auto dir = t->get_pos() + t->get_rot().rotate(vec3(0, 0, -20.0)) - (get_pos() + get_vel() * kdt);
+
+            if (not_path_not_follow)
+            {
+                target_dir = dir;
+                has_target = true;
+            }
+
+            for (auto &wp: m_weapons)
+            {
+                if (wp.cooldown > 0)
+                {
+                    wp.cooldown -= dt;
+                    continue;
+                }
+
+                if (dir.length() > wp.params.lockon_range)
+                    continue;
+
+                wp.cooldown = wp.params.reload_time;
+                auto m = w.add_missile(wp.params.id.c_str(), wp.mdl);
+                if (!m)
+                    continue;
+
+                m->phys->pos = get_pos();
+                m->phys->rot = get_rot();
+                m->phys->vel = get_vel();
+
+                m->phys->target_dir = dir;
+                m->target = m_target;
+            }
         }
 
         if (has_target)
@@ -489,7 +543,19 @@ public:
         set_pos(get_pos() + m_vel * kdt);
     }
 
-    unit_vehicle(const object_params &p): m_params(p) { if (p.ai == "air_to_air") m_ai = ai_air_to_air; }
+    unit_vehicle(const object_params &p, const location_params &lp): m_params(p)
+    {
+        if (p.ai == "air_to_air")
+            m_ai = ai_air_to_air;
+
+        for (auto &d: p.weapons)
+        {
+            wpn w;
+            w.params = wpn_params(d.id, d.model);
+            w.mdl.load((std::string("w_") + d.model).c_str(), lp);
+            m_weapons.push_back(w);
+        }
+    }
 
     //object
 public:
@@ -520,6 +586,15 @@ protected:
 
     enum ai_type { ai_default, ai_air_to_air };
     ai_type m_ai = ai_default;
+
+    struct wpn
+    {
+        wpn_params params;
+        renderer::model mdl;
+        int cooldown = 0;
+    };
+
+    std::vector<wpn> m_weapons;
 };
 
 //------------------------------------------------------------
@@ -546,7 +621,7 @@ unit_ptr world::add_unit(const char *id)
         auto &u = m_units.back();
 
         if (o.params.speed_max > 0.01f)
-            u = std::make_shared<unit_vehicle>(unit_vehicle(o.params));
+            u = std::make_shared<unit_vehicle>(unit_vehicle(o.params, m_render_world.get_location_params()));
         else if (o.params.hp > 0)
             u = std::make_shared<unit_object>(unit_object());
         else

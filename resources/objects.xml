@@ -13,12 +13,13 @@
 
     <type id="fighter" hp="100" hit_radius="3.5" ai="air_to_air">
         <speed min="300" cruise="600" max="2000" accel="100" decel="1000"/>
-        <turn speed="0.3" turn_roll="50.0"/>
+        <turn speed="0.2" turn_roll="50.0"/>
+        <weapon id="MISSILE" model="msl_a0"/>
     </type>
 
     <type id="attacker" hp="100" hit_radius="3.5">
         <speed min="300" cruise="600" max="2000" accel="100" decel="1000"/>
-        <turn speed="0.3" turn_roll="50.0"/>
+        <turn speed="0.2" turn_roll="50.0"/>
     </type>
 
     <type id="tank" hp="100" hit_radius="3">
