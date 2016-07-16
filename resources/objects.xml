@@ -11,7 +11,7 @@
         <turn speed="0.1" turn_roll="30.0"/>
     </type>
 
-    <type id="fighter" hp="100" hit_radius="3.5">
+    <type id="fighter" hp="100" hit_radius="3.5" ai="air_to_air">
         <speed min="300" cruise="600" max="2000" accel="100" decel="1000"/>
         <turn speed="0.3" turn_roll="50.0"/>
     </type>

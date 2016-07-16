@@ -14,6 +14,7 @@ namespace game
 
 struct object_params
 {
+    std::string ai;
     int hp = 0;
     float hit_radius = 0.0f;
     float speed_min = 0.0f, speed_cruise = 0.0f, speed_max = 0.0f, accel = 0.0f, decel = 0.0f;
@@ -55,6 +56,7 @@ static const objects_list &get_objects_list()
             auto &tp = types[t.attribute("id").as_string()];
             tp.hp = t.attribute("hp").as_int();
             tp.hit_radius = t.attribute("hit_radius").as_float();
+            tp.ai = t.attribute("ai").as_string();
             auto s = t.child("speed");
             if (s)
             {

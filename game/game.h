@@ -221,6 +221,7 @@ typedef ptr<missile> missile_ptr;
 
 struct unit;
 typedef w_ptr<unit> unit_wptr;
+typedef ptr<unit> unit_ptr;
 
 struct unit: public object
 {
@@ -241,8 +242,22 @@ struct unit: public object
     virtual void set_speed(float speed) {}
     virtual void set_speed_limit(float speed) {}
 
-    bool is_active() const { return m_active; }
-    align get_align() const { return m_align; }
+    virtual bool is_active() const { return m_active; }
+    virtual align get_align() const { return m_align; }
+
+    virtual bool is_ally(const unit_ptr &u) const
+    {
+        if (!u)
+            return false;
+
+        if (get_align() == unit::align_neutral || u->get_align() == unit::align_neutral)
+            return true;
+
+        if (u->get_align() == get_align())
+            return true;
+
+        return u->get_align() != align_ally && get_align() != align_ally;
+    }
 
     //object
 public:
@@ -268,8 +283,6 @@ protected:
     align m_align;
     std::wstring m_type_name;
 };
-
-typedef ptr<unit> unit_ptr;
 
 //------------------------------------------------------------
 
@@ -301,6 +314,10 @@ public:
 
     int get_units_count() const { return (int)m_units.size(); }
     unit_ptr get_unit(int idx);
+
+    //planes, units
+    int get_objects_count() const;
+    object_ptr get_object(int idx);
 
     float get_height(float x, float z) const { return m_phys_world.get_height(x, z, false); }
 

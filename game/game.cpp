@@ -322,8 +322,8 @@ struct unit_vehicle: public unit
 {
 public:
     virtual void set_path(const path &p, bool loop) override { m_path = p; m_path_loop = loop; }
-    virtual void set_follow(object_wptr f) override { m_follow = f; m_target.reset(); }
-    virtual void set_target(object_wptr t) override { m_target = t; m_follow.reset(); }
+    virtual void set_follow(object_wptr f) override { m_follow = f; }
+    virtual void set_target(object_wptr t) override { m_target = t; }
 
     virtual void set_speed(float speed) override
     {
@@ -348,6 +348,8 @@ public:
                 vec3 diff = get_pos() - f->get_pos();
                 if (diff.length() < 100.0f)
                     m_formation_offset = f->get_rot().rotate_inv(diff);
+                else
+                    m_formation_offset.set(0, 0, -15.0f);
             }
 
             m_ground = (get_pos().y - w.get_height(get_pos().x, get_pos().z)) < 5.0f;
@@ -367,6 +369,44 @@ public:
 
         vec3 target_dir;
         bool has_target = false;
+
+        if (m_ai == ai_air_to_air)
+        {
+            if (m_target.expired())
+            {
+                float min_dist = 10000.0f;
+                for (int i = 0; i < w.get_planes_count() + w.get_units_count(); ++i)
+                {
+                    object_ptr t;
+                    if (i < w.get_planes_count())
+                    {
+                        auto p = w.get_plane(i);
+                        if (is_ally(p, w))
+                            continue;
+
+                        t = p;
+                    }
+                    else
+                    {
+                        auto u = w.get_unit(i - w.get_planes_count());
+                        if (is_ally(u))
+                            continue;
+
+                        t = u;
+                    }
+
+                    if (t->hp <= 0)
+                        continue;
+
+                    float dist = (t->get_pos() - get_pos()).length();
+                    if(dist >= min_dist)
+                        continue;
+
+                    m_target = t;
+                    min_dist = dist;
+                }
+            }
+        }
 
         if (!m_path.empty())
         {
@@ -390,6 +430,12 @@ public:
             target_dir = f->get_pos() + f->get_rot().rotate(m_formation_offset) - (get_pos() + get_vel() * kdt);
             //+ f->get_vel() * kdt //player's plane is already updated, ToDo
         }
+        else if (!m_target.expired())
+        {
+            has_target = true;
+            auto t = m_target.lock();
+            target_dir = t->get_pos() + t->get_rot().rotate(vec3(0, 0, -20.0)) - (get_pos() + get_vel() * kdt);
+        }
 
         if (has_target)
         {
@@ -398,8 +444,8 @@ public:
             const vec3 v=target_dir / target_dist;
             const float xz_sqdist=v.x*v.x+v.z*v.z;
 
-            auto rot = get_rot();
-            auto pyr = rot.get_euler();
+            const auto rot = get_rot();
+            const auto pyr = rot.get_euler();
 
             const nya_math::angle_rad new_yaw=(xz_sqdist>eps*eps)? (atan2(v.x,v.z)) : pyr.y;
             const nya_math::angle_rad new_pitch=(fabsf(v.y)>eps)? (-atan2(v.y,sqrtf(xz_sqdist))) : 0.0f;
@@ -407,7 +453,7 @@ public:
             if (!m_follow.expired())
                 new_roll = m_follow.lock()->get_rot().get_euler().z;
 
-            auto ideal_rot = quat(new_pitch, new_yaw, new_roll);
+            const auto ideal_rot = quat(new_pitch, new_yaw, new_roll);
 
             const float angle_diff = rot.rotate(vec3::forward()).angle(target_dir).get_deg();
             if (fabsf(angle_diff) > 0.001f)
@@ -443,7 +489,7 @@ public:
         set_pos(get_pos() + m_vel * kdt);
     }
 
-    unit_vehicle(const object_params &p): m_params(p) {}
+    unit_vehicle(const object_params &p): m_params(p) { if (p.ai == "air_to_air") m_ai = ai_air_to_air; }
 
     //object
 public:
@@ -471,6 +517,9 @@ protected:
     vec3 m_formation_offset;
     object_params m_params;
     float m_speed_limit = 9000.0f;
+
+    enum ai_type { ai_default, ai_air_to_air };
+    ai_type m_ai = ai_default;
 };
 
 //------------------------------------------------------------
@@ -544,9 +593,9 @@ void world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, con
 
     if (!owner->net || owner->net->source)
     {
-        for (int i = 0; i < get_planes_count() + get_units_count(); ++i)
+        for (int i = 0; i < get_objects_count(); ++i)
         {
-            auto t = i < get_planes_count() ? (object_ptr)m_planes[i] : m_units[i - get_planes_count()];
+            auto t = get_object(i);
             if (t->hp <= 0 || t->is_ally(owner, *this))
                 continue;
 
@@ -673,6 +722,31 @@ unit_ptr world::get_unit(int idx)
         return unit_ptr();
 
     return m_units[idx];
+}
+
+//------------------------------------------------------------
+
+int world::get_objects_count() const
+{
+    return int(m_planes.size() + m_units.size());
+}
+
+//------------------------------------------------------------
+
+object_ptr world::get_object(int idx)
+{
+    if (idx < 0)
+        return object_ptr();
+
+    if (idx < (int)m_planes.size())
+        return m_planes[idx];
+
+    idx -= (int)m_planes.size();
+
+    if (idx < (int)m_units.size())
+        return m_units[idx];
+
+    return object_ptr();
 }
 
 //------------------------------------------------------------
@@ -1215,9 +1289,9 @@ void plane::update_targets(world &w)
 
     bool first_target = targets.empty();
 
-    for (int i = 0; i < w.get_planes_count() + w.get_units_count(); ++i)
+    for (int i = 0; i < w.get_objects_count(); ++i)
     {
-        const object_ptr &o = i < w.get_planes_count() ? (object_ptr)w.get_plane(i) : w.get_unit(i - w.get_planes_count());
+        const auto o = w.get_object(i);
         if (o->is_ally(me, w))
             continue;
 
