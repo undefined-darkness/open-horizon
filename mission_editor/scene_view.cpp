@@ -51,6 +51,7 @@ void scene_view::add_object(const object &o)
 {
     m_objects.push_back(o);
     cache_mesh(o.id);
+    for (auto &o: game::get_objects_list()) if (m_objects.back().id == o.id) m_objects.back().dy = o.dy;
 }
 
 //------------------------------------------------------------
@@ -387,7 +388,7 @@ void scene_view::draw(const object &o)
         return;
 
     auto &m = it->second;
-    m.set_pos(pos_h(o.pos, o.y));
+    m.set_pos(pos_h(o.pos, o.y + o.dy));
     m.set_rot(nya_math::quat(nya_math::angle_deg(), o.yaw, 0.0f));
     m.draw(0);
 }
