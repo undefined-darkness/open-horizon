@@ -232,6 +232,9 @@ struct unit: public object
     virtual void set_follow(object_wptr target) {}
     virtual void set_target(object_wptr target) {}
 
+    enum target_search_mode { search_all, search_player, search_none };
+    virtual void set_target_search(target_search_mode mode) {}
+
     enum align { align_target, align_enemy, align_ally, align_neutral };
     virtual void set_align(align a) { m_align = a; }
     virtual void set_type_name(std::wstring name) { m_type_name = name; }
@@ -245,19 +248,7 @@ struct unit: public object
     virtual bool is_active() const { return m_active; }
     virtual align get_align() const { return m_align; }
 
-    virtual bool is_ally(const unit_ptr &u) const
-    {
-        if (!u)
-            return false;
-
-        if (get_align() == align_neutral || u->get_align() == align_neutral)
-            return true;
-
-        if (u->get_align() == get_align())
-            return true;
-
-        return u->get_align() != align_ally && get_align() != align_ally;
-    }
+    virtual bool is_ally(const unit_ptr &u) const;
 
     //object
 public:
@@ -266,6 +257,7 @@ public:
     virtual std::wstring get_type_name() { return m_type_name; }
     virtual bool get_tgt() { return m_align == align_target; }
     virtual bool is_ally(const plane_ptr &p, world &w) override { return m_align > align_enemy; }
+    virtual void take_damage(int damage, world &w, bool net_src = true) override;
 
 public:
     virtual void load_model(std::string model, float dy, renderer::world &w)

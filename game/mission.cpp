@@ -132,6 +132,7 @@ void mission::start(const char *plane, int color, const char *mission)
     m_script.add_callback("set_path", set_path);
     m_script.add_callback("set_follow", set_follow);
     m_script.add_callback("set_target", set_target);
+    m_script.add_callback("set_target_search", set_target_search);
     m_script.add_callback("set_align", set_align);
     m_script.add_callback("set_speed", set_speed);
     m_script.add_callback("set_speed_limit", set_speed_limit);
@@ -153,7 +154,7 @@ void mission::start(const char *plane, int color, const char *mission)
     current_mission = this;
     m_script.call("init");
 
-    for (auto &u: m_units) if (u.u->is_active() && !u.on_init.empty()) m_script.call(u.on_init), u.on_init.clear();
+    for (auto &u: m_units) if (u.u->is_active() && !u.on_init.empty()) m_script.call(u.on_init, {u.name}), u.on_init.clear();
 }
 
 //------------------------------------------------------------
@@ -331,7 +332,7 @@ void mission::on_kill(const object_ptr &k, const object_ptr &v)
             continue;
 
         if (!u.on_destroy.empty())
-            m_script.call(u.on_destroy);
+            m_script.call(u.on_destroy, {u.name});
         break;
     }
 }
@@ -438,7 +439,7 @@ int mission::set_active(lua_State *state)
 
         u.u->set_active(active);
         if (!u.on_init.empty())
-            current_mission->m_script.call(u.on_init), u.on_init.clear();
+            current_mission->m_script.call(u.on_init, {u.name}), u.on_init.clear();
     }
 
     return 0;
@@ -509,6 +510,36 @@ int mission::set_target(lua_State *state)
 
     auto t = current_mission->get_object(script::get_string(state, 1));
     for (auto &u: current_mission->m_units) if (u.name == name && u.u) u.u->set_target(t);
+
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::set_target_search(lua_State *state)
+{
+    if (script::get_args_count(state) < 2)
+    {
+        printf("invalid args count in function set_target_search\n");
+        return 0;
+    }
+
+    auto name = script::get_string(state, 0);
+    if (name.empty())
+        return 0;
+
+    unit::target_search_mode mode;
+    std::string mode_str = script::get_string(state, 1);
+    if (mode_str == "all")
+        mode = unit::search_all;
+    else if (mode_str == "player")
+        mode = unit::search_player;
+    else if (mode_str == "none")
+        mode = unit::search_none;
+    else
+        return 0;
+
+    for (auto &u: current_mission->m_units) if (u.name == name && u.u) u.u->set_target_search(mode);
 
     return 0;
 }

@@ -32,6 +32,7 @@ protected:
     static int set_path(lua_State *state);
     static int set_follow(lua_State *state);
     static int set_target(lua_State *state);
+    static int set_target_search(lua_State *state);
     static int set_align(lua_State *state);
     static int set_speed(lua_State *state);
     static int set_speed_limit(lua_State *state);

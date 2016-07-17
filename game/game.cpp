@@ -333,12 +333,41 @@ static const float kmph_to_meps = 1.0 / 3.6f;
 
 //------------------------------------------------------------
 
+bool unit::is_ally(const unit_ptr &u) const
+{
+    if (!u)
+        return false;
+
+    if (get_align() == align_neutral || u->get_align() == align_neutral)
+        return true;
+
+    if (u->get_align() == get_align())
+        return true;
+
+    return u->get_align() != align_ally && get_align() != align_ally;
+}
+
+//------------------------------------------------------------
+
+void unit::take_damage(int damage, world &w, bool net_src)
+{
+    object::take_damage(damage, w, net_src);
+    if (hp <= 0 && m_render.is_valid() && m_render->visible)
+    {
+        w.spawn_explosion(get_pos(), 30.0f);
+        m_render->visible = false;
+    }
+}
+
+//------------------------------------------------------------
+
 struct unit_vehicle: public unit
 {
 public:
     virtual void set_path(const path &p, bool loop) override { m_path = p; m_path_loop = loop; }
     virtual void set_follow(object_wptr f) override { m_follow = f; }
     virtual void set_target(object_wptr t) override { m_target = t; }
+    virtual void set_target_search(target_search_mode mode) { m_target_search = mode; }
 
     virtual void set_speed(float speed) override
     {
@@ -353,6 +382,9 @@ public:
 
     virtual void update(int dt, world &w) override
     {
+        if (hp <= 0)
+            return;
+
         if (m_first_update)
         {
             m_first_update = false;
@@ -387,7 +419,7 @@ public:
 
         if (m_target.expired())
         {
-            if (m_ai == ai_air_to_air)
+            if (m_ai == ai_air_to_air && m_target_search != search_none)
             {
                 float min_dist = 10000.0f;
                 for (int i = 0; i < w.get_planes_count() + w.get_units_count(); ++i)
@@ -403,6 +435,9 @@ public:
                     }
                     else
                     {
+                        if (m_target_search == search_player)
+                            continue;
+
                         auto u = w.get_unit(i - w.get_planes_count());
                         if (is_ally(u))
                             continue;
@@ -577,6 +612,7 @@ protected:
     bool m_path_loop = false;
     bool m_ground = true;
     object_wptr m_target;
+    target_search_mode m_target_search = search_all;
     object_wptr m_follow;
     bool m_first_update = true;
     vec3 m_vel;
@@ -701,28 +737,17 @@ bool world::area_damage(const vec3 &pos, float radius, int damage, const plane_p
 {
     bool hit = false;
 
-    for (auto &p: m_planes)
+    for (int i = 0; i < get_objects_count(); ++i)
     {
-        if (!p || p->hp <= 0 || is_ally(owner, p) || (p->get_pos() - pos).length() > radius)
+        auto o = get_object(i);
+        if (!o || o->hp <= 0 || o->is_ally(owner, *this) || (o->get_pos() - pos).length() > radius)
             continue;
 
-        p->take_damage(damage, *this);
+        o->take_damage(damage, *this);
         hit = true;
 
-        if (p->hp <= 0)
-            on_kill(owner, p);
-    }
-
-    for (auto &u: m_units)
-    {
-        if (!u || u->hp <= 0 || u->is_ally(owner, *this) || (u->get_pos() - pos).length() > radius)
-            continue;
-
-        u->take_damage(damage, *this);
-        hit = true;
-
-        if (u->hp <= 0)
-            on_kill(owner, u);
+        if (o->hp <= 0)
+            on_kill(owner, o);
     }
 
     return hit;
@@ -1403,6 +1428,16 @@ void plane::update_targets(world &w)
         t->cos = target_dir.dot(dir) / dist;
     }
 
+    auto *wp = &w;
+    targets.erase(std::remove_if(targets.begin(), targets.end(),
+                                 [me, wp](const target_lock &t)
+                                 {
+                                     if (t.target.expired())
+                                         return true;
+
+                                     auto tt = t.target.lock();
+                                     return tt->hp <= 0 || tt->is_ally(me, *wp);
+                                 }), targets.end());
     if (targets.size() > 1)
         std::sort(first_target ? targets.begin() : std::next(targets.begin()), targets.end(), [](const target_lock &a, const target_lock &b) { return a.dist < b.dist; });
 }
