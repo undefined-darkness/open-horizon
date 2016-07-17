@@ -48,6 +48,7 @@ protected:
     static int set_hud_visible(lua_State *state);
 
     static int mission_clear(lua_State *state);
+    static int mission_update(lua_State *state);
     static int mission_fail(lua_State *state);
 
 private:

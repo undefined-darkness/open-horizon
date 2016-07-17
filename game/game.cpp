@@ -344,7 +344,10 @@ bool unit::is_ally(const unit_ptr &u) const
     if (u->get_align() == get_align())
         return true;
 
-    return u->get_align() != align_ally && get_align() != align_ally;
+    if (u->get_align() == align_ally || get_align() == align_ally)
+        return false;
+
+    return true;
 }
 
 //------------------------------------------------------------
@@ -410,6 +413,8 @@ public:
                     m_vel = get_rot().rotate(vec3::forward() * m_params.speed_cruise);
                 m_dpos = vec3();
             }
+
+            return;
         }
 
         float kdt = dt * 0.001f;
@@ -419,8 +424,11 @@ public:
 
         if (m_target.expired())
         {
-            if (m_ai == ai_air_to_air && m_target_search != search_none)
+            if (m_ai > ai_default && m_target_search != search_none)
             {
+                const bool air = m_ai == ai_air_to_air || m_ai == ai_air_multirole,
+                ground = m_ai == ai_air_to_ground || m_ai == ai_air_multirole;
+
                 float min_dist = 10000.0f;
                 for (int i = 0; i < w.get_planes_count() + w.get_units_count(); ++i)
                 {
@@ -445,7 +453,7 @@ public:
                         t = u;
                     }
 
-                    if (t->hp <= 0)
+                    if (!t->is_targetable(air, ground))
                         continue;
 
                     const float dist = (t->get_pos() - get_pos()).length();
@@ -575,13 +583,22 @@ public:
             }
         }
 
-        set_pos(get_pos() + m_vel * kdt);
+        vec3 pos = get_pos() + m_vel * kdt;
+
+        const float h = w.get_height(pos.x, pos.z);
+        pos.y = nya_math::clamp(pos.y, h + m_params.height_min, h + m_params.height_max); //ToDo
+
+        set_pos(pos);
     }
 
     unit_vehicle(const object_params &p, const location_params &lp): m_params(p)
     {
         if (p.ai == "air_to_air")
             m_ai = ai_air_to_air;
+        else if (p.ai == "air_to_ground")
+            m_ai = ai_air_to_ground;
+        else if (p.ai == "air_multirole")
+            m_ai = ai_air_multirole;
 
         for (auto &d: p.weapons)
         {
@@ -595,7 +612,7 @@ public:
     //object
 public:
     vec3 get_vel() override { return m_vel; }
-    virtual bool is_targetable(bool air, bool ground) override { return hp > 0 && (ground == m_ground || air != m_ground); }
+    virtual bool is_targetable(bool air, bool ground) override { return hp > 0 && m_active && (ground == m_ground || air != m_ground); }
     virtual float get_hit_radius() override { return m_params.hit_radius; }
 
 protected:
@@ -620,7 +637,7 @@ protected:
     object_params m_params;
     float m_speed_limit = 9000.0f;
 
-    enum ai_type { ai_default, ai_air_to_air };
+    enum ai_type { ai_default, ai_air_to_air, ai_air_to_ground, ai_air_multirole };
     ai_type m_ai = ai_default;
 
     struct wpn
@@ -1262,6 +1279,7 @@ namespace
         popup_priority_hit,
         popup_priority_assist,
         popup_priority_destroyed,
+        popup_priority_mission_update,
         popup_priority_mission_result = gui::hud::popup_priority_mission_result
     };
 }
@@ -1293,9 +1311,18 @@ void world::popup_mission_clear()
 
 //------------------------------------------------------------
 
+void world::popup_mission_update()
+{
+    m_hud.popup(L"MISSION STATUS UPDATE", popup_priority_mission_update, gui::hud::green, 5000);
+    play_sound_ui("MISSION_UPDATE");
+}
+
+//------------------------------------------------------------
+
 void world::popup_mission_fail()
 {
     m_hud.popup(L"MISSION FAILED", popup_priority_mission_result, gui::hud::red);
+    play_sound_ui("MISSION_FAILED");
 }
 
 //------------------------------------------------------------

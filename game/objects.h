@@ -19,6 +19,7 @@ struct object_params
     float hit_radius = 0.0f;
     float speed_min = 0.0f, speed_cruise = 0.0f, speed_max = 0.0f, accel = 0.0f, decel = 0.0f;
     float turn_speed = 0.0f, turn_roll = 0.0f;
+    float height_min = 0.0, height_max = 0.0f;
 
     struct wpn { std::string id, model; };
     std::vector<wpn> weapons;
@@ -76,6 +77,13 @@ static const objects_list &get_objects_list()
             {
                 tp.turn_speed = tt.attribute("speed").as_float();
                 tp.turn_roll = tt.attribute("roll").as_float();
+            }
+
+            auto h = t.child("height");
+            if (h)
+            {
+                tp.height_min = h.attribute("min").as_float();
+                tp.height_max = h.attribute("max").as_float();
             }
 
             for (pugi::xml_node w = t.child("weapon"); w; w = w.next_sibling("weapon"))

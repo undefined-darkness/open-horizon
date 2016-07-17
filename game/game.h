@@ -264,6 +264,9 @@ public:
     {
         m_render = w.add_object(model.c_str());
         m_dpos.y = dy;
+
+        if (m_render.is_valid())
+            m_render->visible = m_active;
     }
 
     virtual void update(int dt, world &w) {}
@@ -326,6 +329,7 @@ public:
     void popup_hit(bool destroyed);
     void popup_miss();
     void popup_mission_clear();
+    void popup_mission_update();
     void popup_mission_fail();
 
     void update(int dt);

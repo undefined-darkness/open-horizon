@@ -148,6 +148,7 @@ void mission::start(const char *plane, int color, const char *mission)
     m_script.add_callback("set_hud_visible", set_hud_visible);
 
     m_script.add_callback("mission_clear", mission_clear);
+    m_script.add_callback("mission_update", mission_update);
     m_script.add_callback("mission_fail", mission_fail);
 
     m_finished = false;
@@ -750,6 +751,17 @@ int mission::mission_clear(lua_State *state)
 
     current_mission->m_world.popup_mission_clear();
     current_mission->m_finished = true;
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int mission::mission_update(lua_State *state)
+{
+    if (current_mission->m_finished)
+        return 0;
+
+    current_mission->m_world.popup_mission_update();
     return 0;
 }
 

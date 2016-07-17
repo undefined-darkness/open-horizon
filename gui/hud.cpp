@@ -761,13 +761,13 @@ void hud::add_target(const std::wstring &name, const std::wstring &player_name, 
 
 //------------------------------------------------------------
 
-void hud::popup(const std::wstring &text, int priority, const color &c)
+void hud::popup(const std::wstring &text, int priority, const color &c, int time)
 {
     if (m_popup_time > 0 && m_popup_priority > priority)
         return;
 
     m_popup_text = text;
-    m_popup_time = 2000;
+    m_popup_time = time;
     m_popup_color = c;
     m_popup_priority = priority;
 }

@@ -86,7 +86,7 @@ public:
     void add_text(int idx, const std::wstring &text, const std::string &font, int x, int y, const color &c);
 
     enum { popup_priority_mission_result = 200 };
-    void popup(const std::wstring &text, int priority, const color &c = green);
+    void popup(const std::wstring &text, int priority, const color &c = green, int time = 2000);
 
     void set_radio(std::wstring name, std::wstring message, int time, const color &c = white);
 
