@@ -32,6 +32,21 @@ bool script::load(std::string text)
 
     m_state = luaL_newstate();
 
+    luaL_openlibs(m_state);
+
+    const luaL_Reg libs[] =
+    {
+        {LUA_STRLIBNAME, luaopen_string},
+        {LUA_MATHLIBNAME, luaopen_math},
+    };
+
+    for (auto &l: libs)
+    {
+        lua_pushcfunction(m_state, l.func);
+        lua_pushstring(m_state, l.name);
+        lua_call(m_state, 1, 0);
+    }
+
     add_callback("print", func_print);
 
     if (luaL_dostring(m_state, text.c_str()) != 0)
@@ -41,8 +56,6 @@ bool script::load(std::string text)
         return false;
     }
 
-    luaopen_string(m_state);
-    luaopen_math(m_state);
     lua_pcall(m_state, 0, 0, 0);
 
     return true;
