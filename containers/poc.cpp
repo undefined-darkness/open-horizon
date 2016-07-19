@@ -23,7 +23,8 @@ bool poc_file::open(nya_resources::resource_data *data)
         return false;
 
     uint32_t count = 0;
-    if (!m_data->read_chunk(&count, sizeof(uint32_t)))
+    if (!m_data->read_chunk(&count, sizeof(uint32_t))
+        || (count + 1) > m_data->get_size() / sizeof(uint32_t)) //check overflow
     {
         close();
         return false;
@@ -49,7 +50,8 @@ bool poc_file::open(const void *data, size_t size)
         return false;
 
     uint32_t count = *(uint32_t *)m_raw_data;
-    if ((count + 1) * sizeof(uint32_t) > size)
+    if ((count + 1) * sizeof(uint32_t) > size
+        || (count + 1) > size / sizeof(uint32_t)) //check overflow
     {
         m_raw_data = 0;
         return false;
@@ -62,6 +64,31 @@ bool poc_file::open(const void *data, size_t size)
 
 bool poc_file::init(const uint32_t *offsets, uint32_t count, uint32_t size)
 {
+    //check if it's a valid container
+
+    if (!count || offsets[0] < (count + 1) * sizeof(uint32_t))
+        return false;
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        if (offsets[i] >= size)
+        {
+            close();
+            return false;
+        }
+    }
+
+    for (uint32_t i = 1; i < count; ++i)
+    {
+        if (offsets[i] < offsets[i-1])
+        {
+            close();
+            return false;
+        }
+    }
+
+    //read entries
+
     m_entries.resize(count);
     for (size_t i = 0; i < m_entries.size(); ++i)
     {
@@ -90,8 +117,6 @@ bool poc_file::init(const uint32_t *offsets, uint32_t count, uint32_t size)
         e.type = 0;
         if (e.size >= sizeof(uint32_t))
             read_chunk_data(idx++, &e.type, sizeof(uint32_t));
-
-        assert(e.offset + e.size <= size);
     }
 
     return true;

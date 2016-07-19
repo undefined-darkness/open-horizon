@@ -26,6 +26,7 @@ private:
     const unsigned char *m_indices4;
     const unsigned char *m_indices8;
     const unsigned int *m_colors;
+    bool m_greyscale = false;
 
     union color
     {

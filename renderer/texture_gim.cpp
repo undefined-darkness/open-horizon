@@ -32,9 +32,15 @@ gim_decoder::gim_decoder(const void *data, size_t size): m_indices4(0), m_indice
     assume(header.zero2 == 0);
     assume(header.zero3 == 0);
 
-    if (header.format == 19 || header.format == 27)
+    if (header.format == 19  && header.width * header.height == r.get_remained())
     {
         m_indices8 = (unsigned char *)r.get_data();
+        m_greyscale = true;
+    }
+    else if (header.format == 19 || header.format == 27)
+    {
+        m_indices8 = (unsigned char *)r.get_data();
+
         if (!r.skip(header.width * header.height + 16))
             return;
 
@@ -61,6 +67,8 @@ gim_decoder::gim_decoder(const void *data, size_t size): m_indices4(0), m_indice
         m_indices4 = (unsigned char *)r.get_data();
         if (!r.skip(header.width * header.height / 2 + 16))
             return;
+
+        long test = r.get_remained();
 
         if (r.get_offset() % 16 > 0)
             r.skip(16 - r.get_offset() % 16);
@@ -96,6 +104,15 @@ bool gim_decoder::decode(void *buf) const
 {
     if (!buf || !get_required_size())
         return false;
+
+    if (m_greyscale)
+    {
+        auto cbuf = (color *)buf;
+        for (size_t i = 0; i < m_width * m_height; ++i)
+            cbuf[i].r = cbuf[i].g = cbuf[i].b = m_indices8[i], cbuf[i].a = 255;
+
+        return true;
+    }
 
     if (m_indices8)
     {
