@@ -66,8 +66,11 @@ bool poc_file::init(const uint32_t *offsets, uint32_t count, uint32_t size)
 {
     //check if it's a valid container
 
-    if (!count || offsets[0] < (count + 1) * sizeof(uint32_t))
+    if (!count || count > 1024)
+    {
+        close();
         return false;
+    }
 
     for (uint32_t i = 0; i < count; ++i)
     {
@@ -78,14 +81,25 @@ bool poc_file::init(const uint32_t *offsets, uint32_t count, uint32_t size)
         }
     }
 
-    for (uint32_t i = 1; i < count; ++i)
+    const uint32_t min_offset = (count + 1) * sizeof(uint32_t);
+    uint32_t last_good_offset = 0;
+
+    for (uint32_t i = 0; i < count; ++i)
     {
-        if (offsets[i] < offsets[i-1])
+        if (!offsets[i])
+            continue;
+
+        if (offsets[i] < min_offset || offsets[i] < last_good_offset)
         {
             close();
             return false;
         }
+
+        last_good_offset = offsets[i];
     }
+
+    if (last_good_offset == 0)
+        return false;
 
     //read entries
 
@@ -108,7 +122,7 @@ bool poc_file::init(const uint32_t *offsets, uint32_t count, uint32_t size)
         }
     }
 
-    if (!m_entries.empty())
+    if (m_entries.back().offset > 0)
         m_entries.back().size = size - m_entries.back().offset;
 
     int idx = 0;
@@ -116,7 +130,8 @@ bool poc_file::init(const uint32_t *offsets, uint32_t count, uint32_t size)
     {
         e.type = 0;
         if (e.size >= sizeof(uint32_t))
-            read_chunk_data(idx++, &e.type, sizeof(uint32_t));
+            read_chunk_data(idx, &e.type, sizeof(uint32_t));
+        ++idx;
     }
 
     return true;
