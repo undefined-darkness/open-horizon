@@ -208,7 +208,18 @@ struct missile
     w_ptr<plane> owner;
     object_wptr target;
     fvalue homing_angle_cos;
-    bvalue is_saam;
+    fvalue dmg_radius;
+    fvalue dmg;
+
+    enum track_mode
+    {
+        mode_missile,
+        mode_saam,
+        mode_4agm,
+        mode_lagm
+    };
+
+    track_mode mode = mode_missile;
 
     void update_homing(int dt, world &w);
     void update(int dt, world &w);

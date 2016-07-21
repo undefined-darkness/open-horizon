@@ -218,8 +218,15 @@ missile_ptr world::add_missile(const char *id, const renderer::model &mdl, bool 
     const std::string pref = "." + std::string(id) + ".action.";
     m->time = param.get_float(pref + "endTime") * 1000;
     m->homing_angle_cos = cosf(param.get_float(pref + "hormingAng"));
+    m->dmg_radius = missile_dmg_radius;
+    m->dmg = missile_damage;
+
     if (strcmp(id, "SAAM") == 0)
-        m->is_saam = true;
+        m->mode = missile::mode_saam;
+    else if (strcmp(id, "_4AGM") == 0)
+        m->mode = missile::mode_4agm, m->dmg_radius *= 1.5, m->dmg *= 1.5;
+    else if (strcmp(id, "LAGM") == 0)
+        m->mode = missile::mode_lagm, m->dmg_radius *= 1.5, m->dmg *= 1.5;
 
     m_missiles.push_back(m);
     return m;
@@ -1109,10 +1116,10 @@ void world::update(int dt)
         auto m = this->get_missile(a);
         if (m && m->time > 0)
         {
-            this->spawn_explosion(m->phys->pos, missile_dmg_radius / 2);
+            this->spawn_explosion(m->phys->pos, m->dmg / 2.0f);
             m->time = 0;
             const bool target_alive = !m->target.expired() && m->target.lock()->hp > 0;
-            const bool hit = area_damage(m->phys->pos, missile_dmg_radius, missile_damage, m->owner.lock());
+            const bool hit = area_damage(m->phys->pos, m->dmg_radius, m->dmg, m->owner.lock());
             if (m->owner.lock() == get_player() && target_alive)
             {
                 if (hit)
@@ -1772,6 +1779,12 @@ void plane::update(int dt, world &w)
             //ToDo
         }
 
+        if (special.id == "LAGM")
+        {
+            if (!targets.empty())
+                targets.front().locked = targets.front().can_lock(special);
+        }
+
         if (special.id == "QAAM")
         {
             if (!targets.empty())
@@ -2193,19 +2206,52 @@ void missile::update_homing(int dt, world &w)
         return;
     }
 
-    if (is_saam)
-    {
-        if (owner.expired() || owner.lock()->hp <= 0)
-            target.reset();
-    }
-
     if (target.expired())
         return;
 
     const vec3 dir = phys->rot.rotate(vec3::forward());
     auto t = target.lock();
-    auto diff = t->get_pos() - phys->pos;
-    const vec3 target_dir = (diff + (t->get_vel() - phys->vel) * dt * 0.001f).normalize();
+    auto diff = t->get_pos() - phys->pos + (t->get_vel() - phys->vel) * (dt * 0.001f);
+
+    switch (mode)
+    {
+        case mode_missile: break;
+
+        case mode_saam:
+        {
+            if (owner.expired() || owner.lock()->hp <= 0)
+            {
+                target.reset();
+                return;
+            }
+        }
+        break;
+
+        case mode_4agm:
+        {
+            phys->target_dir = diff;
+            if (nya_math::vec2(diff.x, diff.z).length() > 50.0f)
+                diff.y = phys->rot.rotate(vec3::forward()).y;
+
+            phys->target_dir = diff.normalize();
+            return;
+        }
+        break;
+
+        case mode_lagm:
+        {
+            if (phys->pos.y - w.get_height(phys->pos.x, phys->pos.z) > 50.0f)
+                diff = diff.normalize() - vec3::up();
+            else if (diff.length() > 500.0)
+                diff.y = 0;
+
+            phys->target_dir = diff.normalize();
+            return;
+        }
+        break;
+    }
+
+    const vec3 target_dir = diff.normalize();
     if (dir.dot(target_dir) > homing_angle_cos || !t->is_targetable(true, true))
     {
         phys->target_dir = target_dir;
@@ -2216,7 +2262,7 @@ void missile::update_homing(int dt, world &w)
     else
     {
         target.reset();
-        if (!is_saam && owner.lock() == w.get_player())
+        if (mode == mode_saam && owner.lock() == w.get_player())
             w.popup_miss();
     }
 }
@@ -2253,10 +2299,10 @@ void missile::update(int dt, world &w)
             //if (vec3::normalize(target.lock()->phys->vel) * dir.normalize() < -0.5)  //direct shoot
             //    missile_damage *= 3;
 
-            w.spawn_explosion(phys->pos, missile_dmg_radius / 2);
+            w.spawn_explosion(phys->pos, dmg / 2.0);
 
             const bool target_alive = t->hp > 0;
-            const bool hit = w.area_damage(phys->pos, missile_dmg_radius, missile_damage, owner.lock());
+            const bool hit = w.area_damage(phys->pos, dmg_radius, dmg, owner.lock());
             if (!hit && target_alive)
             {
                 t->take_damage(missile_damage, w);
