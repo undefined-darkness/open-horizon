@@ -17,20 +17,16 @@ gim_decoder::gim_decoder(const void *data, size_t size): m_indices4(0), m_indice
     {
         uint32_t sign;
         uint32_t unknown;
-        uint32_t zero[2];
-        uint8_t zero2, unknown2[2], format;
-        uint32_t unknown3;
-        uint32_t zero3;
+        uint32_t unknown2[2];
+        uint8_t unknown3[3], format;
+        uint32_t unknown4;
+        uint32_t unknown5;
         uint16_t width, height;
 
     } const header = r.read<gim_header>();
 
     if (header.sign != '\0MIG')
         return;
-
-    assume(header.zero[0] == 0 && header.zero[1] == 0);
-    assume(header.zero2 == 0);
-    assume(header.zero3 == 0);
 
     if (header.format == 19  && header.width * header.height == r.get_remained())
     {
