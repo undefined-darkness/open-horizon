@@ -80,6 +80,8 @@ public:
     {
         nya_math::vec3 pos;
         float radius = 50.0f;
+
+        zone() { attributes["display"] = "none"; }
     };
 
     const std::vector<zone> get_zones() const { return m_zones; }

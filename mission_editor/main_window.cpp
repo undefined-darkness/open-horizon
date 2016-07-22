@@ -181,6 +181,12 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     edit_zone_l->addRow("Active:", m_edit_zone_active);
     edit_zone_l->addRow("On enter:", m_edit_zone_enter = new function_edit(this, "on_enter"));
     edit_zone_l->addRow("On leave:", m_edit_zone_leave = new function_edit(this, "on_leave"));
+    m_edit_zone_display = new QComboBox();
+    const char *display_id[] = {"none", "point", "circle", "cylinder"};
+    for (auto a: display_id)
+        m_edit_zone_display->addItem(a);
+    QObject::connect(m_edit_zone_display, SIGNAL(activated(int)), this, SLOT(on_zone_display_changed(int)));
+    edit_zone_l->addRow("Display:", m_edit_zone_display);
     auto edit_zone_w = new QWidget;
     edit_zone_w->setLayout(edit_zone_l);
     m_edit->addWidget(edit_zone_w);
@@ -636,6 +642,7 @@ void main_window::on_obj_selected()
                 m_edit_zone_active->setChecked(s.active);
                 m_edit_zone_enter->setText(s.attributes["on_enter"].c_str());
                 m_edit_zone_leave->setText(s.attributes["on_leave"].c_str());
+                m_edit_zone_display->setCurrentText(s.attributes["display"].c_str());
                 m_edit->setCurrentIndex(edit_zone);
             }
             else
@@ -788,6 +795,13 @@ void main_window::on_active_changed(int state)
 void main_window::on_align_changed(int state)
 {
     m_scene_view->get_selected().attributes["align"] = to_str(m_edit_obj_align->itemText(state));
+}
+
+//------------------------------------------------------------
+
+void main_window::on_zone_display_changed(int state)
+{
+    m_scene_view->get_selected().attributes["display"] = to_str(m_edit_zone_display->itemText(state));
 }
 
 //------------------------------------------------------------

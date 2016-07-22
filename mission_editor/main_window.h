@@ -40,6 +40,7 @@ private slots:
     void on_obj_path_changed(const QString &s);
     void on_active_changed(int state);
     void on_align_changed(int state);
+    void on_zone_display_changed(int state);
     void on_path_loop_changed(int state);
     void on_script_changed();
     void on_compile_script();
@@ -64,6 +65,7 @@ private:
     QLineEdit *m_edit_obj_follow, *m_edit_obj_target, *m_edit_obj_path;
     function_edit *m_edit_obj_init, *m_edit_obj_destroy;
     function_edit *m_edit_zone_enter, *m_edit_zone_leave;
+    QComboBox *m_edit_zone_display;
     QTreeWidget *m_objects_tree;
     QTextEdit *m_script_edit, *m_script_errors;
     QLineEdit *m_mission_title, *m_mission_author, *m_mission_email;
