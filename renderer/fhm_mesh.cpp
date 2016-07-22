@@ -1108,13 +1108,14 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
 
             auto &t = tmp_groups[total_rgf_idx];
 
-            //printf("%s\n", gf.name.c_str());
-
             t.opaque = gf.name.find("OBJ_O") != std::string::npos; //really?
 
             //ToDo: correct apaque/alpha instead of guessing
-            if (gf.name.find("mrot0") || gf.name.find("auta_"))
+            if (gf.name.find("mrot0") != std::string::npos || gf.name.find("_prop") != std::string::npos ||
+                gf.name.find("auta_") != std::string::npos || gf.name.find("auto_") != std::string::npos)
                 t.opaque = false;
+
+            //printf("%s %d\n", gf.name.c_str(), t.opaque);
 
             t.day = gf.name.find("dayt_") != std::string::npos;
             t.night = gf.name.find("nigt_") != std::string::npos;
