@@ -155,11 +155,31 @@ void scene_view::set_focus(std::string group, int idx)
     else if (group == "player spawn")
         o = &m_player;
 
-    if (!o)
-        return;
-
     nya_math::vec2 dpos(0.0f, 100.0f);
     dpos.rotate(m_camera_yaw);
+
+    if (!o)
+    {
+        if (group == "zones" && idx < m_zones.size())
+        {
+            auto &z = m_zones[idx];
+            m_camera_pos = z.pos + nya_math::vec3(dpos.x, 50.0, dpos.y);
+            m_camera_pitch = 30;
+        }
+        else if (group == "paths" && idx < m_paths.size())
+        {
+            auto &p = m_paths[idx];
+            if (p.points.empty())
+                return;
+
+            auto &pp = p.points.front();
+            m_camera_pos = pp.xyz() + nya_math::vec3(dpos.x, pp.w + 50.0, dpos.y);
+            m_camera_pitch = 30;
+        }
+
+        update();
+        return;
+    }
 
     m_camera_pos = o->pos + nya_math::vec3(dpos.x, o->y + 50.0, dpos.y);
     m_camera_pitch = 30;

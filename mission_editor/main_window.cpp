@@ -322,6 +322,8 @@ void main_window::on_new_mission()
     m_mission_title->setText("Mission");
 
     m_navigator->setCurrentIndex(mode_info);
+
+    m_scene_view->set_focus("player spawn", 0);
 }
 
 //------------------------------------------------------------
@@ -440,6 +442,8 @@ void main_window::on_load_mission()
 
     update_objects_tree();
     m_navigator->setCurrentIndex(mode_info);
+
+    m_scene_view->set_focus("player spawn", 0);
 }
 
 //------------------------------------------------------------
