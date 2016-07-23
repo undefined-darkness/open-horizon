@@ -25,6 +25,10 @@ namespace
 
 //------------------------------------------------------------
 
+static const float kmph_to_meps = 1.0 / 3.6f;
+
+//------------------------------------------------------------
+
 namespace { const static params::text_params &get_arms_param() { static params::text_params ap("Arms/ArmsParam.txt"); return ap; } }
 
 //------------------------------------------------------------
@@ -167,6 +171,9 @@ wpn_params::wpn_params(std::string id, std::string model)
     action_range = param.get_float(action + "range");
     reload_time = param.get_float(lockon + "reload") * 1000;
 
+    speed_init = param.get_float("." + id + ".action.speedInit") * kmph_to_meps;
+    gravity = param.get_float("." + id + ".action.gravity");
+
     float lon_angle = param.get_float(lockon + "angle") * 0.5f * nya_math::constants::pi / 180.0f;
     //I dunno
     if (id == "SAAM")
@@ -288,7 +295,7 @@ bomb_ptr world::add_bomb(const char *id, const renderer::model &m)
     b->phys = m_phys_world.add_bomb(id, true);
     b->render = m_render_world.add_object(m);
 
-    b->dmg_radius = missile_dmg_radius * 2.0f;
+    b->dmg_radius = 80.0f; //ToDo
     b->dmg = missile_damage * 2.0f;
 
     m_bombs.push_back(b);
@@ -361,10 +368,6 @@ plane_ptr world::add_plane(const char *preset, const char *player_name, int colo
     get_arms_param(); //cache
     return p;
 }
-
-//------------------------------------------------------------
-
-static const float kmph_to_meps = 1.0 / 3.6f;
 
 //------------------------------------------------------------
 
@@ -1191,11 +1194,11 @@ void world::update(int dt)
         }
     }
 
-    for (auto &p: m_planes)
-        p->update(dt, *this);
-
     if (!m_player.expired())
         m_player.lock()->update_hud(*this, m_hud);
+
+    for (auto &p: m_planes)
+        p->update(dt, *this);
 
     for (auto &m: m_missiles)
         m->update(dt, *this);
@@ -1894,6 +1897,8 @@ void plane::update(int dt, world &w)
             b->phys->rot = render->get_special_mount_rot(special_mount_idx);
             b->phys->vel = phys->vel;
 
+            b->phys->vel += get_rot().rotate(vec3::forward() * special.speed_init);
+
             play_relative(w, "UGB", 0, get_rot().rotate_inv(b->phys->pos - get_pos()));
 
             --special_count;
@@ -2109,7 +2114,27 @@ void plane::update_hud(world &w, gui::hud &h)
         h.set_saam(locked, locked && !saam_missile.expired());
     }
     else if (special.id == "MGP")
+    {
         h.set_mgp(special_weapon_selected && controls.missile);
+    }
+    else if (special_weapon_selected && (special.id == "UGB" || special.id == "GPB"))
+    {
+        const vec3 p = get_pos();
+        const float height = p.y - w.get_height(p.x, p.z);
+        const vec3 vel = phys->vel + dir * special.speed_init;
+
+        // y"*t^2/2 + y'*t + y = 0
+        // x'*t + x = 0
+
+        const float d = vel.y * vel.y + 2.0f * special.gravity * height;
+        const float t = (vel.y + sqrt(d)) / special.gravity;
+
+        vec3 tpos = p + vel * t;
+        tpos.y = w.get_height(tpos.x, tpos.z);
+
+        const float dmg_radius = 80.0f; //ToDo
+        h.set_bomb_target(tpos, dmg_radius, gui::hud::green);
+    }
 
     if (special.lockon_count == 1)
     {

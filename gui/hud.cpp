@@ -236,6 +236,26 @@ void hud::draw(const render &r)
 
         if (m_mgp)
             m_common.draw(r, 145, proj_pos.x, proj_pos.y, green);
+
+        if (m_bomb_target_enabled)
+        {
+            static std::vector<vec2> line(2);
+            line[0] = proj_pos;
+            if (get_project_pos(r, m_bomb_target.p, line[1]))
+            {
+                m_common.draw(r, 145, line[1].x, line[1].y, m_bomb_target.c);
+
+                r.draw(line, m_bomb_target.c); //ToDo
+            }
+        }
+    }
+
+    if (m_bomb_target_enabled)
+    {
+        for (auto &t: m_bomb_targets)
+        {
+            vec2 p; get_project_pos(r, t.p, p); m_common.draw(r, 145, p.x, p.y, t.c); //ToDo
+        }
     }
 
     if (m_pitch_ladder)
@@ -685,6 +705,7 @@ void hud::set_missiles(const char *id, int icon)
     }
 
     m_missiles_icon = icon;
+    m_bomb_target_enabled = false;
 }
 
 //------------------------------------------------------------
@@ -757,6 +778,25 @@ void hud::add_target(const nya_math::vec3 &pos, float yaw, target_type target, s
 void hud::add_target(const std::wstring &name, const std::wstring &player_name, const nya_math::vec3 &pos, float yaw, target_type target, select_type select, bool tgt)
 {
     m_targets.push_back({name, player_name, pos, yaw, target, select, tgt});
+}
+
+//------------------------------------------------------------
+
+void hud::set_bomb_target(const nya_math::vec3 &pos, float radius, const color &c)
+{
+    m_bomb_target_enabled = true;
+    m_bomb_target.p = pos;
+    m_bomb_target.r = radius;
+    m_bomb_target.c = c;
+}
+
+//------------------------------------------------------------
+
+void hud::add_bomb_circle(const nya_math::vec3 &pos, float radius, const color &c)
+{
+    bomb_target t;
+    t.p = pos, t.r = radius, t.c = c;
+    m_bomb_targets.push_back(t);
 }
 
 //------------------------------------------------------------

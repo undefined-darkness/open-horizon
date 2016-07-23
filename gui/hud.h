@@ -79,6 +79,10 @@ public:
     void add_target(const nya_math::vec3 &pos, float yaw, target_type target, select_type select);
     void add_target(const std::wstring &name, const std::wstring &player_name, const nya_math::vec3 &pos, float yaw, target_type target, select_type select, bool tgt);
 
+    void set_bomb_target(const nya_math::vec3 &pos, float radius, const color &c);
+    void clear_bomb_circles() { m_bomb_targets.clear(); }
+    void add_bomb_circle(const nya_math::vec3 &pos, float radius, const color &c);
+
     void clear_ecm() { m_ecms.clear(); }
     void add_ecm(const nya_math::vec3 &pos) { m_ecms.push_back(pos); }
 
@@ -122,6 +126,11 @@ private:
     };
 
     std::vector<target> m_targets;
+
+    struct bomb_target { nya_math::vec3 p; float r = 0.0f; color c; };
+    std::vector<bomb_target> m_bomb_targets;
+    bomb_target m_bomb_target;
+    bvalue m_bomb_target_enabled;
 
     std::vector<nya_math::vec3> m_ecms;
 

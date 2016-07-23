@@ -93,6 +93,8 @@ struct wpn_params
     bvalue lockon_ground;
     fvalue action_range;
     ivalue reload_time;
+    fvalue speed_init;
+    fvalue gravity;
 
     wpn_params() {}
     wpn_params(std::string id, std::string model);
