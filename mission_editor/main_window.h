@@ -11,6 +11,7 @@
 
 class scene_view;
 class function_edit;
+class objects_tree;
 
 //------------------------------------------------------------
 
@@ -54,6 +55,7 @@ public:
     bool has_script_function(std::string function);
     void update_attribute(std::string id, std::string value);
     void goto_script_function(std::string function);
+    void reorder_objects(std::string group, std::vector<int> from, int to);
 
 private:
     scene_view *m_scene_view;
@@ -66,7 +68,7 @@ private:
     function_edit *m_edit_obj_init, *m_edit_obj_destroy;
     function_edit *m_edit_zone_enter, *m_edit_zone_leave;
     QComboBox *m_edit_zone_display;
-    QTreeWidget *m_objects_tree;
+    objects_tree *m_objects_tree;
     QTextEdit *m_script_edit, *m_script_errors;
     QLineEdit *m_mission_title, *m_mission_author, *m_mission_email;
     QTextEdit *m_mission_description;
@@ -75,6 +77,10 @@ private:
     std::string m_filename;
     game::script m_script;
 };
+
+//------------------------------------------------------------
+
+inline const char *to_str(const QString &s) { return s.toUtf8().constData(); }
 
 //------------------------------------------------------------
 
@@ -108,6 +114,20 @@ private:
 
 private slots:
     void on_changed(const QString &s);
+};
+
+//------------------------------------------------------------
+
+class objects_tree: public QTreeWidget
+{
+public:
+    objects_tree(main_window *parent): m_parent(parent) {}
+
+private:
+  virtual void dropEvent(QDropEvent * event);
+
+private:
+    main_window *m_parent;
 };
 
 //------------------------------------------------------------

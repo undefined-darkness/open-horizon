@@ -66,6 +66,9 @@ public:
     const std::vector<object> get_objects() const { return m_objects; }
     void clear_objects() { m_objects.clear(); }
     void add_object(const object &o);
+
+    void reorder_objects(std::string group, std::vector<int> from, int to);
+
     const object &get_player() const { return m_player; }
     void set_player(const object &p) { m_player = p; }
 

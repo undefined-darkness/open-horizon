@@ -43,15 +43,13 @@ inline void alert(std::string message)
     m->exec();
 }
 
-inline const char *to_str(const QString &s) { return s.toUtf8().constData(); }
-
 //------------------------------------------------------------
 
 inline QTreeWidgetItem *new_tree_group(std::string name)
 {
     auto group = new QTreeWidgetItem;
     group->setText(0, name.c_str());
-    group->setFlags(Qt::ItemIsEnabled);
+    group->setFlags(Qt::ItemIsEnabled | Qt::ItemIsDropEnabled);
     return group;
 }
 
@@ -61,7 +59,7 @@ inline QTreeWidgetItem *new_tree_item(std::string name)
 {
     auto item = new QTreeWidgetItem;
     item->setText(0, name.c_str());
-    item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
     return item;
 }
 
@@ -72,9 +70,11 @@ main_window::main_window(QWidget *parent): QMainWindow(parent)
     QSplitter *main_splitter = new QSplitter(this);
     setCentralWidget(main_splitter);
 
-    m_objects_tree = new QTreeWidget;
+    m_objects_tree = new objects_tree(this);
     m_objects_tree->setHeaderLabel("Objects selection");
     m_objects_tree->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    m_objects_tree->setDragDropMode(QAbstractItemView::InternalMove);
+    m_objects_tree->invisibleRootItem()->setFlags(0);
     connect(m_objects_tree, SIGNAL(itemSelectionChanged()), this, SLOT(on_obj_selected()));
     connect(m_objects_tree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(on_obj_focus(QTreeWidgetItem*, int)));
 
@@ -926,6 +926,13 @@ void main_window::goto_script_function(std::string function)
 
 //------------------------------------------------------------
 
+void main_window::reorder_objects(std::string group, std::vector<int> from, int to)
+{
+    m_scene_view->reorder_objects(group, from, to);
+}
+
+//------------------------------------------------------------
+
 highlight_lua::highlight_lua(QTextDocument *parent): QSyntaxHighlighter(parent)
 {
     QColor keyword_color = QColor(0xcc, 0, 0xa1);
@@ -1017,6 +1024,38 @@ void function_edit::on_changed(const QString &s)
     red.setColor(QPalette::Text, Qt::red);
     setPalette(m_window->has_script_function(to_str(s)) ? black : red);
     m_window->update_attribute(m_id, to_str(s));
+}
+
+//------------------------------------------------------------
+
+void objects_tree::dropEvent(QDropEvent * event)
+{
+  QModelIndex index = indexAt(event->pos());
+  if (!index.isValid() )
+    return;
+
+  QTreeWidgetItem* dest = itemFromIndex(index);
+  if (!dest)
+      return;
+
+  std::vector<int> from;
+
+  auto selected = selectedItems();
+  foreach(QTreeWidgetItem *s, selected)
+  {
+      if (s->parent() != dest->parent())
+          return;
+
+      from.push_back(s->parent()->indexOfChild(s));
+  }
+
+  int to = index.row();
+  if (dropIndicatorPosition() == QAbstractItemView::BelowItem)
+      ++to;
+
+  std::string group = to_str(dest->parent()->text(0));
+  m_parent->reorder_objects(group, from, to);
+  event->acceptProposedAction();
 }
 
 //------------------------------------------------------------

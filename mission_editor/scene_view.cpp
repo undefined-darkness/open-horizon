@@ -56,6 +56,45 @@ void scene_view::add_object(const object &o)
 
 //------------------------------------------------------------
 
+template<typename t> void reorder_objects_(std::vector<t> &objects, const std::vector<int> &from, int to)
+{
+    std::vector<t> insert;
+
+    for (auto &f: from)
+    {
+        if (f < to)
+            --to;
+
+        insert.push_back(objects[f]);
+    }
+
+    for (int i = (int)from.size() - 1; i >= 0; --i)
+        objects.erase(objects.begin() + from[i]);
+
+    objects.insert(objects.begin() + to, insert.begin(), insert.end());
+}
+
+//------------------------------------------------------------
+
+void scene_view::reorder_objects(std::string group, std::vector<int> from, int to)
+{
+    if (from.empty())
+        return;
+
+    std::sort(from.begin(), from.end());
+
+    if (group == "objects")
+        reorder_objects_(m_objects, from, to);
+    else if (group == "zones")
+        reorder_objects_(m_zones, from, to);
+    else if (group == "paths")
+        reorder_objects_(m_paths, from, to);
+
+    update_objects_tree();
+}
+
+//------------------------------------------------------------
+
 void scene_view::add_zone(const zone &z)
 {
     m_zones.push_back(z);
