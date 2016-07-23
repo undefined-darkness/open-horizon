@@ -37,7 +37,6 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
         }
     }
 
-    size_t plane_idx = 0;
     const auto planes = get_aircraft_ids({"fighter", "multirole"});
     assert(!planes.empty());
 
@@ -50,7 +49,7 @@ void team_deathmatch::start(const char *plane, int color, int special, const cha
         plane_ptr p;
         ai b;
 
-        const char *plane_name = planes[plane_idx = (plane_idx + 1) % planes.size()].c_str(); //ToDo
+        const char *plane_name = planes[rand() % planes.size()].c_str(); //ToDo
         p = m_world.add_plane(plane_name, "BOT", 0, false);
 
         b.set_plane(p);

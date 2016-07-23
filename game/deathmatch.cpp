@@ -33,7 +33,6 @@ void deathmatch::start(const char *plane, int color, int special, const char *lo
     }
 
     const auto planes = get_aircraft_ids({"fighter", "multirole"});
-    size_t plane_idx = 0;
     assert(!planes.empty());
 
     m_bots.clear();
@@ -45,7 +44,8 @@ void deathmatch::start(const char *plane, int color, int special, const char *lo
         plane_ptr p;
 
         ai b;
-        const char *plane_name = planes[plane_idx = (plane_idx + 1) % planes.size()].c_str(); //ToDo
+
+        const char *plane_name = planes[rand() % planes.size()].c_str(); //ToDo
         p = m_world.add_plane(plane_name, "BOT", 0, false);
         b.set_plane(p);
         m_bots.push_back(b);
