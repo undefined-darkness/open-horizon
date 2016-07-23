@@ -73,6 +73,7 @@ public:
     const char *get_location_name() { return m_location_name.c_str(); }
 
     object_ptr add_object(const char *name);
+    object_ptr add_object(const model &m);
 
     virtual aircraft_ptr add_aircraft(const char *name, int color, bool player);
     aircraft_ptr get_player_aircraft() { return m_player_aircraft; }

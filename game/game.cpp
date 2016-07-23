@@ -269,6 +269,34 @@ missile_ptr world::add_missile(const char *id, const renderer::model &mdl, net_m
 
 //------------------------------------------------------------
 
+bomb_ptr world::add_bomb(const plane_ptr &p)
+{
+    if (!p)
+        return bomb_ptr();
+
+    return add_bomb(p->special.id.c_str(), p->render->get_special_model());
+}
+
+//------------------------------------------------------------
+
+bomb_ptr world::add_bomb(const char *id, const renderer::model &m)
+{
+    if (!id)
+        return bomb_ptr();
+
+    bomb_ptr b(new bomb());
+    b->phys = m_phys_world.add_bomb(id, true);
+    b->render = m_render_world.add_object(m);
+
+    b->dmg_radius = missile_dmg_radius * 2.0f;
+    b->dmg = missile_damage * 2.0f;
+
+    m_bombs.push_back(b);
+    return b;
+}
+
+//------------------------------------------------------------
+
 plane_ptr world::add_plane(const char *preset, const char *player_name, int color, bool player, net_plane_ptr ptr)
 {
     if (!preset)
@@ -1082,6 +1110,8 @@ void world::update(int dt)
 
     m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m) { return (m->net && !m->net->source) ? m->net.unique() : m->time <= 0; }), m_missiles.end());
 
+    m_bombs.erase(std::remove_if(m_bombs.begin(), m_bombs.end(), [](const bomb_ptr &b) { return b->dead; }), m_bombs.end());
+
     m_units.erase(std::remove_if(m_units.begin(), m_units.end(), [](const unit_ptr &u) { return u.unique(); }), m_units.end());
 
     for (auto &p: m_planes)
@@ -1130,6 +1160,17 @@ void world::update(int dt)
         }
     });
 
+    m_phys_world.update_bombs(dt, [this](const phys::object_ptr &a, const phys::object_ptr &b)
+    {
+        auto m = this->get_bomb(a);
+        if (m && !m->dead)
+        {
+            this->spawn_explosion(m->phys->pos, m->dmg / 2.0f);
+            m->dead = true;
+            area_damage(m->phys->pos, m->dmg_radius, m->dmg, m->owner.lock());
+        }
+    });
+
     m_phys_world.update_bullets(dt);
 
     if (!m_player.expired())
@@ -1158,6 +1199,9 @@ void world::update(int dt)
 
     for (auto &m: m_missiles)
         m->update(dt, *this);
+
+    for (auto &b: m_bombs)
+        b->update(dt, *this);
 
     const auto &bullets_from = m_phys_world.get_bullets();
     auto &bullets_to = m_render_world.get_bullets();
@@ -1274,6 +1318,19 @@ missile_ptr world::get_missile(const phys::object_ptr &o)
     }
 
     return missile_ptr();
+}
+
+//------------------------------------------------------------
+
+bomb_ptr world::get_bomb(const phys::object_ptr &o)
+{
+    for (auto &b: m_bombs)
+    {
+        if (b->phys == o)
+            return b;
+    }
+
+    return bomb_ptr();
 }
 
 //------------------------------------------------------------
@@ -1821,6 +1878,27 @@ void plane::update(int dt, world &w)
             }
         }
 
+        if (need_fire && (special.id == "UGB" || special.id == "GPB"))
+        {
+            for (auto &s: special_cooldown) if (s <= 0) { s = special.reload_time; break; }
+
+            auto b = w.add_bomb(shared_from_this());
+            b->owner = shared_from_this();
+
+            special_mount_cooldown.resize(render->get_special_mount_count());
+
+            special_mount_idx = ++special_mount_idx % (int)special_mount_cooldown.size();
+            special_mount_cooldown[special_mount_idx] = special.reload_time;
+            render->set_special_visible(special_mount_idx, false);
+            b->phys->pos = render->get_special_mount_pos(special_mount_idx) + pos_fix;
+            b->phys->rot = render->get_special_mount_rot(special_mount_idx);
+            b->phys->vel = phys->vel;
+
+            play_relative(w, "UGB", 0, get_rot().rotate_inv(b->phys->pos - get_pos()));
+
+            --special_count;
+        }
+
         if (special.lockon_count > 1)
         {
             lock_timer += dt;
@@ -1913,12 +1991,11 @@ void plane::update(int dt, world &w)
 
                 if (i == 0)
                 {
-                    if (special.id == "QAAM")
-                        play_relative(w, "SHOT_MSL", random(0, 2), m->phys->rot.rotate_inv(m->phys->pos - get_pos()));
-                    else if (shot_cout > 1)
-                        play_relative(w, "SAAM", 0, vec3());
-                    else
-                        play_relative(w, "SAAM", 0, m->phys->rot.rotate_inv(m->phys->pos - get_pos()));
+                    if (special.id == "QAAM")  play_relative(w, "SHOT_MSL", random(0, 2), get_rot().rotate_inv(m->phys->pos - get_pos()));
+                    else if (special.id == "_4AGM") play_relative(w, "4AGM", 0, vec3());
+                    else if (special.id == "LAGM")  play_relative(w, "LAGM", 0, get_rot().rotate_inv(m->phys->pos - get_pos()));
+                    else if (shot_cout > 1)         play_relative(w, "SAAM", 0, vec3());
+                    else                            play_relative(w, "SAAM", 0, get_rot().rotate_inv(m->phys->pos - get_pos()));
                 }
             }
 
@@ -2318,6 +2395,14 @@ void missile::update(int dt, world &w)
         if (t->hp < 0)
             target.reset();
     }
+}
+
+//------------------------------------------------------------
+
+void bomb::update(int dt, world &w)
+{
+    render->mdl.set_pos(phys->pos);
+    render->mdl.set_rot(phys->rot);
 }
 
 //------------------------------------------------------------

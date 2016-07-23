@@ -223,10 +223,26 @@ struct missile
 
     void update_homing(int dt, world &w);
     void update(int dt, world &w);
-    void release();
 };
 
 typedef ptr<missile> missile_ptr;
+
+//------------------------------------------------------------
+
+struct bomb
+{
+    phys::bomb_ptr phys;
+    renderer::object_ptr render;
+    w_ptr<plane> owner;
+    object_wptr target;
+    fvalue dmg_radius;
+    fvalue dmg;
+    bvalue dead;
+
+    void update(int dt, world &w);
+};
+
+typedef ptr<bomb> bomb_ptr;
 
 //------------------------------------------------------------
 
@@ -301,6 +317,8 @@ public:
     plane_ptr add_plane(const char *preset, const char *player_name, int color, bool player, net_plane_ptr ptr = net_plane_ptr());
     missile_ptr add_missile(const plane_ptr &p, net_missile_ptr ptr = net_missile_ptr());
     missile_ptr add_missile(const char *id, const renderer::model &m, net_missile_ptr ptr = net_missile_ptr());
+    bomb_ptr add_bomb(const plane_ptr &p);
+    bomb_ptr add_bomb(const char *id, const renderer::model &m);
     unit_ptr add_unit(const char *id);
 
     void spawn_explosion(const vec3 &pos, float radius, bool net_src = true);
@@ -366,11 +384,13 @@ private:
 private:
     plane_ptr get_plane(const phys::object_ptr &o);
     missile_ptr get_missile(const phys::object_ptr &o);
+    bomb_ptr get_bomb(const phys::object_ptr &o);
 
 private:
     std::vector<plane_ptr> m_planes;
     w_ptr<plane> m_player;
     std::vector<missile_ptr> m_missiles;
+    std::vector<bomb_ptr> m_bombs;
     std::vector<unit_ptr> m_units;
     renderer::world &m_render_world;
     gui::hud &m_hud;

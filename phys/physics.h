@@ -96,6 +96,17 @@ typedef ptr<missile> missile_ptr;
 
 //------------------------------------------------------------
 
+struct bomb: public object
+{
+    fvalue gravity;
+
+    void update(int dt);
+};
+
+typedef ptr<bomb> bomb_ptr;
+
+//------------------------------------------------------------
+
 struct bullet
 {
     vec3 pos, vel;
@@ -111,11 +122,13 @@ public:
 
     plane_ptr add_plane(const char *name, bool add_to_world);
     missile_ptr add_missile(const char *name, bool add_to_world);
+    bomb_ptr add_bomb(const char *name, bool add_to_world);
 
     bool spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, vec3 &result);
 
     void update_planes(int dt, const hit_hunction &on_hit);
     void update_missiles(int dt, const hit_hunction &on_hit);
+    void update_bombs(int dt, const hit_hunction &on_hit);
     void update_bullets(int dt);
 
     const std::vector<bullet> &get_bullets() const { return m_bullets; }
@@ -123,8 +136,12 @@ public:
     float get_height(float x, float z, bool include_objects) const;
 
 private:
+    template<typename t> void update_projectiles(int dt, std::vector<t> &objects, const hit_hunction &on_hit);
+
+private:
     std::vector<plane_ptr> m_planes;
     std::vector<missile_ptr> m_missiles;
+    std::vector<bomb_ptr> m_bombs;
     std::vector<bullet> m_bullets;
 
     const static unsigned int location_size = 16;

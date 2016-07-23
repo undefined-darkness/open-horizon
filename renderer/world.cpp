@@ -23,6 +23,16 @@ object_ptr world::add_object(const char *name)
 
 //------------------------------------------------------------
 
+object_ptr world::add_object(const model &mdl)
+{
+    object_ptr o(true);
+    o->mdl = mdl;
+    m_objects.push_back(o);
+    return o;
+}
+
+//------------------------------------------------------------
+
 aircraft_ptr world::add_aircraft(const char *name, int color, bool player)
 {
     aircraft_ptr a(true);

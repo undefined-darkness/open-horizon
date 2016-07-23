@@ -110,7 +110,7 @@ void world::set_location(const char *name)
 
 plane_ptr world::add_plane(const char *name, bool add_to_world)
 {
-    plane_ptr p(new plane());
+    auto p = std::make_shared<plane>();
     p->params.load(("Player/Behavior/param_p_" + std::string(name) + ".bin").c_str());
     p->reset_state();
     if (add_to_world)
@@ -123,7 +123,7 @@ plane_ptr world::add_plane(const char *name, bool add_to_world)
 
 missile_ptr world::add_missile(const char *name, bool add_to_world)
 {
-    missile_ptr m(new missile());
+    auto m = std::make_shared<missile>();
 
     const std::string pref = "." + std::string(name) + ".action.";
 
@@ -142,6 +142,20 @@ missile_ptr world::add_missile(const char *name, bool add_to_world)
     if (add_to_world)
         m_missiles.push_back(m);
     return m;
+}
+
+//------------------------------------------------------------
+
+bomb_ptr world::add_bomb(const char *name, bool add_to_world)
+{
+    auto b = std::make_shared<bomb>();
+    const std::string pref = "." + std::string(name) + ".action.";
+    auto &param = get_arms_param();
+    b->gravity = param.get_float(pref + "gravity");
+
+    if (add_to_world)
+        m_bombs.push_back(b);
+    return b;
 }
 
 //------------------------------------------------------------
@@ -279,14 +293,14 @@ void world::update_planes(int dt, const hit_hunction &on_hit)
 
 //------------------------------------------------------------
 
-void world::update_missiles(int dt, const hit_hunction &on_hit)
+template<typename t> void world::update_projectiles(int dt, std::vector<t> &objects, const hit_hunction &on_hit)
 {
-    m_missiles.erase(std::remove_if(m_missiles.begin(), m_missiles.end(), [](const missile_ptr &m){ return m.unique(); }), m_missiles.end());
-    for (auto &m: m_missiles)
+    objects.erase(std::remove_if(objects.begin(), objects.end(), [](const t &o){ return o.unique(); }), objects.end());
+    for (auto &o: objects)
     {
-        m->update(dt);
+        o->update(dt);
 
-        const auto pt = m->pos + m->vel * (dt * 0.001f);
+        const auto pt = o->pos + o->vel * (dt * 0.001f);
 
         bool hit = pt.y < get_height(pt.x, pt.z, false) + 1.0f;
         if (!hit)
@@ -298,7 +312,7 @@ void world::update_missiles(int dt, const hit_hunction &on_hit)
                 {
                     const auto &mi = m_instances[i];
 
-                    auto lpt = mi.transform_inv(pt), lpf = mi.transform_inv(m->pos);
+                    auto lpt = mi.transform_inv(pt), lpf = mi.transform_inv(o->pos);
                     auto &m = m_meshes[mi.mesh_idx];
                     if (!m.bbox.test_intersect(lpt))
                         continue;
@@ -314,13 +328,26 @@ void world::update_missiles(int dt, const hit_hunction &on_hit)
 
         if (hit)
         {
-            //m->pos -= m->vel * (dt * 0.001f);
-            m->vel = vec3();
+            o->vel = vec3();
 
             if (on_hit)
-                on_hit(std::static_pointer_cast<object>(m), object_ptr());
+                on_hit(std::static_pointer_cast<object>(o), object_ptr());
         }
     }
+}
+
+//------------------------------------------------------------
+
+void world::update_missiles(int dt, const hit_hunction &on_hit)
+{
+    update_projectiles(dt, m_missiles, on_hit);
+}
+
+//------------------------------------------------------------
+
+void world::update_bombs(int dt, const hit_hunction &on_hit)
+{
+    update_projectiles(dt, m_bombs, on_hit);
 }
 
 //------------------------------------------------------------
@@ -616,6 +643,15 @@ void missile::update(int dt)
         vel = rot.rotate(vec3(0.0, 0.0, speed));
     }
 
+    pos += vel * kdt;
+}
+
+//------------------------------------------------------------
+
+void bomb::update(int dt)
+{
+    const float kdt = 0.001f * dt;
+    vel.y -= gravity * kdt;
     pos += vel * kdt;
 }
 
