@@ -1890,6 +1890,9 @@ void plane::update(int dt, world &w)
 
         if (special.id == "UGB" || special.id == "GPB")
         {
+            if (special.id == "GPB" && !targets.empty())
+                targets.front().locked = targets.front().can_lock(special);
+
             if (need_fire)
             {
                 for (auto &s: special_cooldown) if (s <= 0) { s = special.reload_time; break; }
@@ -2135,21 +2138,35 @@ void plane::update_hud(world &w, gui::hud &h)
     }
     else if (special_weapon_selected && (special.id == "UGB" || special.id == "GPB"))
     {
-        const vec3 p = get_pos();
-        const float ground_height = w.get_height(p.x, p.z);
-        const float height = p.y - ground_height;
-        const vec3 vel = phys->vel + dir * special.speed_init;
+        vec3 tpos;
 
-        // y"*t^2/2 + y'*t + y = 0
-        // x'*t + x = 0
+        if (special.id == "GPB" && !targets.empty() && targets.front().locked > 0)
+        {
+            auto &t = targets.front().target;
+            if (!t.expired())
+            {
+                tpos = t.lock()->get_pos();
+                h.set_bomb_target(tpos, bomb_dmg_radius, gui::hud::red);
+            }
+        }
+        else
+        {
+            const vec3 p = get_pos();
+            const float ground_height = w.get_height(p.x, p.z);
+            const float height = p.y - ground_height;
+            const vec3 vel = phys->vel + dir * special.speed_init;
 
-        const float d = vel.y * vel.y + 2.0f * special.gravity * height;
-        const float t = (vel.y + sqrt(d)) / special.gravity;
+            // y"*t^2/2 + y'*t + y = 0
+            // x'*t + x = 0
 
-        vec3 tpos = p + vel * t;
-        tpos.y = ground_height;
+            const float d = vel.y * vel.y + 2.0f * special.gravity * height;
+            const float t = (vel.y + sqrt(d)) / special.gravity;
 
-        h.set_bomb_target(tpos, bomb_dmg_radius, gui::hud::green);
+            tpos = p + vel * t;
+            tpos.y = ground_height;
+
+            h.set_bomb_target(tpos, bomb_dmg_radius, gui::hud::green);
+        }
 
         if (!bomb_marks.empty() && bomb_marks.back().need_update)
             bomb_marks.back().p = tpos, bomb_marks.back().need_update = false;
