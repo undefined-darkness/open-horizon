@@ -409,7 +409,7 @@ int mission::setup_timer(lua_State *state)
 int mission::stop_timer(lua_State *state)
 {
     auto args_count = script::get_args_count(state);
-    if (args_count < 2)
+    if (args_count < 1)
     {
         printf("invalid args count in function stop_timer\n");
         return 0;
