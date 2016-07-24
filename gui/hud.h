@@ -40,6 +40,10 @@ public:
     void set_target_arrow(bool visible, const nya_math::vec3 &dir = nya_math::vec3());
     void change_radar() { m_show_map = !m_show_map; }
 
+    void clear_zones() { m_zones.clear(); }
+    void add_zone(nya_math::vec3 pos);
+    void add_zone(nya_math::vec3 pos, float radius, circle_mesh::height_function get_height, bool solid);
+
     bool is_special_selected() const { return m_missiles_icon > 0; }
 
     void clear_scores();
@@ -135,6 +139,15 @@ private:
     circle_mesh m_bomb_target_mesh;
 
     std::vector<nya_math::vec3> m_ecms;
+
+    struct zone
+    {
+        nya_math::vec3 pos;
+        circle_mesh mesh;
+        bvalue mode_point;
+    };
+
+    std::vector<zone> m_zones;
 
     struct lock { bool locked = false, active = false; };
     std::vector<lock> m_locks;

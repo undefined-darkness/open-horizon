@@ -15,9 +15,10 @@ class circle_mesh
 public:
     void init() { init(nya_math::vec3(), 1.0f, 36, 0); }
 
-    void init(nya_math::vec3 pos, float radius, int num_segments, std::function<float(float x, float z)> get_height)
+    typedef std::function<float(float x, float z)> height_function;
+    void init(nya_math::vec3 pos, float radius, int num_segments, height_function get_height)
     {
-        release();
+        *this = circle_mesh(); //release
 
         m_material.get_default_pass().set_shader("shaders/color.nsh");
         auto &s = m_material.get_default_pass().get_state();
@@ -42,35 +43,34 @@ public:
 
         verts.push_back(verts.front()); //loop
 
-        m_vbo.set_vertex_data(verts.data(), sizeof(verts[0]), (int)verts.size());
-        m_vbo.set_element_type(nya_render::vbo::line_strip);
+        m_vbo.create();
+        m_vbo->set_vertex_data(verts.data(), sizeof(verts[0]), (int)verts.size());
+        m_vbo->set_element_type(nya_render::vbo::line_strip);
     }
 
     void set_pos(nya_math::vec3 pos) { m_transform.set_pos(pos); }
     void set_radius(float radius) { m_transform.set_scale(radius, 1.0f, radius); }
-    void set_color(nya_math::vec4 color) { m_material.set_param(0, color); }
+    void set_color(nya_math::vec4 color) { m_material.set_param(m_material.get_param_idx("color"), color); }
 
     void draw()
     {
+        if (!m_vbo.is_valid())
+            return;
+
         nya_scene::transform::set(m_transform);
         m_material.internal().set();
-        m_vbo.bind();
-        m_vbo.draw();
-        m_vbo.unbind();
+        m_vbo->bind();
+        m_vbo->draw();
+        m_vbo->unbind();
         m_material.internal().unset();
     }
 
-    void release()
-    {
-        m_transform = nya_scene::transform();
-        m_vbo.release();
-        m_material.unload();
-    }
+    ~circle_mesh() { if (m_vbo.get_ref_count() == 1) m_vbo->release(); }
 
 private:
     nya_scene::transform m_transform;
     nya_scene::material m_material;
-    nya_render::vbo m_vbo;
+    nya_scene::proxy<nya_render::vbo> m_vbo;
 };
 
 //------------------------------------------------------------

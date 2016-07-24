@@ -38,9 +38,7 @@ inline bool get_project_pos(const render &r, const nya_math::vec3 &pos, nya_math
 
 void hud::load(const char *aircraft_name, const char *location_name)
 {
-    //release
-    m_bomb_target_mesh.release();
-    *this = hud();
+    *this = hud(); //release
 
     if (!m_common_loaded)
     {
@@ -191,6 +189,20 @@ void hud::draw(const render &r)
     auto alert_color = green;
     if (!m_alerts.empty())
         alert_color = red;
+
+    for (auto &z: m_zones)
+    {
+        if (z.mode_point)
+        {
+            vec2 p;
+            if (!get_project_pos(r, z.pos, p))
+                continue;
+
+            m_common.draw(r, 173, p.x, p.y, green);
+        }
+        else
+            z.mesh.draw();
+    }
 
     wchar_t buf[255];
     m_fonts.draw_text(r, L"SPEED", "Zurich14", r.get_width()/2 - 210, r.get_height()/2 - 33, alert_color);
@@ -633,6 +645,27 @@ void hud::draw(const render &r)
 
     for (auto &t: m_texts)
         m_fonts.draw_text(r, t.t.c_str(), t.f.c_str(), t.x, t.y, green);
+}
+
+//------------------------------------------------------------
+
+void hud::add_zone(nya_math::vec3 pos)
+{
+    zone z;
+    z.pos = pos;
+    z.mode_point = true;
+    m_zones.push_back(z);
+}
+
+//------------------------------------------------------------
+
+void hud::add_zone(nya_math::vec3 pos, float radius, circle_mesh::height_function get_height, bool solid)
+{
+    zone z;
+    z.pos = pos;
+    z.mesh.init(pos, radius, 36, get_height);
+    z.mesh.set_color(green);
+    m_zones.push_back(z);
 }
 
 //------------------------------------------------------------

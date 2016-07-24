@@ -1114,6 +1114,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
             if (gf.name.find("mrot0") != std::string::npos || gf.name.find("_prop") != std::string::npos ||
                 gf.name.find("auta_") != std::string::npos || gf.name.find("auto_") != std::string::npos)
                 t.opaque = false;
+            if (gf.name.find("plth_") != std::string::npos)
+                t.opaque = true;
 
             //printf("%s %d\n", gf.name.c_str(), t.opaque);
 

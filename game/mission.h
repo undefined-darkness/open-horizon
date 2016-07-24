@@ -53,6 +53,7 @@ protected:
 
 private:
     object_ptr get_object(std::string id) const;
+    void update_zones();
 
 private:
     struct timer
@@ -95,6 +96,17 @@ private:
         vec3 pos;
         float radius = 0.0f, radius_sq = 0.0f;
         bool active = true;
+
+        enum display_type
+        {
+            display_none,
+            display_point,
+            display_circle,
+            display_cylinder
+        };
+
+        display_type display;
+
         std::vector<object_wptr> inside;
 
         bool is_inside(const object_ptr &p);

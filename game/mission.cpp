@@ -107,6 +107,14 @@ void mission::start(const char *plane, int color, const char *mission)
         z.on_enter = a.attribute("on_enter").as_string();
         z.on_leave = a.attribute("on_leave").as_string();
 
+        std::string display = a.attribute("display").as_string();
+        if (display == "point")
+            z.display = zone::display_point;
+        else if (display == "circle")
+            z.display = zone::display_circle;
+        else if (display == "cylinder")
+            z.display = zone::display_cylinder;
+
         m_zones.push_back(z);
     }
 
@@ -154,6 +162,7 @@ void mission::start(const char *plane, int color, const char *mission)
     m_finished = false;
     current_mission = this;
     m_script.call("init");
+    update_zones();
 
     for (auto &u: m_units) if (u.u->is_active() && !u.on_init.empty()) m_script.call(u.on_init, {u.name}), u.on_init.clear();
 }
@@ -442,6 +451,19 @@ int mission::set_active(lua_State *state)
         if (!u.on_init.empty())
             current_mission->m_script.call(u.on_init, {u.name}), u.on_init.clear();
     }
+
+    bool need_update_zones = false;
+    for (auto &z: current_mission->m_zones)
+    {
+        if (z.name != name || z.active == active)
+            continue;
+
+        need_update_zones = true;
+        z.active = active;
+    }
+
+    if (need_update_zones)
+        current_mission->update_zones();
 
     return 0;
 }
@@ -801,6 +823,28 @@ object_ptr mission::get_object(std::string id) const
     for (auto &u: m_units) if (u.name == id) return u.u;
 
     return object_ptr();
+}
+
+//------------------------------------------------------------
+
+void mission::update_zones()
+{
+    m_world.get_hud().clear_zones();
+    for (auto &z: m_zones)
+    {
+        if (!z.active)
+            continue;
+
+        if (z.display == zone::display_point)
+        {
+            m_world.get_hud().add_zone(z.pos);
+        }
+        else if(z.display == zone::display_circle || z.display == zone::display_cylinder)
+        {
+            auto hf = std::bind(&world::get_height, m_world, std::placeholders::_1, std::placeholders::_2);
+            m_world.get_hud().add_zone(z.pos, z.radius, hf, z.display == zone::display_cylinder);
+        }
+    }
 }
 
 //------------------------------------------------------------
