@@ -583,10 +583,15 @@ public:
             const auto pyr = rot.get_euler();
 
             const nya_math::angle_rad new_yaw=(xz_sqdist>eps*eps)? (atan2(v.x,v.z)) : pyr.y;
-            const nya_math::angle_rad new_pitch=(fabsf(v.y)>eps)? (-atan2(v.y,sqrtf(xz_sqdist))) : 0.0f;
+            nya_math::angle_rad new_pitch=(fabsf(v.y)>eps)? (-atan2(v.y,sqrtf(xz_sqdist))) : 0.0f;
             nya_math::angle_rad new_roll;
             if (!m_follow.expired())
                 new_roll = m_follow.lock()->get_rot().get_euler().z;
+
+            vec3 pos = get_pos() + m_vel * kdt;
+            const float h = w.get_height(pos.x, pos.z);
+            if ((new_pitch > 0.0f && pos.y <= h + m_params.height_min) || (new_pitch < 0.0f && pos.y >= h + m_params.height_max))
+                new_pitch = 0.0f;
 
             const auto ideal_rot = quat(new_pitch, new_yaw, new_roll);
 
