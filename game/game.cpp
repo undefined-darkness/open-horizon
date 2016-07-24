@@ -1661,6 +1661,16 @@ void plane::update_sound(world &w, std::string name, bool enabled, float volume)
 
 //------------------------------------------------------------
 
+inline float get_fall_time(float h, float v, float g)
+{
+    // y"*t^2/2 + y'*t + y = 0
+
+    const float d = v * v + 2.0f * g * h;
+    return (v + sqrt(d)) / g;
+}
+
+//------------------------------------------------------------
+
 void plane::update_ui_sound(world &w, std::string name, bool enabled)
 {
     auto &snd = sounds_ui[name];
@@ -1909,7 +1919,19 @@ void plane::update(int dt, world &w)
                 b->phys->rot = render->get_special_mount_rot(special_mount_idx);
                 b->phys->vel = phys->vel;
 
-                b->phys->vel += get_rot().rotate(vec3::forward() * special.speed_init);
+                if (special.id == "GPB" && !targets.empty() && targets.front().locked > 0 && !targets.front().target.expired())
+                {
+                    const vec3 p = get_pos();
+                    const float height = p.y - w.get_height(p.x, p.z);
+                    const float t = get_fall_time(height, 0.0f, special.gravity);
+
+                    const vec3 tdiff = targets.front().target.lock()->get_pos() - p;
+                    const float hspeed = tdiff.length() / t;
+
+                    b->phys->vel = vec3(tdiff.x, 0.0f, tdiff.z).normalize() * hspeed;
+                }
+                else
+                    b->phys->vel += get_rot().rotate(vec3::forward() * special.speed_init);
 
                 play_relative(w, "UGB", 0, get_rot().rotate_inv(b->phys->pos - get_pos()));
 
@@ -2152,17 +2174,12 @@ void plane::update_hud(world &w, gui::hud &h)
         else
         {
             const vec3 p = get_pos();
+            const vec3 v = phys->vel + dir * special.speed_init;
             const float ground_height = w.get_height(p.x, p.z);
             const float height = p.y - ground_height;
-            const vec3 vel = phys->vel + dir * special.speed_init;
+            const float t = get_fall_time(height, v.y, special.gravity);
 
-            // y"*t^2/2 + y'*t + y = 0
-            // x'*t + x = 0
-
-            const float d = vel.y * vel.y + 2.0f * special.gravity * height;
-            const float t = (vel.y + sqrt(d)) / special.gravity;
-
-            tpos = p + vel * t;
+            tpos = p + v * t;
             tpos.y = ground_height;
 
             h.set_bomb_target(tpos, bomb_dmg_radius, gui::hud::green);
