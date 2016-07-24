@@ -14,8 +14,13 @@
 #include <vector>
 #include <algorithm>
 #include <stdint.h>
-#include <locale>
-#include <codecvt>
+
+#if !defined __APPLE__ && __GNUC__ < 5
+    #define NO_CODECVT
+#else
+    #include <locale>
+    #include <codecvt>
+#endif
 
 #ifdef _WIN32
     #include <direct.h>
@@ -79,8 +84,12 @@ inline nya_memory::tmp_buffer_ref load_resource(const char *name)
 
 inline std::wstring to_wstring(const std::string &s)
 {
+#ifdef NO_CODECVT
+    return std::wstring(s.begin(), s.end()); //ToDo
+#else
     static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t> > converter;
     return converter.from_bytes(s);
+#endif
 }
 
 //------------------------------------------------------------
