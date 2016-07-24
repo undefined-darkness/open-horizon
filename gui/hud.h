@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ui.h"
+#include "circle_mesh.h"
 
 namespace gui
 {
@@ -131,6 +132,7 @@ private:
     std::vector<bomb_target> m_bomb_targets;
     bomb_target m_bomb_target;
     bvalue m_bomb_target_enabled;
+    circle_mesh m_bomb_target_mesh;
 
     std::vector<nya_math::vec3> m_ecms;
 

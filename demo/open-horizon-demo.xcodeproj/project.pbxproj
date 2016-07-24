@@ -153,6 +153,7 @@
 		F50EE62B1CD3BF3900DDED72 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		F50EE62F1CD3C0D100DDED72 /* file.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = file.cpp; path = ../sound/file.cpp; sourceTree = "<group>"; };
 		F50EE6301CD3C0D100DDED72 /* file.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = file.h; path = ../sound/file.h; sourceTree = "<group>"; };
+		F5287A781D44A39400F19022 /* circle_mesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = circle_mesh.h; path = ../gui/circle_mesh.h; sourceTree = "<group>"; };
 		F53304C61B09DEC300D8C3C7 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = menu.cpp; path = ../gui/menu.cpp; sourceTree = "<group>"; };
 		F53304C71B09DEC300D8C3C7 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = menu.h; path = ../gui/menu.h; sourceTree = "<group>"; };
 		F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = app_protocol_simple.cpp; path = ../deps/miso/src/app_protocol_simple.cpp; sourceTree = "<group>"; };
@@ -391,6 +392,7 @@
 		F57832381AFBE804005FE829 /* gui */ = {
 			isa = PBXGroup;
 			children = (
+				F5287A781D44A39400F19022 /* circle_mesh.h */,
 				F5A2A2DA1AFE86E4009765C1 /* hud.cpp */,
 				F5A2A2DB1AFE86E4009765C1 /* hud.h */,
 				F53304C61B09DEC300D8C3C7 /* menu.cpp */,

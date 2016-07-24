@@ -38,12 +38,15 @@ inline bool get_project_pos(const render &r, const nya_math::vec3 &pos, nya_math
 
 void hud::load(const char *aircraft_name, const char *location_name)
 {
-    *this = hud(); //release
+    //release
+    m_bomb_target_mesh.release();
+    *this = hud();
 
     if (!m_common_loaded)
     {
         m_fonts.load("Hud/hudCommon.fhm");
         m_common.load("Hud/hudCommon.fhm");
+        m_bomb_target_mesh.init();
         m_common_loaded = true;
     }
 
@@ -243,9 +246,12 @@ void hud::draw(const render &r)
             line[0] = proj_pos;
             if (get_project_pos(r, m_bomb_target.p, line[1]))
             {
-                m_common.draw(r, 145, line[1].x, line[1].y, m_bomb_target.c);
+                m_bomb_target_mesh.set_pos(m_bomb_target.p);
+                m_bomb_target_mesh.set_radius(m_bomb_target.r);
+                m_bomb_target_mesh.set_color(m_bomb_target.c);
+                m_bomb_target_mesh.draw();
 
-                r.draw(line, m_bomb_target.c); //ToDo
+                r.draw(line, m_bomb_target.c);
             }
         }
     }
@@ -254,7 +260,10 @@ void hud::draw(const render &r)
     {
         for (auto &t: m_bomb_targets)
         {
-            vec2 p; get_project_pos(r, t.p, p); m_common.draw(r, 145, p.x, p.y, t.c); //ToDo
+            m_bomb_target_mesh.set_pos(t.p);
+            m_bomb_target_mesh.set_radius(t.r);
+            m_bomb_target_mesh.set_color(t.c);
+            m_bomb_target_mesh.draw();
         }
     }
 

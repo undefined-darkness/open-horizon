@@ -2120,7 +2120,8 @@ void plane::update_hud(world &w, gui::hud &h)
     else if (special_weapon_selected && (special.id == "UGB" || special.id == "GPB"))
     {
         const vec3 p = get_pos();
-        const float height = p.y - w.get_height(p.x, p.z);
+        const float ground_height = w.get_height(p.x, p.z);
+        const float height = p.y - ground_height;
         const vec3 vel = phys->vel + dir * special.speed_init;
 
         // y"*t^2/2 + y'*t + y = 0
@@ -2130,7 +2131,7 @@ void plane::update_hud(world &w, gui::hud &h)
         const float t = (vel.y + sqrt(d)) / special.gravity;
 
         vec3 tpos = p + vel * t;
-        tpos.y = w.get_height(tpos.x, tpos.z);
+        tpos.y = ground_height;
 
         const float dmg_radius = 80.0f; //ToDo
         h.set_bomb_target(tpos, dmg_radius, gui::hud::green);

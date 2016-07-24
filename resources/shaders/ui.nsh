@@ -36,5 +36,4 @@ void main()
 {
     vec4 base = texture2D(base_map, tc);
     gl_FragColor = base * color;
-    //gl_FragColor = mix(vec4(1.0,0.0,0.0,0.5),base * color,base.a);
 }
