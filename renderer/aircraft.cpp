@@ -45,11 +45,13 @@ public:
             return nya_scene::texture();
 
         if (!m_mat.get_texture("decal").is_valid())
-        {
-            nya_scene::texture tex;
-            tex.build("\0\0\0\0", 1, 1, nya_render::texture::color_rgba);
-            m_mat.set_texture("decal", tex);
-        }
+            m_mat.set_texture("decal", shared::get_black_texture());
+
+        if (!m_mat.get_texture("colx").is_valid())
+            m_mat.set_texture("colx", shared::get_black_texture());
+
+        if (!m_mat.get_texture("coly").is_valid())
+            m_mat.set_texture("coly", shared::get_black_texture());
 
         nya_render::fbo fbo;
         nya_render::screen_quad quad;
@@ -95,8 +97,40 @@ public:
 
     struct mod_info: public color_info
     {
-        std::string zip_name, tex_name;
+        std::string zip_name, tex_name, spec_name;
         bool override_colors[6] = { false };
+
+        nya_scene::texture load_texture(std::string name)
+        {
+            if (name.empty())
+                return nya_scene::texture();
+
+            nya_resources::zip_resources_provider z;
+            z.open_archive(zip_name.c_str());
+            auto tr = z.access(name.c_str());
+            if (!tr)
+            {
+                z.close_archive();
+                return nya_scene::texture();
+            }
+
+            nya_scene::resource_data d(tr->get_size());
+            tr->read_all(d.get_data());
+            tr->release();
+            z.close_archive();
+
+            nya_scene::shared_texture stex;
+            if (!nya_scene::texture::load_tga(stex, d, name.c_str()))
+            {
+                d.free();
+                return nya_scene::texture();
+            }
+
+            d.free();
+            nya_scene::texture tex;
+            tex.create(stex);
+            return tex;
+        }
     };
 
     struct info
@@ -173,6 +207,10 @@ public:
                 auto img = root.child("image");
                 if (img)
                     m.tex_name = img.attribute("file").as_string();
+
+                auto simg = root.child("specular");
+                if (simg)
+                    m.spec_name = simg.attribute("file").as_string();
 
                 for (int i = 0; i < sizeof(m.colors) / sizeof(m.colors[0]); ++i)
                 {
@@ -439,14 +477,15 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
 
     color_baker baker;
 
+    nya_scene::texture spec_tex;
+
     if(!mat.textures.empty())
     {
         assert(mat.textures.size() == 2);
 
         baker.set_base(mat.textures[0]);
-        auto &spec_tex = mat.textures[1];
+        spec_tex = mat.textures[1];
 
-        m_mesh.set_texture(0, "specular", spec_tex);
         m_mesh.set_texture(m_engine_lod_idx, "specular", spec_tex);
 
          // made up _pcoledit name to bind data.pac.xml entry somehow
@@ -465,9 +504,7 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
         baker.set_colx((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mkx.img").c_str());
         baker.set_coly((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mky.img").c_str());
 
-        std::string spec_tex = tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_spe.img";
-        m_mesh.set_texture(0, "specular", spec_tex.c_str());
-        m_mesh.set_texture(m_engine_lod_idx, "specular", spec_tex.c_str());
+        spec_tex.load((tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_spe.img").c_str());
     }
 
     for (int i = 0; i < 6; ++i)
@@ -477,38 +514,29 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     {
         auto &cm = info->color_mods[color_idx - info->colors.size()];
         if (!cm.tex_name.empty())
-        {
-            nya_resources::zip_resources_provider z;
-            z.open_archive(cm.zip_name.c_str());
-            auto tr = z.access(cm.tex_name.c_str());
-            if (tr)
-            {
-                nya_scene::resource_data d(tr->get_size());
-                tr->read_all(d.get_data());
-                tr->release();
-
-                nya_scene::shared_texture stex;
-                if (nya_scene::texture::load_tga(stex, d, cm.tex_name.c_str()))
-                {
-                    nya_scene::texture tex;
-                    tex.create(stex);
-                    baker.set_decal(tex);
-                }
-
-                d.free();
-            }
-        }
+            baker.set_decal(cm.load_texture(cm.tex_name));
 
         for (int i = 0; i < 6; ++i)
         {
             if (cm.override_colors[i])
                 baker.set_color(i, cm.colors[i]);
         }
+
+        if (!cm.spec_name.empty())
+        {
+            color_baker spec_baker;
+            spec_baker.set_base(spec_tex);
+            spec_baker.set_decal(cm.load_texture(cm.spec_name));
+            spec_tex = spec_baker.bake();
+        }
     }
 
     auto diff_tex = baker.bake();
     m_mesh.set_texture(0, "diffuse", diff_tex );
     m_mesh.set_texture(m_engine_lod_idx, "diffuse", diff_tex );
+
+    m_mesh.set_texture(0, "specular", spec_tex);
+    m_mesh.set_texture(m_engine_lod_idx, "specular", spec_tex);
 
     m_mesh.set_material(0, mat.materials[0], "shaders/player_plane.nsh");
     if (player && m_engine_lod_idx >= 0 && mat.materials.size() > 2)
@@ -517,7 +545,6 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     m_mesh.set_relative_anim_time(0, 'rudl', 0.5);
     m_mesh.set_relative_anim_time(0, 'rudr', 0.5);
     m_mesh.set_relative_anim_time(0, 'rudn', 0.5);
-
 
     m_mesh.set_relative_anim_time(0, 'vwgn', 1.0);
     m_mesh.update(0);
