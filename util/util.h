@@ -15,7 +15,7 @@
 #include <algorithm>
 #include <stdint.h>
 
-#if !defined __APPLE__ && __GNUC__ < 5
+#if !defined __APPLE__ && defined __GNUC__ && __GNUC__ < 5
     #define NO_CODECVT
 #else
     #include <locale>
