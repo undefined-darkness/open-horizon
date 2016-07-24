@@ -103,6 +103,7 @@ struct wpn_params
 //------------------------------------------------------------
 
 struct missile;
+struct bomb;
 
 //------------------------------------------------------------
 
@@ -166,6 +167,15 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     ivalue lock_timer;
 
     w_ptr<game::missile> saam_missile;
+
+    struct bomb_mark
+    {
+        w_ptr<bomb> b;
+        vec3 p;
+        bvalue need_update;
+    };
+
+    std::vector<bomb_mark> bomb_marks;
 
     void reset_state();
     void set_pos(const vec3 &pos) { if (phys) phys->pos = pos; }

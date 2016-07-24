@@ -21,6 +21,7 @@ namespace
      //ToDo
     const int missile_damage = 80;
     const float missile_dmg_radius = 20;
+    const float bomb_dmg_radius = 80;
 }
 
 //------------------------------------------------------------
@@ -295,10 +296,11 @@ bomb_ptr world::add_bomb(const char *id, const renderer::model &m)
     b->phys = m_phys_world.add_bomb(id, true);
     b->render = m_render_world.add_object(m);
 
-    b->dmg_radius = 80.0f; //ToDo
+    b->dmg_radius = bomb_dmg_radius; //ToDo
     b->dmg = missile_damage * 2.0f;
 
     m_bombs.push_back(b);
+
     return b;
 }
 
@@ -1886,27 +1888,36 @@ void plane::update(int dt, world &w)
             }
         }
 
-        if (need_fire && (special.id == "UGB" || special.id == "GPB"))
+        if (special.id == "UGB" || special.id == "GPB")
         {
-            for (auto &s: special_cooldown) if (s <= 0) { s = special.reload_time; break; }
+            if (need_fire)
+            {
+                for (auto &s: special_cooldown) if (s <= 0) { s = special.reload_time; break; }
 
-            auto b = w.add_bomb(shared_from_this());
-            b->owner = shared_from_this();
+                auto b = w.add_bomb(shared_from_this());
+                b->owner = shared_from_this();
 
-            special_mount_cooldown.resize(render->get_special_mount_count());
+                special_mount_cooldown.resize(render->get_special_mount_count());
 
-            special_mount_idx = ++special_mount_idx % (int)special_mount_cooldown.size();
-            special_mount_cooldown[special_mount_idx] = special.reload_time;
-            render->set_special_visible(special_mount_idx, false);
-            b->phys->pos = render->get_special_mount_pos(special_mount_idx) + pos_fix;
-            b->phys->rot = render->get_special_mount_rot(special_mount_idx);
-            b->phys->vel = phys->vel;
+                special_mount_idx = ++special_mount_idx % (int)special_mount_cooldown.size();
+                special_mount_cooldown[special_mount_idx] = special.reload_time;
+                render->set_special_visible(special_mount_idx, false);
+                b->phys->pos = render->get_special_mount_pos(special_mount_idx) + pos_fix;
+                b->phys->rot = render->get_special_mount_rot(special_mount_idx);
+                b->phys->vel = phys->vel;
 
-            b->phys->vel += get_rot().rotate(vec3::forward() * special.speed_init);
+                b->phys->vel += get_rot().rotate(vec3::forward() * special.speed_init);
 
-            play_relative(w, "UGB", 0, get_rot().rotate_inv(b->phys->pos - get_pos()));
+                play_relative(w, "UGB", 0, get_rot().rotate_inv(b->phys->pos - get_pos()));
 
-            --special_count;
+                bomb_mark m;
+                m.b = b, m.need_update = true;
+                bomb_marks.push_back(m);
+
+                --special_count;
+            }
+
+            bomb_marks.erase(std::remove_if(bomb_marks.begin(), bomb_marks.end(), [](const bomb_mark &m) { return m.b.expired(); }), bomb_marks.end());
         }
 
         if (special.lockon_count > 1)
@@ -2138,9 +2149,15 @@ void plane::update_hud(world &w, gui::hud &h)
         vec3 tpos = p + vel * t;
         tpos.y = ground_height;
 
-        const float dmg_radius = 80.0f; //ToDo
-        h.set_bomb_target(tpos, dmg_radius, gui::hud::green);
+        h.set_bomb_target(tpos, bomb_dmg_radius, gui::hud::green);
+
+        if (!bomb_marks.empty() && bomb_marks.back().need_update)
+            bomb_marks.back().p = tpos, bomb_marks.back().need_update = false;
     }
+
+    h.clear_bomb_marks();
+    for (auto &m: bomb_marks)
+        h.add_bomb_mark(m.p, bomb_dmg_radius, gui::hud::green);
 
     if (special.lockon_count == 1)
     {

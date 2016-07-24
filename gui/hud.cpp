@@ -270,7 +270,7 @@ void hud::draw(const render &r)
 
     if (m_bomb_target_enabled)
     {
-        for (auto &t: m_bomb_targets)
+        for (auto &t: m_bomb_marks)
         {
             m_bomb_target_mesh.set_pos(t.p);
             m_bomb_target_mesh.set_radius(t.r);
@@ -837,11 +837,11 @@ void hud::set_bomb_target(const nya_math::vec3 &pos, float radius, const color &
 
 //------------------------------------------------------------
 
-void hud::add_bomb_circle(const nya_math::vec3 &pos, float radius, const color &c)
+void hud::add_bomb_mark(const nya_math::vec3 &pos, float radius, const color &c)
 {
     bomb_target t;
     t.p = pos, t.r = radius, t.c = c;
-    m_bomb_targets.push_back(t);
+    m_bomb_marks.push_back(t);
 }
 
 //------------------------------------------------------------
