@@ -156,7 +156,7 @@
       <Filter>Source Files\util</Filter>
     </ClCompile>
     <ClCompile Include="..\util\platform_dialogs.cpp">
-        <Filter>Source Files\util</Filter>
+      <Filter>Source Files\util</Filter>
     </ClCompile>
     <ClCompile Include="..\deps\pugixml-1.4\src\pugixml.cpp">
       <Filter>Source Files\deps\pugi</Filter>
@@ -204,6 +204,9 @@
       <Filter>Source Files\deps</Filter>
     </ClCompile>
     <ClCompile Include="..\game\script.cpp">
+      <Filter>Source Files\game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\game\mission.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
   </ItemGroup>
@@ -380,6 +383,9 @@
       <Filter>Source Files\game</Filter>
     </ClInclude>
     <ClInclude Include="..\game\objects.h">
+      <Filter>Source Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\mission.h">
       <Filter>Source Files\game</Filter>
     </ClInclude>
   </ItemGroup>

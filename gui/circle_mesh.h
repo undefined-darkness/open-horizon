@@ -5,6 +5,7 @@
 #pragma once
 
 #include "scene/mesh.h"
+#include <functional>
 
 namespace gui
 {

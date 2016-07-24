@@ -119,6 +119,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClCompile Include="..\game\ai.cpp" />
     <ClCompile Include="..\game\deathmatch.cpp" />
     <ClCompile Include="..\game\free_flight.cpp" />
+    <ClCompile Include="..\game\mission.cpp" />
     <ClCompile Include="..\game\network.cpp" />
     <ClCompile Include="..\game\network_client.cpp" />
     <ClCompile Include="..\game\network_server.cpp" />
@@ -196,6 +197,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClInclude Include="..\game\ai.h" />
     <ClInclude Include="..\game\deathmatch.h" />
     <ClInclude Include="..\game\free_flight.h" />
+    <ClInclude Include="..\game\mission.h" />
     <ClInclude Include="..\game\network.h" />
     <ClInclude Include="..\game\network_client.h" />
     <ClInclude Include="..\game\network_data.h" />
