@@ -2193,7 +2193,7 @@ void plane::update_hud(world &w, gui::hud &h)
     for (auto &m: bomb_marks)
         h.add_bomb_mark(m.p, bomb_dmg_radius, gui::hud::green);
 
-    if (special.lockon_count == 1)
+    if (special.lockon_count == 1 || special.id == "GPB")
     {
         const bool locked = !targets.empty() && targets.front().locked > 0;
         h.set_lock(0, locked && special_cooldown[0] <= 0, special_cooldown[0] <= 0);
