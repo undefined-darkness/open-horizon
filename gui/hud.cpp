@@ -663,8 +663,11 @@ void hud::add_zone(nya_math::vec3 pos, float radius, circle_mesh::height_functio
 {
     zone z;
     z.pos = pos;
-    z.mesh.init(pos, radius, 36, get_height);
-    z.mesh.set_color(green);
+    z.mesh.init(pos, radius, 36, get_height, solid ? 1000.0 : 0.0f);
+    auto color = green;
+    if (solid)
+        color.w *= 0.3f;
+    z.mesh.set_color(color);
     m_zones.push_back(z);
 }
 
