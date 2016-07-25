@@ -4,26 +4,26 @@
     <type id="bomber" hp="200" hit_radius="6">
         <speed min="300" cruise="600" max="1500" accel="50" decel="1000"/>
         <turn speed="0.1" turn_roll="30.0"/>
-        <height min="300" max="20000"/>
+        <height min="50" max="20000"/>
     </type>
 
     <type id="transport" hp="200" hit_radius="6">
         <speed min="300" cruise="600" max="1200" accel="50" decel="1000"/>
         <turn speed="0.1" turn_roll="30.0"/>
-        <height min="300" max="20000"/>
+        <height min="50" max="20000"/>
     </type>
 
     <type id="fighter" hp="100" hit_radius="3.5" ai="air_to_air">
         <speed min="300" cruise="600" max="2000" accel="100" decel="1000"/>
         <turn speed="0.2" turn_roll="50.0"/>
-        <height min="200" max="20000"/>
+        <height min="50" max="20000"/>
         <weapon id="MISSILE" model="msl_a0"/>
     </type>
 
     <type id="attacker" hp="100" hit_radius="3.5" ai="air_to_ground">
         <speed min="300" cruise="600" max="2000" accel="100" decel="1000"/>
         <turn speed="0.2" turn_roll="50.0"/>
-        <height min="100" max="20000"/>
+        <height min="50" max="20000"/>
     </type>
 
     <type id="heli" hp="100" hit_radius="3.5" ai="air_to_air">
