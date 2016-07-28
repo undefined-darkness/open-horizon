@@ -213,6 +213,7 @@ bool fhm_materials::load(const char *file_name)
             m.read_chunk_data(i, data.get_data());
             nya_scene::shared_texture st;
             nya_scene::texture::load_dds(st, data, "");
+            data.free();
             nya_scene::texture t;
             t.create(st);
             textures.push_back(t);

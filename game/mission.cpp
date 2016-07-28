@@ -327,6 +327,7 @@ void mission::end()
     m_radio.clear();
     m_radio_messages.clear();
     m_timers.clear();
+    m_zones.clear();
 }
 
 //------------------------------------------------------------
