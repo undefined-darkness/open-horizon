@@ -102,9 +102,12 @@ bool lens_flare::init(const nya_scene::texture_proxy &color, const nya_scene::te
         }
     }
 
-    m_mesh.set_vertex_data(verts, uint32_t(sizeof(vert)), uint32_t(sizeof(verts) / sizeof(verts[0])));
-    m_mesh.set_vertices(0, 4);
-    m_mesh.set_tc(0, 16, 4);
+    if (!m_mesh.is_valid())
+        m_mesh.create();
+
+    m_mesh->set_vertex_data(verts, uint32_t(sizeof(vert)), uint32_t(sizeof(verts) / sizeof(verts[0])));
+    m_mesh->set_vertices(0, 4);
+    m_mesh->set_tc(0, 16, 4);
 
     if (!m_dir_alpha.is_valid())
         m_dir_alpha.create();
@@ -157,9 +160,9 @@ void lens_flare::draw() const
 
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
     m_material.internal().set(nya_scene::material::default_pass);
-    m_mesh.bind();
-    m_mesh.draw();
-    m_mesh.unbind();
+    m_mesh->bind();
+    m_mesh->draw();
+    m_mesh->unbind();
     m_material.internal().unset();
 }
 

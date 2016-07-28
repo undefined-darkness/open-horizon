@@ -117,10 +117,13 @@ bool effect_clouds::load(const char *location_name, const location_params &param
         }
     }
 
-    m_mesh.set_vertex_data(&verts[0], uint32_t(sizeof(verts[0])), uint32_t(verts.size()));
-    m_mesh.set_vertices(0, 3);
-    m_mesh.set_tc(0, 12, 4); //tc1, tc2
-    m_mesh.set_tc(1, 12+16, 4); //dir, size
+    if (!m_mesh.is_valid())
+        m_mesh.create();
+
+    m_mesh->set_vertex_data(&verts[0], uint32_t(sizeof(verts[0])), uint32_t(verts.size()));
+    m_mesh->set_vertices(0, 3);
+    m_mesh->set_tc(0, 12, 4); //tc1, tc2
+    m_mesh->set_tc(1, 12+16, 4); //dir, size
 
     m_shader_obj.load("shaders/clouds.nsh");
     m_shader_hi_flat.load("shaders/clouds_hi_flat.nsh");
@@ -175,36 +178,42 @@ bool effect_clouds::load(const char *location_name, const location_params &param
 
 void effect_clouds::draw_flat()
 {
+    if (!m_mesh.is_valid())
+        return;
+
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
     nya_render::depth_test::enable(nya_render::depth_test::less);
     nya_render::zwrite::disable();
     nya_render::cull_face::disable();
     nya_render::blend::enable(nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
 
-    m_mesh.bind();
+    m_mesh->bind();
     m_shader_hi_flat.internal().set();
     m_flat_tex.internal().set();
 
-    m_mesh.draw(m_hi_flat_offset, m_hi_flat_count);
+    m_mesh->draw(m_hi_flat_offset, m_hi_flat_count);
 
     nya_render::blend::disable();
 
     m_flat_tex.internal().unset();
     m_shader_hi_flat.internal().unset();
-    m_mesh.unbind();
+    nya_render::vbo::unbind();
 }
 
 //------------------------------------------------------------
 
 void effect_clouds::draw_obj()
 {
+    if (!m_mesh.is_valid())
+        return;
+
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
     nya_render::depth_test::enable(nya_render::depth_test::less);
     nya_render::zwrite::disable();
     nya_render::cull_face::disable();
     nya_render::blend::enable(nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
 
-    m_mesh.bind();
+    m_mesh->bind();
     m_shader_obj.internal().set();
     m_obj_tex.internal().set();
 
@@ -229,14 +238,14 @@ void effect_clouds::draw_obj()
         const auto &o = m_clouds.obj_clouds[d.second];
         auto &l = m_obj_levels[d.second % m_obj_levels.size()];
         m_shader_obj.internal().set_uniform_value(m_shader_pos, o.second.x, height, o.second.y, 0.0f);
-        m_mesh.draw(l.offset,l.count);
+        m_mesh->draw(l.offset,l.count);
     }
 
     nya_render::blend::disable();
 
     m_obj_tex.internal().unset();
     m_shader_obj.internal().unset();
-    m_mesh.unbind();
+    nya_render::vbo::unbind();
 }
 
 bool effect_clouds::read_bdd(const char *name, bdd &bdd_res)

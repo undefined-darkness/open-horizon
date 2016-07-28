@@ -18,9 +18,11 @@ public:
     void apply_location(const location_params &params);
     void draw() const;
 
+    ~lens_flare() { if (m_mesh.get_ref_count() == 1) m_mesh->release(); }
+
 private:
     nya_scene::material m_material;
-    nya_render::vbo m_mesh;
+    nya_scene::proxy<nya_render::vbo> m_mesh;
     mutable nya_scene::material::param_proxy m_dir_alpha;
     params::fvalue m_brightness;
 

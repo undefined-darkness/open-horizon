@@ -18,6 +18,8 @@ public:
     void draw_flat();
     void draw_obj();
 
+    ~effect_clouds() { if (m_mesh.get_ref_count() == 1) m_mesh->release(); }
+
 private:
     typedef unsigned int uint;
     struct bdd_header
@@ -64,7 +66,7 @@ private:
     };
 
 private:
-    nya_render::vbo m_mesh;
+    nya_scene::proxy<nya_render::vbo> m_mesh;
 
     struct vert
     {
