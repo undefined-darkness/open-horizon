@@ -104,6 +104,9 @@ private:
     virtual void wheelEvent(QWheelEvent *event) override;
 
 private:
+    QSize minimumSizeHint() const { return QSize(50, 50); }
+
+private:
     nya_math::vec3 world_cursor_pos() const;
     void draw(const object &o);
     void cache_mesh(std::string name);
@@ -131,6 +134,8 @@ private:
     zone m_zone_add;
 
     std::map<std::string, std::set<int> > m_selection;
+
+    std::string m_load_location;
 };
 
 //------------------------------------------------------------

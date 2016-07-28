@@ -25,16 +25,8 @@ static const nya_math::vec4 blue = nya_math::vec4(100,200,200,255)/255.0;
 
 void scene_view::load_location(std::string name)
 {
-    context()->makeCurrent();
-    m_location = renderer::location();
-    shared::clear_textures();
-    m_location.load(name.c_str());
-    m_location_phys.set_location(name.c_str());
-    m_models.clear();
-    set_selected_add(m_selected_add.id);
-    m_camera_pos.set(0, 1000, 0);
-    m_camera_yaw = 0;
-    m_camera_pitch = 30;
+    m_load_location = name;
+    update();
 }
 
 //------------------------------------------------------------
@@ -313,6 +305,20 @@ void scene_view::resizeGL(int w, int h)
 
 void scene_view::paintGL()
 {
+    if (!m_load_location.empty())
+    {
+        m_location = renderer::location();
+        shared::clear_textures();
+        m_location.load(m_load_location.c_str());
+        m_location_phys.set_location(m_load_location.c_str());
+        m_models.clear();
+        set_selected_add(m_selected_add.id);
+        m_camera_pos.set(0, 1000, 0);
+        m_camera_yaw = 0;
+        m_camera_pitch = 30;
+        m_load_location.clear();
+    }
+
     const float height = m_location_phys.get_height(m_camera_pos.x, m_camera_pos.z, false);
 
     nya_scene::get_camera_proxy()->set_rot(m_camera_yaw, m_camera_pitch, 0.0f);
