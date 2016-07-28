@@ -54,13 +54,14 @@ protected:
         };
 
         std::vector<instance> instances;
-        nya_render::vbo vbo;
+        nya_scene::proxy<nya_render::vbo> vbo;
         float draw_dist;
         std::vector<uint> textures;
 
         nya_scene::texture color;
 
         mptx_mesh(): draw_dist(0.0f) {}
+        ~mptx_mesh() { if (vbo.get_ref_count() == 1) vbo->release(); }
     };
 
     void draw(const std::vector<mptx_mesh> &meshes);
@@ -92,8 +93,16 @@ protected:
         };
 
         std::vector<patch> patches;
-        nya_render::vbo vbo;
-        nya_render::vbo tree_vbo;
+        nya_scene::proxy<nya_render::vbo> vbo;
+        nya_scene::proxy<nya_render::vbo> tree_vbo;
+
+        ~landscape()
+        {
+            if (vbo.get_ref_count() == 1)
+                vbo->release();
+            if (tree_vbo.get_ref_count() == 1)
+                tree_vbo->release();
+        }
 
     public:
         std::vector<float> heights;

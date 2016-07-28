@@ -425,15 +425,21 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         p.tree_count = (uint)tree_verts.size() * 6 / 4 - p.tree_offset;
     }
 
-    m_landscape.vbo.set_vertex_data(vdata.get_vdata(), 5 * 4, vdata.get_vcount());
-    m_landscape.vbo.set_index_data(vdata.get_idata(), nya_render::vbo::index4b, vdata.get_icount());
-    m_landscape.vbo.set_tc(0, 3 * 4, 2);
+    if (!m_landscape.vbo.is_valid())
+        m_landscape.vbo.create();
+
+    m_landscape.vbo->set_vertex_data(vdata.get_vdata(), 5 * 4, vdata.get_vcount());
+    m_landscape.vbo->set_index_data(vdata.get_idata(), nya_render::vbo::index4b, vdata.get_icount());
+    m_landscape.vbo->set_tc(0, 3 * 4, 2);
 
     //tree_verts
     if (!tree_verts.empty())
     {
-        m_landscape.tree_vbo.set_vertex_data(tree_verts.data(), (uint)sizeof(tree_vert), (uint)tree_verts.size());
-        m_landscape.tree_vbo.set_tc(0, 3 * 4, 4);
+        if (!m_landscape.tree_vbo.is_valid())
+            m_landscape.tree_vbo.create();
+
+        m_landscape.tree_vbo->set_vertex_data(tree_verts.data(), (uint)sizeof(tree_vert), (uint)tree_verts.size());
+        m_landscape.tree_vbo->set_tc(0, 3 * 4, 4);
 
         std::vector<uint> tree_indices(tree_verts.size() * 6 / 4);
         for (uint i = 0, v = 0; i < (uint)tree_indices.size(); i += 6, v+=4)
@@ -445,7 +451,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             tree_indices[i + 4] = v + 2;
             tree_indices[i + 5] = v + 3;
         }
-        m_landscape.tree_vbo.set_index_data(tree_indices.data(), nya_render::vbo::index4b, (uint)tree_indices.size());
+        m_landscape.tree_vbo->set_index_data(tree_indices.data(), nya_render::vbo::index4b, (uint)tree_indices.size());
     }
 
     return true;
@@ -668,6 +674,8 @@ void fhm_location::draw(const std::vector<mptx_mesh> &meshes)
         m_map_parts_diffuse_texture.set(mesh.textures.size() > 0 ? shared::get_texture(mesh.textures[0]) : shared::get_black_texture());
         m_map_parts_specular_texture.set(mesh.textures.size() > 1 ? shared::get_texture(mesh.textures[1]) : shared::get_black_texture());
 
+        auto &vbo = mesh.vbo.get();
+
         m_map_parts_tr->set_count(0);
         for (size_t i = 0; i < mesh.instances.size(); ++i)
         {
@@ -684,9 +692,9 @@ void fhm_location::draw(const std::vector<mptx_mesh> &meshes)
             {
                 mat_unset = true;
                 m_map_parts_material.internal().set();
-                mesh.vbo.bind();
-                mesh.vbo.draw(0, mesh.vbo.get_verts_count(), mesh.vbo.get_element_type(), idx);
-                mesh.vbo.unbind();
+                vbo.bind();
+                vbo.draw(0, vbo.get_verts_count(), vbo.get_element_type(), idx);
+                vbo.unbind();
                 idx = 0;
             }
 
@@ -703,9 +711,9 @@ void fhm_location::draw(const std::vector<mptx_mesh> &meshes)
         {
             mat_unset = true;
             m_map_parts_material.internal().set(nya_scene::material::default_pass);
-            mesh.vbo.bind();
-            mesh.vbo.draw(0, mesh.vbo.get_verts_count(), mesh.vbo.get_element_type(), instances);
-            mesh.vbo.unbind();
+            vbo.bind();
+            vbo.draw(0, vbo.get_verts_count(), vbo.get_element_type(), instances);
+            vbo.unbind();
         }
     }
 
@@ -761,6 +769,9 @@ void fhm_location::draw_mptx_transparent()
 
 void fhm_location::draw_trees()
 {
+    if (!m_landscape.tree_vbo.is_valid())
+        return;
+
     const float tree_draw_distance = 7000;
 
     static nya_scene::transform t;
@@ -770,7 +781,7 @@ void fhm_location::draw_trees()
     nya_render::set_modelview_matrix(c.get_view_matrix());
     m_trees_material.internal().set();
 
-    m_landscape.tree_vbo.bind();
+    m_landscape.tree_vbo->bind();
     for (const auto &p: m_landscape.patches)
     {
         if (!c.get_frustum().test_intersect(p.box))
@@ -780,9 +791,9 @@ void fhm_location::draw_trees()
         if (sq > tree_draw_distance * tree_draw_distance)
             continue;
 
-        m_landscape.tree_vbo.draw(p.tree_offset, p.tree_count);
+        m_landscape.tree_vbo->draw(p.tree_offset, p.tree_count);
     }
-    m_landscape.tree_vbo.unbind();
+    nya_render::vbo::unbind();
     m_trees_material.internal().unset();
 }
 
@@ -797,13 +808,16 @@ const nya_scene::texture_proxy &fhm_location::get_trees_texture() const
 
 void fhm_location::draw_landscape()
 {
+    if (!m_landscape.vbo.is_valid())
+        return;
+
     auto &c = nya_scene::get_camera();
     nya_render::set_modelview_matrix(c.get_view_matrix());
     m_land_material.internal().set();
 
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
-    m_landscape.vbo.bind();
+    m_landscape.vbo->bind();
     for (const auto &p: m_landscape.patches)
     {
         if (!c.get_frustum().test_intersect(p.box))
@@ -820,11 +834,11 @@ void fhm_location::draw_landscape()
             const float hi_dist = 10000.0f;
             const float mid_dist = 15000.0f;
             if (sq < hi_dist * hi_dist)
-                m_landscape.vbo.draw(g.hi_offset, g.hi_count);
+                m_landscape.vbo->draw(g.hi_offset, g.hi_count);
             else if (sq < mid_dist * mid_dist)
-                m_landscape.vbo.draw(g.mid_offset, g.mid_count);
+                m_landscape.vbo->draw(g.mid_offset, g.mid_count);
             else
-                m_landscape.vbo.draw(g.low_offset, g.low_count);
+                m_landscape.vbo->draw(g.low_offset, g.low_count);
 
             shared::get_texture(g.tex_id).internal().unset();
         }
@@ -832,7 +846,7 @@ void fhm_location::draw_landscape()
 
     //glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
-    m_landscape.vbo.unbind();
+    nya_render::vbo::unbind();
     m_land_material.internal().unset();
 }
 
@@ -1078,9 +1092,12 @@ bool fhm_location::read_mptx(memory_reader &reader)
     //if (reader.get_remained() > 0)
     //    printf("%ld\n", reader.get_remained());
 
-    mesh.vbo.set_vertex_data(&verts[0], sizeof(mptx_vert), header.vert_count);
-    mesh.vbo.set_normals(12);
-    mesh.vbo.set_tc(0, 24, 3);
+    if (!mesh.vbo.is_valid())
+        mesh.vbo.create();
+
+    mesh.vbo->set_vertex_data(&verts[0], sizeof(mptx_vert), header.vert_count);
+    mesh.vbo->set_normals(12);
+    mesh.vbo->set_tc(0, 24, 3);
 
     return true;
 }
