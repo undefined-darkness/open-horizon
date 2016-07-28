@@ -713,7 +713,14 @@ void main_window::on_mode_changed(int idx)
         m_scene_view->set_mode(scene_view::mode(idx));
 
     if (idx != scene_view::mode_edit)
+    {
         m_objects_tree->clearSelection();
+
+        m_edit_obj_init->setText("");
+        m_edit_obj_destroy->setText("");
+        m_edit_zone_enter->setText("");
+        m_edit_zone_leave->setText("");
+    }
 
     m_scene_view->update();
 }
