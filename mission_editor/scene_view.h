@@ -134,8 +134,6 @@ private:
     zone m_zone_add;
 
     std::map<std::string, std::set<int> > m_selection;
-
-    std::string m_load_location;
 };
 
 //------------------------------------------------------------

@@ -25,7 +25,17 @@ static const nya_math::vec4 blue = nya_math::vec4(100,200,200,255)/255.0;
 
 void scene_view::load_location(std::string name)
 {
-    m_load_location = name;
+    makeCurrent();
+    m_location = renderer::location();
+    shared::clear_textures();
+    m_location.load(name.c_str());
+    m_location_phys.set_location(name.c_str());
+    m_models.clear();
+    set_selected_add(m_selected_add.id);
+    m_camera_pos.set(0, 1000, 0);
+    m_camera_yaw = 0;
+    m_camera_pitch = 30;
+    doneCurrent();
     update();
 }
 
@@ -34,7 +44,10 @@ void scene_view::load_location(std::string name)
 void scene_view::set_selected_add(std::string str)
 {
     m_selected_add.id = str;
+
+    makeCurrent();
     cache_mesh(str);
+    doneCurrent();
 }
 
 //------------------------------------------------------------
@@ -42,7 +55,9 @@ void scene_view::set_selected_add(std::string str)
 void scene_view::add_object(const object &o)
 {
     m_objects.push_back(o);
+    makeCurrent();
     cache_mesh(o.id);
+    doneCurrent();
     for (auto &o: game::get_objects_list()) if (m_objects.back().id == o.id) m_objects.back().dy = o.dy;
 }
 
@@ -91,7 +106,9 @@ void scene_view::add_zone(const zone &z)
 {
     m_zones.push_back(z);
     m_zones_internal.push_back({});
+    makeCurrent();
     update_zone(z, m_zones_internal.back());
+    doneCurrent();
 }
 
 //------------------------------------------------------------
@@ -305,20 +322,6 @@ void scene_view::resizeGL(int w, int h)
 
 void scene_view::paintGL()
 {
-    if (!m_load_location.empty())
-    {
-        m_location = renderer::location();
-        shared::clear_textures();
-        m_location.load(m_load_location.c_str());
-        m_location_phys.set_location(m_load_location.c_str());
-        m_models.clear();
-        set_selected_add(m_selected_add.id);
-        m_camera_pos.set(0, 1000, 0);
-        m_camera_yaw = 0;
-        m_camera_pitch = 30;
-        m_load_location.clear();
-    }
-
     const float height = m_location_phys.get_height(m_camera_pos.x, m_camera_pos.z, false);
 
     nya_scene::get_camera_proxy()->set_rot(m_camera_yaw, m_camera_pitch, 0.0f);
