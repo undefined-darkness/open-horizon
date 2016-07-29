@@ -277,7 +277,7 @@ void scene_view::delete_selected()
 
 //------------------------------------------------------------
 
-scene_view::scene_view(QWidget *parent): QGLWidget(parent)
+scene_view::scene_view(QWidget *parent): QOpenGLWidget(parent)
 {
     setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);

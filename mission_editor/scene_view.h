@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <QGLWidget>
+#include <QOpenGLWidget>
 #include "renderer/location.h"
 #include "renderer/model.h"
 #include "phys/physics.h"
@@ -15,7 +15,7 @@
 
 //------------------------------------------------------------
 
-class scene_view : public QGLWidget
+class scene_view : public QOpenGLWidget
 {
     Q_OBJECT
 
