@@ -25,6 +25,7 @@ static const nya_math::vec4 blue = nya_math::vec4(100,200,200,255)/255.0;
 
 void scene_view::load_location(std::string name)
 {
+    nya_render::set_clear_color(0.0f, 0.0f, 0.0f, 0.0f, true);
     makeCurrent();
     m_location = renderer::location();
     shared::clear_textures();
