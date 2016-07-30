@@ -255,16 +255,10 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     vbo_data vdata; //ToDo
     vdata.end_group();
 
-    struct tree_vert { nya_math::vec3 pos; uint16_t tc[2], delta[2]; };
-    std::vector<tree_vert> tree_verts;
-    const float tree_tc_width = 1.0f / load_data.tree_types_count;
-
-    //int py = 0;
     for (int py = 0; py < location_size; ++py)
     for (int px = 0; px < location_size; ++px)
     {
         const int idx = py * location_size + px;
-
         landscape::patch &p = m_landscape.patches[idx];
 
         int tc_idx = load_data.patches[idx] * quads_per_patch * quads_per_patch;
@@ -275,7 +269,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         const float base_y = patch_size * quads_per_patch * (py - location_size/2);
 
         const int hpw = quads_per_patch*quads_per_patch+1;
-        int h_idx = load_data.height_patches[idx] * hpw * hpw;
+        const int h_idx = load_data.height_patches[idx] * hpw * hpw;
         assert(h_idx>=0);
 
         assert(h_idx + hpw * hpw <= load_data.heights.size());
@@ -348,12 +342,56 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
             p.box = nya_math::aabb(box_min, box_max);
         }
+    }
 
-        p.tree_offset = (uint)tree_verts.size() * 6 / 4;
+    if (!m_landscape.vbo.is_valid())
+        m_landscape.vbo.create();
+
+    m_landscape.vbo->set_vertex_data(vdata.get_vdata(), 5 * 4, vdata.get_vcount());
+    m_landscape.vbo->set_index_data(vdata.get_idata(), nya_render::vbo::index4b, vdata.get_icount());
+    m_landscape.vbo->set_tc(0, 3 * 4, 2);
+
+    //------------------------------------
+
+    uint trees_count = 0;
+
+    for (int py = 0; py < location_size; ++py)
+    for (int px = 0; px < location_size; ++px)
+    {
+        const int idx = py * location_size + px;
         auto &tp = load_data.tree_patches[idx];
         for (auto &p: tp)
+            trees_count += p.count;
+    }
+
+    if (!trees_count)
+        return true;
+
+    struct tree_vert { nya_math::vec3 pos; uint16_t tc[2], delta[2]; };
+    nya_memory::tmp_buffer_scoped tree_buf(trees_count * 4 * sizeof(tree_vert));
+    tree_vert *curr_tree_vert = (tree_vert *)tree_buf.get_data();
+    uint curr_tree_idx_off = 0;
+
+    const float tree_tc_width = 1.0f / load_data.tree_types_count;
+
+    for (int py = 0; py < location_size; ++py)
+    for (int px = 0; px < location_size; ++px)
+    {
+        const int idx = py * location_size + px;
+        landscape::patch &p = m_landscape.patches[idx];
+
+        const int hpw = quads_per_patch*quads_per_patch+1;
+        const int h_idx = load_data.height_patches[idx] * hpw * hpw;
+
+        const float base_x = patch_size * quads_per_patch * (px - location_size/2);
+        const float base_y = patch_size * quads_per_patch * (py - location_size/2);
+
+        p.tree_offset = curr_tree_idx_off;
+        p.tree_count = 0;
+        auto &tp = load_data.tree_patches[idx];
+        for (auto &tpp: tp)
         {
-            for (uint i = p.offset; i < p.offset + p.count; ++i)
+            for (uint i = tpp.offset; i < tpp.offset + tpp.count; ++i)
             {
                 auto &to = load_data.tree_positions[i];
 
@@ -384,15 +422,15 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
                     const int hidx_x = idx_x - tmp_idx_x * subquads_per_quad;
                     const int hidx_z = idx_z - tmp_idx_z * subquads_per_quad;
-                    
+
                     const float kx = (pos.x + base) / hpatch_size - idx_x;
                     const float kz = (pos.z + base) / hpatch_size - idx_z;
-                    
+
                     const float h00 = h[hidx_x + hidx_z * hhpw];
                     const float h10 = h[hidx_x + 1 + hidx_z * hhpw];
                     const float h01 = h[hidx_x + (hidx_z + 1) * hhpw];
                     const float h11 = h[hidx_x + 1 + (hidx_z + 1) * hhpw];
-                    
+
                     const float h00_h10 = nya_math::lerp(h00, h10, kx);
                     const float h01_h11 = nya_math::lerp(h01, h11, kx);
 
@@ -402,56 +440,48 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 //pos.y = get_height(pos.x, pos.z); //ToDo
                 pos.y += half_size;
 
-                //get_debug_draw().add_line(p, p+nya_math::vec3(0.0, 10.0, 0.0), nya_math::vec4(1.0, 0.0, 0.0, 1.0));
-
-                tree_verts.resize(tree_verts.size() + 4);
-                auto *v = &tree_verts[tree_verts.size() - 4];
-
                 for (int j = 0; j < 4; ++j)
                 {
-                    v[j].pos = pos;
+                    curr_tree_vert->pos = pos;
 
                     static const float deltas[4][2] = { {-1.0f, -1.0f}, {-1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, -1.0f} };
 
-                    v[j].tc[0] = Float16Compressor::compress((0.5f * (deltas[j][0] + 1.0f) + p.idx) * tree_tc_width);
-                    v[j].tc[1] = Float16Compressor::compress(0.5f * (deltas[j][1] + 1.0f));
+                    curr_tree_vert->tc[0] = Float16Compressor::compress((0.5f * (deltas[j][0] + 1.0f) + tpp.idx) * tree_tc_width);
+                    curr_tree_vert->tc[1] = Float16Compressor::compress(0.5f * (deltas[j][1] + 1.0f));
 
-                    v[j].delta[0] = Float16Compressor::compress(deltas[j][0] * half_size);
-                    v[j].delta[1] = Float16Compressor::compress(deltas[j][1] * half_size);
+                    curr_tree_vert->delta[0] = Float16Compressor::compress(deltas[j][0] * half_size);
+                    curr_tree_vert->delta[1] = Float16Compressor::compress(deltas[j][1] * half_size);
+
+                    ++curr_tree_vert;
                 }
+
+                p.tree_count += 6;
             }
         }
-        p.tree_count = (uint)tree_verts.size() * 6 / 4 - p.tree_offset;
+
+        curr_tree_idx_off += p.tree_count;
     }
 
-    if (!m_landscape.vbo.is_valid())
-        m_landscape.vbo.create();
+    if (!m_landscape.tree_vbo.is_valid())
+        m_landscape.tree_vbo.create();
 
-    m_landscape.vbo->set_vertex_data(vdata.get_vdata(), 5 * 4, vdata.get_vcount());
-    m_landscape.vbo->set_index_data(vdata.get_idata(), nya_render::vbo::index4b, vdata.get_icount());
-    m_landscape.vbo->set_tc(0, 3 * 4, 2);
+    m_landscape.tree_vbo->set_vertex_data(tree_buf.get_data(), (uint)sizeof(tree_vert), trees_count * 4);
+    m_landscape.tree_vbo->set_tc(0, 3 * 4, 4, nya_render::vbo::float16);
 
-    //tree_verts
-    if (!tree_verts.empty())
+    assert(sizeof(tree_vert) * 4 >= sizeof(uint) * 6);
+    uint *tree_indices = (uint *)tree_buf.get_data();
+
+    for (uint i = 0, v = 0; i < trees_count * 6; i += 6, v+=4)
     {
-        if (!m_landscape.tree_vbo.is_valid())
-            m_landscape.tree_vbo.create();
-
-        m_landscape.tree_vbo->set_vertex_data(tree_verts.data(), (uint)sizeof(tree_vert), (uint)tree_verts.size());
-        m_landscape.tree_vbo->set_tc(0, 3 * 4, 4, nya_render::vbo::float16);
-
-        std::vector<uint> tree_indices(tree_verts.size() * 6 / 4);
-        for (uint i = 0, v = 0; i < (uint)tree_indices.size(); i += 6, v+=4)
-        {
-            tree_indices[i] = v;
-            tree_indices[i + 1] = v + 1;
-            tree_indices[i + 2] = v + 2;
-            tree_indices[i + 3] = v;
-            tree_indices[i + 4] = v + 2;
-            tree_indices[i + 5] = v + 3;
-        }
-        m_landscape.tree_vbo->set_index_data(tree_indices.data(), nya_render::vbo::index4b, (uint)tree_indices.size());
+        tree_indices[i] = v;
+        tree_indices[i + 1] = v + 1;
+        tree_indices[i + 2] = v + 2;
+        tree_indices[i + 3] = v;
+        tree_indices[i + 4] = v + 2;
+        tree_indices[i + 5] = v + 3;
     }
+
+    m_landscape.tree_vbo->set_index_data(tree_buf.get_data(), nya_render::vbo::index4b, trees_count * 6);
 
     return true;
 }
