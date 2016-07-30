@@ -13,6 +13,7 @@
 #include "scene/transform.h"
 #include "scene/shader.h"
 #include "math/scalar.h"
+#include "util/half.h"
 
 #include "render/platform_specific_gl.h"
 
@@ -254,7 +255,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     vbo_data vdata; //ToDo
     vdata.end_group();
 
-    struct tree_vert { nya_math::vec3 pos; float tc[2], delta[2]; };
+    struct tree_vert { nya_math::vec3 pos; uint16_t tc[2], delta[2]; };
     std::vector<tree_vert> tree_verts;
     const float tree_tc_width = 1.0f / load_data.tree_types_count;
 
@@ -406,19 +407,17 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 tree_verts.resize(tree_verts.size() + 4);
                 auto *v = &tree_verts[tree_verts.size() - 4];
 
-                v[0].delta[0] = -1.0f, v[0].delta[1] = -1.0f;
-                v[1].delta[0] = -1.0f, v[1].delta[1] =  1.0f;
-                v[2].delta[0] =  1.0f, v[2].delta[1] =  1.0f;
-                v[3].delta[0] =  1.0f, v[3].delta[1] = -1.0f;
-
                 for (int j = 0; j < 4; ++j)
                 {
-                    v[j].tc[0] = (0.5f * (v[j].delta[0] + 1.0f) + p.idx) * tree_tc_width;
-                    v[j].tc[1] = 0.5f * (v[j].delta[1] + 1.0f);
                     v[j].pos = pos;
 
-                    v[j].delta[0] *= half_size;
-                    v[j].delta[1] *= half_size;
+                    static const float deltas[4][2] = { {-1.0f, -1.0f}, {-1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, -1.0f} };
+
+                    v[j].tc[0] = Float16Compressor::compress((0.5f * (deltas[j][0] + 1.0f) + p.idx) * tree_tc_width);
+                    v[j].tc[1] = Float16Compressor::compress(0.5f * (deltas[j][1] + 1.0f));
+
+                    v[j].delta[0] = Float16Compressor::compress(deltas[j][0] * half_size);
+                    v[j].delta[1] = Float16Compressor::compress(deltas[j][1] * half_size);
                 }
             }
         }
@@ -439,7 +438,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             m_landscape.tree_vbo.create();
 
         m_landscape.tree_vbo->set_vertex_data(tree_verts.data(), (uint)sizeof(tree_vert), (uint)tree_verts.size());
-        m_landscape.tree_vbo->set_tc(0, 3 * 4, 4);
+        m_landscape.tree_vbo->set_tc(0, 3 * 4, 4, nya_render::vbo::float16);
 
         std::vector<uint> tree_indices(tree_verts.size() * 6 / 4);
         for (uint i = 0, v = 0; i < (uint)tree_indices.size(); i += 6, v+=4)

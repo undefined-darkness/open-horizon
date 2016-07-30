@@ -113,9 +113,7 @@ void location::update_tree_texture()
     auto prev_s = nya_render::get_state_override();
     nya_render::set_state_override(s);
 
-    nya_scene::camera_proxy tree_cam;
-    tree_cam.create();
-    nya_scene::set_camera(tree_cam);
+    static nya_scene::camera_proxy tree_cam = nya_scene::camera_proxy(nya_scene::camera());
     float size = 0.5f;
     nya_math::mat4 pm;
     pm.ortho(-size, size, -size, size, -size, size);
@@ -125,6 +123,8 @@ void location::update_tree_texture()
 
     auto r = prev_cam->get_rot().get_euler();
     tree_cam->set_rot(nya_math::quat(-r.x, -r.y, 0.0f));
+
+    nya_scene::set_camera(tree_cam);
 
     m_tree_fbo.bind();
     const auto prev_vp = nya_render::get_viewport();

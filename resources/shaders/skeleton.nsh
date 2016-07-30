@@ -14,6 +14,9 @@ vec3 trn(vec3 normal, int idx) { return tr(normal, bones_rot[idx]); }
 
 vec3 tr(vec3 v, vec4 idx, vec4 weight)
 {
+    if (idx[0] < 0.1)
+        return v;
+
     vec3 r = tr(v, int(idx[0])) * weight[0];
     for (int i = 1; i < 4; ++i)
         r += tr(v, int(idx[i])) * weight[i];
@@ -22,6 +25,9 @@ vec3 tr(vec3 v, vec4 idx, vec4 weight)
 
 vec3 trn(vec3 v, vec4 idx, vec4 weight)
 {
+    if (idx[0] < 0.1)
+        return v;
+
     vec3 r = trn(v, int(idx[0])) * weight[0];
     for (int i = 1; i < 4; ++i)
         r += trn(v, int(idx[i])) * weight[i];
