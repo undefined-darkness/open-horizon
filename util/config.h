@@ -53,6 +53,12 @@ public:
         return atoi(v.c_str());
     }
 
+    static bool get_var_bool(const std::string &name)
+    {
+        auto v = get_var(name);
+        return v.empty() ? false : strchr("TtYy1", v[0]) != 0;
+    }
+
     const static std::map<std::string, std::string> &get_vars()
     {
         return cfg().m_params;

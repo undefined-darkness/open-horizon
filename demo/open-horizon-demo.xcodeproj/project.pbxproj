@@ -70,6 +70,7 @@
 		F5C6D39E1AF96A18006FB7E6 /* DATA.PAC.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5C6D39B1AF96A08006FB7E6 /* DATA.PAC.xml */; };
 		F5C6D39F1AF96A18006FB7E6 /* postprocess.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5C6D39C1AF96A08006FB7E6 /* postprocess.txt */; };
 		F5C6D3A01AF96A18006FB7E6 /* shaders in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5C6D39D1AF96A08006FB7E6 /* shaders */; };
+		F5CD8DF31D50672A00337674 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5CD8DF21D50672A00337674 /* CoreVideo.framework */; };
 		F5D209F31CC18DA800189814 /* generic_socket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209EC1CC18DA800189814 /* generic_socket.cpp */; };
 		F5D209F41CC18DA800189814 /* ipv4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209ED1CC18DA800189814 /* ipv4.cpp */; };
 		F5D209F51CC18DA800189814 /* ipv6.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209EE1CC18DA800189814 /* ipv6.cpp */; };
@@ -252,6 +253,7 @@
 		F5C6D3A11AF96B4B006FB7E6 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = ../util/util.h; sourceTree = "<group>"; };
 		F5C724A41C8F124700EF0A7B /* simd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = simd.h; path = ../util/simd.h; sourceTree = "<group>"; };
 		F5CB42051CA1F14100F725CE /* zip.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = zip.h; path = ../util/zip.h; sourceTree = "<group>"; };
+		F5CD8DF21D50672A00337674 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		F5D209EC1CC18DA800189814 /* generic_socket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = generic_socket.cpp; path = ../deps/miso/src/generic_socket.cpp; sourceTree = "<group>"; };
 		F5D209ED1CC18DA800189814 /* ipv4.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ipv4.cpp; path = ../deps/miso/src/ipv4.cpp; sourceTree = "<group>"; };
 		F5D209EE1CC18DA800189814 /* ipv6.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ipv6.cpp; path = ../deps/miso/src/ipv6.cpp; sourceTree = "<group>"; };
@@ -285,6 +287,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F5CD8DF31D50672A00337674 /* CoreVideo.framework in Frameworks */,
 				F5B9E0F11D16DC1C0046BA9E /* liblua52.a in Frameworks */,
 				F586B6701CE8D14300A2B7BE /* libopenal.1.17.2.dylib in Frameworks */,
 				F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */,
@@ -329,6 +332,7 @@
 		F503E4D919048C6700C3590A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F5CD8DF21D50672A00337674 /* CoreVideo.framework */,
 				F5B9E0F01D16DC1C0046BA9E /* liblua52.a */,
 				F586B66B1CE8C4C700A2B7BE /* libopenal.1.17.2.dylib */,
 				F50EE62B1CD3BF3900DDED72 /* OpenAL.framework */,

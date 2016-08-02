@@ -37,12 +37,15 @@ int main()
 
     config::register_var("screen_width", "1000");
     config::register_var("screen_height", "562");
+    config::register_var("fullscreen", "false");
     config::register_var("master_volume", "10");
     config::register_var("music_volume", "5");
 
     platform platform;
     if (!platform.init(config::get_var_int("screen_width"), config::get_var_int("screen_height"), "Open Horizon 7th demo"))
         return -1;
+
+    platform.set_fullscreen(config::get_var_bool("fullscreen"), config::get_var_int("screen_width"), config::get_var_int("screen_height"));
 
     std::vector<joystick_config> joysticks;
 
@@ -210,6 +213,10 @@ int main()
             if (!joysticks.empty())
                 joysticks.front().update_config();
         }
+        else if (event == "fullscreen_toggle")
+        {
+            platform.set_fullscreen(config::get_var_bool("fullscreen"), config::get_var_int("screen_width"), config::get_var_int("screen_height"));
+        }
         else if (event == "exit")
         {
             server.close();
@@ -242,8 +249,11 @@ int main()
             screen_width = platform.get_width(), screen_height = platform.get_height();
             scene.resize(screen_width, screen_height);
 
-            config::set_var("screen_width", std::to_string(screen_width));
-            config::set_var("screen_height", std::to_string(screen_height));
+            if (!config::get_var_bool("fullscreen"))
+            {
+                config::set_var("screen_width", std::to_string(screen_width));
+                config::set_var("screen_height", std::to_string(screen_height));
+            }
         }
 
         if (!active_game_mode)

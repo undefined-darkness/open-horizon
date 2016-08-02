@@ -112,6 +112,33 @@ int platform::get_height() { return m_screen_h; }
 
 //------------------------------------------------------------
 
+void platform::set_fullscreen(bool value, int windowed_width, int windowed_height)
+{
+    if (!m_window)
+        return;
+
+    auto monitor = glfwGetPrimaryMonitor();
+    if (!monitor)
+        return;
+
+    auto mode = glfwGetVideoMode(monitor);
+    const int desktop_width = mode->width, desktop_height = mode->height;
+
+    if (value)
+    {
+        glfwSetWindowMonitor(m_window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+        m_screen_w = mode->width, m_screen_h = mode->height;
+    }
+    else
+    {
+        const int x = (desktop_width - windowed_width) / 2, y = (desktop_height - windowed_height) / 2;
+        glfwSetWindowMonitor(m_window, 0, x, y, windowed_width, windowed_height, 0);
+        m_screen_w = windowed_width, m_screen_h = windowed_height;
+    }
+}
+
+//------------------------------------------------------------
+
 void platform::set_keyboard_callback(key_callback &k) { m_key_callback = k; }
 
 //------------------------------------------------------------

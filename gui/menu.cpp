@@ -580,6 +580,12 @@ void menu::set_screen(const std::string &screen)
     {
         m_title = L"SETTINGS";
 
+        add_entry(L"Fullscreen: ", {}, "fullscreen");
+        add_sub_entry(L"No", "false");
+        add_sub_entry(L"Yes", "true");
+        if (config::get_var_bool("fullscreen"))
+            std::swap(m_entries.back().sub_select[0], m_entries.back().sub_select[1]);
+
         add_entry(L"Master volume: ", {});
         add_input("master_volume", true);
         m_entries.back().allow_input = false;
@@ -655,6 +661,9 @@ void menu::send_event(const std::string &event)
             }
             send_event("update_volume");
         }
+
+        if (var == "fullscreen")
+            send_event("fullscreen_toggle");
 
         for (auto &e: m_entries)
         {

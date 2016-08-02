@@ -29,6 +29,8 @@ public:
     int get_width();
     int get_height();
 
+    void set_fullscreen(bool value, int windowed_width, int windowed_height);
+
     typedef std::function<void(char c)> key_callback;
     void set_keyboard_callback(key_callback &k);
 
