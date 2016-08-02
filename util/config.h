@@ -9,6 +9,7 @@
 #include <map>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifndef _WIN32
     #include <unistd.h>
