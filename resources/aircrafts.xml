@@ -13,6 +13,11 @@
     <msl id="MISSILE" model="msl_a0" count="226"/>
     <spc id="_4AAM" model="xma_a0" count="30"/>
     <spc id="QAAM" model="qaa_a0" count="36"/>
+
+    <decal5 name="Warwolf"/>
+    <decal6 name="Flash"/>
+    <decal7 name="IMAS"/>
+    <decal8 name="IMAS"/>
 </aircraft>
 
 <aircraft id="su47" role="fighter" name="Su-47 Berkut">
@@ -31,12 +36,18 @@
     <msl id="MISSILE" model="msl_r0" count="216"/>
     <spc id="_6AAM" model="xla_r0" count="32"/>
     <spc id="QAAM" model="qaa_r0" count="34"/>
+
+    <decal3 name="Jin"/>
+    <decal4 name="Kazuya"/>
 </aircraft>
 
 <aircraft id="typn" role="fighter" name="Typhoon">
     <msl id="MISSILE" model="msl_a0" count="198"/>
     <spc id="_4AAM" model="xma_a0" count="26"/>
     <spc id="_6AAM" model="xla_a0" count="28"/>
+
+    <decal3 name="IMAS"/>
+    <decal4 name="IMAS"/>
 </aircraft>
 
 <aircraft id="su37" role="fighter" name="Su-37 Terminator">
@@ -49,18 +60,32 @@
     <msl id="MISSILE" model="msl_a0" count="216"/>
     <spc id="_4AAM" model="xma_a0" count="28"/>
     <spc id="SAAM" model="saa_a0" count="26"/>
+
+    <decal3 name="Cipher"/>
+    <decal4 name="Pixy"/>
+    <decal5 name="Death"/>
+    <decal6 name="Patriot"/>
+    <decal7 name="Dragon"/>
 </aircraft>
 
 <aircraft id="su33" role="fighter" name="Su-33 Flanker-D">
     <msl id="MISSILE" model="msl_r0" count="198"/>
     <spc id="SAAM" model="saa_r0" count="24"/>
     <spc id="_6AAM" model="xla_r0" count="28"/>
+
+    <decal4 name="IMAS"/>
+    <decal5 name="IMAS"/>
 </aircraft>
 
 <aircraft id="f14d" role="fighter" name="F-14D Super Tomcat">
     <msl id="MISSILE" model="msl_a0" count="180"/>
     <spc id="_6AAM" model="xla_a0" count="26"/>
     <spc id="SAAM" model="saa_a0" count="22"/>
+
+    <decal3 name="Razgriz"/>
+    <decal4 name="Zipang"/>
+    <decal5 name="Jolly"/>
+    <decal6 name="Pumpkin"/>
 </aircraft>
 
 <aircraft id="su24" role="fighter" name="Su-24MP Fencer">

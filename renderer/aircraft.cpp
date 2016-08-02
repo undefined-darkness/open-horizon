@@ -174,6 +174,31 @@ public:
             if (!su35.colors.empty() && !su37.colors.empty())
                 std::swap(su35.colors[0], su37.colors[0]);
 
+            auto &f14d = *info.get_info("f14d");
+            if (f14d.colors.size() > 1)
+                std::swap(f14d.colors.back().coledit_idx, f14d.colors[f14d.colors.size() - 2].coledit_idx);
+
+            pugi::xml_document doc;
+            if (load_xml("aircrafts.xml", doc))
+            {
+                auto root = doc.first_child();
+                for (pugi::xml_node ac = root.child("aircraft"); ac; ac = ac.next_sibling("aircraft"))
+                {
+                    auto inf = info.get_info(ac.attribute("id").as_string(""));
+                    if (!inf)
+                        continue;
+
+                    for (int i = 0; i < (int)inf->colors.size(); ++i)
+                    {
+                        auto d = ac.child(("decal" + std::to_string(i)).c_str());
+                        if (!d)
+                            continue;
+
+                        inf->colors[i].name = to_wstring(d.attribute("name").as_string());
+                    }
+                }
+            }
+
             auto custom_decals = list_files("decals/");
             for (auto &d: custom_decals)
             {
