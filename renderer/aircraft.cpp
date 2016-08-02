@@ -91,6 +91,7 @@ class aircraft_information
 public:
     struct color_info
     {
+        std::wstring name;
         int coledit_idx;
         nya_math::vec3 colors[6];
     };
@@ -195,6 +196,7 @@ public:
                 }
 
                 mod_info m;
+                m.name = to_wstring(root.attribute("name").as_string());
                 m.zip_name = d;
                 m.coledit_idx = root.attribute("base").as_int();
 
@@ -704,6 +706,27 @@ unsigned int aircraft::get_colors_count(const char *plane_name)
         return 0;
 
     return (unsigned int)(info->colors.size() + info->color_mods.size());
+}
+
+//------------------------------------------------------------
+
+std::wstring aircraft::get_color_name(const char *plane_name, int idx)
+{
+    if (idx < 0)
+        return L"";
+
+    auto info = aircraft_information::get().get_info(plane_name);
+    if (!info)
+        return L"";
+
+    if (idx < info->colors.size())
+        return info->colors[idx].name;
+
+    idx -= info->colors.size();
+    if (idx < info->color_mods.size())
+        return info->color_mods[idx].name;
+
+    return L"";
 }
 
 //------------------------------------------------------------

@@ -540,9 +540,10 @@ void menu::set_screen(const std::string &screen)
         {
             wchar_t name[255];
             char action[255];
-            swprintf(name, 255, L"Color%02d", i);
+            swprintf(name, 255, L"Color%02d ", i);
             sprintf(action, "color=%d", i);
-            add_entry(name, {action, "start"});
+            auto cust_name = renderer::aircraft::get_color_name(m_vars["ac"].c_str(), i);
+            add_entry(name + cust_name, {action, "start"});
         }
     }
     else if (screen == "ac_view")

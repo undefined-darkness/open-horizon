@@ -343,6 +343,7 @@ inline std::vector<std::string> list_files(std::string folder)
         result.push_back(folder + name);
     }
 
+    std::sort(result.begin(), result.end());
     return result;
 }
 
