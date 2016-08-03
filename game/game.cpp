@@ -42,6 +42,7 @@ public:
         std::string id;
         std::string model;
         int count;
+        bool external;
     };
 
     struct aircraft
@@ -124,6 +125,7 @@ private:
                 w.id = wpn.attribute("id").as_string("");
                 w.model = wpn.attribute("model").as_string("");
                 w.count = wpn.attribute("count").as_int(0);
+                w.external = wpn.attribute("external").as_bool(false);
 
                 std::string name(wpn.name() ? wpn.name() : "");
                 if (name == "msl")
@@ -338,6 +340,7 @@ plane_ptr world::add_plane(const char *preset, const char *player_name, int colo
             p->render->load_special(wi->special[0].model.c_str(), m_render_world.get_location_params());
             p->special = wpn_params(wi->special[0].id, wi->special[0].model);
             p->special_max_count = wi->special[0].count;
+            p->special_internal = p->render->has_special_bay() && !wi->special[0].external;
         }
 
         p->render->load_missile(wi->missile.model.c_str(), m_render_world.get_location_params());
@@ -1585,7 +1588,7 @@ void plane::update_render(world &w)
     render->set_aoa(aoa);
 
     render->set_missile_bay(missile_bay_time > 0);
-    render->set_special_bay(special_weapon_selected);
+    render->set_special_bay(special_weapon_selected && special_internal);
     render->set_mgun_bay(controls.mgun);
 
     const bool mg_fire = is_mg_bay_ready() && controls.mgun;
@@ -1618,7 +1621,7 @@ bool plane::is_mg_bay_ready()
 
 bool plane::is_special_bay_ready()
 {
-    if (!render->has_special_bay())
+    if (!special_internal)
         return true;
 
     return special_weapon_selected ? render->is_special_bay_opened() : render->is_special_bay_closed();
@@ -1925,7 +1928,8 @@ void plane::update(int dt, world &w)
                     const float height = p.y - w.get_height(p.x, p.z);
                     const float t = get_fall_time(height, 0.0f, special.gravity);
 
-                    const vec3 tdiff = targets.front().target.lock()->get_pos() - p;
+                    auto tl = targets.front().target.lock();
+                    const vec3 tdiff = tl->get_pos() + tl->get_vel() * t - p;
                     const float hspeed = tdiff.length() / t;
 
                     b->phys->vel = vec3(tdiff.x, 0.0f, tdiff.z).normalize() * hspeed;

@@ -142,6 +142,7 @@ struct plane: public object, public std::enable_shared_from_this<plane>
     std::vector<ivalue> special_mount_cooldown;
     ivalue special_mount_idx;
     ivalue special_count, special_max_count;
+    bvalue special_internal;
 
     fvalue hit_radius;
 

@@ -243,7 +243,7 @@
 
 <msl id="MISSILE" model="msl_j0" count="226"/>
 
-<spc id="_6AAM" model="xla_j0" count="32"/>
+<spc id="_6AAM" model="xla_j0" count="32" external="true"/>
 
 <spc id="RKTL" model="rcl_j0" count="36"/>
 <spc id="LAGM" model="las_j0" count="22"/>
@@ -285,7 +285,7 @@
 
 <msl id="MISSILE" model="msl_a0" count="198"/>
 
-<spc id="QAAM" model="qaa_a0" count="30"/>
+<spc id="QAAM" model="qaa_a0" count="30" external="true"/>
 
 <spc id="LAGM" model="las_a0" count="20"/>
 
