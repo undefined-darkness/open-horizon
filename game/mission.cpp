@@ -160,6 +160,7 @@ void mission::start(const char *plane, int color, const char *mission)
     m_script.add_callback("mission_fail", mission_fail);
 
     m_finished = false;
+    m_hide_hud = false;
     current_mission = this;
     m_script.call("init");
     update_zones();
@@ -213,6 +214,9 @@ void mission::update(int dt, const plane_controls &player_controls)
 
     for (auto &z: m_zones)
     {
+        if (!z.active)
+            continue;
+
         const float treshold = 0.5f;
 
         //outside
