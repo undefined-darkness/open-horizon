@@ -169,11 +169,6 @@ public:
             aircraft_information info5("target/Information/AircraftInformationC05.AIN"); //ToDo
             *info.get_info("tnd4") = *info5.get_info("tnd4");
 
-            auto &su35 = *info.get_info("su35");
-            auto &su37 = *info.get_info("su37");
-            if (!su35.colors.empty() && !su37.colors.empty())
-                std::swap(su35.colors[0], su37.colors[0]);
-
             auto &f14d = *info.get_info("f14d");
             if (f14d.colors.size() > 1)
                 std::swap(f14d.colors.back().coledit_idx, f14d.colors[f14d.colors.size() - 2].coledit_idx);
@@ -195,6 +190,17 @@ public:
                             continue;
 
                         inf->colors[i].name = to_wstring(d.attribute("name").as_string());
+
+                        if (!d.first_child())
+                            continue;
+
+                        for (int j = 0; j < 6; ++j)
+                        {
+                            auto c = d.child(("color" + std::to_string(j)).c_str());
+                            if (c)
+                                inf->colors[i].colors[j] = vec3(c.attribute("r").as_int(), c.attribute("g").as_int(), c.attribute("b").as_int()) / 255.0;
+                        }
+
                     }
                 }
             }

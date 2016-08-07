@@ -66,7 +66,7 @@
 
 <spc id="QAAM" model="qaa_r0" count="34"/>
 
-<decal0 name="Russian #901"/>
+<decal0 name="Russian #709"/>
 <decal1 name="Russian Blue Camouflage"/>
 <decal2 name="Markov"/>
 <decal3 name="Tekken Jin"/>
@@ -94,9 +94,31 @@
 
 <spc id="_4AAM" model="xma_r0" count="26"/>
 
-<decal0 name="Russian #711"/>
-<decal1 name="Russian #710"/>
-<decal2 name="Yellow 13"/>
+<decal0 name="Russian #711">
+    <color0 r="158" g="156" b="149"/>
+    <color1 r="155" g="140" b="96"/>
+    <color2 r="105" g="93" b="77"/>
+    <color3 r="189" g="189" b="189"/>
+    <color4 r="199" g="169" b="49"/>
+</decal0>
+
+<decal1 name="Russian #710">
+    <color0 r="178" g="188" b="192"/>
+    <color1 r="151" g="161" b="163"/>
+    <color2 r="147" g="171" b="176"/>
+    <color3 r="199" g="199" b="199"/>
+    <color4 r="207" g="202" b="202"/>
+</decal1>
+
+<decal2 name="Yellow 13">
+    <color0 r="161" g="159" b="137"/>
+    <color1 r="131" g="133" b="134"/>
+    <color2 r="99" g="100" b="102"/>
+    <color3 r="110" g="113" b="115"/>
+    <color4 r="160" g="141" b="95"/>
+    <color5 r="166" g="172" b="175"/>
+</decal2>
+
 </aircraft>
 
 
