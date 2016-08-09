@@ -373,8 +373,19 @@
 <spc id="_4AGM" model="agm_a0" count="32"/>
 
 <decal0 name="USMC Gray"/>
-<decal1 name="USMC Camouflage"/>
-<decal2 name="Flight Test Livery"/>
+
+<decal1 name="USMC Camouflage">
+    <color1 r="183" g="190" b="190"/>
+</decal1>
+
+<decal2 name="Flight Test Livery">
+    <color0 r="209" g="209" b="209"/>
+    <color1 r="49" g="49" b="49"/>
+    <color2 r="168" g="63" b="63"/>
+    <color3 r="79" g="63" b="49"/>
+    <color4 r="199" g="169" b="49"/>
+</decal2>
+
 </aircraft>
 
 

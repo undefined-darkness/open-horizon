@@ -34,6 +34,17 @@
 <entry idx="67" name="coledit02.fhm"/>
 <entry idx="68" name="coledit03.fhm"/>
 
+<!--
+<path name="model_id/mech/plyr/p_av8b/p_av8b_p"/>
+<entry idx="47" name="com.fhm"/>
+<entry idx="48" name="col01.fhm"/>
+<entry idx="49" name="col02.fhm"/>
+<entry idx="50" name="col03.fhm"/>
+<entry idx="51" name="coledit01.fhm"/>
+<entry idx="52" name="coledit02.fhm"/>
+<entry idx="53" name="coledit03.fhm"/>
+-->
+
 <path name="model_id/mech/plyr/p_su37/p_su37_p"/>
 <entry idx="77" name="com.fhm"/>
 <entry idx="78" name="col01.fhm"/>

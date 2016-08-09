@@ -173,6 +173,10 @@ public:
             if (f14d.colors.size() > 1)
                 std::swap(f14d.colors.back().coledit_idx, f14d.colors[f14d.colors.size() - 2].coledit_idx);
 
+            auto &av8b = *info.get_info("av8b");
+            av8b.colors.resize(3);
+            av8b.colors.back().coledit_idx = 3;
+
             pugi::xml_document doc;
             if (load_xml("aircrafts.xml", doc))
             {
