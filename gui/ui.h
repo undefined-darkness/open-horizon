@@ -50,9 +50,9 @@ public:
 public:
     int get_width(bool real = false) const { return real ? m_width : 1366; }
     int get_height(bool real = false) const { return real ? m_height : 768; }
-//1366	×	768
+//1366 x 768
     render(): m_width(0), m_height(0) {}
-
+    
 private:
     bool set_transform(const transform &t) const;
 
