@@ -104,7 +104,7 @@ int script::get_int(lua_State *state, int arg_idx)
 
 bool script::get_bool(lua_State *state, int arg_idx)
 {
-    return lua_isboolean(state, arg_idx + 1) ? lua_toboolean(state, arg_idx + 1) : false;
+    return lua_isboolean(state, arg_idx + 1) ? lua_toboolean(state, arg_idx + 1) > 0 : false;
 }
 
 //------------------------------------------------------------
