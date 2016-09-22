@@ -59,6 +59,7 @@ public:
 
 private:
     bool read_chunks_info(size_t base_offset, folder &f);
+    bool read_ac6_chunks_info(uint32_t base_offset, int count, folder &f);
 
     struct chunk
     {

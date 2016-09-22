@@ -14,6 +14,24 @@ bool fhm_file::open(const char *name)
 
 //------------------------------------------------------------
 
+namespace
+{
+
+struct fhm_ac6_header
+{
+    char sign[4];
+    uint32_t byte_order_0x01010010;
+    uint32_t unknown_zero[2];
+    uint32_t count;
+
+    bool check_sign() const { return memcmp(sign, "FHM ", 4) == 0; }
+    bool wrong_byte_order() const { return byte_order_0x01010010 != 0x01010010 && byte_order_0x01010010 != 0x20101010; }
+};
+
+}
+
+//------------------------------------------------------------
+
 bool fhm_file::open(nya_resources::resource_data *data)
 {
     close();
@@ -26,68 +44,24 @@ bool fhm_file::open(nya_resources::resource_data *data)
 
     m_data = data;
 
-    struct fhm_old_header //AC6
-    {
-        char sign[4];
-        uint32_t byte_order_0x01010010;
-        uint32_t unknown_zero[2];
-        uint32_t count;
-
-        bool check_sign() const { return memcmp(sign, "FHM ", 4) == 0; }
-        bool wrong_byte_order() const { return byte_order_0x01010010 != 0x01010010 && byte_order_0x01010010 != 0x20101010; }
-    };
-
-    fhm_old_header old_header;
-    if (!m_data->read_chunk(&old_header, sizeof(old_header))) //old header is smaller than fhm header
+    fhm_ac6_header ac6_header;
+    if (!m_data->read_chunk(&ac6_header, sizeof(ac6_header))) //ac6 header is smaller than fhm header
     {
         nya_resources::log()<<"invalid fhm file\n";
         close();
         return false;
     }
 
-    if (old_header.check_sign())
+    if (ac6_header.check_sign())
     {
         m_byte_order = true;
-        old_header.byte_order_0x01010010 = swap_bytes(old_header.byte_order_0x01010010);
-        old_header.count = swap_bytes(old_header.count);
+        ac6_header.byte_order_0x01010010 = swap_bytes(ac6_header.byte_order_0x01010010);
+        ac6_header.count = swap_bytes(ac6_header.count);
 
-        assert(!old_header.wrong_byte_order());
-        assume(old_header.unknown_zero[0] == 0 && old_header.unknown_zero[1] == 0);
+        assert(!ac6_header.wrong_byte_order());
+        assume(ac6_header.unknown_zero[0] == 0 && ac6_header.unknown_zero[1] == 0);
 
-        if (!old_header.count)
-            return true;
-
-        std::vector<uint32_t> offsets(old_header.count * 2);
-        if (!m_data->read_chunk(offsets.data(), old_header.count * 2 * sizeof(uint32_t), sizeof(old_header)))
-        {
-            nya_resources::log()<<"invalid ac6 fhm file\n";
-            close();
-            return false;
-        }
-
-        m_chunks.resize(old_header.count);
-
-        size_t offset = 0;
-
-        for (auto &c: m_chunks)
-            c.offset = swap_bytes(offsets[offset++]);
-        for (auto &c: m_chunks)
-            c.size = swap_bytes(offsets[offset++]);
-
-        for (auto &c: m_chunks)
-        {
-            if (c.size == 0)
-            {
-                c.offset = 0;
-                continue;
-            }
-
-            assert(c.offset + c.size <= m_data->get_size());
-
-            if (c.size >= 4)
-                m_data->read_chunk(&c.type, 4, c.offset);
-        }
-
+        read_ac6_chunks_info(0, ac6_header.count, m_root);
         return true;
     }
 
@@ -163,6 +137,67 @@ bool fhm_file::read_chunks_info(size_t base_offset, folder &f)
 
 //------------------------------------------------------------
 
+bool fhm_file::read_ac6_chunks_info(uint32_t base_offset, int count, folder &f)
+{
+    if (!count)
+        return true;
+
+    assert(count > 0);
+
+    std::vector<uint32_t> offsets(count * 2);
+    if (!m_data->read_chunk(offsets.data(), count * 2 * sizeof(uint32_t), base_offset + sizeof(fhm_ac6_header)))
+    {
+        nya_resources::log()<<"invalid ac6 fhm file\n";
+        close();
+        return false;
+    }
+
+    std::vector<chunk> chunks;
+
+    chunks.resize(count);
+
+    size_t offset = 0;
+
+    for (auto &c: chunks)
+        c.offset = swap_bytes(offsets[offset++]) + base_offset;
+    for (auto &c: chunks)
+        c.size = swap_bytes(offsets[offset++]);
+
+    for (auto &c: chunks)
+    {
+        if (c.size == 0)
+        {
+            c.offset = 0;
+            continue;
+        }
+
+        assert(c.offset + c.size <= m_data->get_size());
+
+        c.type = 0;
+        if (c.size > 4)
+            m_data->read_chunk(&c.type, 4, c.offset);
+
+        if (memcmp(&c.type, "FHM", 3) == 0)
+        {
+            fhm_ac6_header header;
+            if (!m_data->read_chunk(&header, sizeof(header), c.offset))
+                continue;
+
+            f.folders.push_back({});
+            read_ac6_chunks_info(c.offset, swap_bytes(header.count), f.folders.back());
+        }
+        else
+        {
+            f.files.push_back((int)m_chunks.size());
+            m_chunks.push_back(c);
+        }
+    }
+
+    return true;
+}
+
+//------------------------------------------------------------
+
 void fhm_file::close()
 {
     if (m_data)
@@ -170,6 +205,7 @@ void fhm_file::close()
 
     m_data = 0;
     m_chunks.clear();
+    m_root = folder();
     m_byte_order = false;
 }
 
