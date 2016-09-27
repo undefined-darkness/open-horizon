@@ -1,0 +1,368 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F5272CFD1D9B18C1000FF7C8 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = F5272CFB1D9B18C1000FF7C8 /* zip.c */; };
+		F544747D1D9A5FC800561F4C /* texture_gim.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F544747B1D9A5FC800561F4C /* texture_gim.cpp */; };
+		F544748B1D9A5FEF00561F4C /* fhm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F544747E1D9A5FEF00561F4C /* fhm.cpp */; };
+		F544748C1D9A5FEF00561F4C /* cdp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F54474801D9A5FEF00561F4C /* cdp.cpp */; };
+		F544748D1D9A5FEF00561F4C /* cpk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F54474821D9A5FEF00561F4C /* cpk.cpp */; };
+		F544748E1D9A5FEF00561F4C /* pac5.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F54474851D9A5FEF00561F4C /* pac5.cpp */; };
+		F544748F1D9A5FEF00561F4C /* pac6.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F54474871D9A5FEF00561F4C /* pac6.cpp */; };
+		F54474901D9A5FEF00561F4C /* poc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F54474891D9A5FEF00561F4C /* poc.cpp */; };
+		F54474931D9A606900561F4C /* convert_locations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F54474921D9A606900561F4C /* convert_locations.cpp */; };
+		F54474A01D9A617D00561F4C /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F544749A1D9A60B900561F4C /* libnya_engine.a */; };
+		F54474A21D9A618C00561F4C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F54474A11D9A618C00561F4C /* libz.dylib */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F54474991D9A60B900561F4C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F54474941D9A60B900561F4C /* nya_engine.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F25931E215D857C40092C7D8;
+			remoteInfo = nya_engine;
+		};
+		F544749B1D9A60B900561F4C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F54474941D9A60B900561F4C /* nya_engine.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F23AB544168DBA16004B116E;
+			remoteInfo = nya_engine_ios;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F544746A1D9A5E1700561F4C /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		F5272CFA1D9B18C1000FF7C8 /* miniz.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = miniz.h; path = ../deps/zip/src/miniz.h; sourceTree = "<group>"; };
+		F5272CFB1D9B18C1000FF7C8 /* zip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = zip.c; path = ../deps/zip/src/zip.c; sourceTree = "<group>"; };
+		F5272CFC1D9B18C1000FF7C8 /* zip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zip.h; path = ../deps/zip/src/zip.h; sourceTree = "<group>"; };
+		F544746C1D9A5E1700561F4C /* convert_locations */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = convert_locations; sourceTree = BUILT_PRODUCTS_DIR; };
+		F54474781D9A5F6A00561F4C /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = ../util/util.h; sourceTree = "<group>"; };
+		F544747B1D9A5FC800561F4C /* texture_gim.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = texture_gim.cpp; path = ../renderer/texture_gim.cpp; sourceTree = "<group>"; };
+		F544747C1D9A5FC800561F4C /* texture_gim.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = texture_gim.h; path = ../renderer/texture_gim.h; sourceTree = "<group>"; };
+		F544747E1D9A5FEF00561F4C /* fhm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fhm.cpp; path = ../containers/fhm.cpp; sourceTree = "<group>"; };
+		F544747F1D9A5FEF00561F4C /* fhm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fhm.h; path = ../containers/fhm.h; sourceTree = "<group>"; };
+		F54474801D9A5FEF00561F4C /* cdp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cdp.cpp; path = ../containers/cdp.cpp; sourceTree = "<group>"; };
+		F54474811D9A5FEF00561F4C /* cdp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cdp.h; path = ../containers/cdp.h; sourceTree = "<group>"; };
+		F54474821D9A5FEF00561F4C /* cpk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cpk.cpp; path = ../containers/cpk.cpp; sourceTree = "<group>"; };
+		F54474831D9A5FEF00561F4C /* cpk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cpk.h; path = ../containers/cpk.h; sourceTree = "<group>"; };
+		F54474841D9A5FEF00561F4C /* decrypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = decrypt.h; path = ../containers/decrypt.h; sourceTree = "<group>"; };
+		F54474851D9A5FEF00561F4C /* pac5.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pac5.cpp; path = ../containers/pac5.cpp; sourceTree = "<group>"; };
+		F54474861D9A5FEF00561F4C /* pac5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pac5.h; path = ../containers/pac5.h; sourceTree = "<group>"; };
+		F54474871D9A5FEF00561F4C /* pac6.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pac6.cpp; path = ../containers/pac6.cpp; sourceTree = "<group>"; };
+		F54474881D9A5FEF00561F4C /* pac6.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pac6.h; path = ../containers/pac6.h; sourceTree = "<group>"; };
+		F54474891D9A5FEF00561F4C /* poc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = poc.cpp; path = ../containers/poc.cpp; sourceTree = "<group>"; };
+		F544748A1D9A5FEF00561F4C /* poc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = poc.h; path = ../containers/poc.h; sourceTree = "<group>"; };
+		F54474921D9A606900561F4C /* convert_locations.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = convert_locations.cpp; sourceTree = "<group>"; };
+		F54474941D9A60B900561F4C /* nya_engine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = nya_engine.xcodeproj; path = "../deps/nya-engine/build/xcode/nya_engine.xcodeproj"; sourceTree = "<group>"; };
+		F54474A11D9A618C00561F4C /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F54474691D9A5E1700561F4C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F54474A21D9A618C00561F4C /* libz.dylib in Frameworks */,
+				F54474A01D9A617D00561F4C /* libnya_engine.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F5272CF91D9B18A0000FF7C8 /* zip */ = {
+			isa = PBXGroup;
+			children = (
+				F54474A11D9A618C00561F4C /* libz.dylib */,
+				F5272CFA1D9B18C1000FF7C8 /* miniz.h */,
+				F5272CFB1D9B18C1000FF7C8 /* zip.c */,
+				F5272CFC1D9B18C1000FF7C8 /* zip.h */,
+			);
+			name = zip;
+			sourceTree = "<group>";
+		};
+		F54474631D9A5E1700561F4C = {
+			isa = PBXGroup;
+			children = (
+				F54474921D9A606900561F4C /* convert_locations.cpp */,
+				F5272CF91D9B18A0000FF7C8 /* zip */,
+				F54474941D9A60B900561F4C /* nya_engine.xcodeproj */,
+				F544747A1D9A5F7B00561F4C /* open horizon */,
+				F544746D1D9A5E1700561F4C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F544746D1D9A5E1700561F4C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F544746C1D9A5E1700561F4C /* convert_locations */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F544747A1D9A5F7B00561F4C /* open horizon */ = {
+			isa = PBXGroup;
+			children = (
+				F54474911D9A5FF200561F4C /* containers */,
+				F544747B1D9A5FC800561F4C /* texture_gim.cpp */,
+				F544747C1D9A5FC800561F4C /* texture_gim.h */,
+				F54474781D9A5F6A00561F4C /* util.h */,
+			);
+			name = "open horizon";
+			sourceTree = "<group>";
+		};
+		F54474911D9A5FF200561F4C /* containers */ = {
+			isa = PBXGroup;
+			children = (
+				F544747E1D9A5FEF00561F4C /* fhm.cpp */,
+				F544747F1D9A5FEF00561F4C /* fhm.h */,
+				F54474801D9A5FEF00561F4C /* cdp.cpp */,
+				F54474811D9A5FEF00561F4C /* cdp.h */,
+				F54474821D9A5FEF00561F4C /* cpk.cpp */,
+				F54474831D9A5FEF00561F4C /* cpk.h */,
+				F54474841D9A5FEF00561F4C /* decrypt.h */,
+				F54474851D9A5FEF00561F4C /* pac5.cpp */,
+				F54474861D9A5FEF00561F4C /* pac5.h */,
+				F54474871D9A5FEF00561F4C /* pac6.cpp */,
+				F54474881D9A5FEF00561F4C /* pac6.h */,
+				F54474891D9A5FEF00561F4C /* poc.cpp */,
+				F544748A1D9A5FEF00561F4C /* poc.h */,
+			);
+			name = containers;
+			sourceTree = "<group>";
+		};
+		F54474951D9A60B900561F4C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F544749A1D9A60B900561F4C /* libnya_engine.a */,
+				F544749C1D9A60B900561F4C /* libnya_engine_ios.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F544746B1D9A5E1700561F4C /* convert_locations */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F54474751D9A5E1700561F4C /* Build configuration list for PBXNativeTarget "convert_locations" */;
+			buildPhases = (
+				F54474681D9A5E1700561F4C /* Sources */,
+				F54474691D9A5E1700561F4C /* Frameworks */,
+				F544746A1D9A5E1700561F4C /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = convert_locations;
+			productName = convert_locations;
+			productReference = F544746C1D9A5E1700561F4C /* convert_locations */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F54474641D9A5E1700561F4C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+				ORGANIZATIONNAME = "Undefined Darkness";
+			};
+			buildConfigurationList = F54474671D9A5E1700561F4C /* Build configuration list for PBXProject "convert_locations" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = F54474631D9A5E1700561F4C;
+			productRefGroup = F544746D1D9A5E1700561F4C /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = F54474951D9A60B900561F4C /* Products */;
+					ProjectRef = F54474941D9A60B900561F4C /* nya_engine.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				F544746B1D9A5E1700561F4C /* convert_locations */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		F544749A1D9A60B900561F4C /* libnya_engine.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libnya_engine.a;
+			remoteRef = F54474991D9A60B900561F4C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F544749C1D9A60B900561F4C /* libnya_engine_ios.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libnya_engine_ios.a;
+			remoteRef = F544749B1D9A60B900561F4C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F54474681D9A5E1700561F4C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F544748B1D9A5FEF00561F4C /* fhm.cpp in Sources */,
+				F54474901D9A5FEF00561F4C /* poc.cpp in Sources */,
+				F54474931D9A606900561F4C /* convert_locations.cpp in Sources */,
+				F5272CFD1D9B18C1000FF7C8 /* zip.c in Sources */,
+				F544748E1D9A5FEF00561F4C /* pac5.cpp in Sources */,
+				F544747D1D9A5FC800561F4C /* texture_gim.cpp in Sources */,
+				F544748D1D9A5FEF00561F4C /* cpk.cpp in Sources */,
+				F544748F1D9A5FEF00561F4C /* pac6.cpp in Sources */,
+				F544748C1D9A5FEF00561F4C /* cdp.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		F54474731D9A5E1700561F4C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		F54474741D9A5E1700561F4C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		F54474761D9A5E1700561F4C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CONFIGURATION_BUILD_DIR = ../bin/mac_debug;
+				CONFIGURATION_TEMP_DIR = ../obj/mac_debug;
+				OBJROOT = ../obj;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SYMROOT = ../bin;
+				USER_HEADER_SEARCH_PATHS = "../deps/nya-engine/ ../deps/zip/src/ ../";
+			};
+			name = Debug;
+		};
+		F54474771D9A5E1700561F4C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CONFIGURATION_BUILD_DIR = ../bin/mac_release;
+				CONFIGURATION_TEMP_DIR = ../obj/mac_release;
+				OBJROOT = ../obj;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SYMROOT = ../bin;
+				USER_HEADER_SEARCH_PATHS = "../deps/nya-engine/ ../deps/zip/src/ ../";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F54474671D9A5E1700561F4C /* Build configuration list for PBXProject "convert_locations" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F54474731D9A5E1700561F4C /* Debug */,
+				F54474741D9A5E1700561F4C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F54474751D9A5E1700561F4C /* Build configuration list for PBXNativeTarget "convert_locations" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F54474761D9A5E1700561F4C /* Debug */,
+				F54474771D9A5E1700561F4C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F54474641D9A5E1700561F4C /* Project object */;
+}
