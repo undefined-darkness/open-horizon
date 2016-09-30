@@ -12,10 +12,14 @@
 #include "renderer/texture_gim.h"
 #include "zip.h"
 
+#ifndef _WIN32
+    #include <unistd.h>
+#endif
+
 //------------------------------------------------------------
 
 inline std::string tex_name(std::string base, int idx) { return base + (idx < 10 ? "0" : "" ) + std::to_string(idx) + ".tga"; }
-inline std::string loc_name(std::string base, int idx) { return base + (idx < 10 ? "0" : "" ) + std::to_string(idx); }
+inline std::string loc_name(std::string base, int idx) { return base + " " + (idx < 10 ? "0" : "" ) + std::to_string(idx); }
 inline std::string loc_filename(std::string base, int idx) { return base + "_loc" + (idx < 10 ? "0" : "" ) + std::to_string(idx) + ".zip"; }
 
 inline nya_memory::tmp_buffer_ref load_resource(poc_file &p, int idx)
@@ -44,6 +48,44 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
         return false;
     }
 
+    //params
+    const int tex_size = 1024;
+    const int frag_size = 64;
+    const int bord_size = 2;
+
+    auto sky = load_resource(p, 11);
+    zip_entry_open(zip, "sky.sph");
+    zip_entry_write(zip, sky.get_data(), sky.get_size());
+    zip_entry_close(zip);
+    sky.free();
+
+    auto tc_off = load_resource(p, 5);
+    zip_entry_open(zip, "tex_offsets.bin");
+    zip_entry_write(zip, tc_off.get_data(), tc_off.get_size());
+    zip_entry_close(zip);
+    tc_off.free();
+
+    const int frag_per_line = tex_size / (frag_size + bord_size * 2);
+    const int frag_per_tex = frag_per_line * frag_per_line;
+
+    const int max_tex_ind = 0xff;
+
+    static_assert(frag_per_tex <= max_tex_ind, "fragments per texture exceeds index type limit");
+
+    auto tc_ind = load_resource(p, 6);
+    auto tc_ind_buf = (unsigned char *)tc_ind.get_data();
+    for (size_t i = 0; i < tc_ind.get_size(); i += 2)
+    {
+        const int idx = tc_ind_buf[i] + (tc_ind_buf[i+1] & 3) * max_tex_ind; //10bit
+        tc_ind_buf[i] = idx / frag_per_tex;;
+        tc_ind_buf[i+1] = idx % frag_per_tex;
+    }
+
+    zip_entry_open(zip, "tex_indices.bin");
+    zip_entry_write(zip, tc_ind.get_data(), tc_ind.get_size());
+    zip_entry_close(zip);
+    tc_ind.free();
+
     std::string info_str = "<!--Open Horizon location-->\n";
     info_str += "<location name=\"" + name + "\">\n";
 
@@ -59,11 +101,6 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
 
     if (res.get_size() >= sizeof(tex_header))
     {
-        //params
-        const int tex_size = 1024;
-        const int frag_size = 64;
-        const int bord_size = 2;
-
         const auto header = (tex_header *)res.get_data();
 
         union color
@@ -92,9 +129,6 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
         struct frag { unsigned char data[frag_size][frag_size]; };
 
         assert(res.get_size() >= header->mip_offsets[0] + sizeof(frag) * header->count);
-
-        const int frag_per_line = tex_size / (frag_size + bord_size * 2);
-        const int frag_per_tex = frag_per_line * frag_per_line;
 
         nya_formats::tga tga;
         tga.width = tga.height = tex_size;
@@ -150,6 +184,10 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
 
 int main(int argc, const char * argv[])
 {
+#ifndef _WIN32
+    chdir(nya_system::get_app_path());
+#endif
+
     std::string src_path;
     std::string dst_path = "locations/";
 
