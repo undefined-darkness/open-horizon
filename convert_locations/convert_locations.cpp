@@ -52,6 +52,20 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
     const int tex_size = 1024;
     const int frag_size = 64;
     const int bord_size = 2;
+    const int quad_size = 2048;
+    const int quad_frags = 16;
+
+    auto height_off = load_resource(p, 0);
+    zip_entry_open(zip, "height_offsets.bin");
+    zip_entry_write(zip, height_off.get_data(), height_off.get_size());
+    zip_entry_close(zip);
+    height_off.free();
+
+    auto heights = load_resource(p, 1);
+    zip_entry_open(zip, "heights.bin");
+    zip_entry_write(zip, heights.get_data(), heights.get_size());
+    zip_entry_close(zip);
+    heights.free();
 
     auto sky = load_resource(p, 11);
     zip_entry_open(zip, "sky.sph");
@@ -68,17 +82,15 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
     const int frag_per_line = tex_size / (frag_size + bord_size * 2);
     const int frag_per_tex = frag_per_line * frag_per_line;
 
-    const int max_tex_ind = 0xff;
-
-    static_assert(frag_per_tex <= max_tex_ind, "fragments per texture exceeds index type limit");
+    static_assert(frag_per_tex < 256, "fragments per texture exceeds index type limit");
 
     auto tc_ind = load_resource(p, 6);
     auto tc_ind_buf = (unsigned char *)tc_ind.get_data();
     for (size_t i = 0; i < tc_ind.get_size(); i += 2)
     {
-        const int idx = tc_ind_buf[i] + (tc_ind_buf[i+1] & 3) * max_tex_ind; //10bit
-        tc_ind_buf[i] = idx / frag_per_tex;;
-        tc_ind_buf[i+1] = idx % frag_per_tex;
+        const int idx = tc_ind_buf[i] + (tc_ind_buf[i+1] & 3) * 256; //10bit
+        tc_ind_buf[i] = idx % frag_per_tex;
+        tc_ind_buf[i+1] = idx / frag_per_tex;;
     }
 
     zip_entry_open(zip, "tex_indices.bin");
@@ -154,7 +166,8 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
                     {
                         color *ldv = lh + tex_size * dy + bord_size;
                         for (int dx = -bord_size; dx < frag_size + bord_size; ++dx)
-                            ldv[dx] = palette[f->data[clamp_int(dx, frag_size)][clamp_int(dy, frag_size)]];
+                            ldv[dx] = palette[f->data[clamp_int(dy, frag_size)]
+                                                     [clamp_int(dx, frag_size)]];
                     }
                 }
             }
@@ -164,15 +177,47 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
             zip_entry_close(zip);
         }
 
-        info_str += "\t<tiles count=\"" + std::to_string(tiles_count) + "\" " +
-                    "size=\"" + std::to_string(frag_size) + "\" " +
-                    "border=\"" + std::to_string(bord_size) + "\"/>\n";
+        info_str += "\t<tiles tex_count=\"" + std::to_string(tiles_count) + "\" " +
+                    "quad_size=\"" + std::to_string(quad_size) + "\" " +
+                    "quad_frags=\"" + std::to_string(quad_frags) + "\" " +
+                    "frag_size=\"" + std::to_string(frag_size) + "\" " +
+                    "frag_border=\"" + std::to_string(bord_size) + "\"/>\n";
     }
+
+    const int height_quad_frags = quad_frags * 2;
+    const std::string height_format = "byte";
+    const float height_scale = 100.0f;
+
+    info_str += "\t<heightmap format=\"" + height_format + "\" " +
+                "scale=\"" + std::to_string(height_scale) + "\" " +
+                "quad_frags=\"" + std::to_string(height_quad_frags) + "\"/>\n";
 
     info_str += "</location>\n\n";
 
     zip_entry_open(zip, "info.xml");
     zip_entry_write(zip, info_str.c_str(), info_str.size());
+    zip_entry_close(zip);
+
+    auto obj = load_resource(p, 15);
+    const int obj_count = *(int*)obj.get_data();
+    std::string objects_str = "<!--Open Horizon location objects-->\n";
+    objects_str += "<objects>\n";
+    struct obj_struct { nya_math::vec3 pos; int idx; };
+    const auto objs = (obj_struct *)obj.get_data(16);
+    for (int i = 0; i < obj_count; ++i)
+    {
+        auto &o = objs[i];
+        char name[255];
+        sprintf(name, "object%02d.obj", o.idx);
+        objects_str += "\t<object x=\"" + std::to_string(o.pos.x) + "\" " +
+                                 "y=\"" + std::to_string(o.pos.y) + "\" " +
+                                 "z=\"" + std::to_string(o.pos.z) + "\" " +
+                                 "file=\"" + name + "\"/>\n";
+    }
+    objects_str += "</objects>\n\n";
+    obj.free();
+    zip_entry_open(zip, "objects.xml");
+    zip_entry_write(zip, objects_str.c_str(), objects_str.size());
     zip_entry_close(zip);
 
     zip_close(zip);
