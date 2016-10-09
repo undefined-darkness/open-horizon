@@ -49,6 +49,10 @@ inline float swap_bytes(float v) { const uint32_t t = swap_bytes(*(uint32_t *)&v
 
 //------------------------------------------------------------
 
+template<typename t> t roundup(t v, int m) { return ((v + m - 1) / m) * m; }
+
+//------------------------------------------------------------
+
 class noncopyable
 {
 protected:

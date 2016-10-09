@@ -10,7 +10,10 @@
 #include "containers/poc.h"
 #include "formats/tga.h"
 #include "renderer/texture_gim.h"
+#include "renderer/mesh_sm.h"
 #include "zip.h"
+#include "obj_writer.h"
+#include <set>
 
 #ifndef _WIN32
     #include <unistd.h>
@@ -35,6 +38,15 @@ inline int clamp_int(int val, int to) { return val < 0 ? 0 : (val < to ? val : t
 
 //------------------------------------------------------------
 
+inline void write_vert(const renderer::mesh_sm::vert &v, obj_writer &w)
+{
+    w.add_pos(v.pos, nya_math::vec4(v.color[0], v.color[1], v.color[2], v.color[3]) / 255.0f);
+    w.add_normal(v.normal);
+    w.add_tc(v.tc);
+}
+
+//------------------------------------------------------------
+
 bool convert_location5(const void *data, size_t size, std::string name, std::string filename)
 {
     poc_file p;
@@ -54,6 +66,153 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
     const int bord_size = 2;
     const int quad_size = 2048;
     const int quad_frags = 16;
+
+    auto obj_data = load_resource(p, 16);
+    poc_file op;
+    if (op.open(obj_data.get_data(), obj_data.get_size()))
+    {
+        for (int i = 0; i < op.get_chunks_count(); ++i)
+        {
+            nya_memory::tmp_buffer_scoped data(load_resource(op, i));
+            renderer::mesh_sm mesh;
+            if (!mesh.load(data.get_data(), data.get_size()))
+                continue;
+
+            obj_writer w;
+
+            std::set<int> used_tex;
+
+            int group_idx = 0;
+            for (auto &g: mesh.groups)
+            {
+                char mat_name[255];
+                sprintf(mat_name, "material%02d", g.tex_idx);
+
+                if (used_tex.find(g.tex_idx) == used_tex.end())
+                {
+                    w.add_material(mat_name, tex_name("tex", g.tex_idx));
+                    used_tex.insert(g.tex_idx);
+                }
+
+                char group_name[255];
+                sprintf(group_name, "group%02d", group_idx++);
+
+                w.add_group(group_name, mat_name);
+
+                for (auto &s: g.geometry)
+                {
+                    //strip to poly
+
+                    const int vcount = (int)s.verts.size();
+
+                    if (vcount == 3)
+                    {
+                        write_vert(s.verts[0], w);
+                        write_vert(s.verts[2], w);
+                        write_vert(s.verts[1], w);
+                        w.add_face(3);
+                    }
+                    else if (vcount == 4)
+                    {
+                        write_vert(s.verts[0], w);
+                        write_vert(s.verts[2], w);
+                        write_vert(s.verts[3], w);
+                        write_vert(s.verts[1], w);
+                        w.add_face(4);
+                    }
+                    else
+                    {
+                        for (int i = 2; i < vcount; ++i)
+                        {
+                            write_vert(s.verts[i], w);
+                            if (i & 1)
+                            {
+                                write_vert(s.verts[i-2], w);
+                                write_vert(s.verts[i-1], w);
+                            }
+                            else
+                            {
+                                write_vert(s.verts[i-1], w);
+                                write_vert(s.verts[i-2], w);
+                            }
+                            w.add_face(3);
+                        }
+                    }
+                }
+            }
+
+            char name[255];
+            sprintf(name, "object%02d", i);
+            std::string sname(name);
+
+            auto vdata = w.get_string(sname + ".mtl");
+            auto mdata = w.get_mat_string();
+
+            sname = "objects/" + sname;
+
+            zip_entry_open(zip, (sname + ".obj").c_str());
+            zip_entry_write(zip, vdata.data(), vdata.length());
+            zip_entry_close(zip);
+
+            zip_entry_open(zip, (sname + ".mtl").c_str());
+            zip_entry_write(zip, mdata.data(), mdata.length());
+            zip_entry_close(zip);
+        }
+    }
+    obj_data.free();
+
+    union color
+    {
+        unsigned int u;
+        struct { unsigned char b, g, r, a; };
+    };
+
+    auto obj_tex_data = load_resource(p, 17);
+    poc_file otp;
+    if (otp.open(obj_tex_data.get_data(), obj_tex_data.get_size()))
+    {
+        color palette[256];
+
+        auto pal_data = load_resource(otp, 0);
+        renderer::gim_decoder pal_dec(pal_data.get_data(), pal_data.get_size());
+        assert(pal_dec.get_required_size() == sizeof(palette));
+        pal_dec.decode(palette);
+        pal_data.free();
+
+        for (auto &c: palette)
+            std::swap(c.r, c.b);
+
+        auto textures_data = load_resource(otp, 1);
+        poc_file tp;
+        if (tp.open(textures_data.get_data(), textures_data.get_size()))
+        {
+            for (int i = 0; i < tp.get_chunks_count(); ++i)
+            {
+                auto tex_data = load_resource(tp, i);
+                renderer::gim_decoder tex_dec(tex_data.get_data(), tex_data.get_size());
+                nya_memory::tmp_buffer_scoped tex(tex_dec.get_required_size() + nya_formats::tga::tga_minimum_header_size);
+                tex_dec.decode(tex.get_data());
+                tex_data.free();
+
+                color *colors = (color *)tex.get_data(nya_formats::tga::tga_minimum_header_size);
+                for (int i = 0; i < tex_dec.get_width()*tex_dec.get_height(); ++i)
+                    colors[i] = palette[colors[i].r];
+
+                nya_formats::tga tga;
+                tga.width = tex_dec.get_width();
+                tga.height = tex_dec.get_height();
+                tga.channels = nya_formats::tga::bgra;
+
+                tga.encode_header(tex.get_data());
+
+                zip_entry_open(zip, tex_name("objects/tex", i).c_str());
+                zip_entry_write(zip, tex.get_data(), tex.get_size());
+                zip_entry_close(zip);
+            }
+        }
+        textures_data.free();
+    }
+    obj_tex_data.free();
 
     auto height_off = load_resource(p, 0);
     zip_entry_open(zip, "height_offsets.bin");
@@ -114,12 +273,6 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
     if (res.get_size() >= sizeof(tex_header))
     {
         const auto header = (tex_header *)res.get_data();
-
-        union color
-        {
-            unsigned int u;
-            struct { unsigned char b, g, r, a; };
-        };
 
         assert(pal_res.get_size() == 256 * 4);
         color *pal = (color *)pal_res.get_data();
@@ -208,7 +361,7 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
     {
         auto &o = objs[i];
         char name[255];
-        sprintf(name, "object%02d.obj", o.idx);
+        sprintf(name, "objects/object%02d.obj", o.idx);
         objects_str += "\t<object x=\"" + std::to_string(o.pos.x) + "\" " +
                                  "y=\"" + std::to_string(o.pos.y) + "\" " +
                                  "z=\"" + std::to_string(o.pos.z) + "\" " +
