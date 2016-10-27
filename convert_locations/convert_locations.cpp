@@ -61,10 +61,11 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
     }
 
     //params
+    const float scale = 1.0f / 4.0f;
     const int tex_size = 1024;
     const int frag_size = 64;
     const int bord_size = 2;
-    const int quad_size = 2048;
+    const int quad_size = (int)(2048 * scale);
     const int quad_frags = 16;
 
     auto obj_data = load_resource(p, 16);
@@ -101,6 +102,9 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
 
                 for (auto &s: g.geometry)
                 {
+                    for (auto &v: s.verts)
+                        v.pos *= scale;
+
                     //strip to poly
 
                     const int vcount = (int)s.verts.size();
@@ -191,7 +195,7 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
                 auto tex_data = load_resource(tp, i);
                 renderer::gim_decoder tex_dec(tex_data.get_data(), tex_data.get_size());
                 nya_memory::tmp_buffer_scoped tex(tex_dec.get_required_size() + nya_formats::tga::tga_minimum_header_size);
-                tex_dec.decode(tex.get_data());
+                tex_dec.decode(tex.get_data(nya_formats::tga::tga_minimum_header_size));
                 tex_data.free();
 
                 color *colors = (color *)tex.get_data(nya_formats::tga::tga_minimum_header_size);
@@ -339,7 +343,7 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
 
     const int height_quad_frags = quad_frags * 2;
     const std::string height_format = "byte";
-    const float height_scale = 100.0f;
+    const float height_scale = 100.0f * scale;
 
     info_str += "\t<heightmap format=\"" + height_format + "\" " +
                 "scale=\"" + std::to_string(height_scale) + "\" " +
@@ -362,9 +366,9 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
         auto &o = objs[i];
         char name[255];
         sprintf(name, "objects/object%02d.obj", o.idx);
-        objects_str += "\t<object x=\"" + std::to_string(o.pos.x) + "\" " +
-                                 "y=\"" + std::to_string(o.pos.y) + "\" " +
-                                 "z=\"" + std::to_string(o.pos.z) + "\" " +
+        objects_str += "\t<object x=\"" + std::to_string(o.pos.x * scale) + "\" " +
+                                 "y=\"" + std::to_string(o.pos.y * scale) + "\" " +
+                                 "z=\"" + std::to_string(o.pos.z * scale) + "\" " +
                                  "file=\"" + name + "\"/>\n";
     }
     objects_str += "</objects>\n\n";
