@@ -4,6 +4,7 @@
 
 #include "fhm_location.h"
 #include "containers/fhm.h"
+#include "mesh_obj.h"
 
 #include "resources/resources.h"
 #include "memory/tmp_buffer.h"
@@ -14,6 +15,8 @@
 #include "scene/shader.h"
 #include "math/scalar.h"
 #include "util/half.h"
+#include "util/location.h"
+#include "util/xml.h"
 
 #include "render/platform_specific_gl.h"
 
@@ -32,8 +35,6 @@ namespace renderer
 //------------------------------------------------------------
 
 static const int location_size = 16;
-static const float patch_size = 1024.0;
-static const unsigned int quads_per_patch = 8, subquads_per_quad = 8;
 
 //------------------------------------------------------------
 
@@ -62,12 +63,18 @@ struct fhm_location_load_data
     unsigned char patches[location_size * location_size];
     std::vector<unsigned char> tex_indices_data;
 
-    std::vector<unsigned int> textures;
+    std::vector<nya_scene::texture> textures;
 
     unsigned int tree_types_count = 0;
     struct tree_info { unsigned int idx, offset, count = 0; };
     std::vector<tree_info> tree_patches[location_size * location_size];
     std::vector<nya_math::vec2> tree_positions;
+
+    int quad_size = 1024;
+    int quad_frags = 8;
+    int subquads_per_quad = 8;
+    int tile_size = 512;
+    int tile_border = 8;
 };
 
 //------------------------------------------------------------
@@ -98,10 +105,12 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             //ToDo: exclude patches with -9999.0 height
             //ToDo: lod seams
 
-            int ty = tc_idx / (subquads_per_quad-1);
-            int tx = tc_idx - ty * (subquads_per_quad-1);
+            const int line_count = int(int(m_tex_width) / int(m_tile_size + m_tile_border));
 
-            nya_math::vec4 tc(8, 8, 512, 512);
+            int ty = tc_idx / line_count;
+            int tx = tc_idx - ty * line_count;
+
+            nya_math::vec4 tc(m_tile_border, m_tile_border, m_tile_size, m_tile_size);
 
             tc.x += (tc.z + tc.x * 2) * tx;
             tc.y += (tc.w + tc.y * 2) * ty;
@@ -116,14 +125,14 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
             vert v;
 
-            const uint hpw = subquads_per_quad*subquads_per_quad+1;
-            const uint w = subquads_per_quad + 1;
+            const uint hpw = m_quad_frags * m_subquads_per_quad + 1;
+            const uint w = m_subquads_per_quad + 1;
 
             uint voff = (uint)m_verts.size();
 
             tc.zw() -= tc.xy();
-            tc.zw() /= float(subquads_per_quad);
-            const float hpatch_size = patch_size/subquads_per_quad;
+            tc.zw() /= float(m_subquads_per_quad);
+            const float hpatch_size = m_quad_size/m_subquads_per_quad;
             for (int hy=0; hy < w; ++hy)
             for (int hx=0; hx < w; ++hx)
             {
@@ -167,30 +176,33 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 return;
             }
 
-            for (int hy=0; hy < subquads_per_quad; ++hy)
-            for (int hx=0; hx < subquads_per_quad; ++hx)
+            for (int hy=0; hy < m_subquads_per_quad; ++hy)
+            for (int hx=0; hx < m_subquads_per_quad; ++hx)
             {
                 int i = voff + hx + hy * w;
 
                 m_curr_indices_hi.push_back(i);
-                m_curr_indices_hi.push_back(i + 1 + subquads_per_quad);
+                m_curr_indices_hi.push_back(i + 1 + m_subquads_per_quad);
                 m_curr_indices_hi.push_back(i + 1);
                 m_curr_indices_hi.push_back(i + 1);
-                m_curr_indices_hi.push_back(i + 1 + subquads_per_quad);
-                m_curr_indices_hi.push_back(i + 1 + subquads_per_quad + 1);
+                m_curr_indices_hi.push_back(i + 1 + m_subquads_per_quad);
+                m_curr_indices_hi.push_back(i + 1 + m_subquads_per_quad + 1);
             }
 
-            for (int hy=0; hy < subquads_per_quad; hy += 2)
-            for (int hx=0; hx < subquads_per_quad; hx += 2)
+            if (m_subquads_per_quad <= 2)
+                return;
+
+            for (int hy=0; hy < m_subquads_per_quad; hy += 2)
+            for (int hx=0; hx < m_subquads_per_quad; hx += 2)
             {
                 int i = voff + hx + hy * w;
 
                 m_curr_indices_mid.push_back(i);
-                m_curr_indices_mid.push_back(i + 2 * (1 + subquads_per_quad));
+                m_curr_indices_mid.push_back(i + 2 * (1 + m_subquads_per_quad));
                 m_curr_indices_mid.push_back(i + 2);
                 m_curr_indices_mid.push_back(i + 2);
-                m_curr_indices_mid.push_back(i + 2 * (1 + subquads_per_quad));
-                m_curr_indices_mid.push_back(i + 2 * (1 + subquads_per_quad + 1));
+                m_curr_indices_mid.push_back(i + 2 * (1 + m_subquads_per_quad));
+                m_curr_indices_mid.push_back(i + 2 * (1 + m_subquads_per_quad + 1));
             }
         }
 
@@ -199,9 +211,9 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         uint get_group_hi_offset() { return (uint)m_indices.size(); }
         uint get_group_hi_count() { return (uint)m_curr_indices_hi.size(); }
         uint get_group_mid_offset() { return (uint)(m_indices.size() + m_curr_indices_hi.size()); }
-        uint get_group_mid_count() { return (uint)m_curr_indices_mid.size(); }
+        uint get_group_mid_count() { return m_subquads_per_quad > 2 ? (uint)m_curr_indices_mid.size() : 0; }
         uint get_group_low_offset() { return (uint)(m_indices.size() + m_curr_indices_hi.size() + m_curr_indices_mid.size()); }
-        uint get_group_low_count() { return (uint)m_curr_indices_low.size(); }
+        uint get_group_low_count() { return m_subquads_per_quad > 2 ? (uint)m_curr_indices_low.size() : 0; }
 
         nya_math::aabb get_aabb() { return nya_math::aabb(m_min, m_max); }
 
@@ -225,10 +237,22 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         uint get_icount() { return (uint)m_indices.size(); }
 
         void set_tex_size(int width, int height) { m_tex_width = width; m_tex_height = height; }
+        void set_patch_size(int quad_size, int quad_frags, int subquads_per_quad)
+        {
+            m_quad_size = quad_size;
+            m_quad_frags = quad_frags;
+            m_subquads_per_quad = subquads_per_quad;
+        }
+        void set_tex_patch_size(int border, int size) { m_tile_border = border, m_tile_size = size; }
 
     private:
         float m_tex_width;
         float m_tex_height;
+        float m_tile_border;
+        float m_tile_size;
+        int m_quad_size;
+        int m_quad_frags;
+        int m_subquads_per_quad;
 
         struct vert
         {
@@ -252,8 +276,13 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
     assert(!load_data.textures.empty());
 
+    //static const float patch_size = 2048.0;
+    //static const unsigned int quads_per_patch = 16, subquads_per_quad = 2;
+
     vbo_data vdata; //ToDo
     vdata.end_group();
+    vdata.set_patch_size(load_data.quad_size, load_data.quad_frags, load_data.subquads_per_quad);
+    vdata.set_tex_patch_size(load_data.tile_border, load_data.tile_size);
 
     for (int py = 0; py < location_size; ++py)
     for (int px = 0; px < location_size; ++px)
@@ -261,22 +290,21 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         const int idx = py * location_size + px;
         landscape::patch &p = m_landscape.patches[idx];
 
-        int tc_idx = load_data.patches[idx] * quads_per_patch * quads_per_patch;
+        int tc_idx = load_data.patches[idx] * load_data.quad_frags * load_data.quad_frags;
         if (tc_idx < 0)
             continue;
 
-        const float base_x = patch_size * quads_per_patch * (px - location_size/2);
-        const float base_y = patch_size * quads_per_patch * (py - location_size/2);
+        const float base_x = load_data.quad_size * load_data.quad_frags * (px - location_size/2);
+        const float base_y = load_data.quad_size * load_data.quad_frags * (py - location_size/2);
 
-        const int hpw = quads_per_patch*quads_per_patch+1;
+        const int hpw = load_data.quad_frags * load_data.subquads_per_quad + 1;
         const int h_idx = load_data.height_patches[idx] * hpw * hpw;
-        assert(h_idx>=0);
 
         assert(h_idx + hpw * hpw <= load_data.heights.size());
 
         int last_tex_idx = -1;
-        for (int y = 0; y < quads_per_patch; ++y)
-        for (int x = 0; x < quads_per_patch; ++x)
+        for (int y = 0; y < load_data.quad_frags; ++y)
+        for (int x = 0; x < load_data.quad_frags; ++x)
         {
             const int ind = tc_idx * 2 + 1;
             assert(ind < (int)load_data.tex_indices_data.size());
@@ -299,17 +327,16 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
                 p.groups.resize(p.groups.size() + 1);
                 auto &g = p.groups.back();
-                g.tex_id = load_data.textures[tex_idx];
-                auto &t = shared::get_texture(g.tex_id);
-                vdata.set_tex_size(t.get_width(), t.get_height());
+                g.tex = load_data.textures[tex_idx];
+                vdata.set_tex_size(g.tex.get_width(), g.tex.get_height());
 
                 last_tex_idx = tex_idx;
             }
 
-            const float *h = &load_data.heights[h_idx+(x + y * hpw)*quads_per_patch];
+            const float *h = &load_data.heights[h_idx + (x + y * hpw) * load_data.subquads_per_quad];
 
-            const float pos_x = base_x + patch_size * x;
-            const float pos_y = base_y + patch_size * y;
+            const float pos_x = base_x + load_data.quad_size * x;
+            const float pos_y = base_y + load_data.quad_size * y;
 
             vdata.add_patch(pos_x, pos_y, load_data.tex_indices_data[tc_idx * 2], h);
 
@@ -353,6 +380,24 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
     //------------------------------------
 
+    if (!m_map_parts_color_texture.is_valid())
+    {
+        auto &p = m_map_parts_material.get_default_pass();
+        p.set_shader("shaders/map_parts.nsh");
+        p.get_state().set_cull_face(true);
+
+        m_map_parts_color_texture.create();
+        m_map_parts_material.set_texture("color", m_map_parts_color_texture);
+        m_map_parts_diffuse_texture.create();
+        m_map_parts_material.set_texture("diffuse", m_map_parts_diffuse_texture);
+        m_map_parts_specular_texture.create();
+        m_map_parts_material.set_texture("specular", m_map_parts_specular_texture);
+        m_map_parts_tr.create();
+        m_map_parts_material.set_param_array(m_map_parts_material.get_param_idx("transform"), m_map_parts_tr);
+    }
+
+    //------------------------------------
+
     uint trees_count = 0;
 
     for (int py = 0; py < location_size; ++py)
@@ -380,11 +425,11 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         const int idx = py * location_size + px;
         landscape::patch &p = m_landscape.patches[idx];
 
-        const int hpw = quads_per_patch*quads_per_patch+1;
+        const int hpw = load_data.quad_frags * load_data.quad_frags + 1;
         const int h_idx = load_data.height_patches[idx] * hpw * hpw;
 
-        const float base_x = patch_size * quads_per_patch * (px - location_size/2);
-        const float base_y = patch_size * quads_per_patch * (py - location_size/2);
+        const float base_x = load_data.quad_size * load_data.quad_frags * (px - location_size/2);
+        const float base_y = load_data.quad_size * load_data.quad_frags * (py - location_size/2);
 
         p.tree_offset = curr_tree_idx_off;
         p.tree_count = 0;
@@ -403,25 +448,25 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
                 //ToDo
                 {
-                    const int hpatch_size = patch_size / subquads_per_quad;
+                    const int hpatch_size = load_data.quad_size / load_data.subquads_per_quad;
 
-                    const int base = location_size/2 * patch_size * quads_per_patch;
+                    const int base = location_size/2 * load_data.quad_size * load_data.quad_frags;
 
                     const int idx_x = int(pos.x + base) / hpatch_size;
                     const int idx_z = int(pos.z + base) / hpatch_size;
 
-                    const int tmp_idx_x = idx_x / subquads_per_quad;
-                    const int tmp_idx_z = idx_z / subquads_per_quad;
+                    const int tmp_idx_x = idx_x / load_data.subquads_per_quad;
+                    const int tmp_idx_z = idx_z / load_data.subquads_per_quad;
 
-                    const int qidx_x = tmp_idx_x - px * subquads_per_quad;
-                    const int qidx_z = tmp_idx_z - py * subquads_per_quad;
+                    const int qidx_x = tmp_idx_x - px * load_data.subquads_per_quad;
+                    const int qidx_z = tmp_idx_z - py * load_data.subquads_per_quad;
 
-                    const float *h = &load_data.heights[h_idx+(qidx_x + qidx_z * hpw)*quads_per_patch];
+                    const float *h = &load_data.heights[h_idx+(qidx_x + qidx_z * hpw)*load_data.quad_frags];
 
-                    const uint hhpw = subquads_per_quad * subquads_per_quad + 1;
+                    const uint hhpw = load_data.subquads_per_quad * load_data.subquads_per_quad + 1;
 
-                    const int hidx_x = idx_x - tmp_idx_x * subquads_per_quad;
-                    const int hidx_z = idx_z - tmp_idx_z * subquads_per_quad;
+                    const int hidx_x = idx_x - tmp_idx_x * load_data.subquads_per_quad;
+                    const int hidx_z = idx_z - tmp_idx_z * load_data.subquads_per_quad;
 
                     const float kx = (pos.x + base) / hpatch_size - idx_x;
                     const float kz = (pos.z + base) / hpatch_size - idx_z;
@@ -689,6 +734,188 @@ bool fhm_location::load(const char *fileName, const location_params &params, nya
 
 //------------------------------------------------------------
 
+bool fhm_location::load_native(const char *name, const location_params &params, nya_math::vec3 fcolor)
+{
+    fhm_location_load_data location_load_data;
+
+    auto &zip = get_native_location_provider(name);
+
+    pugi::xml_document doc;
+    if (!load_xml(zip.access("info.xml"), doc))
+        return false;
+
+    auto tiles = doc.first_child().child("tiles");
+    location_load_data.quad_size = tiles.attribute("quad_size").as_int();
+    location_load_data.quad_frags = tiles.attribute("quad_frags").as_int();
+    location_load_data.subquads_per_quad = tiles.attribute("subfrags").as_int();
+    location_load_data.tile_size = tiles.attribute("frag_size").as_int();
+    location_load_data.tile_border = tiles.attribute("frag_border").as_int();
+
+    const int tiles_tex_count = tiles.attribute("tex_count").as_int();
+    for (int i = 0; i < tiles_tex_count; ++i)
+    {
+        char name[255];
+        sprintf(name, "land%02d.tga", i);
+        auto data = load_resource(zip.access(name));
+
+        nya_scene::shared_texture stex;
+        if (nya_scene::texture::load_tga(stex, data, name))
+        {
+            nya_scene::texture tex;
+            tex.create(stex);
+            location_load_data.textures.push_back(tex);
+        }
+
+        data.free();
+    }
+
+    auto tc_off = load_resource(zip.access("tex_offsets.bin"));
+    tc_off.copy_to(location_load_data.patches, sizeof(location_load_data.patches));
+    tc_off.free();
+
+    auto tc_ind = load_resource(zip.access("tex_indices.bin"));
+    location_load_data.tex_indices_data.resize(tc_ind.get_size());
+    tc_ind.copy_to(location_load_data.tex_indices_data.data(), tc_ind.get_size());
+    tc_ind.free();
+
+    auto height_off = load_resource(zip.access("height_offsets.bin"));
+    height_off.copy_to(location_load_data.height_patches, sizeof(location_load_data.height_patches));
+    height_off.free();
+
+    auto heights = load_resource(zip.access("heights.bin"));
+    location_load_data.heights.resize(heights.get_size());
+    auto hdata = (unsigned char *)heights.get_data();
+    for (size_t i = 0; i < location_load_data.heights.size(); ++i)
+        location_load_data.heights[i] = hdata[i] * doc.first_child().child("heightmap").attribute("scale").as_float();
+    heights.free();
+
+    if (load_xml(zip.access("objects.xml"), doc))
+    {
+        std::map<std::string, nya_scene::texture> textures;
+        std::vector<std::string> loaded;
+        std::vector<nya_math::aabb> boxes;
+        for (auto o = doc.first_child().child("object"); o; o = o.next_sibling())
+        {
+            nya_math::vec3 pos;
+            pos.x = o.attribute("x").as_float();
+            pos.y = o.attribute("y").as_float();
+            pos.z = o.attribute("z").as_float();
+            std::string file = o.attribute("file").as_string();
+
+            auto l = std::find(loaded.begin(), loaded.end(), file);
+            if (l != loaded.end())
+            {
+                auto idx = l - loaded.begin();
+
+                m_mptx_meshes[idx].instances.resize( m_mptx_meshes[idx].instances.size() + 1);
+                auto &i = m_mptx_meshes[idx].instances.back();
+
+                i.bbox = boxes[idx];
+                i.bbox.origin += pos;
+                i.pos = pos;
+                continue;
+            }
+
+            loaded.push_back(file);
+            m_mptx_meshes.resize(m_mptx_meshes.size() + 1);
+            boxes.resize(boxes.size()+1);
+
+            auto &m = m_mptx_meshes.back();
+            auto &b = boxes.back();
+
+            mesh_obj obj;
+            if (obj.load(file.c_str(), zip))
+            {
+                auto fmax = std::numeric_limits<float>::max();
+                auto fmin = std::numeric_limits<float>::lowest();
+                nya_math::vec3 vmin(fmax,fmax,fmax), vmax(fmin,fmin,fmin);
+                for (auto &v: obj.verts)
+                {
+                    vmin = nya_math::vec3::min(vmin, v.pos);
+                    vmax = nya_math::vec3::max(vmax, v.pos);
+                }
+
+                b = nya_math::aabb(vmin, vmax);
+
+                struct vert
+                {
+                    nya_math::vec3 pos;
+                    nya_math::vec3 normal;
+                    nya_math::vec2 tc;
+                    float color_coord;
+                };
+
+                std::vector<vert> verts(obj.verts.size());
+                std::vector<nya_math::vec4> colors(verts.size());
+                for (size_t i = 0; i < verts.size(); ++i)
+                {
+                    verts[i].pos = obj.verts[i].pos;
+                    verts[i].normal = obj.verts[i].normal;
+                    verts[i].tc = obj.verts[i].tc;
+                    verts[i].color_coord = (float(i) + 0.5f)/ colors.size();
+                    colors[i] = obj.verts[i].color;
+                }
+
+                m.vbo.create();
+                m.vbo->set_vertex_data(verts.data(), (int)sizeof(vert), (int)verts.size());
+                m.vbo->set_normals(3*4);
+                m.vbo->set_tc(0, (3+3)*4, 3);
+
+                m.color.build(colors.data(), (int)colors.size(), 1, nya_render::texture::color_rgba32f);
+
+                m.groups.resize(obj.groups.size());
+                for (size_t i = 0; i < m.groups.size(); ++i)
+                {
+                    auto &f = obj.groups[i];
+                    auto &t = m.groups[i];
+
+                    t.offset = f.offset;
+                    t.count = f.count;
+
+                    std::string tex_name = obj.materials[f.mat_idx].tex_diffuse;
+                    auto it = textures.find(tex_name);
+                    if (it == textures.end())
+                    {
+                        nya_scene::resource_data data = load_resource(zip.access(tex_name.c_str()));
+                        nya_scene::shared_texture res;
+                        if (nya_scene::texture::load_tga(res, data, tex_name.c_str()))
+                            textures[tex_name].create(res);
+                        data.free();
+                        it = textures.find(tex_name);
+                    }
+
+                    t.diff = (it == textures.end()) ? shared::get_white_texture() : it->second;
+                    t.spec = shared::get_black_texture();
+                }
+            }
+
+            m.instances.resize(1);
+            auto &i = m.instances.back();
+            i.bbox = b;
+            i.bbox.origin += pos;
+            i.pos = pos;
+
+            m.draw_dist = b.delta.length() * 200.0f;
+            m.draw_dist *= m.draw_dist;
+        }
+    }
+
+    finish_load_location(location_load_data);
+
+    nya_scene::material::param light_dir(-params.sky.sun_dir, 0.0f);
+    nya_scene::material::param fog_color(fcolor.x, fcolor.y, fcolor.z, -0.01*params.sky.fog_density);
+    nya_scene::material::param fog_height(params.sky.fog_height_fresnel, params.sky.fog_height,
+                                          -0.01 * params.sky.fog_height_fade_density, -0.01 * params.sky.fog_height_density);
+    auto &m = m_land_material;
+    m.set_param(m.get_param_idx("light dir"), light_dir);
+    m.set_param(m.get_param_idx("fog color"), fog_color);
+    m.set_param(m.get_param_idx("fog height"), fog_height);
+
+    return true;
+}
+
+//------------------------------------------------------------
+
 void fhm_location::draw(const std::vector<mptx_mesh> &meshes)
 {
     const nya_math::frustum &f = nya_scene::get_camera().get_frustum();
@@ -700,49 +927,52 @@ void fhm_location::draw(const std::vector<mptx_mesh> &meshes)
     for (auto &mesh: meshes)
     {
         m_map_parts_color_texture.set(mesh.color);
-        m_map_parts_diffuse_texture.set(mesh.textures.size() > 0 ? shared::get_texture(mesh.textures[0]) : shared::get_black_texture());
-        m_map_parts_specular_texture.set(mesh.textures.size() > 1 ? shared::get_texture(mesh.textures[1]) : shared::get_black_texture());
-
         auto &vbo = mesh.vbo.get();
 
-        m_map_parts_tr->set_count(0);
-        for (size_t i = 0; i < mesh.instances.size(); ++i)
+        for (auto &g: mesh.groups)
         {
-            const auto &instance = mesh.instances[i];
+            m_map_parts_diffuse_texture.set(g.diff);
+            m_map_parts_specular_texture.set(g.spec);
 
-            if ((instance.pos - cp).length_sq() > mesh.draw_dist)
-                continue;
-
-            if (!f.test_intersect(instance.bbox))
-                continue;
-
-            int idx = m_map_parts_tr->get_count();
-            if (idx >= 127) //limited to 500 in shader uniforms, limited to 127 because of ati max instances per draw limitations
+            m_map_parts_tr->set_count(0);
+            for (size_t i = 0; i < mesh.instances.size(); ++i)
             {
-                mat_unset = true;
-                m_map_parts_material.internal().set();
-                vbo.bind();
-                vbo.draw(0, vbo.get_verts_count(), vbo.get_element_type(), idx);
-                vbo.unbind();
-                idx = 0;
+                const auto &instance = mesh.instances[i];
+
+                if ((instance.pos - cp).length_sq() > mesh.draw_dist)
+                    continue;
+
+                if (!f.test_intersect(instance.bbox))
+                    continue;
+
+                int idx = m_map_parts_tr->get_count();
+                if (idx >= 127) //limited to 500 in shader uniforms, limited to 127 because of ati max instances per draw limitations
+                {
+                    mat_unset = true;
+                    m_map_parts_material.internal().set();
+                    vbo.bind();
+                    vbo.draw(g.offset, g.count, vbo.get_element_type(), idx);
+                    vbo.unbind();
+                    idx = 0;
+                }
+
+                m_map_parts_tr->set_count(idx + 1);
+
+                const float color_coord = (float(i) + 0.5f)/mesh.instances.size();
+
+                const float pckd = floorf(instance.yaw*512.0f) + color_coord;
+                m_map_parts_tr->set(idx, instance.pos.x, instance.pos.y, instance.pos.z, pckd);
             }
 
-            m_map_parts_tr->set_count(idx + 1);
-
-            const float color_coord = (float(i) + 0.5f)/mesh.instances.size();
-
-            const float pckd = floorf(instance.yaw*512.0f) + color_coord;
-            m_map_parts_tr->set(idx, instance.pos.x, instance.pos.y, instance.pos.z, pckd);
-        }
-
-        int instances = m_map_parts_tr->get_count();
-        if (instances > 0)
-        {
-            mat_unset = true;
-            m_map_parts_material.internal().set(nya_scene::material::default_pass);
-            vbo.bind();
-            vbo.draw(0, vbo.get_verts_count(), vbo.get_element_type(), instances);
-            vbo.unbind();
+            int instances = m_map_parts_tr->get_count();
+            if (instances > 0)
+            {
+                mat_unset = true;
+                m_map_parts_material.internal().set(nya_scene::material::default_pass);
+                vbo.bind();
+                vbo.draw(g.offset, g.count, vbo.get_element_type(), instances);
+                vbo.unbind();
+            }
         }
     }
 
@@ -858,18 +1088,23 @@ void fhm_location::draw_landscape()
                 continue;
 
             const float sq = g.box.sq_dist(c.get_pos());
-            shared::get_texture(g.tex_id).internal().set();
+            g.tex.internal().set();
 
-            const float hi_dist = 10000.0f;
-            const float mid_dist = 15000.0f;
-            if (sq < hi_dist * hi_dist)
-                m_landscape.vbo->draw(g.hi_offset, g.hi_count);
-            else if (sq < mid_dist * mid_dist)
-                m_landscape.vbo->draw(g.mid_offset, g.mid_count);
+            if (g.mid_count > 0)
+            {
+                const float hi_dist = 10000.0f;
+                const float mid_dist = 15000.0f;
+                if (sq < hi_dist * hi_dist)
+                    m_landscape.vbo->draw(g.hi_offset, g.hi_count);
+                else if (sq < mid_dist * mid_dist)
+                    m_landscape.vbo->draw(g.mid_offset, g.mid_count);
+                else
+                    m_landscape.vbo->draw(g.low_offset, g.low_count);
+            }
             else
-                m_landscape.vbo->draw(g.low_offset, g.low_count);
+                m_landscape.vbo->draw(g.hi_offset, g.hi_count);
 
-            shared::get_texture(g.tex_id).internal().unset();
+            g.tex.internal().unset();
         }
     }
 
@@ -886,8 +1121,12 @@ bool fhm_location::read_ntxr(memory_reader &reader, fhm_location_load_data &load
     uint r = shared::load_texture(reader.get_data(), reader.get_remained());
     if (r > 1000000000) //ToDo //probably there is another way
     {
-        for (auto &t: load_data.textures) if (t == r) return true;
-        load_data.textures.push_back(r);
+        auto rt = shared::get_texture(r);
+        if (!rt.internal().get_shared_data().is_valid())
+            return false;
+
+        //for (auto &t: load_data.textures) if (t.internal().get_shared_data().const_get() == rt.internal().get_shared_data().const_get()) return true;
+        load_data.textures.push_back(rt);
     }
 
     return r>0;
@@ -1020,19 +1259,6 @@ bool fhm_location::read_mptx(memory_reader &reader)
     if (!header.vert_count || !header.instances_count)
         return true;
 
-    auto &p = m_map_parts_material.get_default_pass();
-    p.set_shader("shaders/map_parts.nsh");
-    p.get_state().set_cull_face(true);
-
-    m_map_parts_color_texture.create();
-    m_map_parts_material.set_texture("color", m_map_parts_color_texture);
-    m_map_parts_diffuse_texture.create();
-    m_map_parts_material.set_texture("diffuse", m_map_parts_diffuse_texture);
-    m_map_parts_specular_texture.create();
-    m_map_parts_material.set_texture("specular", m_map_parts_specular_texture);
-    m_map_parts_tr.create();
-    m_map_parts_material.set_param_array(m_map_parts_material.get_param_idx("transform"), m_map_parts_tr);
-
     const bool transparent = header.material_params[1] > 0;
 
     if (transparent)
@@ -1044,16 +1270,11 @@ bool fhm_location::read_mptx(memory_reader &reader)
 
     mptx_mesh &mesh = transparent ? m_mptx_transparent_meshes.back() : m_mptx_meshes.back();
 
-    mesh.textures.resize(header.tex_count);
-    if (header.tex_count>0)
-        mesh.textures[0] = header.tex0.id;
-    if (header.tex_count>1)
-    {
-        mesh.textures[1] = header.tex1.id;
-        if (!header.tex1.id)
-            mesh.textures.pop_back();
-    }
-
+    mesh.groups.resize(1);
+    auto &g = mesh.groups.back();
+    g.offset = 0, g.count = header.vert_count;
+    g.diff = header.tex_count > 0 && header.tex0.id ? shared::get_texture(header.tex0.id) : shared::get_black_texture();
+    g.spec = header.tex_count > 1 && header.tex1.id ? shared::get_texture(header.tex1.id) : shared::get_black_texture();
     assume(header.tex_count < 3);
 
     mesh.draw_dist = header.bbox_size * 200;

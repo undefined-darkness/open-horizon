@@ -6,6 +6,7 @@
 #include "scene/camera.h"
 #include "shared.h"
 #include "math/constants.h"
+#include "util/location.h"
 
 namespace renderer
 {
@@ -20,14 +21,22 @@ public:
         if (!r.get_data())
             return false;
 
-        assert(r.get_size() == sizeof(data));
-
-        memcpy(&data, r.get_data(), r.get_size());
-
-        for (size_t i = 0; i < sizeof(data)/sizeof(uint32_t); ++i)
-            ((uint32_t *)&data)[i] = swap_bytes(((uint32_t *)&data)[i]);
-
+        const bool result = load(r.get_data(), r.get_size());
         r.free();
+        return result;
+    }
+
+    bool load(const void *buf, size_t size)
+    {
+        assert(size == sizeof(data));
+        memcpy(&data, buf, size);
+
+        if (data[0].radius < 1.0f || data[0].height < 1.0f) //endianness
+        {
+            for (size_t i = 0; i < sizeof(data)/sizeof(uint32_t); ++i)
+                ((uint32_t *)&data)[i] = swap_bytes(((uint32_t *)&data)[i]);
+        }
+
         return true;
     }
 
@@ -166,8 +175,19 @@ struct solid_sphere
 
 bool sky_mesh::load(const char *name)
 {
+    if (!name)
+        return false;
+
     renderer::sph t;
-    t.load((std::string("Map/sph_") + name + ".sph").c_str());
+
+    if (is_native_location(name))
+    {
+        auto &p = get_native_location_provider(name);
+        nya_memory::tmp_buffer_scoped res(load_resource(p.access("sky.sph")));
+        t.load(res.get_data(), res.get_size());
+    }
+    else
+        t.load((std::string("Map/sph_") + name + ".sph").c_str());
 
     renderer::sph::color_table ct(t.data[0]);
 

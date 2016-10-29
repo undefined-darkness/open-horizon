@@ -86,6 +86,14 @@ inline nya_memory::tmp_buffer_ref load_resource(const char *name)
 
 //------------------------------------------------------------
 
+inline std::string get_path(std::string file_path)
+{
+    auto path=file_path.substr(0, file_path.find_last_of("\\/"));
+    return path.empty() ? path : path + "/";
+}
+
+//------------------------------------------------------------
+
 inline std::wstring to_wstring(const std::string &s)
 {
 #ifdef NO_CODECVT

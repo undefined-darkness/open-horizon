@@ -6,6 +6,10 @@
 
 #include <string>
 #include <vector>
+#include <set>
+#include "util/util.h"
+#include "util/xml.h"
+#include "extensions/zip_resources_provider.h"
 
 namespace game
 {
@@ -53,6 +57,26 @@ static const locations_list &get_locations_list()
          //phys::mesh::load assert
         list.push_back({"ms10", L"Caucasus Region"}); //launch
 */
+
+        const std::string folder = "locations/";
+        auto custom_locations = list_files(folder);
+        for (auto &id: custom_locations)
+        {
+            nya_resources::zip_resources_provider zprov;
+            if (!zprov.open_archive(id.c_str()))
+                continue;
+
+            pugi::xml_document doc;
+            if (!load_xml(zprov.access("info.xml"), doc))
+                continue;
+
+            auto root = doc.first_child();
+            std::string name = root.attribute("name").as_string();
+            if (name.empty())
+                continue;
+
+            list.push_back({id.substr(folder.length()), to_wstring(name)});
+        }
     }
 
     return list;

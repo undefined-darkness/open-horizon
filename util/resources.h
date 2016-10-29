@@ -104,7 +104,8 @@ static bool setup_resources()
                 return false;
 
             const std::string str(resource_name);
-            return m_provider.has(("target/" + str).c_str()) || m_provider.has(("common/" + str).c_str()) || m_provider.has(resource_name);
+            return m_provider.has(("target/" + str).c_str()) || m_provider.has(("common/" + str).c_str()) || m_provider.has(resource_name) ||
+                   m_fprov.has(resource_name) || m_fprov2.has(resource_name);
         }
         
     } static trp(qdfp);

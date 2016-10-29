@@ -23,6 +23,7 @@ class fhm_location
 
 public:
     bool load(const char *file_name, const location_params &params, nya_math::vec3 fog_color);
+    bool load_native(const char *name, const location_params &params, nya_math::vec3 fog_color);
     void update(int dt);
     void draw_mptx();
     void draw_mptx_transparent();
@@ -50,13 +51,20 @@ protected:
         {
             nya_math::aabb bbox;
             nya_math::vec3 pos;
-            float yaw;
+            float yaw = 0;
         };
 
         std::vector<instance> instances;
         nya_scene::proxy<nya_render::vbo> vbo;
         float draw_dist;
-        std::vector<uint> textures;
+
+        struct group
+        {
+            int offset = 0, count = 0;
+            nya_scene::texture diff, spec;
+        };
+
+        std::vector<group> groups;
 
         nya_scene::texture color;
 
@@ -73,7 +81,7 @@ protected:
     {
         struct group
         {
-            uint tex_id;
+            nya_scene::texture tex;
             nya_math::aabb box;
 
             uint hi_offset;

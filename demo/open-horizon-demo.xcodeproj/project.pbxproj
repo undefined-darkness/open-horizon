@@ -21,6 +21,7 @@
 		F50DADAC1C3047D5000DD3EA /* hangar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50DADAA1C3047D5000DD3EA /* hangar.cpp */; };
 		F50EE62A1CD3BA2D00DDED72 /* sound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50EE6281CD3BA2D00DDED72 /* sound.cpp */; };
 		F50EE6311CD3C0D100DDED72 /* file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50EE62F1CD3C0D100DDED72 /* file.cpp */; };
+		F5272D001D9BBE4F000FF7C8 /* location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5272CFE1D9BBE4F000FF7C8 /* location.cpp */; };
 		F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53304C61B09DEC300D8C3C7 /* menu.cpp */; };
 		F538BB0B1CC2B8EA0055F394 /* app_protocol_simple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */; };
 		F53EFF561D0FF74C009B6A0A /* objects.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F53EFF541D0FECC2009B6A0A /* objects.xml */; };
@@ -81,6 +82,9 @@
 		F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D7969F19B3432C006269F0 /* pugixml.cpp */; };
 		F5DC44881C7CD9AF00F68115 /* mesh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5DC44861C7CD9AF00F68115 /* mesh.cpp */; };
 		F5DFAD8B19BB248C00786736 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F5DFAD8A19BB248C00786736 /* libz.dylib */; };
+		F5E3FE481DB4AF74002446F8 /* mesh_obj.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5E3FE461DB4AF74002446F8 /* mesh_obj.cpp */; };
+		F5E3FE4D1DB4C53F002446F8 /* mesh_sm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5E3FE4B1DB4C53F002446F8 /* mesh_sm.cpp */; };
+		F5E3FE981DC3482A002446F8 /* icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5E3FE941DC347DE002446F8 /* icon.icns */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -154,6 +158,8 @@
 		F50EE62B1CD3BF3900DDED72 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		F50EE62F1CD3C0D100DDED72 /* file.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = file.cpp; path = ../sound/file.cpp; sourceTree = "<group>"; };
 		F50EE6301CD3C0D100DDED72 /* file.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = file.h; path = ../sound/file.h; sourceTree = "<group>"; };
+		F5272CFE1D9BBE4F000FF7C8 /* location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = location.cpp; path = ../util/location.cpp; sourceTree = "<group>"; };
+		F5272CFF1D9BBE4F000FF7C8 /* location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = location.h; path = ../util/location.h; sourceTree = "<group>"; };
 		F5287A781D44A39400F19022 /* circle_mesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = circle_mesh.h; path = ../gui/circle_mesh.h; sourceTree = "<group>"; };
 		F53304C61B09DEC300D8C3C7 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = menu.cpp; path = ../gui/menu.cpp; sourceTree = "<group>"; };
 		F53304C71B09DEC300D8C3C7 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = menu.h; path = ../gui/menu.h; sourceTree = "<group>"; };
@@ -280,6 +286,11 @@
 		F5DC44861C7CD9AF00F68115 /* mesh.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mesh.cpp; sourceTree = "<group>"; };
 		F5DC44871C7CD9AF00F68115 /* mesh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mesh.h; sourceTree = "<group>"; };
 		F5DFAD8A19BB248C00786736 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
+		F5E3FE461DB4AF74002446F8 /* mesh_obj.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = mesh_obj.cpp; path = ../renderer/mesh_obj.cpp; sourceTree = "<group>"; };
+		F5E3FE471DB4AF74002446F8 /* mesh_obj.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mesh_obj.h; path = ../renderer/mesh_obj.h; sourceTree = "<group>"; };
+		F5E3FE4B1DB4C53F002446F8 /* mesh_sm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = mesh_sm.cpp; path = ../renderer/mesh_sm.cpp; sourceTree = "<group>"; };
+		F5E3FE4C1DB4C53F002446F8 /* mesh_sm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mesh_sm.h; path = ../renderer/mesh_sm.h; sourceTree = "<group>"; };
+		F5E3FE941DC347DE002446F8 /* icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = icon.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -305,6 +316,7 @@
 		F503E4CE19048C6700C3590A = {
 			isa = PBXGroup;
 			children = (
+				F5E3FE941DC347DE002446F8 /* icon.icns */,
 				F5C6D3851AF9694D006FB7E6 /* demo.cpp */,
 				F5C6D3871AF969A5006FB7E6 /* containers */,
 				F59AB58D1AFA387500137527 /* game */,
@@ -468,6 +480,10 @@
 				F59AB5A41AFA4F1800137527 /* location.h */,
 				F59AB59C1AFA4F1800137527 /* location_params.cpp */,
 				F59AB59B1AFA4F1800137527 /* location_params.h */,
+				F5E3FE461DB4AF74002446F8 /* mesh_obj.cpp */,
+				F5E3FE471DB4AF74002446F8 /* mesh_obj.h */,
+				F5E3FE4B1DB4C53F002446F8 /* mesh_sm.cpp */,
+				F5E3FE4C1DB4C53F002446F8 /* mesh_sm.h */,
 				F5A2A2D61AFE3258009765C1 /* missile_trail.cpp */,
 				F5A2A2D51AFE3258009765C1 /* missile_trail.h */,
 				F59AB59D1AFA4F1800137527 /* model.cpp */,
@@ -497,10 +513,12 @@
 				F50B755F1CABD3590004E04F /* controls.cpp */,
 				F50B75601CABD3590004E04F /* controls.h */,
 				F561C5FA1AFD24E900D8DD14 /* half.h */,
+				F5272CFE1D9BBE4F000FF7C8 /* location.cpp */,
+				F5272CFF1D9BBE4F000FF7C8 /* location.h */,
 				F5C6D37C1AF968E7006FB7E6 /* params.h */,
 				F50B755C1CABD1410004E04F /* platform.cpp */,
-				F591D4EB1D2E7B4000DD8D98 /* platform_dialogs.cpp */,
 				F50B755D1CABD1410004E04F /* platform.h */,
+				F591D4EB1D2E7B4000DD8D98 /* platform_dialogs.cpp */,
 				F53EFF531D0F26DA009B6A0A /* resources.h */,
 				F5C724A41C8F124700EF0A7B /* simd.h */,
 				F5C6D3A11AF96B4B006FB7E6 /* util.h */,
@@ -672,6 +690,7 @@
 			buildPhases = (
 				F503E4D319048C6700C3590A /* Sources */,
 				F503E4D419048C6700C3590A /* Frameworks */,
+				F5E3FE971DC34825002446F8 /* Resources */,
 				F5DAA8C81AD7CE3300C2C633 /* CopyFiles */,
 				F586B6741CEA5A6E00A2B7BE /* ShellScript */,
 			);
@@ -733,6 +752,17 @@
 		};
 /* End PBXReferenceProxy section */
 
+/* Begin PBXResourcesBuildPhase section */
+		F5E3FE971DC34825002446F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F5E3FE981DC3482A002446F8 /* icon.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXShellScriptBuildPhase section */
 		F586B6741CEA5A6E00A2B7BE /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -760,6 +790,7 @@
 				F5A2A2E61B05466C009765C1 /* free_flight.cpp in Sources */,
 				F59AB5A81AFA4F1800137527 /* fhm_location.cpp in Sources */,
 				F5D209F51CC18DA800189814 /* ipv6.cpp in Sources */,
+				F5272D001D9BBE4F000FF7C8 /* location.cpp in Sources */,
 				F5A2A2DC1AFE86E4009765C1 /* hud.cpp in Sources */,
 				F504CB1E1C5B9FA200FBB72D /* network.cpp in Sources */,
 				F5D20A091CC1936700189814 /* server_udp.cpp in Sources */,
@@ -769,6 +800,7 @@
 				F5DC44881C7CD9AF00F68115 /* mesh.cpp in Sources */,
 				F572C1F11CA715AC00AB1D1F /* poc.cpp in Sources */,
 				F50EE6311CD3C0D100DDED72 /* file.cpp in Sources */,
+				F5E3FE4D1DB4C53F002446F8 /* mesh_sm.cpp in Sources */,
 				F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */,
 				F50D9C9C1C9F2E5700A56812 /* pac6.cpp in Sources */,
 				F5A55F361D1FC9C800A7889B /* texture_gim.cpp in Sources */,
@@ -796,6 +828,7 @@
 				F5D209F31CC18DA800189814 /* generic_socket.cpp in Sources */,
 				F5A2A2E41B05466C009765C1 /* ai.cpp in Sources */,
 				F5D20A0F1CC235EA00189814 /* client_tcp.cpp in Sources */,
+				F5E3FE481DB4AF74002446F8 /* mesh_obj.cpp in Sources */,
 				F5C6D3861AF9694D006FB7E6 /* demo.cpp in Sources */,
 				F59AB5AA1AFA4F1800137527 /* location_params.cpp in Sources */,
 				F586B6821CF786DF00A2B7BE /* zip_resources_provider.cpp in Sources */,

@@ -7,6 +7,7 @@
 #include "render/fbo.h"
 #include "containers/dpl.h"
 #include "render/screen_quad.h"
+#include "util/location.h"
 #include <algorithm>
 
 namespace renderer
@@ -76,17 +77,21 @@ void world::spawn_explosion(const nya_math::vec3 &pos,float radius)
 
 void world::set_location(const char *name)
 {
-    if (name && m_location_name == name)
-        return;
-
-    m_location_name.assign(name?name:"");
-
     m_location = location();
     m_clouds = effect_clouds();
 
     shared::clear_textures();
 
-    m_location.load(m_location_name.c_str());
+    m_location.load(name);
+
+    m_location_name.assign(name ? name : "");
+
+    if (is_native_location(name))
+    {
+        m_location_name = "def"; //ToDo
+        return;
+    }
+
     if (m_location_name != "def" && !m_location_name.empty())
         m_clouds.load(m_location_name.c_str(), m_location.get_params());
     if (m_player_aircraft.is_valid())

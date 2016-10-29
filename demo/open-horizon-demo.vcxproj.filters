@@ -152,6 +152,9 @@
     <ClCompile Include="..\util\controls.cpp">
       <Filter>Source Files\util</Filter>
     </ClCompile>
+    <ClCompile Include="..\util\location.cpp">
+        <Filter>Source Files\util</Filter>
+    </ClCompile>
     <ClCompile Include="..\util\platform.cpp">
       <Filter>Source Files\util</Filter>
     </ClCompile>
@@ -339,6 +342,9 @@
     </ClInclude>
     <ClInclude Include="..\util\controls.h">
       <Filter>Source Files\util</Filter>
+    </ClInclude>
+    <ClInclude Include="..\util\location.h">
+        <Filter>Source Files\util</Filter>
     </ClInclude>
     <ClInclude Include="..\util\platform.h">
       <Filter>Source Files\util</Filter>

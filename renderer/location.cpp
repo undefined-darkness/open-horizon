@@ -4,6 +4,9 @@
 
 #include "location.h"
 #include "scene/camera.h"
+#include "extensions/zip_resources_provider.h"
+#include "util/location.h"
+#include "render/platform_specific_gl.h"
 #include "shared.h"
 
 namespace renderer
@@ -26,6 +29,16 @@ bool location::load(const char *name)
     }
 
     m_sky.load(name);
+
+    if (is_native_location(name))
+    {
+        m_params = location_params();
+        m_location.load_native(name, m_params, m_sky.get_fog_color());
+
+        name = "def"; //ToDo
+
+        //ToDo
+    }
 
     if (strcmp(name, "def") == 0)
     {
@@ -81,9 +94,13 @@ void location::update(int dt)
 
 void location::draw()
 {
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(-1.0f, 1.0f);
     m_location.draw_mptx();
     m_location.draw_trees();
+    glPolygonOffset(1.0f, 1.0f);
     m_location.draw_landscape();
+    glDisable(GL_POLYGON_OFFSET_FILL);
     m_location.draw_mptx_transparent();
 
     m_sky.draw();
