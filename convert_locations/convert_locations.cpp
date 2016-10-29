@@ -62,11 +62,12 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
 
     //params
     const float scale = 1.0f / 4.0f;
+    const int quad_size = (int)(2048 * scale);
+    const int quad_frags = 16;
+    const int subfrags = 2;
     const int tex_size = 1024;
     const int frag_size = 64;
     const int bord_size = 2;
-    const int quad_size = (int)(2048 * scale);
-    const int quad_frags = 16;
 
     auto obj_data = load_resource(p, 16);
     poc_file op;
@@ -337,6 +338,7 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
         info_str += "\t<tiles tex_count=\"" + std::to_string(tiles_count) + "\" " +
                     "quad_size=\"" + std::to_string(quad_size) + "\" " +
                     "quad_frags=\"" + std::to_string(quad_frags) + "\" " +
+                    "subfrags=\"" + std::to_string(subfrags) + "\" " +
                     "frag_size=\"" + std::to_string(frag_size) + "\" " +
                     "frag_border=\"" + std::to_string(bord_size) + "\"/>\n";
     }
