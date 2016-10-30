@@ -75,7 +75,7 @@ bool mesh_sm::load(const void *data, size_t size)
         assume(gh.unknown_zero3 == 0);
         assume(gh.unknown_96 == 96);
 
-        while (r.get_remained() > 0)
+        while (r.get_remained() > 4)
         {
             tri_strip f;
 
@@ -90,6 +90,7 @@ bool mesh_sm::load(const void *data, size_t size)
 
             if (!(fh.unknown_1 == 1 && fh.unknown_0 == 0 && fh.unknown2_1 == 1))
             {
+                //printf("%d %d %d %d\n", fh.elem_count, fh.unknown_1, fh.unknown_0, fh.unknown2_1);
                 r.rewind(sizeof(strip_header));
                 break;
             }
@@ -153,7 +154,10 @@ bool mesh_sm::load(const void *data, size_t size)
 
                     case 110:
                         for (auto &v: f.verts)
+                        {
                             *(uint32_t *)&v.color = r.read<uint32_t>();
+                            v.color[3] = v.color[3] > 127 ? 255 : v.color[3] * 2;
+                        }
                         break;
                 }
             }
@@ -190,7 +194,7 @@ bool mesh_sm::load(const void *data, size_t size)
     struct node
     {
         uint8_t unknown;
-        uint8_t unknown2;
+        uint8_t params;
         uint16_t zero;
         uint32_t unknown3;
         int32_t group_idx;
@@ -212,9 +216,12 @@ bool mesh_sm::load(const void *data, size_t size)
         {
             assume(n.group_idx < groups.size());
             groups[n.group_idx].tex_idx = n.tex_idx;
+
+            if (n.params > 0)
+                groups[n.group_idx].transparent = true;
         }
 
-        //printf("\tnode %d %d %d %d %d\n", n.unknown, n.unknown2, n.unknown3, n.group_idx, n.tex_idx);
+        //printf("\tmesh %3d node %d %d %d %d %d\n", test, n.unknown, n.params, n.unknown3, n.group_idx, n.tex_idx);
     }
 
     return true;

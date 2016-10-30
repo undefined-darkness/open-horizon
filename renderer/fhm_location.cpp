@@ -802,13 +802,16 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
             pos.z = o.attribute("z").as_float();
             std::string file = o.attribute("file").as_string();
 
+            const bool transparent = file.find("_transparent") != std::string::npos;
+            auto &meshes = transparent ? m_mptx_transparent_meshes : m_mptx_meshes;
+
             auto l = std::find(loaded.begin(), loaded.end(), file);
             if (l != loaded.end())
             {
                 auto idx = l - loaded.begin();
 
-                m_mptx_meshes[idx].instances.resize( m_mptx_meshes[idx].instances.size() + 1);
-                auto &i = m_mptx_meshes[idx].instances.back();
+                meshes[idx].instances.resize( meshes[idx].instances.size() + 1);
+                auto &i = meshes[idx].instances.back();
 
                 i.bbox = boxes[idx];
                 i.bbox.origin += pos;
@@ -817,15 +820,18 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
             }
 
             loaded.push_back(file);
-            m_mptx_meshes.resize(m_mptx_meshes.size() + 1);
+            meshes.resize(meshes.size() + 1);
             boxes.resize(boxes.size()+1);
 
-            auto &m = m_mptx_meshes.back();
+            auto &m = meshes.back();
             auto &b = boxes.back();
 
             mesh_obj obj;
             if (obj.load(file.c_str(), zip))
             {
+                if (obj.groups.empty())
+                    continue;
+
                 auto fmax = std::numeric_limits<float>::max();
                 auto fmin = std::numeric_limits<float>::lowest();
                 nya_math::vec3 vmin(fmax,fmax,fmax), vmax(fmin,fmin,fmin);
@@ -1013,15 +1019,10 @@ void fhm_location::draw_mptx()
 
 void fhm_location::draw_mptx_transparent()
 {
-    glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(-1,-1);
-
     auto &p = m_map_parts_material.get_default_pass();
     p.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha); //ToDo: different blend modes
     p.get_state().zwrite = false; //ToDo: depend on material flags, apply to non-transparent meshes too
     draw(m_mptx_transparent_meshes);
-
-    glDisable(GL_POLYGON_OFFSET_FILL);
 }
 
 //------------------------------------------------------------
@@ -1262,9 +1263,7 @@ bool fhm_location::read_mptx(memory_reader &reader)
     const bool transparent = header.material_params[1] > 0;
 
     if (transparent)
-    {
         m_mptx_transparent_meshes.resize(m_mptx_transparent_meshes.size() + 1);
-    }
     else
         m_mptx_meshes.resize(m_mptx_meshes.size() + 1);
 

@@ -32,6 +32,7 @@ struct mesh_sm
     struct group
     {
         int tex_idx = 0;
+        bool transparent = false;
         std::vector<tri_strip> geometry;
     };
 

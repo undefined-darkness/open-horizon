@@ -132,6 +132,10 @@ bool gim_decoder::decode(void *buf) const
     }
 
     memcpy(buf, m_colors, get_required_size());
+    auto *colors = (color *)buf;
+    for (size_t i = 0; i < m_width * m_height; ++i)
+        colors[i].a = colors[i].a > 127 ? 255 : colors[i].a * 2;
+
     return true;
 }
 

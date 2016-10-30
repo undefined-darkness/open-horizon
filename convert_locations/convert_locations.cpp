@@ -69,10 +69,13 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
     const int frag_size = 64;
     const int bord_size = 2;
 
+    std::vector<std::string> mesh_names;
+
     auto obj_data = load_resource(p, 16);
     poc_file op;
     if (op.open(obj_data.get_data(), obj_data.get_size()))
     {
+        mesh_names.resize(op.get_chunks_count());
         for (int i = 0; i < op.get_chunks_count(); ++i)
         {
             nya_memory::tmp_buffer_scoped data(load_resource(op, i));
@@ -150,6 +153,22 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
             sprintf(name, "object%02d", i);
             std::string sname(name);
 
+            bool not_transparent = false;
+            bool transparent = false;
+            for (auto &g: mesh.groups)
+            {
+                if (g.transparent)
+                    transparent = true;
+                else
+                    not_transparent = true;
+            }
+
+            if (transparent)
+                assume(!not_transparent);
+
+            if (transparent)
+                sname.append("_transparent");
+
             auto vdata = w.get_string(sname + ".mtl");
             auto mdata = w.get_mat_string();
 
@@ -162,6 +181,8 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
             zip_entry_open(zip, (sname + ".mtl").c_str());
             zip_entry_write(zip, mdata.data(), mdata.length());
             zip_entry_close(zip);
+
+            mesh_names[i] = sname + ".obj";
         }
     }
     obj_data.free();
@@ -366,12 +387,10 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
     for (int i = 0; i < obj_count; ++i)
     {
         auto &o = objs[i];
-        char name[255];
-        sprintf(name, "objects/object%02d.obj", o.idx);
         objects_str += "\t<object x=\"" + std::to_string(o.pos.x * scale) + "\" " +
                                  "y=\"" + std::to_string(o.pos.y * scale) + "\" " +
                                  "z=\"" + std::to_string(o.pos.z * scale) + "\" " +
-                                 "file=\"" + name + "\"/>\n";
+                                 "file=\"" + mesh_names[o.idx] + "\"/>\n";
     }
     objects_str += "</objects>\n\n";
     obj.free();
