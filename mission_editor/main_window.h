@@ -80,7 +80,7 @@ private:
 
 //------------------------------------------------------------
 
-inline const char *to_str(const QString &s) { return s.toUtf8().constData(); }
+inline std::string to_str(const QString &s) { return s.toUtf8().constData(); }
 
 //------------------------------------------------------------
 

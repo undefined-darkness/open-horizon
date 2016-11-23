@@ -53,6 +53,7 @@ SOURCES += \
     ../renderer/fhm_mesh.cpp \
     ../renderer/location_params.cpp \
     ../renderer/location.cpp \
+    ../renderer/mesh_obj.cpp \
     ../renderer/fhm_location.cpp \
     ../renderer/sky.cpp \
     ../renderer/shared.cpp \
@@ -63,7 +64,8 @@ SOURCES += \
     ../deps/zip/src/zip.c \
     ../deps/nya-engine/extensions/zip_resources_provider.cpp \
     ../game/script.cpp \
-    ../util/platform_dialogs.cpp
+    ../util/platform_dialogs.cpp \
+    ../util/location.cpp
 
 HEADERS += \
     ../containers/fhm.h \
@@ -79,10 +81,12 @@ HEADERS += \
     ../renderer/location_params.h \
     ../renderer/fhm_location.h \
     ../renderer/location.h \
+    ../renderer/mesh_obj.h \
     ../renderer/sky.h \
     ../renderer/shared.h \
     ../util/resources.h \
     ../util/config.h \
+    ../util/location.h \
     ../util/util.h \
     ../util/params.h \
     ../util/zip.h \
