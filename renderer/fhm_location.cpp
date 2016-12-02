@@ -785,8 +785,9 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
     auto heights = load_resource(zip.access("heights.bin"));
     location_load_data.heights.resize(heights.get_size());
     auto hdata = (unsigned char *)heights.get_data();
+    const float hscale = doc.first_child().child("heightmap").attribute("scale").as_float();
     for (size_t i = 0; i < location_load_data.heights.size(); ++i)
-        location_load_data.heights[i] = hdata[i] * doc.first_child().child("heightmap").attribute("scale").as_float();
+        location_load_data.heights[i] = hdata[i] * hscale;
     heights.free();
 
     if (load_xml(zip.access("objects.xml"), doc))
