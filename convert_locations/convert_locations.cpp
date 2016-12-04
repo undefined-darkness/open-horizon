@@ -14,6 +14,7 @@
 #include "renderer/mesh_sm.h"
 #include "render/bitmap.h"
 #include "zip.h"
+#include "dxt_decoder.h"
 #include "obj_writer.h"
 #include <set>
 #include <list>
@@ -24,10 +25,10 @@
 
 //------------------------------------------------------------
 
-inline std::string base_name(std::string base, int idx) { return base + (idx < 10 ? "0" : "" ) + std::to_string(idx); }
-inline std::string tex_name(std::string base, int idx) { return base_name(base, idx) + ".tga"; }
-inline std::string loc_name(std::string base, int idx) { return base + " " + (idx < 100 ? "0" : "" ) + (idx < 10 ? "0" : "" ) + std::to_string(idx); }
-inline std::string loc_filename(std::string base, int idx) { return base + "_loc" + (idx < 100 ? "0" : "" ) + (idx < 10 ? "0" : "" ) + std::to_string(idx) + ".zip"; }
+inline std::string base_name(std::string base, int idx) { return base + (idx < 100 ? "0" : "" ) + (idx < 10 ? "0" : "" ) + std::to_string(idx); }
+inline std::string tex_name(std::string base, int idx, std::string extension = "tga") { return base_name(base, idx) + "." + extension; }
+inline std::string loc_name(std::string base, int idx) { return base_name(base + " ", idx); }
+inline std::string loc_filename(std::string base, int idx) { return base_name(base + "_loc", idx) + ".zip"; }
 
 template<typename t> nya_memory::tmp_buffer_ref load_resource(const t &p, int idx)
 {
@@ -516,6 +517,70 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
 
 //------------------------------------------------------------
 
+bool write_texture_ntxr(nya_memory::tmp_buffer_ref tex_data, std::string name, zip_t *zip)
+{
+    if (!tex_data.get_size())
+        return false;
+
+    nya_memory::memory_reader r(tex_data.get_data(), tex_data.get_size());
+
+    r.seek(34);
+    auto format = swap_bytes(r.read<uint16_t>());
+    auto width = swap_bytes(r.read<uint16_t>());
+    auto height = swap_bytes(r.read<uint16_t>());
+    r.seek(48);
+    const size_t data_offset = swap_bytes(r.read<uint32_t>()) + 16;
+
+    nya_memory::tmp_buffer_scoped tex(width*height*4 + nya_formats::tga::tga_minimum_header_size);
+    nya_memory::tmp_buffer_scoped tmp(tex_data.get_size()-data_offset);
+
+    nya_formats::tga tga;
+    tga.width = width;
+    tga.height = height;
+
+    uint8_t *color_data = (uint8_t *)tex.get_data(nya_formats::tga::tga_minimum_header_size);
+
+    switch(format)
+    {
+        case 0:
+            ConvertFromLinearTexture((const char *)tex_data.get_data(data_offset), (char *)tmp.get_data(), width, height, false);
+            DecodeDXT1((const uint8_t *)tmp.get_data(), color_data, width, height);
+            nya_render::bitmap_rgba_to_rgb(color_data, width, height);
+            tga.channels = nya_formats::tga::bgr;
+            break;
+
+        case 2:
+            ConvertFromLinearTexture((const char *)tex_data.get_data(data_offset), (char *)tmp.get_data(), width, height, true);
+            DecodeDXT5((const uint8_t *)tmp.get_data(), color_data, width, height);
+            tga.channels = nya_formats::tga::bgra;
+
+            break;
+
+        default: printf("Warning: unsupported texture format: %d\n", 2); tex_data.free(); return false;
+    }
+
+    if (tga.channels == 4)
+    {
+        for (int i = 0; i < width * height * 4; ++i)
+        {
+            auto &a = color_data[i+3];
+            a = a > 127 ? 255 : a * 2;
+        }
+    }
+
+    tex_data.free();
+    nya_render::bitmap_rgb_to_bgr(color_data, width, height, tga.channels);
+    nya_render::bitmap_flip_vertical(color_data, width, height, tga.channels);
+    tga.encode_header(tex.get_data());
+
+    zip_entry_open(zip, name.c_str());
+    zip_entry_write(zip, tex.get_data(), nya_formats::tga::tga_header_size + width*height*tga.channels);
+    zip_entry_close(zip);
+    return true;
+}
+
+//------------------------------------------------------------
+
 bool convert_location6(const void *data, size_t size, std::string name, std::string filename)
 {
     struct data_adaptor: public nya_resources::resource_data
@@ -548,8 +613,15 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
     auto &loc_folder = r.folders[0];
     auto &eff_folder = r.folders[1];
 
+    if (loc_folder.folders.size() < 3)
+        return false;
+
     if (eff_folder.files.size()>2)
         write_entry(p, eff_folder.files[2], "sky.sph", zip);
+
+    int tex_count = 0;
+    for (auto &tidx: loc_folder.folders[2].files)
+        write_texture_ntxr(load_resource(p, tidx), tex_name("land", tex_count++, "tga"), zip);
 
     std::string info_str = "<!--Open Horizon location-->\n";
     info_str += "<location name=\"" + name + "\">\n";
