@@ -8,12 +8,15 @@
 #include "containers/pac5.h"
 #include "containers/pac6.h"
 #include "containers/poc.h"
+#include "containers/fhm.h"
 #include "formats/tga.h"
 #include "renderer/texture_gim.h"
 #include "renderer/mesh_sm.h"
+#include "render/bitmap.h"
 #include "zip.h"
 #include "obj_writer.h"
 #include <set>
+#include <list>
 
 #ifndef _WIN32
     #include <unistd.h>
@@ -26,7 +29,7 @@ inline std::string tex_name(std::string base, int idx) { return base_name(base, 
 inline std::string loc_name(std::string base, int idx) { return base + " " + (idx < 100 ? "0" : "" ) + (idx < 10 ? "0" : "" ) + std::to_string(idx); }
 inline std::string loc_filename(std::string base, int idx) { return base + "_loc" + (idx < 100 ? "0" : "" ) + (idx < 10 ? "0" : "" ) + std::to_string(idx) + ".zip"; }
 
-inline nya_memory::tmp_buffer_ref load_resource(poc_file &p, int idx)
+template<typename t> nya_memory::tmp_buffer_ref load_resource(const t &p, int idx)
 {
     nya_memory::tmp_buffer_ref b(p.get_chunk_size(idx));
     if (!p.read_chunk_data(idx, b.get_data()))
@@ -34,6 +37,20 @@ inline nya_memory::tmp_buffer_ref load_resource(poc_file &p, int idx)
 
     return b;
 }
+
+//------------------------------------------------------------
+
+template<typename t> bool write_entry(const t &p, int idx, std::string name, zip_t *zip)
+{
+    auto data = load_resource(p, idx);
+    zip_entry_open(zip, name.c_str());
+    zip_entry_write(zip, data.get_data(), data.get_size());
+    zip_entry_close(zip);
+    data.free();
+    return true;
+}
+
+//------------------------------------------------------------
 
 inline int clamp_int(int val, int to) { return val < 0 ? 0 : (val < to ? val : to - 1); }
 
@@ -45,6 +62,8 @@ inline void write_vert(const renderer::mesh_sm::vert &v, obj_writer &w)
     w.add_normal(v.normal);
     w.add_tc(v.tc);
 }
+
+//------------------------------------------------------------
 
 std::string write_mesh(nya_memory::tmp_buffer_ref data, std::string folder, std::string name, float scale, zip_t *zip)
 {
@@ -156,6 +175,100 @@ std::string write_mesh(nya_memory::tmp_buffer_ref data, std::string folder, std:
 
 //------------------------------------------------------------
 
+bool write_texture(nya_memory::tmp_buffer_ref tex_data, std::string name, zip_t *zip)
+{
+    if (!tex_data.get_size())
+        return false;
+
+    renderer::gim_decoder tex_dec(tex_data.get_data(), tex_data.get_size());
+    nya_memory::tmp_buffer_scoped tex(tex_dec.get_required_size() + nya_formats::tga::tga_minimum_header_size);
+    const bool decode_result = tex_dec.decode(tex.get_data(nya_formats::tga::tga_minimum_header_size));
+    tex_data.free();
+    if (!decode_result)
+        return false;
+
+    nya_render::bitmap_rgb_to_bgr((uint8_t *)tex.get_data(nya_formats::tga::tga_minimum_header_size), tex_dec.get_width(), tex_dec.get_height(), 4);
+
+    nya_formats::tga tga;
+    tga.width = tex_dec.get_width();
+    tga.height = tex_dec.get_height();
+    tga.channels = nya_formats::tga::bgra;
+
+    tga.encode_header(tex.get_data());
+
+    zip_entry_open(zip, name.c_str());
+    zip_entry_write(zip, tex.get_data(), tex.get_size());
+    zip_entry_close(zip);
+
+    return true;
+}
+
+//------------------------------------------------------------
+
+bool convert_location4(const void *data, size_t size, std::string name, std::string filename)
+{
+    poc_file p;
+    if (!p.open(data, size))
+        return false;
+
+    zip_t *zip = zip_open(filename.c_str(), ZIP_DEFAULT_COMPRESSION_LEVEL, 0);
+    if (!zip)
+    {
+        printf("Unable to save location %s\n", filename.c_str());
+        return false;
+    }
+
+    //params
+    const float scale = 1.0f / 4.0f;
+    const int quad_size = (int)(2048 * scale);
+    const int quad_frags = 16;
+    const int subfrags = 2;
+    const int tex_size = 1024;
+    const int frag_size = 64;
+    const int bord_size = 2;
+
+    std::vector<std::string> mesh_names;
+
+    auto obj_data = load_resource(p, 16);
+    poc_file op;
+    if (op.open(obj_data.get_data(), obj_data.get_size()))
+    {
+        mesh_names.resize(op.get_chunks_count());
+        for (int i = 0; i < op.get_chunks_count(); ++i)
+            mesh_names[i] = write_mesh(load_resource(op, i), "objects/", base_name("object", i), scale, zip);
+    }
+    obj_data.free();
+
+    auto obj_tex_data = load_resource(p, 17);
+    poc_file otp;
+    if (otp.open(obj_tex_data.get_data(), obj_tex_data.get_size()))
+    {
+        auto textures_data = load_resource(otp, 0);
+        poc_file tp;
+        if (tp.open(textures_data.get_data(), textures_data.get_size()))
+            write_texture(load_resource(tp, 0), tex_name("objects/tex", 0), zip);
+    }
+
+    std::string info_str = "<!--Open Horizon location-->\n";
+    info_str += "<location name=\"" + name + "\">\n";
+
+    //ToDo
+
+    info_str += "</location>\n\n";
+
+    zip_entry_open(zip, "info.xml");
+    zip_entry_write(zip, info_str.c_str(), info_str.size());
+    zip_entry_close(zip);
+
+    //ToDo
+
+    zip_close(zip);
+
+    return true;
+}
+
+//------------------------------------------------------------
+
 bool convert_location5(const void *data, size_t size, std::string name, std::string filename)
 {
     poc_file p;
@@ -256,29 +369,11 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
     }
 */
 
-    auto height_off = load_resource(p, 0);
-    zip_entry_open(zip, "height_offsets.bin");
-    zip_entry_write(zip, height_off.get_data(), height_off.get_size());
-    zip_entry_close(zip);
-    height_off.free();
+    write_entry(p, 11, "sky.sph", zip);
 
-    auto heights = load_resource(p, 1);
-    zip_entry_open(zip, "heights.bin");
-    zip_entry_write(zip, heights.get_data(), heights.get_size());
-    zip_entry_close(zip);
-    heights.free();
-
-    auto sky = load_resource(p, 11);
-    zip_entry_open(zip, "sky.sph");
-    zip_entry_write(zip, sky.get_data(), sky.get_size());
-    zip_entry_close(zip);
-    sky.free();
-
-    auto tc_off = load_resource(p, 5);
-    zip_entry_open(zip, "tex_offsets.bin");
-    zip_entry_write(zip, tc_off.get_data(), tc_off.get_size());
-    zip_entry_close(zip);
-    tc_off.free();
+    write_entry(p, 0, "height_offsets.bin", zip);
+    write_entry(p, 1, "heights.bin", zip);
+    write_entry(p, 5, "tex_offsets.bin", zip);
 
     const int frag_per_line = tex_size / (frag_size + bord_size * 2);
     const int frag_per_tex = frag_per_line * frag_per_line;
@@ -421,6 +516,59 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
 
 //------------------------------------------------------------
 
+bool convert_location6(const void *data, size_t size, std::string name, std::string filename)
+{
+    struct data_adaptor: public nya_resources::resource_data
+    {
+        const void *data;
+        size_t size;
+        data_adaptor(const void *d, size_t s): data(d), size(s) {}
+        size_t get_size() override { return size; }
+        bool read_chunk(void *d,size_t size,size_t offset=0) override
+        {
+            return d && (offset + size <= this->size) && memcpy(d, (char *)data+offset, size) != 0;
+        }
+    } da(data, size);
+
+    fhm_file p;
+    if (!p.open(&da))
+        return false;
+
+    zip_t *zip = zip_open(filename.c_str(), ZIP_DEFAULT_COMPRESSION_LEVEL, 0);
+    if (!zip)
+    {
+        printf("Unable to save location %s\n", filename.c_str());
+        return false;
+    }
+
+    auto &r = p.get_root();
+    if (r.folders.size() < 2)
+        return false;
+
+    auto &loc_folder = r.folders[0];
+    auto &eff_folder = r.folders[1];
+
+    if (eff_folder.files.size()>2)
+        write_entry(p, eff_folder.files[2], "sky.sph", zip);
+
+    std::string info_str = "<!--Open Horizon location-->\n";
+    info_str += "<location name=\"" + name + "\">\n";
+
+    //ToDo
+
+    info_str += "</location>\n\n";
+
+    zip_entry_open(zip, "info.xml");
+    zip_entry_write(zip, info_str.c_str(), info_str.size());
+    zip_entry_close(zip);
+
+    zip_close(zip);
+
+    return true;
+}
+
+//------------------------------------------------------------
+
 int main(int argc, const char * argv[])
 {
 #ifndef _WIN32
@@ -450,7 +598,14 @@ int main(int argc, const char * argv[])
 
     if (pak4.open((src_path + "DATA.CDP").c_str()))
     {
-        //ToDo: AC4
+        for (int i = 1, idx = 0; i <= 100; ++i, ++idx)
+        {
+            nya_memory::tmp_buffer_scoped b(pak4.get_file_size(i));
+            if (!pak4.read_file_data(i, b.get_data()))
+                continue;
+
+            convert_location4(b.get_data(), b.get_size(), loc_name("AC4", idx), loc_filename(dst_path + "ac4", idx));
+        }
     }
     else if (pak5.open((src_path + "DATA.PAC").c_str()))
     {
@@ -479,7 +634,14 @@ int main(int argc, const char * argv[])
     }
     else if (pak6.open((src_path + "DATA00.PAC").c_str()))
     {
-        //ToDo: AC6
+        for (int i = 119, idx = 0; i <= 133; ++i, ++idx)
+        {
+            nya_memory::tmp_buffer_scoped b(pak6.get_file_size(i));
+            if (!pak6.read_file_data(i, b.get_data()))
+                continue;
+
+            convert_location6(b.get_data(), b.get_size(), loc_name("AC6", idx), loc_filename(dst_path + "ac6", idx));
+        }
     }
     else
         printf("No data found in src directory.\n");
