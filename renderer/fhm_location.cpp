@@ -276,9 +276,6 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
     assert(!load_data.textures.empty());
 
-    //static const float patch_size = 2048.0;
-    //static const unsigned int quads_per_patch = 16, subquads_per_quad = 2;
-
     vbo_data vdata; //ToDo
     vdata.end_group();
     vdata.set_patch_size(load_data.quad_size, load_data.quad_frags, load_data.subquads_per_quad);
@@ -752,19 +749,16 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
     location_load_data.tile_border = tiles.attribute("frag_border").as_int();
 
     const int tiles_tex_count = tiles.attribute("tex_count").as_int();
+    location_load_data.textures.resize(tiles_tex_count);
     for (int i = 0; i < tiles_tex_count; ++i)
     {
         char name[255];
-        sprintf(name, "land%02d.tga", i);
+        sprintf(name, "land%03d.tga", i);
         auto data = load_resource(zip.access(name));
 
         nya_scene::shared_texture stex;
         if (nya_scene::texture::load_tga(stex, data, name))
-        {
-            nya_scene::texture tex;
-            tex.create(stex);
-            location_load_data.textures.push_back(tex);
-        }
+            location_load_data.textures[i].create(stex);
 
         data.free();
     }
@@ -783,11 +777,20 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
     height_off.free();
 
     auto heights = load_resource(zip.access("heights.bin"));
-    location_load_data.heights.resize(heights.get_size());
-    auto hdata = (unsigned char *)heights.get_data();
-    const float hscale = doc.first_child().child("heightmap").attribute("scale").as_float();
-    for (size_t i = 0; i < location_load_data.heights.size(); ++i)
-        location_load_data.heights[i] = hdata[i] * hscale;
+    std::string format = doc.first_child().child("heightmap").attribute("format").as_string();
+    if (format == "byte")
+    {
+        location_load_data.heights.resize(heights.get_size());
+        auto hdata = (unsigned char *)heights.get_data();
+        const float hscale = doc.first_child().child("heightmap").attribute("scale").as_float(1.0f);
+        for (size_t i = 0; i < location_load_data.heights.size(); ++i)
+            location_load_data.heights[i] = hdata[i] * hscale;
+    }
+    else if (format == "float")
+    {
+        location_load_data.heights.resize(heights.get_size()/4);
+        heights.copy_to(location_load_data.heights.data(), heights.get_size());
+    }
     heights.free();
 
     if (load_xml(zip.access("objects.xml"), doc))

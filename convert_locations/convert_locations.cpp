@@ -570,7 +570,7 @@ bool write_texture_ntxr(nya_memory::tmp_buffer_ref tex_data, std::string name, z
 
     tex_data.free();
     nya_render::bitmap_rgb_to_bgr(color_data, width, height, tga.channels);
-    nya_render::bitmap_flip_vertical(color_data, width, height, tga.channels);
+    //nya_render::bitmap_flip_vertical(color_data, width, height, tga.channels);
     tga.encode_header(tex.get_data());
 
     zip_entry_open(zip, name.c_str());
@@ -616,7 +616,7 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
     if (loc_folder.folders.size() < 3)
         return false;
 
-    if (eff_folder.files.size()>2)
+    if (eff_folder.files.size() > 2)
         write_entry(p, eff_folder.files[2], "sky.sph", zip);
 
     int tex_count = 0;
@@ -626,7 +626,35 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
     std::string info_str = "<!--Open Horizon location-->\n";
     info_str += "<location name=\"" + name + "\">\n";
 
-    //ToDo
+    if (loc_folder.files.size() > 11)
+    {
+        write_entry(p, loc_folder.files[9], "tex_offsets.bin", zip);
+
+        auto tc_ind = load_resource(p, loc_folder.files[10]);
+        auto utcdata = (uint16_t *)tc_ind.get_data();
+        for (int i = 0; i < tc_ind.get_size()/2; ++i, ++utcdata)
+            *utcdata = swap_bytes(*utcdata);
+        zip_entry_open(zip, "tex_indices.bin");
+        zip_entry_write(zip, tc_ind.get_data(), tc_ind.get_size());
+        zip_entry_close(zip);
+        tc_ind.free();
+
+        info_str += "\t<tiles tex_count=\"" + std::to_string(tex_count) + "\" " +
+        "quad_size=\"512\" quad_frags=\"16\" subfrags=\"4\" frag_size=\"256\" frag_border=\"8\"/>\n";
+
+        write_entry(p, loc_folder.files[4], "height_offsets.bin", zip);
+
+        auto hdata = load_resource(p, loc_folder.files[5]);
+        auto uhdata = (uint32_t *)hdata.get_data();
+        for (int i = 0; i < hdata.get_size()/4; ++i, ++uhdata)
+            *uhdata = swap_bytes(*uhdata);
+        zip_entry_open(zip, "heights.bin");
+        zip_entry_write(zip, hdata.get_data(), hdata.get_size());
+        zip_entry_close(zip);
+        hdata.free();
+
+        info_str += "\t<heightmap format=\"float\" quad_frags=\"8\"/>\n";
+    }
 
     info_str += "</location>\n\n";
 
