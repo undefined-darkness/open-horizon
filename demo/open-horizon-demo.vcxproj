@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -149,6 +149,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClCompile Include="../renderer/location.cpp" />
     <ClCompile Include="../renderer/location_params.cpp" />
     <ClCompile Include="../renderer/model.cpp" />
+    <ClCompile Include="../renderer/mesh_ndxr.cpp" />
     <ClCompile Include="../renderer/plane_camera.cpp" />
     <ClCompile Include="../renderer/particles.cpp" />
     <ClCompile Include="../renderer/scene.cpp" />
@@ -186,6 +187,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClInclude Include="../renderer/location.h" />
     <ClInclude Include="../renderer/location_params.h" />
     <ClInclude Include="../renderer/model.h" />
+    <ClInclude Include="../renderer/mesh_ndxr.h" />
     <ClInclude Include="../renderer/plane_camera.h" />
     <ClInclude Include="../renderer/particles.h" />
     <ClInclude Include="../renderer/scene.h" />

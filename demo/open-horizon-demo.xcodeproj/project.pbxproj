@@ -21,6 +21,7 @@
 		F50DADAC1C3047D5000DD3EA /* hangar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50DADAA1C3047D5000DD3EA /* hangar.cpp */; };
 		F50EE62A1CD3BA2D00DDED72 /* sound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50EE6281CD3BA2D00DDED72 /* sound.cpp */; };
 		F50EE6311CD3C0D100DDED72 /* file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50EE62F1CD3C0D100DDED72 /* file.cpp */; };
+		F524A57D1DF6BC8E00D6EB88 /* mesh_ndxr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F524A57B1DF6BC8E00D6EB88 /* mesh_ndxr.cpp */; };
 		F5272D001D9BBE4F000FF7C8 /* location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5272CFE1D9BBE4F000FF7C8 /* location.cpp */; };
 		F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53304C61B09DEC300D8C3C7 /* menu.cpp */; };
 		F538BB0B1CC2B8EA0055F394 /* app_protocol_simple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */; };
@@ -158,6 +159,8 @@
 		F50EE62B1CD3BF3900DDED72 /* OpenAL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenAL.framework; path = System/Library/Frameworks/OpenAL.framework; sourceTree = SDKROOT; };
 		F50EE62F1CD3C0D100DDED72 /* file.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = file.cpp; path = ../sound/file.cpp; sourceTree = "<group>"; };
 		F50EE6301CD3C0D100DDED72 /* file.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = file.h; path = ../sound/file.h; sourceTree = "<group>"; };
+		F524A57B1DF6BC8E00D6EB88 /* mesh_ndxr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = mesh_ndxr.cpp; path = ../renderer/mesh_ndxr.cpp; sourceTree = "<group>"; };
+		F524A57C1DF6BC8E00D6EB88 /* mesh_ndxr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mesh_ndxr.h; path = ../renderer/mesh_ndxr.h; sourceTree = "<group>"; };
 		F5272CFE1D9BBE4F000FF7C8 /* location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = location.cpp; path = ../util/location.cpp; sourceTree = "<group>"; };
 		F5272CFF1D9BBE4F000FF7C8 /* location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = location.h; path = ../util/location.h; sourceTree = "<group>"; };
 		F5287A781D44A39400F19022 /* circle_mesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = circle_mesh.h; path = ../gui/circle_mesh.h; sourceTree = "<group>"; };
@@ -480,6 +483,8 @@
 				F59AB5A41AFA4F1800137527 /* location.h */,
 				F59AB59C1AFA4F1800137527 /* location_params.cpp */,
 				F59AB59B1AFA4F1800137527 /* location_params.h */,
+				F524A57B1DF6BC8E00D6EB88 /* mesh_ndxr.cpp */,
+				F524A57C1DF6BC8E00D6EB88 /* mesh_ndxr.h */,
 				F5E3FE461DB4AF74002446F8 /* mesh_obj.cpp */,
 				F5E3FE471DB4AF74002446F8 /* mesh_obj.h */,
 				F5E3FE4B1DB4C53F002446F8 /* mesh_sm.cpp */,
@@ -832,6 +837,7 @@
 				F5C6D3861AF9694D006FB7E6 /* demo.cpp in Sources */,
 				F59AB5AA1AFA4F1800137527 /* location_params.cpp in Sources */,
 				F586B6821CF786DF00A2B7BE /* zip_resources_provider.cpp in Sources */,
+				F524A57D1DF6BC8E00D6EB88 /* mesh_ndxr.cpp in Sources */,
 				F5A2A2E71B05466C009765C1 /* team_deathmatch.cpp in Sources */,
 				F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */,
 				F59AB5921AFA389500137527 /* game.cpp in Sources */,

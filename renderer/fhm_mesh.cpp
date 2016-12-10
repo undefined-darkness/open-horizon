@@ -4,6 +4,7 @@
 
 #include "fhm_mesh.h"
 #include "containers/fhm.h"
+#include "mesh_ndxr.h"
 
 #include "resources/resources.h"
 #include "memory/tmp_buffer.h"
@@ -17,7 +18,6 @@
 #include <stdint.h>
 
 #include "shared.h"
-#include "util/half.h"
 
 #include "render/debug_draw.h"
 extern nya_render::debug_draw test;
@@ -30,14 +30,6 @@ struct fhm_mop2 { std::map<std::string, nya_scene::animation> animations; };
 //------------------------------------------------------------
 
 static nya_math::vec3 light_dir = nya_math::vec3(0.5f, 1.0f, 0.5f).normalize(); //ToDo
-
-//------------------------------------------------------------
-
-void float3_to_half3(const float *from, unsigned short *to)
-{
-    for (int i = 0; i < 3; ++i)
-        to[i] = Float16Compressor::compress(from[i]);
-}
 
 //------------------------------------------------------------
 
@@ -823,215 +815,12 @@ bool fhm_mesh::read_mop2(memory_reader &reader, fhm_mnt &mnt, fhm_mop2 &mop2)
 
 bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mop2 &mop2, lod &l)
 {
-    //ToDo: add ToDo: add materials, reduce groups to materials count
-
-    struct ndxr_header
-    {
-        char sign[4];
-        ushort unknown;
-        ushort unknown2;
-        ushort unknown3;
-        ushort groups_count;
-        ushort bone_min_idx; //if skeleton not presented,
-        ushort bone_max_idx; //this two may be strange
-
-        uint offset_to_indices; //from header (+48)
-        uint indices_buffer_size;
-        uint vertices_buffer_size; //offset to vertices = offset_to_indices + 48 + indices_buffer_size
-
-        uint unknown_often_zero;
-        float bbox_origin[3];
-        float bbox_size;
-    };
-
-    ndxr_header header = reader.read<ndxr_header>();
-
-    //float *f;// = header.origin; test.add_point(nya_math::vec3(f[0], f[1], f[2]), nya_math::vec4(1, 1, 0, 1));
-    //nya_math::aabb bb; bb.delta = nya_math::vec3(1, 1, 1)*header.bbox_size; f = header.bbox_origin; bb.origin = nya_math::vec3(f[0], f[1], f[2]); test.add_aabb(bb, nya_math::vec4(1, 1, 0, 1));
-
-    //printf("offset %u indices_buf %u vertices_buf %u\n", header.offset_to_indices, header.indices_buffer_size, header.vertices_buffer_size);
-
-    struct ndxr_group_header
-    {
-        float bbox_origin[3];
-        float bbox_size;
-        float origin[3];
-        uint unknown_zero;
-        uint offset_to_name; //from the end of vertices buf
-        ushort unknown_zero2;
-        ushort unknown_8; //sometimes 4
-        short bone_idx;
-        ushort render_groups_count;
-        uint offset_to_render_groups;
-    };
-
-    struct ndxr_render_group_header
-    {
-        uint ibuf_offset;
-        uint vbuf_offset;
-        ushort unknown1;
-        ushort unknown2;
-        ushort vcount;
-        ushort vertex_format;
-        uint offset_to_tex_info;
-        uint unknown_zero3[3];
-        ushort icount;
-        ushort unknown3; //skining-related
-        uint unknown_zero5[3];
-    };
-
-    struct tex_info_header
-    {
-        ushort unknown;
-        ushort unknown2;
-        uint unknown_zero;
-
-        ushort unknown3;
-        ushort tex_info_count;
-        ushort unknown4;
-        ushort unknown5;
-        ushort unknown6;
-        ushort unknown_2;
-        uint unknown_zero2[3];
-    };
-
-    struct tex_info
-    {
-        uint texture_hash_id;
-        uint unknown_zero;
-        uint unknown2_zero;
-
-        uint unknown3;
-        ushort unknown4;
-        ushort unknown5;
-        uint unknown6_zero;
-    };
-
-    struct ndxr_material_param
-    {
-        uint unknown_32_or_zero; //zero if last
-        uint offset_to_name; //from the end of vertices buf
-        ushort unknown_zero;
-        ushort unknown_1024;
-        uint unknown_zero2;
-
-        union
-        {
-            float value[4];
-            uint32_t uvalue;
-        };
-    };
-
-    struct material_param
-    {
-        std::string name;
-        ndxr_material_param data;
-    };
-
-    struct render_group
-    {
-        ndxr_render_group_header header;
-        tex_info_header tex_header;
-        std::vector<tex_info> tex_infos;
-        std::vector<material_param> material_params;
-    };
-
-    struct group
-    {
-        std::string name;
-        ndxr_group_header header;
-        std::vector<render_group> render_groups;
-    };
-
-    std::vector<group> groups(header.groups_count);
-
-    for (int i = 0; i < header.groups_count; ++i)
-    {
-        //print_data(reader, reader.get_offset(), sizeof(group_header));
-
-        auto &h=groups[i].header = reader.read<ndxr_group_header>();
-
-        //assume(h.unknown_8==8);
-        assume(h.unknown_zero==0);
-        assume(h.unknown_zero2==0);
-
-        //float *f = groups[i].header.origin;
-        //test.add_point(nya_math::vec3(f[0], f[1], f[2]), nya_math::vec4(0, 0, 1, 1));
-        //printf("origin: %f %f %f\n", f[0], f[1], f[2]);
-
-        //nya_math::aabb bb; bb.delta = nya_math::vec3(1, 1, 1)*groups[i].header.bbox_size;
-        //f = groups[i].header.bbox_origin; bb.origin = nya_math::vec3(f[0], f[1], f[2]); test.add_aabb(bb);
-        //printf("bbox: %f %f %f | %f\n", f[0], f[1], f[2], groups[i].header.bbox_size);
-    }
-
-    //printf("subgroups\n");
-
-    for (int i = 0; i < header.groups_count; ++i)
-    {
-        group &g = groups[i];
-        g.render_groups.resize(g.header.render_groups_count);
-        reader.seek(g.header.offset_to_render_groups);
-        //printf("%d %ld %d\n", i, reader.get_offset(), g.header.offset_to_substruct+12);
-        for (int k = 0; k < int(g.render_groups.size()); ++k)
-            g.render_groups[k].header = reader.read<ndxr_render_group_header>();
-    }
-
-    //print_data(reader, reader.get_offset(), header.offset_to_indices + 48 - reader.get_offset());
-    for (int i = 0; i < header.groups_count; ++i)
-    {
-        group &g = groups[i];
-        for (int k = 0; k < int(g.render_groups.size()); ++k)
-        {
-            render_group &rg = g.render_groups[k];
-            reader.seek(rg.header.offset_to_tex_info);
-            //print_data(reader, reader.get_offset(), sizeof(unknown_substruct2_info));
-
-            rg.tex_header = reader.read<tex_info_header>();
-            rg.tex_infos.resize(rg.tex_header.tex_info_count);
-            for (auto &ti: rg.tex_infos)
-                ti = reader.read<tex_info>();
-
-            //print_data(reader, reader.get_offset(), 64);
-
-            while(reader.check_remained(sizeof(ndxr_material_param)))
-            {
-                //print_data(reader, reader.get_offset(), sizeof(ndxr_material_param));
-                material_param p;
-                p.data = reader.read<ndxr_material_param>();
-                rg.material_params.push_back(p);
-
-                if (!p.data.unknown_32_or_zero)
-                    break;
-            }
-
-            //printf("material params: %ld\n", rg.material_params.size());
-
-            //print_data(reader, reader.get_offset(), 64);
-        }
-    }
-
-    reader.seek(header.offset_to_indices + 48 + header.indices_buffer_size +header.vertices_buffer_size );
-    //print_data(reader, reader.get_offset(), reader.get_remained());
-
-    size_t strings_offset = header.offset_to_indices + 48 + header.indices_buffer_size +header.vertices_buffer_size;
-    for (int i = 0; i < groups.size(); ++i)
-    {
-        group &g = groups[i];
-        reader.seek(strings_offset+g.header.offset_to_name);
-        g.name = reader.read_string();
-
-        for (int k = 0; k < g.render_groups.size(); ++k)
-        {
-            render_group &rg = g.render_groups[k];
-            for (int j = 0; j < rg.material_params.size(); ++j)
-            {
-                reader.seek(strings_offset + rg.material_params[j].data.offset_to_name);
-                rg.material_params[j].name = reader.read_string();
-            }
-        }
-    }
+    renderer::mesh_ndxr nmesh;
+    if (!nmesh.load(reader.get_data(), reader.get_remained(), mnt.skeleton, false))
+        return false;
 
     nya_scene::shared_mesh mesh;
+    mesh.skeleton = mnt.skeleton;
 
     nya_scene::material mat;
     auto &p=mat.get_pass(mat.add_pass(nya_scene::material::default_pass));
@@ -1040,416 +829,14 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
     p.get_state().set_cull_face(true, nya_render::cull_face::ccw);
     p.get_state().depth_comparsion = nya_render::depth_test::not_greater;
 
-    mesh.skeleton = mnt.skeleton;
-
-    struct vert
-    {
-        float pos[3];
-        float tc[2];
-        float param_tc;
-        ushort normal[4]; //half float
-        ushort tangent[4];
-        ushort bitangent[4];
-
-        //ToDo:
-        float bones[4];
-        float weights[4];
-    };
-
-    std::vector<vert> verts;
-    std::vector<ushort> indices2b;
-    std::vector<uint> indices4b;
-    bool use_indices4b = false;
-
-    //for (auto g:groups) printf("%s\n", g.name.c_str()); printf("\n");
-
     unsigned int total_rgf_count = 0;
-    for (auto &gf: groups)
-        total_rgf_count += (unsigned int)gf.render_groups.size();
+    for (auto &gf: nmesh.groups)
+        total_rgf_count += (unsigned int)gf.rgroups.size();
 
     l.params_buf.resize(total_rgf_count * lod::params_count);
     l.params_tex.create();
     l.params_tex->build(&l.params_buf[0], total_rgf_count, lod::params_count, nya_render::texture::color_rgba32f);
     mat.set_texture("params", l.params_tex);
-
-    struct tmp_group
-    {
-        bool opaque;
-        bool day, night;
-        bool blend;
-        int order;
-        render_group rgf;
-    };
-
-    std::vector<tmp_group> tmp_groups(total_rgf_count);
-
-    unsigned int total_rgf_idx = 0;
-    uint add_vertex_offset = 0; //ToDo
-    for (int i = 0; i < header.groups_count; ++i)
-    {
-        group &gf = groups[i];
-
-        for (int j = 0; j < gf.render_groups.size(); ++j, ++total_rgf_idx)
-        {
-            render_group &rgf = gf.render_groups[j];
-
-            if (!rgf.header.vcount || !rgf.header.icount)
-                continue;
-
-            mesh.groups.resize(mesh.groups.size() + 1);
-
-            auto &g = mesh.groups.back();
-            g.material_idx = (int)mesh.materials.size();
-            mesh.materials.push_back(mat);
-
-            if (rgf.tex_infos.size()>0)
-                mesh.materials.back().set_texture("diffuse", shared::get_texture(rgf.tex_infos[0].texture_hash_id));
-
-            //ToDo: specular, ambient, etc
-
-            auto &t = tmp_groups[total_rgf_idx];
-
-            t.opaque = gf.name.find("OBJ_O") != std::string::npos; //really?
-
-            //ToDo: correct apaque/alpha instead of guessing
-            if (gf.name.find("mrot0") != std::string::npos || gf.name.find("_prop") != std::string::npos ||
-                gf.name.find("auta_") != std::string::npos || gf.name.find("auto_") != std::string::npos)
-                t.opaque = false;
-            if (gf.name.find("plth_") != std::string::npos)
-                t.opaque = true;
-
-            //printf("%s %d\n", gf.name.c_str(), t.opaque);
-
-            t.day = gf.name.find("dayt_") != std::string::npos;
-            t.night = gf.name.find("nigt_") != std::string::npos;
-
-            if (gf.name.find("_SHR") == std::string::npos && gf.name.find("_shl") == std::string::npos && gf.name.find("_l") == std::string::npos)
-                l.set_param(lod::diff_k, total_rgf_idx, nya_math::vec4(1.0, 0.0, 0.0, 0.0));
-            else
-                l.set_param(lod::diff_k, total_rgf_idx, nya_math::vec4(0.6, 0.4, 0.0, 0.0));
-
-            const bool as_opaque = gf.name.find("_AS_OPAQUE") != std::string::npos;
-            if (as_opaque || t.day || t.night)
-                t.opaque = true;
-
-            if (gf.name.find("alpha") != std::string::npos)
-                l.set_param(lod::alpha_clip, total_rgf_idx, nya_math::vec4(8/255.0, 0.0, 0.0, 0.0));
-            else
-                l.set_param(lod::alpha_clip, total_rgf_idx, nya_math::vec4(-1.0, 0.0, 0.0, 0.0));
-
-            if (!t.opaque || as_opaque)
-            {
-                mesh.materials.back().get_default_pass().get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
-                t.blend = true;
-            }
-
-            t.order = t.opaque ? (t.blend ? 1 : 0) : 2;
-            t.rgf = rgf;
-
-            g.offset = uint(use_indices4b ? indices4b.size() : indices2b.size());
-            reader.seek(header.offset_to_indices + 48 + header.indices_buffer_size + rgf.header.vbuf_offset);
-
-            const float *ndxr_verts = (float *)reader.get_data();
-
-            const uint first_index = uint(verts.size());
-            verts.resize(first_index+rgf.header.vcount);
-
-            const float ptc = (total_rgf_idx + 0.5f) / total_rgf_count;
-
-            /*
-            assert(mesh.skeleton.get_bones_count()<1024);
-            const float bone_fidx = (mesh.skeleton.get_bones_count() <= 0 || gf.header.bone_idx < 0) ? -1.0:
-                                     float(gf.header.bone_idx + 0.5f) / 1024;
-            */
-            const float bone_fidx = (mesh.skeleton.get_bones_count() <= 0 || gf.header.bone_idx < 0) ? 0.0f : float(gf.header.bone_idx);
-            const float bone_weight = (mesh.skeleton.get_bones_count() <= 0 || gf.header.bone_idx < 0) ? 0.0f : 1.0f;
-
-            for (int i = first_index; i < first_index + rgf.header.vcount; ++i)
-            {
-                verts[i].tc[0] = verts[i].tc[1] = 0.0f;
-                verts[i].param_tc = ptc;
-                verts[i].bones[0] = bone_fidx;
-                verts[i].weights[0] = bone_weight;
-                for (int j = 1; j < 4; ++j)
-                {
-                    verts[i].bones[j] = 0;
-                    verts[i].weights[j] = 0.0f;
-                }
-
-                for (int j = 0; j < 4; ++j)
-                {
-                    verts[i].normal[j] = 0;
-                    verts[i].tangent[j] = 0;
-                    verts[i].bitangent[j] = 0;
-                }
-            }
-
-            switch(rgf.header.vertex_format)
-            {
-                case 4102:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 6], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 6 + 4], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 4103:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 10], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 10 + 8], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 4358:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 7], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 7 + 5], sizeof(verts[0].tc));
-                        memcpy(verts[i + first_index].normal, &ndxr_verts[i * 7 + 3], sizeof(verts[0].normal));
-                        memset(verts[i + first_index].tangent, 0, sizeof(verts[0].tangent));
-                        memset(verts[i + first_index].bitangent, 0, sizeof(verts[0].bitangent));
-                    }
-                    break;
-
-                case 4359:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 11], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 11 + 9], sizeof(verts[0].tc));
-                        memcpy(verts[i + first_index].normal, &ndxr_verts[i * 11 + 3], sizeof(verts[0].normal));
-                        memcpy(verts[i + first_index].tangent, &ndxr_verts[i * 11 + 7], sizeof(verts[0].tangent));
-                        memcpy(verts[i + first_index].bitangent, &ndxr_verts[i * 11 + 5], sizeof(verts[0].bitangent));
-                    }
-                    break;
-
-                case 8454:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 9], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 9 + 5], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 8455:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 13], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 13 + 9], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 4870:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 8], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 8 + 6], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 4871:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 12], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 12 + 10], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 8967:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 14], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 14 + 10], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 8966:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 10], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 10 + 6], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 4865:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 11], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 11 + 9], sizeof(verts[0].tc));
-                        float3_to_half3(&ndxr_verts[i * 11 + 4], verts[i + first_index].normal);
-
-                        //ToDo: + 8 ubyte4n color
-                    }
-                    break;
-
-                /*
-                case 8710:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 8], sizeof(verts[0].pos));
-                        //ToDo: + 3 (2)
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 8 + debug_variable::get()], sizeof(verts[0].tc));
-                        //ToDo: + 7 (2)
-                    }
-                    break;
-                */
-
-                case 4112:
-                case 4369:
-                case 4371:
-                {
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 2], sizeof(verts[0].tc));
-
-                    reader.seek(header.offset_to_indices + 48 + header.indices_buffer_size + header.vertices_buffer_size + add_vertex_offset);
-                    const float *ndxr_verts = (float *)reader.get_data();
-
-                    switch (rgf.header.vertex_format)
-                    {
-                        case 4112:
-                            for (int i = 0; i < rgf.header.vcount; ++i)
-                            {
-                                memcpy(verts[i + first_index].pos, &ndxr_verts[i * 12], sizeof(verts[0].pos));
-                                //ToDo
-
-                                for (int j = 0; j < 4; ++j)
-                                {
-                                    verts[i + first_index].bones[j] = *(int *)&ndxr_verts[i * 12 + 4 + j];
-                                    verts[i + first_index].weights[j] = ndxr_verts[i * 12 + 8 + j];
-                                }
-                            }
-                            //print_data(reader,reader.get_offset(),512);
-                            add_vertex_offset += rgf.header.vcount * 12 * 4;
-                            break;
-
-                        case 4369:
-                            for (int i = 0; i < rgf.header.vcount; ++i)
-                            {
-                                memcpy(verts[i + first_index].pos, &ndxr_verts[i * 16], sizeof(verts[0].pos));
-                                //ToDo
-
-                                for (int j = 0; j < 4; ++j)
-                                {
-                                    verts[i + first_index].bones[j] = *(int *)&ndxr_verts[i * 16 + 8 + j];
-                                    verts[i + first_index].weights[j] = ndxr_verts[i * 16 + 12 + j];
-                                }
-                            }
-                            //print_data(reader,reader.get_offset(),512);
-                            add_vertex_offset += rgf.header.vcount * 16 * 4;
-                            break;
-
-                        case 4371:
-                            //print_data(reader,reader.get_offset(), rgf.header.vcount * 24 * 4);
-                            for (int i = 0; i < rgf.header.vcount; ++i)
-                            {
-                                memcpy(verts[i + first_index].pos, &ndxr_verts[i * 24], sizeof(verts[0].pos));
-                                float3_to_half3(&ndxr_verts[i * 24 + 3], verts[i + first_index].normal);
-                                //float3_to_half3(&ndxr_verts[i * 24 + 12], verts[i + first_index].tangent);
-                                //float3_to_half3(&ndxr_verts[i * 24 + 6], verts[i + first_index].bitangent);
-                                //ToDo
-
-                                for (int j = 0; j < 4; ++j)
-                                {
-                                    verts[i + first_index].bones[j] = *(int *)&ndxr_verts[i * 24 + 16 + j];
-                                    verts[i + first_index].weights[j] = ndxr_verts[i * 24 + 20 + j];
-                                }
-                            }
-                            add_vertex_offset += rgf.header.vcount * 24 * 4;
-                            break;
-                    }
-                }
-                break;
-
-                case 4096:
-                    //ToDo
-                    break;
-/*
-                case 4096:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 5], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 5 + 3], sizeof(verts[0].tc));
-                    }
-                    break;
-*/
-                    // case 4865: stride = 11 * 4; break;
-                    //case 4096:
-                    //  stride = 3*sizeof(float), rg.vbo.set_tc(0, 4 * sizeof(float), 3); break;
-
-                default:
-                    printf("ERROR: invalid stride. Vertex format: %d\n", rgf.header.vertex_format);
-                    //print_data(reader,reader.get_offset(),512);
-                    //print_data(reader,reader.get_offset(), header.vertices_buffer_size);
-                    continue;
-            }
-
-            if (gf.header.bone_idx > 0)
-            {
-                for (int i = first_index; i < first_index + rgf.header.vcount; ++i)
-                    *(nya_math::vec3 *)&verts[i].pos = mesh.skeleton.get_bone_rot(gf.header.bone_idx).rotate(*(nya_math::vec3 *)&verts[i].pos)
-                                                     + mesh.skeleton.get_bone_pos(gf.header.bone_idx);
-            }
-
-            reader.seek(header.offset_to_indices + 48 + rgf.header.ibuf_offset); //rgf.header.icount
-            const ushort *ndxr_indices = (ushort *)reader.get_data();
-/*
-            if (j > 0)
-            {
-                if (!indices.empty())
-                    indices.push_back(indices.back());
-                indices.push_back(first_index + ndxr_indices[0]);
-                if ( (indices.size() - g.offset) % 2 )
-                    indices.push_back(indices.back());
-            }
-*/
-            if (!use_indices4b && verts.size() > 65535)
-            {
-                indices4b.resize(indices2b.size());
-                for (size_t i = 0; i < indices2b.size(); ++i)
-                    indices4b[i] = indices2b[i];
-
-                use_indices4b = true;
-            }
-
-            if (use_indices4b)
-            {
-                const uint ind_offset = uint(indices4b.size());
-                const uint ind_size = rgf.header.icount;
-                indices4b.resize(ind_offset + ind_size);
-                for (uint i = 0; i < ind_size; ++i)
-                    indices4b[i + ind_offset] = first_index + ndxr_indices[i];
-
-                g.count = uint(indices4b.size()) - g.offset;
-            }
-            else
-            {
-                const uint ind_offset = uint(indices2b.size());
-                const uint ind_size = rgf.header.icount;
-                indices2b.resize(ind_offset + ind_size);
-                for (uint i = 0; i < ind_size; ++i)
-                    indices2b[i + ind_offset] = first_index + ndxr_indices[i];
-
-                g.count = uint(indices2b.size()) - g.offset;
-            }
-
-            g.elem_type = nya_render::vbo::triangle_strip;
-            g.name = gf.name;
-        }
-    }
-
-    l.update_params_tex();
-
-    if (indices2b.empty() && indices4b.empty())
-        return false;
 
     if (mesh.skeleton.get_bones_count()>=250)
     {
@@ -1457,116 +844,50 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
         assert(mesh.skeleton.get_bones_count()<250); //shader uniforms count restriction
     }
 
-        //regroup groups with the same textures and blend modes
-//#if 1
-    std::vector<unsigned short> regroup_indices2b;
-    std::vector<uint> regroup_indices4b;
-    std::vector<nya_scene::shared_mesh::group> regroup_groups;
-    std::vector<nya_scene::material> regroup_materials;
-
-    std::vector<bool> used_groups(total_rgf_count, false);
-    for (int i = 0; i < 3; ++i)
+    for (auto &ng: nmesh.groups)
     {
-        for (uint j = 0; j < total_rgf_count; ++j)
+        for (auto &rg: ng.rgroups)
         {
-            if (used_groups[j] || tmp_groups[j].order != i)
-                continue;
-
-            if (tmp_groups[j].night) //ToDo: day/night
-                continue;
-
-            used_groups[j] = true;
-
-            nya_scene::shared_mesh::group g;
-            if (use_indices4b)
-            {
-                g.offset = (unsigned int)regroup_indices4b.size();
-                regroup_indices4b.resize(g.offset + mesh.groups[j].count);
-                memcpy(&regroup_indices4b[g.offset], &indices4b[mesh.groups[j].offset], mesh.groups[j].count * 4);
-            }
+            if(rg.illum)
+                l.set_param(lod::diff_k, rg.param_idx, nya_math::vec4(1.0, 0.0, 0.0, 0.0));
             else
-            {
-                g.offset = (unsigned int)regroup_indices2b.size();
-                regroup_indices2b.resize(g.offset + mesh.groups[j].count);
-                memcpy(&regroup_indices2b[g.offset], &indices2b[mesh.groups[j].offset], mesh.groups[j].count * 2);
-            }
+                l.set_param(lod::diff_k, rg.param_idx, nya_math::vec4(0.6, 0.4, 0.0, 0.0));
 
-            g.count = mesh.groups[j].count;
-
-            if (i == 0) //ToDo
-            for (uint k = 0; k < total_rgf_count; ++k)
-            {
-                if (used_groups[k] || tmp_groups[k].order != i)
-                    continue;
-
-                if (tmp_groups[k].night) //ToDo: day/night
-                    continue;
-
-                if (tmp_groups[j].rgf.tex_infos.size() != tmp_groups[k].rgf.tex_infos.size())
-                    continue;
-
-                bool same = true;
-                for (size_t l = 0; l < tmp_groups[j].rgf.tex_infos.size(); ++l)
-                {
-                    if (tmp_groups[j].rgf.tex_infos[l].texture_hash_id == tmp_groups[k].rgf.tex_infos[l].texture_hash_id)
-                        continue;
-
-                    same = false;
-                    break;
-                }
-
-                if (!same)
-                    continue;
-
-                if (use_indices4b)
-                {
-                    auto ioff1 = (unsigned int)regroup_indices4b.size();
-
-                    if (!regroup_indices4b.empty())
-                        regroup_indices4b.push_back(regroup_indices4b.back());
-                    regroup_indices4b.push_back(indices4b[mesh.groups[k].offset]);
-                    if ( (ioff1 - g.offset) % 2 )
-                        regroup_indices4b.push_back(regroup_indices4b.back());
-
-                    auto ioff2 = (unsigned int)regroup_indices4b.size();
-                    regroup_indices4b.resize(ioff2 + mesh.groups[k].count);
-                    memcpy(&regroup_indices4b[ioff2], &indices4b[mesh.groups[k].offset], mesh.groups[k].count * 2);
-                    g.count += (unsigned int)regroup_indices4b.size() - ioff1;
-                }
-                else
-                {
-                    auto ioff1 = (unsigned int)regroup_indices2b.size();
-
-                    if (!regroup_indices2b.empty())
-                        regroup_indices2b.push_back(regroup_indices2b.back());
-                    regroup_indices2b.push_back(indices2b[mesh.groups[k].offset]);
-                    if ( (ioff1 - g.offset) % 2 )
-                        regroup_indices2b.push_back(regroup_indices2b.back());
-
-                    auto ioff2 = (unsigned int)regroup_indices2b.size();
-                    regroup_indices2b.resize(ioff2 + mesh.groups[k].count);
-                    memcpy(&regroup_indices2b[ioff2], &indices2b[mesh.groups[k].offset], mesh.groups[k].count * 2);
-                    g.count += (unsigned int)regroup_indices2b.size() - ioff1;
-                }
-
-                used_groups[k] = true;
-            }
-
-            g.elem_type = nya_render::vbo::triangle_strip;
-            g.material_idx = (unsigned int)regroup_materials.size();
-            regroup_materials.push_back(mesh.materials[mesh.groups[j].material_idx]);
-            regroup_groups.push_back(g);
+            if (rg.alpha_clip)
+                l.set_param(lod::alpha_clip, rg.param_idx, nya_math::vec4(8/255.0, 0.0, 0.0, 0.0));
+            else
+                l.set_param(lod::alpha_clip, rg.param_idx, nya_math::vec4(-1.0, 0.0, 0.0, 0.0));
         }
     }
 
-    //printf("groups before %ld after %ld\n", mesh.groups.size(), regroup_groups.size());
+    l.update_params_tex();
 
-    mesh.groups = regroup_groups;
-    mesh.materials = regroup_materials;
-//#endif
+    nmesh.reduce_groups();
+
+    for (auto &ng: nmesh.groups)
+    {
+        for (auto &rg: ng.rgroups)
+        {
+            mesh.groups.resize(mesh.groups.size() + 1);
+            auto &g = mesh.groups.back();
+            g.offset = rg.offset;
+            g.count = rg.count;
+            g.elem_type = nya_render::vbo::triangle_strip;
+            g.material_idx = (int)mesh.materials.size();
+            mesh.materials.push_back(mat);
+
+            //ToDo: specular, ambient, etc
+            if (rg.textures.size()>0)
+                mesh.materials.back().set_texture("diffuse", shared::get_texture(rg.textures[0]));
+
+            if (rg.blend)
+                mesh.materials.back().get_default_pass().get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::inv_src_alpha);
+        }
+    }
 
 #define off(st, m) uint((size_t)(&((st *)0)->m))
 
+    typedef renderer::mesh_ndxr::vert vert;
     mesh.vbo.set_tc(0, off(vert, tc), 3);
     mesh.vbo.set_normals(off(vert, normal), nya_render::vbo::float16);
     mesh.vbo.set_tc(1, off(vert, tangent), 3, nya_render::vbo::float16);
@@ -1574,12 +895,12 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
     mesh.vbo.set_tc(3, off(vert, bones), 4, nya_render::vbo::float32);
     mesh.vbo.set_tc(4, off(vert, weights), 4, nya_render::vbo::float32);
 
-    mesh.vbo.set_vertex_data(&verts[0], sizeof(verts[0]), uint(verts.size()));
+    mesh.vbo.set_vertex_data(nmesh.verts.data(), sizeof(vert), uint(nmesh.verts.size()));
 
-    if(use_indices4b)
-        mesh.vbo.set_index_data(&regroup_indices4b[0], nya_render::vbo::index4b, uint(regroup_indices4b.size()));
+    if (!nmesh.indices4b.empty())
+        mesh.vbo.set_index_data(nmesh.indices4b.data(), nya_render::vbo::index4b, uint(nmesh.indices4b.size()));
     else
-        mesh.vbo.set_index_data(&regroup_indices2b[0], nya_render::vbo::index2b, uint(regroup_indices2b.size()));
+        mesh.vbo.set_index_data(nmesh.indices2b.data(), nya_render::vbo::index2b, uint(nmesh.indices2b.size()));
 
     l.mesh.create(mesh);
 

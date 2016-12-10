@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -128,6 +128,9 @@
     <ClCompile Include="../renderer/model.cpp">
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="../renderer/mesh_ndxr.cpp">
+        <Filter>Source Files\renderer</Filter>
+    </ClCompile>
     <ClCompile Include="..\game\network.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
@@ -252,6 +255,9 @@
     </ClInclude>
     <ClInclude Include="../renderer/model.h">
       <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="../renderer/mesh_ndxr.h">
+        <Filter>Source Files\renderer</Filter>
     </ClInclude>
     <ClInclude Include="../renderer/scene.h">
       <Filter>Source Files\renderer</Filter>
