@@ -106,7 +106,27 @@ inline std::wstring to_wstring(const std::string &s)
 
 //------------------------------------------------------------
 
-inline void print_data(const nya_memory::memory_reader &const_reader, size_t offset, size_t size, size_t substruct_size = 0, const char *fileName = 0)
+template<typename t> std::string to_bits(t v)
+{
+    std::string str;
+
+    const int shift = 8 * sizeof(t) - 1;
+    const t mask = 1 << shift;
+
+    for (int i = 0; i <= shift; ++i)
+    {
+        str.push_back(v & mask ? '1' : '0');
+        v <<= 1;
+        if ((i + 1) % 8 == 0 )
+            str.push_back(' ');
+    }
+
+    return str;
+}
+
+//------------------------------------------------------------
+
+inline void print_data(const nya_memory::memory_reader &const_reader, size_t offset, size_t size, size_t substruct_size = 0, const char *fileName = 0, bool be = false)
 {
     FILE *file = 0;
     if (fileName)
@@ -131,12 +151,18 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
         else
             prnt( "%7d %7d ", i * 4, off );
 
-        float f =* ((float*)&t);
+        unsigned int u = t;
         unsigned short s[2];
         memcpy(s, &t, 4);
-
         char c[4];
         memcpy(c, &t, 4);
+        if (be)
+        {
+            u = swap_bytes(u);
+            s[0] = swap_bytes(s[0]);
+            s[1] = swap_bytes(s[1]);
+        }
+        float f =* ((float*)&u);
 
         //if ((fabs(f) < 0.001 && t != 0) || (fabs(f) > 1000.0f))
         //prnt( "%10u ", t);
@@ -146,7 +172,7 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
         else
             prnt( "%10f ", f);
 
-        prnt( "%10u ", t);
+        prnt( "%10u ", u);
 
         prnt( "%6d %6d   ", s[0], s[1] );
         for (int j = 0; j < 4; ++j)
@@ -162,7 +188,7 @@ inline void print_data(const nya_memory::memory_reader &const_reader, size_t off
                 prnt("¥");
         }
 
-        prnt("    %08x    \n", t);
+        prnt("    %08x    \n", u);
 
         if (substruct_size)
         {

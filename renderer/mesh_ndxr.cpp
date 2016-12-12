@@ -23,6 +23,26 @@ inline void float3_to_half3(const float *from, unsigned short *to)
 
 //------------------------------------------------------------
 
+inline nya_math::vec3 half3_as_vec3(unsigned short *from)
+{
+    nya_math::vec3 p;
+    p.x = Float16Compressor::decompress(from[0]);
+    p.y = Float16Compressor::decompress(from[1]);
+    p.z = Float16Compressor::decompress(from[2]);
+    return p;
+}
+
+//------------------------------------------------------------
+
+inline bool is_normal(unsigned short *from)
+{
+    const auto n = half3_as_vec3(from);
+    const float l = n.length_sq();
+    return l == 0 || fabsf(l - 1.0f) < 0.05f;
+}
+
+//------------------------------------------------------------
+
 namespace
 {
 
@@ -307,8 +327,6 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
     for (auto &gf: groups)
         total_rgf_count += (uint)gf.render_groups.size();
 
-    //ToDo: endianness
-
     uint add_vertex_offset = 0, total_rgf_idx = 0;
     for (int i = 0; i < header.groups_count; ++i)
     {
@@ -380,219 +398,98 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
                 }
 
                 for (int j = 0; j < 4; ++j)
-                {
-                    verts[i].normal[j] = 0;
-                    verts[i].tangent[j] = 0;
-                    verts[i].bitangent[j] = 0;
-                }
+                    verts[i].normal[j] = verts[i].tangent[j] = verts[i].bitangent[j] = 0;
             }
 
-            switch(rgf.header.vertex_format)
+            const ushort format = rgf.header.vertex_format;
+            const ushort uv_count = format >> 12;
+            const bool has_tbn = format & (1<<0);
+            const bool has_skining = format & (1<<4);
+            const bool has_normal = format & (1<<8);
+            const bool has_color = format & (1<<9);
+
+            assume(uv_count == 1 || uv_count == 2);
+            if(has_skining)
+                assert(uv_count==1);
+
+//ToDo: endianness
+
+            const void *prev_skining_off = 0;
+            if (has_skining)
             {
-                case 4102:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 6], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 6 + 4], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
+                for (int i = 0; i < rgf.header.vcount; ++i)
+                    memcpy(verts[i + first_index].tc, &ndxr_verts[i * 2], sizeof(verts[0].tc));
 
-                case 4103:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 10], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 10 + 8], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
+                reader.seek(header.offset_to_indices + 48 + header.indices_buffer_size + header.vertices_buffer_size + add_vertex_offset);
+                ndxr_verts = (float *)reader.get_data();
+                prev_skining_off = ndxr_verts = (float *)reader.get_data();
+            }
 
-                case 4358:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 7], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 7 + 5], sizeof(verts[0].tc));
-                        memcpy(verts[i + first_index].normal, &ndxr_verts[i * 7 + 3], sizeof(verts[0].normal));
-                        memset(verts[i + first_index].tangent, 0, sizeof(verts[0].tangent));
-                        memset(verts[i + first_index].bitangent, 0, sizeof(verts[0].bitangent));
-                    }
-                    break;
-
-                case 4359:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 11], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 11 + 9], sizeof(verts[0].tc));
-                        memcpy(verts[i + first_index].normal, &ndxr_verts[i * 11 + 3], sizeof(verts[0].normal));
-                        memcpy(verts[i + first_index].tangent, &ndxr_verts[i * 11 + 7], sizeof(verts[0].tangent));
-                        memcpy(verts[i + first_index].bitangent, &ndxr_verts[i * 11 + 5], sizeof(verts[0].bitangent));
-                    }
-                    break;
-
-                case 8454:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 9], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 9 + 5], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 8455:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 13], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 13 + 9], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 4870:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 8], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 8 + 6], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 4871:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 12], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 12 + 10], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 8967:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 14], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 14 + 10], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 8966:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 10], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 10 + 6], sizeof(verts[0].tc));
-                        //ToDo
-                    }
-                    break;
-
-                case 4865:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 11], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 11 + 9], sizeof(verts[0].tc));
-                        float3_to_half3(&ndxr_verts[i * 11 + 4], verts[i + first_index].normal);
-
-                        //ToDo: + 8 ubyte4n color
-                    }
-                    break;
-
-                /*
-                case 8710:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 8], sizeof(verts[0].pos));
-                        //ToDo: + 3 (2)
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 8 + debug_variable::get()], sizeof(verts[0].tc));
-                        //ToDo: + 7 (2)
-                    }
-                    break;
-                */
-
-                case 4112:
-                case 4369:
-                case 4371:
+            const std::vector<ushort> known_formats = {4096,4102,4112,4358,4359,4369,4371,4870,4871,8454,8455,8710,8966,8967};
+            if(std::find(known_formats.begin(), known_formats.end(), format) == known_formats.end())
+            {
+                nya_log::log()<<"unknown vertex format: "<<format<<"\t"<<to_bits(format)<<"\n";
+                //print_data(reader,reader.get_offset(),512);
+            }
+            else if (has_skining)
+            {
+                for (int i = first_index; i < (rgf.header.vcount + first_index); ++i)
                 {
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 2], sizeof(verts[0].tc));
+                    memcpy(verts[i].pos, ndxr_verts, sizeof(verts[0].pos));
+                    ndxr_verts += 3;
 
-                    reader.seek(header.offset_to_indices + 48 + header.indices_buffer_size + header.vertices_buffer_size + add_vertex_offset);
-                    const float *ndxr_verts = (float *)reader.get_data();
+                    ndxr_verts++; //ToDo
 
-                    switch (rgf.header.vertex_format)
-                    {
-                        case 4112:
-                            for (int i = 0; i < rgf.header.vcount; ++i)
-                            {
-                                memcpy(verts[i + first_index].pos, &ndxr_verts[i * 12], sizeof(verts[0].pos));
-                                //ToDo
+                    if (format == 4369) //ToDo: n
+                        ndxr_verts += 4;
+                    else if (format == 4371) //ToDo: nbt
+                        ndxr_verts += 12;
 
-                                for (int j = 0; j < 4; ++j)
-                                {
-                                    verts[i + first_index].bones[j] = *(int *)&ndxr_verts[i * 12 + 4 + j];
-                                    verts[i + first_index].weights[j] = ndxr_verts[i * 12 + 8 + j];
-                                }
-                            }
-                            //print_data(reader,reader.get_offset(),512);
-                            add_vertex_offset += rgf.header.vcount * 12 * 4;
-                            break;
+                    for (int j = 0; j < 4; ++j)
+                        verts[i].bones[j] = *(int *)ndxr_verts++;
 
-                        case 4369:
-                            for (int i = 0; i < rgf.header.vcount; ++i)
-                            {
-                                memcpy(verts[i + first_index].pos, &ndxr_verts[i * 16], sizeof(verts[0].pos));
-                                //ToDo
-
-                                for (int j = 0; j < 4; ++j)
-                                {
-                                    verts[i + first_index].bones[j] = *(int *)&ndxr_verts[i * 16 + 8 + j];
-                                    verts[i + first_index].weights[j] = ndxr_verts[i * 16 + 12 + j];
-                                }
-                            }
-                            //print_data(reader,reader.get_offset(),512);
-                            add_vertex_offset += rgf.header.vcount * 16 * 4;
-                            break;
-
-                        case 4371:
-                            //print_data(reader,reader.get_offset(), rgf.header.vcount * 24 * 4);
-                            for (int i = 0; i < rgf.header.vcount; ++i)
-                            {
-                                memcpy(verts[i + first_index].pos, &ndxr_verts[i * 24], sizeof(verts[0].pos));
-                                float3_to_half3(&ndxr_verts[i * 24 + 3], verts[i + first_index].normal);
-                                //float3_to_half3(&ndxr_verts[i * 24 + 12], verts[i + first_index].tangent);
-                                //float3_to_half3(&ndxr_verts[i * 24 + 6], verts[i + first_index].bitangent);
-                                //ToDo
-
-                                for (int j = 0; j < 4; ++j)
-                                {
-                                    verts[i + first_index].bones[j] = *(int *)&ndxr_verts[i * 24 + 16 + j];
-                                    verts[i + first_index].weights[j] = ndxr_verts[i * 24 + 20 + j];
-                                }
-                            }
-                            add_vertex_offset += rgf.header.vcount * 24 * 4;
-                            break;
-                    }
+                    for (int j = 0; j < 4; ++j)
+                        verts[i].weights[j] = *ndxr_verts++;
                 }
-                    break;
 
-                case 4096:
-                    //ToDo
-                    break;
-                /*
-                case 4096:
-                    for (int i = 0; i < rgf.header.vcount; ++i)
-                    {
-                        memcpy(verts[i + first_index].pos, &ndxr_verts[i * 5], sizeof(verts[0].pos));
-                        memcpy(verts[i + first_index].tc, &ndxr_verts[i * 5 + 3], sizeof(verts[0].tc));
-                    }
-                    break;
-                */
-             // case 4865: stride = 11 * 4; break;
-             // case 4096:
-                //  stride = 3*sizeof(float), rg.vbo.set_tc(0, 4 * sizeof(float), 3); break;
+                add_vertex_offset += size_t((char *)ndxr_verts - (char *)prev_skining_off);
+            }
+            else for (int i = first_index; i < (rgf.header.vcount + first_index); ++i)
+            {
+                memcpy(verts[i].pos, ndxr_verts, sizeof(verts[0].pos));
+                ndxr_verts += 3;
 
-                default:
-                    printf("ERROR: invalid stride. Vertex format: %d\n", rgf.header.vertex_format);
-                    //print_data(reader,reader.get_offset(),512);
-                    //print_data(reader,reader.get_offset(), header.vertices_buffer_size);
-                    continue;
+                if (format == 4102) ++ndxr_verts; //ToDo?
+
+                if (has_normal)
+                {
+                    memcpy(verts[i].normal, ndxr_verts, sizeof(verts[0].normal));
+                    assume(is_normal(verts[i].normal));
+                    ndxr_verts += 2;
+                }
+
+                if (has_tbn)
+                {
+                    memcpy(verts[i].bitangent, ndxr_verts, sizeof(verts[0].bitangent));
+                    assume(is_normal(verts[i].bitangent));
+                    ndxr_verts += 2;
+
+                    memcpy(verts[i].tangent, ndxr_verts, sizeof(verts[0].tangent));
+                    assume(is_normal(verts[i].tangent));
+                    ndxr_verts += 2;
+                }
+
+                if (has_normal && has_color) ++ndxr_verts;
+
+                if (uv_count)
+                {
+                    memcpy(verts[i].tc, ndxr_verts, sizeof(verts[0].tc));
+                    ndxr_verts += 2;
+                }
+
+                if (has_color && !has_normal) ++ndxr_verts; //ToDo: color
+
+                if (uv_count > 1) ndxr_verts += (uv_count - 1) * 2; //ToDo: uv2
             }
 
             //ToDo

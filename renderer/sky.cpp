@@ -40,16 +40,15 @@ public:
         return true;
     }
 
-    struct color { unsigned char r, g, b, unused; };
+    struct color { unsigned char r = 0, g = 0, b = 0, unused; };
 
     struct sph_data
     {
-        float radius;
-        float height;
+        float radius = 0.0f;
+        float height = 0.0f;
         uint32_t zero[2];
         color colors[30];
-        float k[10];
-
+        float k[10] = {0.0f};
     };
 
     sph_data data[2];

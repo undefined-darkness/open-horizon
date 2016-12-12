@@ -86,7 +86,7 @@ void world::set_location(const char *name)
 
     m_location_name.assign(name ? name : "");
 
-    if (is_native_location(name))
+    if (is_native_location(m_location_name))
     {
         m_location_name = "def"; //ToDo
         return;
