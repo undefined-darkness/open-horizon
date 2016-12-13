@@ -23,12 +23,22 @@ public:
 
     void add_face(int vcount)
     {
-        m_data<<"f ";
+        m_data<<"f";
         for (int i = 0; i < vcount; ++i)
         {
             ++m_last_face;
             m_data<<" "<<m_last_face<<"/"<<m_last_face<<"/"<<m_last_face;
         }
+        m_data<<"\n";
+    }
+
+    void add_face(int f0, int f1, int f2)
+    {
+        ++f0, ++f1, ++f2;
+        m_data<<"f";
+        m_data<<" "<<f0<<"/"<<f0<<"/"<<f0;
+        m_data<<" "<<f1<<"/"<<f1<<"/"<<f1;
+        m_data<<" "<<f2<<"/"<<f2<<"/"<<f2;
         m_data<<"\n";
     }
 

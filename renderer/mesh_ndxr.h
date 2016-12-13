@@ -16,8 +16,8 @@ struct mesh_ndxr
 {
     struct vert
     {
-        float pos[3];
-        float tc[2];
+        nya_math::vec3 pos;
+        nya_math::vec2 tc;
         float param_tc;
         uint16_t normal[4]; //half float
         uint16_t tangent[4];
@@ -25,6 +25,8 @@ struct mesh_ndxr
 
         float bones[4];
         float weights[4];
+
+        nya_math::vec3 get_normal() const;
     };
 
     std::vector<vert> verts;

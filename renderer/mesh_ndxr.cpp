@@ -6,6 +6,8 @@
 #include "util/util.h"
 #include "util/half.h"
 
+//------------------------------------------------------------
+
 template<typename t> void change_endianness(t &o)
 {
     uint *u = (uint *)&o;
@@ -23,7 +25,7 @@ inline void float3_to_half3(const float *from, unsigned short *to)
 
 //------------------------------------------------------------
 
-inline nya_math::vec3 half3_as_vec3(unsigned short *from)
+inline nya_math::vec3 half3_as_vec3(const unsigned short *from)
 {
     nya_math::vec3 p;
     p.x = Float16Compressor::decompress(from[0]);
@@ -34,7 +36,7 @@ inline nya_math::vec3 half3_as_vec3(unsigned short *from)
 
 //------------------------------------------------------------
 
-inline bool is_normal(unsigned short *from)
+inline bool is_normal(const unsigned short *from)
 {
     const auto n = half3_as_vec3(from);
     const float l = n.length_sq();
@@ -149,6 +151,7 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
             ::change_endianness(*this);
             std::swap(vcount, vertex_format);
             std::swap(icount, unknown3);
+            vertex_format = swap_bytes(vertex_format);
         }
     };
 
@@ -387,7 +390,6 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
 
             for (int i = first_index; i < first_index + rgf.header.vcount; ++i)
             {
-                verts[i].tc[0] = verts[i].tc[1] = 0.0f;
                 verts[i].param_tc = ptc;
                 verts[i].bones[0] = bone_fidx;
                 verts[i].weights[0] = bone_weight;
@@ -412,13 +414,13 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
             if(has_skining)
                 assert(uv_count==1);
 
-//ToDo: endianness
-
             const void *prev_skining_off = 0;
             if (has_skining)
             {
+                //ToDo: endianness
+
                 for (int i = 0; i < rgf.header.vcount; ++i)
-                    memcpy(verts[i + first_index].tc, &ndxr_verts[i * 2], sizeof(verts[0].tc));
+                    memcpy(&verts[i + first_index].tc, &ndxr_verts[i * 2], sizeof(verts[0].tc));
 
                 reader.seek(header.offset_to_indices + 48 + header.indices_buffer_size + header.vertices_buffer_size + add_vertex_offset);
                 ndxr_verts = (float *)reader.get_data();
@@ -435,7 +437,9 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
             {
                 for (int i = first_index; i < (rgf.header.vcount + first_index); ++i)
                 {
-                    memcpy(verts[i].pos, ndxr_verts, sizeof(verts[0].pos));
+                    //ToDo: endianness
+
+                    memcpy(&verts[i].pos, ndxr_verts, sizeof(verts[0].pos));
                     ndxr_verts += 3;
 
                     ndxr_verts++; //ToDo
@@ -456,7 +460,9 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
             }
             else for (int i = first_index; i < (rgf.header.vcount + first_index); ++i)
             {
-                memcpy(verts[i].pos, ndxr_verts, sizeof(verts[0].pos));
+                memcpy(&verts[i].pos, ndxr_verts, sizeof(verts[0].pos));
+                if (endianness)
+                    change_endianness(verts[i].pos);
                 ndxr_verts += 3;
 
                 if (format == 4102) ++ndxr_verts; //ToDo?
@@ -464,6 +470,9 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
                 if (has_normal)
                 {
                     memcpy(verts[i].normal, ndxr_verts, sizeof(verts[0].normal));
+                    if (endianness)
+                        for (auto &n: verts[i].normal)
+                            n = swap_bytes(n);
                     assume(is_normal(verts[i].normal));
                     ndxr_verts += 2;
                 }
@@ -471,10 +480,16 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
                 if (has_tbn)
                 {
                     memcpy(verts[i].bitangent, ndxr_verts, sizeof(verts[0].bitangent));
+                    if (endianness)
+                        for (auto &n: verts[i].bitangent)
+                            n = swap_bytes(n);
                     assume(is_normal(verts[i].bitangent));
                     ndxr_verts += 2;
 
                     memcpy(verts[i].tangent, ndxr_verts, sizeof(verts[0].tangent));
+                    if (endianness)
+                        for (auto &n: verts[i].tangent)
+                            n = swap_bytes(n);
                     assume(is_normal(verts[i].tangent));
                     ndxr_verts += 2;
                 }
@@ -483,7 +498,9 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
 
                 if (uv_count)
                 {
-                    memcpy(verts[i].tc, ndxr_verts, sizeof(verts[0].tc));
+                    memcpy(&verts[i].tc, ndxr_verts, sizeof(verts[0].tc));
+                    if (endianness)
+                        change_endianness(verts[i].tc);
                     ndxr_verts += 2;
                 }
 
@@ -522,14 +539,24 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
             if (use_indices4b)
             {
                 indices4b.resize(rgt.offset + rgt.count);
-                for (uint i = 0; i < rgt.count; ++i)
-                    indices4b[i + rgt.offset] = first_index + ndxr_indices[i];
+
+                if (endianness)
+                    for (uint i = 0; i < rgt.count; ++i)
+                        indices4b[i + rgt.offset] = first_index + swap_bytes(ndxr_indices[i]);
+                else
+                    for (uint i = 0; i < rgt.count; ++i)
+                        indices4b[i + rgt.offset] = first_index + ndxr_indices[i];
             }
             else
             {
                 indices2b.resize(rgt.offset + rgt.count);
-                for (uint i = 0; i < rgt.count; ++i)
-                    indices2b[i + rgt.offset] = first_index + ndxr_indices[i];
+
+                if (endianness)
+                    for (uint i = 0; i < rgt.count; ++i)
+                        indices2b[i + rgt.offset] = first_index + swap_bytes(ndxr_indices[i]);
+                else
+                    for (uint i = 0; i < rgt.count; ++i)
+                        indices2b[i + rgt.offset] = first_index + ndxr_indices[i];
             }
         }
     }
@@ -635,6 +662,13 @@ void mesh_ndxr::reduce_groups()
     groups.swap(new_groups);
     indices2b.swap(regroup_indices2b);
     indices4b.swap(regroup_indices4b);
+}
+
+//------------------------------------------------------------
+
+nya_math::vec3 mesh_ndxr::vert::get_normal() const
+{
+    return half3_as_vec3(normal);
 }
 
 //------------------------------------------------------------
