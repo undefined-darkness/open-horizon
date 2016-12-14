@@ -11,8 +11,6 @@ extern "C"
     #include "lualib.h"
 }
 
-namespace game
-{
 //------------------------------------------------------------
 
 static int func_print(lua_State *state)
@@ -184,4 +182,3 @@ void script::unload()
 }
 
 //------------------------------------------------------------
-}

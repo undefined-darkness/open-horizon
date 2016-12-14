@@ -209,7 +209,7 @@
     <ClCompile Include="..\deps\nya-engine\extensions\zip_resources_provider.cpp">
       <Filter>Source Files\deps</Filter>
     </ClCompile>
-    <ClCompile Include="..\game\script.cpp">
+    <ClCompile Include="..\util\script.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
     <ClCompile Include="..\game\mission.cpp">
@@ -391,7 +391,7 @@
     <ClInclude Include="..\deps\nya-engine\extensions\zip_resources_provider.h">
       <Filter>Source Files\deps</Filter>
     </ClInclude>
-    <ClInclude Include="..\game\script.h">
+    <ClInclude Include="..\util\script.h">
       <Filter>Source Files\game</Filter>
     </ClInclude>
     <ClInclude Include="..\game\objects.h">

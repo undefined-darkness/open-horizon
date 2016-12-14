@@ -5,7 +5,7 @@
 #pragma once
 
 #include "game.h"
-#include "script.h"
+#include "util/script.h"
 
 namespace game
 {

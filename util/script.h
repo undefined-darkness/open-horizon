@@ -4,12 +4,11 @@
 
 #pragma once
 
-#include "game.h"
+#include <string>
+#include <vector>
 
 struct lua_State;
 
-namespace game
-{
 //------------------------------------------------------------
 
 class script
@@ -55,4 +54,3 @@ private:
 };
 
 //------------------------------------------------------------
-}

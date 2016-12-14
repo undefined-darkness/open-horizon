@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "game/script.h"
+#include "util/script.h"
 #include <QtWidgets>
 
 //------------------------------------------------------------
@@ -75,7 +75,7 @@ private:
     QTimer *m_compile_timer;
     std::string m_location;
     std::string m_filename;
-    game::script m_script;
+    script m_script;
 };
 
 //------------------------------------------------------------

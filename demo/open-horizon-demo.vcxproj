@@ -123,7 +123,6 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClCompile Include="..\game\network.cpp" />
     <ClCompile Include="..\game\network_client.cpp" />
     <ClCompile Include="..\game\network_server.cpp" />
-    <ClCompile Include="..\game\script.cpp" />
     <ClCompile Include="..\game\team_deathmatch.cpp" />
     <ClCompile Include="..\gui\hud.cpp" />
     <ClCompile Include="..\gui\menu.cpp" />
@@ -134,6 +133,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClCompile Include="..\util\location.cpp" />
     <ClCompile Include="..\util\platform.cpp" />
     <ClCompile Include="..\util\platform_dialogs.cpp" />
+    <ClCompile Include="..\util\script.cpp" />
     <ClCompile Include="demo.cpp" />
     <ClCompile Include="../game/game.cpp" />
     <ClCompile Include="../game/hangar.cpp" />
@@ -207,7 +207,6 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClInclude Include="..\game\network_helpers.h" />
     <ClInclude Include="..\game\network_server.h" />
     <ClInclude Include="..\game\objects.h" />
-    <ClInclude Include="..\game\script.h" />
     <ClInclude Include="..\game\team_deathmatch.h" />
     <ClInclude Include="..\gui\hud.h" />
     <ClInclude Include="..\gui\menu.h" />
@@ -217,6 +216,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClInclude Include="..\util\controls.h" />
     <ClInclude Include="..\util\location.h" />
     <ClInclude Include="..\util\platform.h" />
+    <ClInclude Include="..\util\script.h" />
     <ClInclude Include="..\util\simd.h" />
     <ClInclude Include="..\util\zip.h" />
   </ItemGroup>

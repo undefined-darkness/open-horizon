@@ -51,6 +51,7 @@ SOURCES += \
     scene_view.cpp \
     ../renderer/model.cpp \
     ../renderer/fhm_mesh.cpp \
+    ../renderer/mesh_ndxr.cpp \
     ../renderer/location_params.cpp \
     ../renderer/location.cpp \
     ../renderer/mesh_obj.cpp \
@@ -63,7 +64,7 @@ SOURCES += \
     ../phys/plane_params.cpp \
     ../deps/zip/src/zip.c \
     ../deps/nya-engine/extensions/zip_resources_provider.cpp \
-    ../game/script.cpp \
+    ../util/script.cpp \
     ../util/platform_dialogs.cpp \
     ../util/location.cpp
 
@@ -78,6 +79,7 @@ HEADERS += \
     scene_view.h \
     ../renderer/model.h \
     ../renderer/fhm_mesh.h \
+    ../renderer/mesh_ndxr.h \
     ../renderer/location_params.h \
     ../renderer/fhm_location.h \
     ../renderer/location.h \
@@ -91,6 +93,7 @@ HEADERS += \
     ../util/params.h \
     ../util/zip.h \
     ../util/xml.h \
+    ../util/script.h \
     ../deps/pugixml-1.4/src/pugiconfig.hpp \
     ../deps/pugixml-1.4/src/pugixml.hpp \
     ../phys/physics.h \
@@ -98,7 +101,6 @@ HEADERS += \
     ../phys/plane_params.h \
     ../deps/zip/src/miniz.h \
     ../deps/zip/src/zip.h \
-    ../deps/nya-engine/extensions/zip_resources_provider.h \
-    ../game/script.h
+    ../deps/nya-engine/extensions/zip_resources_provider.h
 
 #-------------------------------------------------

@@ -23,6 +23,7 @@
 		F50EE6311CD3C0D100DDED72 /* file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50EE62F1CD3C0D100DDED72 /* file.cpp */; };
 		F524A57D1DF6BC8E00D6EB88 /* mesh_ndxr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F524A57B1DF6BC8E00D6EB88 /* mesh_ndxr.cpp */; };
 		F5272D001D9BBE4F000FF7C8 /* location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5272CFE1D9BBE4F000FF7C8 /* location.cpp */; };
+		F530D2461E016E430072BB48 /* script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F530D2441E016E430072BB48 /* script.cpp */; };
 		F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53304C61B09DEC300D8C3C7 /* menu.cpp */; };
 		F538BB0B1CC2B8EA0055F394 /* app_protocol_simple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */; };
 		F53EFF561D0FF74C009B6A0A /* objects.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F53EFF541D0FECC2009B6A0A /* objects.xml */; };
@@ -35,7 +36,6 @@
 		F586B6821CF786DF00A2B7BE /* zip_resources_provider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F586B6811CF786DF00A2B7BE /* zip_resources_provider.cpp */; };
 		F591D4EC1D2E7B4000DD8D98 /* platform_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F591D4EB1D2E7B4000DD8D98 /* platform_dialogs.cpp */; };
 		F591D5101D31644A00DD8D98 /* missions in CopyFiles */ = {isa = PBXBuildFile; fileRef = F591D50D1D31643700DD8D98 /* missions */; };
-		F594C7851D169D3400AA265B /* script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F594C7831D169D3400AA265B /* script.cpp */; };
 		F595E9D71AB2402D0006F8C7 /* libnya_engine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E51F19048D4A00C3590A /* libnya_engine.a */; };
 		F5961A281CCCBFEE00B92BE4 /* network_client.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5961A241CCCBFEE00B92BE4 /* network_client.cpp */; };
 		F5961A291CCCBFEE00B92BE4 /* network_server.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5961A261CCCBFEE00B92BE4 /* network_server.cpp */; };
@@ -164,6 +164,8 @@
 		F5272CFE1D9BBE4F000FF7C8 /* location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = location.cpp; path = ../util/location.cpp; sourceTree = "<group>"; };
 		F5272CFF1D9BBE4F000FF7C8 /* location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = location.h; path = ../util/location.h; sourceTree = "<group>"; };
 		F5287A781D44A39400F19022 /* circle_mesh.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = circle_mesh.h; path = ../gui/circle_mesh.h; sourceTree = "<group>"; };
+		F530D2441E016E430072BB48 /* script.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = script.cpp; path = ../util/script.cpp; sourceTree = "<group>"; };
+		F530D2451E016E430072BB48 /* script.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = script.h; path = ../util/script.h; sourceTree = "<group>"; };
 		F53304C61B09DEC300D8C3C7 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = menu.cpp; path = ../gui/menu.cpp; sourceTree = "<group>"; };
 		F53304C71B09DEC300D8C3C7 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = menu.h; path = ../gui/menu.h; sourceTree = "<group>"; };
 		F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = app_protocol_simple.cpp; path = ../deps/miso/src/app_protocol_simple.cpp; sourceTree = "<group>"; };
@@ -185,8 +187,6 @@
 		F58E4F581C63F7410056B029 /* network_data.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = network_data.h; path = ../game/network_data.h; sourceTree = "<group>"; };
 		F591D4EB1D2E7B4000DD8D98 /* platform_dialogs.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = platform_dialogs.cpp; path = ../util/platform_dialogs.cpp; sourceTree = "<group>"; };
 		F591D50D1D31643700DD8D98 /* missions */ = {isa = PBXFileReference; lastKnownFileType = folder; name = missions; path = ../resources/missions; sourceTree = "<group>"; };
-		F594C7831D169D3400AA265B /* script.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = script.cpp; path = ../game/script.cpp; sourceTree = "<group>"; };
-		F594C7841D169D3400AA265B /* script.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = script.h; path = ../game/script.h; sourceTree = "<group>"; };
 		F5961A211CCCBE0300B92BE4 /* network_helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = network_helpers.h; path = ../game/network_helpers.h; sourceTree = "<group>"; };
 		F5961A241CCCBFEE00B92BE4 /* network_client.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = network_client.cpp; path = ../game/network_client.cpp; sourceTree = "<group>"; };
 		F5961A251CCCBFEE00B92BE4 /* network_client.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = network_client.h; path = ../game/network_client.h; sourceTree = "<group>"; };
@@ -458,8 +458,6 @@
 				F5961A261CCCBFEE00B92BE4 /* network_server.cpp */,
 				F5961A271CCCBFEE00B92BE4 /* network_server.h */,
 				F53EFF551D0FEFEE009B6A0A /* objects.h */,
-				F594C7831D169D3400AA265B /* script.cpp */,
-				F594C7841D169D3400AA265B /* script.h */,
 				F5A2A2E31B05466C009765C1 /* team_deathmatch.cpp */,
 				F5A2A2DF1B05466C009765C1 /* team_deathmatch.h */,
 			);
@@ -525,6 +523,8 @@
 				F50B755D1CABD1410004E04F /* platform.h */,
 				F591D4EB1D2E7B4000DD8D98 /* platform_dialogs.cpp */,
 				F53EFF531D0F26DA009B6A0A /* resources.h */,
+				F530D2441E016E430072BB48 /* script.cpp */,
+				F530D2451E016E430072BB48 /* script.h */,
 				F5C724A41C8F124700EF0A7B /* simd.h */,
 				F5C6D3A11AF96B4B006FB7E6 /* util.h */,
 				F5C6D37D1AF968E7006FB7E6 /* xml.h */,
@@ -802,6 +802,7 @@
 				F5C6D3921AF969A5006FB7E6 /* fhm.cpp in Sources */,
 				F5D209F41CC18DA800189814 /* ipv4.cpp in Sources */,
 				F50D9C9B1C9F2E5700A56812 /* pac5.cpp in Sources */,
+				F530D2461E016E430072BB48 /* script.cpp in Sources */,
 				F5DC44881C7CD9AF00F68115 /* mesh.cpp in Sources */,
 				F572C1F11CA715AC00AB1D1F /* poc.cpp in Sources */,
 				F50EE6311CD3C0D100DDED72 /* file.cpp in Sources */,
@@ -810,7 +811,6 @@
 				F50D9C9C1C9F2E5700A56812 /* pac6.cpp in Sources */,
 				F5A55F361D1FC9C800A7889B /* texture_gim.cpp in Sources */,
 				F578323E1AFBE859005FE829 /* ui.cpp in Sources */,
-				F594C7851D169D3400AA265B /* script.cpp in Sources */,
 				F50B755E1CABD1410004E04F /* platform.cpp in Sources */,
 				F59AB5A91AFA4F1800137527 /* fhm_mesh.cpp in Sources */,
 				F5961A291CCCBFEE00B92BE4 /* network_server.cpp in Sources */,
