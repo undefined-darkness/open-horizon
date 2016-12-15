@@ -15,8 +15,8 @@ namespace game
 struct mission_info
 {
     std::string id;
-    std::wstring name;
-    std::wstring description;
+    std::string name;
+    std::string description;
 };
 
 typedef std::vector<mission_info> missions_list;
@@ -40,11 +40,11 @@ static const missions_list &get_missions_list()
             mission_info mi;
 
             auto root = doc.first_child();
-            mi.name = to_wstring(root.attribute("name").as_string());
+            mi.name = root.attribute("name").as_string();
             if (mi.name.empty())
                 continue;
 
-            mi.description = to_wstring(root.child("description").first_child().value());
+            mi.description = root.child("description").first_child().value();
             mi.id = m;
             list.push_back(mi);
         }

@@ -45,7 +45,7 @@ bool script::load(std::string text)
         lua_call(m_state, 1, 0);
     }
 
-    add_callback("print", func_print);
+    //add_callback("print", func_print);
 
     if (luaL_dostring(m_state, text.c_str()) != 0)
     {
@@ -110,6 +110,59 @@ bool script::get_bool(lua_State *state, int arg_idx)
 void script::push_float(lua_State *s, float value)
 {
     lua_pushnumber(s, value);
+}
+
+//------------------------------------------------------------
+
+void script::push_array(lua_State *s, const std::vector<std::string> &array)
+{
+    lua_createtable(s, 0, (int)array.size());
+
+    int i = 0;
+    for (auto &v: array)
+    {
+        lua_pushnumber(s, ++i);
+        lua_pushstring(s, v.c_str());
+        lua_settable(s, -3);
+    }
+}
+
+//------------------------------------------------------------
+
+void script::push_array(lua_State *s, const std::vector<std::pair<std::string, std::string> > &array)
+{
+    lua_createtable(s, 0, (int)array.size());
+
+    for (auto &v: array)
+    {
+        lua_pushstring(s, v.first.c_str());
+        lua_pushstring(s, v.second.c_str());
+        lua_settable(s, -3);
+    }
+}
+
+//------------------------------------------------------------
+
+void script::push_array(lua_State *s, const std::vector<std::pair<std::string, std::string> > &array, std::string key0, std::string key1)
+{
+    lua_createtable(s, 0, (int)array.size());
+
+    int i = 0;
+    for (auto &v: array)
+    {
+        lua_pushnumber(s, ++i);
+        lua_createtable(s, 0, 2);
+
+        lua_pushstring(s, key0.c_str());
+        lua_pushstring(s, v.first.c_str());
+        lua_settable(s, -3);
+
+        lua_pushstring(s, key1.c_str());
+        lua_pushstring(s, v.second.c_str());
+        lua_settable(s, -3);
+
+        lua_settable(s, -3);
+    }
 }
 
 //------------------------------------------------------------

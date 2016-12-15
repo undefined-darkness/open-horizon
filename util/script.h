@@ -24,6 +24,9 @@ public:
     static int get_int(lua_State *s, int arg_idx);
     static bool get_bool(lua_State *s, int arg_idx);
     static void push_float(lua_State *s, float value);
+    static void push_array(lua_State *s, const std::vector<std::string> &array);
+    static void push_array(lua_State *s, const std::vector<std::pair<std::string, std::string> > &array);
+    static void push_array(lua_State *s, const std::vector<std::pair<std::string, std::string> > &array, std::string key0, std::string key1);
 
     const std::string &get_error() const { return m_error; }
 

@@ -7,6 +7,7 @@
 #include "ui.h"
 #include "game/network.h"
 #include "sound/sound.h"
+#include "util/script.h"
 #include <functional>
 #include <list>
 
@@ -47,6 +48,15 @@ private:
     void set_screen(const std::string &screen);
     void init_var(const std::string &name, const std::string &value);
     void play_sound(std::string name);
+
+private:
+    static int set_title(lua_State *state);
+    static int add_entry(lua_State *state);
+    static int send_event(lua_State *state);
+
+    static int get_aircrafts(lua_State *state);
+    static int get_locations(lua_State *state);
+    static int get_missions(lua_State *state);
 
 private:
     sound::world_2d &m_sound_world;
@@ -92,6 +102,8 @@ private:
     tiles m_select;
 
     game::servers_list m_servers_list;
+
+    script m_script;
 };
 
 //------------------------------------------------------------

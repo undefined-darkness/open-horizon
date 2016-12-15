@@ -106,6 +106,18 @@ inline std::wstring to_wstring(const std::string &s)
 
 //------------------------------------------------------------
 
+inline std::string from_wstring(const std::wstring &s)
+{
+#ifdef NO_CODECVT
+    return std::string(s.begin(), s.end()); //ToDo
+#else
+    static std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+    return converter.to_bytes(s);
+#endif
+}
+
+//------------------------------------------------------------
+
 template<typename t> std::string to_bits(t v)
 {
     std::string str;

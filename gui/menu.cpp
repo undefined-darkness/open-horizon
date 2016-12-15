@@ -13,6 +13,10 @@ namespace gui
 {
 //------------------------------------------------------------
 
+namespace { menu *current_menu = 0; }
+
+//------------------------------------------------------------
+
 void menu::init_var(const std::string &name, const std::string &value)
 {
     config::register_var(name, value);
@@ -23,8 +27,6 @@ void menu::init_var(const std::string &name, const std::string &value)
 
 void menu::init()
 {
-    set_screen("main");
-
     m_fonts.load("UI/text/menuCommon.acf");
     m_bkg.load("UI/comp_simple_bg.lar");
     m_select.load("UI/comp_menu.lar");
@@ -37,6 +39,31 @@ void menu::init()
 
     init_var("master_volume", config::get_var("master_volumes"));
     init_var("music_volume", config::get_var("music_volume"));
+
+    current_menu = this;
+
+    nya_memory::tmp_buffer_scoped menu_res(load_resource("menu.lua"));
+    if (!menu_res.get_data())
+    {
+        printf("unable to load menu.lua\n");
+        return;
+    }
+
+    if (!m_script.load(std::string((char *)menu_res.get_data(),menu_res.get_size())))
+    {
+        printf("unable to load menu.lua: %s\n", m_script.get_error().c_str());
+        return;
+    }
+
+    m_script.add_callback("set_title", set_title);
+    m_script.add_callback("add_entry", add_entry);
+    m_script.add_callback("send_event", send_event);
+    m_script.add_callback("get_aircrafts", get_aircrafts);
+    m_script.add_callback("get_locations", get_locations);
+    m_script.add_callback("get_missions", get_missions);
+    m_script.call("init");
+
+    set_screen("main");
 }
 
 //------------------------------------------------------------
@@ -389,28 +416,15 @@ void menu::send_sub_events(const entry &e)
 
 void menu::set_screen(const std::string &screen)
 {
+    current_menu = this;
     m_selected = 0;
     m_error.clear();
     m_entries.clear();
     m_back_events.clear();
 
-    if (screen == "main")
-    {
-        m_title = L"MAIN MENU";
-        if (!game::get_missions_list().empty())
-            add_entry(L"Mission", {"mode=ms", "screen=mission_select", "multiplayer=no"});
+    //ToDo: move all to lua
 
-        add_entry(L"Deathmatch", {"mode=dm", "screen=map_select", "multiplayer=no"});
-        add_entry(L"Team deathmatch", {"mode=tdm", "screen=map_select", "multiplayer=no"});
-        add_entry(L"Free flight", {"mode=ff", "screen=map_select", "multiplayer=no"});
-        add_entry(L"Multiplayer", {"screen=mp"});
-        add_entry(L"Settings", {"screen=settings"});
-
-        //add_entry(L"Aircraft viewer", {"mode=none", "screen=ac_view"});
-
-        add_entry(L"Exit", {"exit"});
-    }
-    else if (screen == "mp")
+    if (screen == "mp")
     {
         m_title = L"MULTIPLAYER";
         //add_entry(L"Internet servers", {"screen=mp_inet", "multiplayer=client"});
@@ -464,7 +478,7 @@ void menu::set_screen(const std::string &screen)
 
         auto &locations = game::get_locations_list();
         for (auto &l: locations)
-            add_sub_entry(l.second, l.first);
+            add_sub_entry(to_wstring(l.second), l.first);
 
         send_sub_events(m_entries.back());
 
@@ -482,28 +496,6 @@ void menu::set_screen(const std::string &screen)
         add_input("port", true);
 
         add_entry(L"Start", {"start"});
-    }
-    else if (screen == "map_select")
-    {
-        m_title = L"LOCATION";
-
-        for (auto &l: game::get_locations_list())
-            add_entry(l.second, {"map=" + l.first});
-
-        for (auto &e: m_entries)
-            e.events.push_back("screen=ac_select");
-    }
-    else if (screen == "mission_select")
-    {
-        m_title = L"MISSION";
-
-        m_desc.clear();
-
-        for (auto &m: game::get_missions_list())
-            add_entry(m.name, {"mission=" + m.id, "update_ms_desc"});
-
-        for (auto &e: m_entries)
-            e.events.push_back("screen=ac_select");
     }
     else if (screen == "ac_select")
     {
@@ -633,7 +625,7 @@ void menu::set_screen(const std::string &screen)
         }
     }
     else
-        printf("unknown screen: %s\n", screen.c_str());
+        m_script.call("on_set_screen", {screen});
 
     m_screens.push_back(screen);
 }
@@ -699,14 +691,20 @@ void menu::send_event(const std::string &event)
         return;
     }
 
-    if (event == "update_ms_desc")
+    if (event == "reset_mission_desc")
+    {
+        m_desc.clear();
+        return;
+    }
+
+    if (event == "update_mission_desc")
     {
         m_desc.clear();
         for (auto &m: game::get_missions_list())
         {
             if (m.id == get_var("mission"))
             {
-                std::wstringstream wss(m.description);
+                std::wstringstream wss(to_wstring(m.description));
                 std::wstring l;
                 while (std::getline(wss, l, L'\n'))
                     m_desc.push_back(l);
@@ -725,6 +723,104 @@ void menu::send_event(const std::string &event)
 void menu::set_error(const std::string &error)
 {
     m_error = to_wstring(error);
+}
+
+//------------------------------------------------------------
+
+int menu::set_title(lua_State *state)
+{
+    auto args_count = script::get_args_count(state);
+    if (args_count < 1)
+    {
+        printf("invalid args count in function set_title\n");
+        return 0;
+    }
+
+    current_menu->m_title = to_wstring(script::get_string(state, 0));
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int menu::add_entry(lua_State *state)
+{
+    auto args_count = script::get_args_count(state);
+    if (args_count < 1)
+    {
+        printf("invalid args count in function add_entry\n");
+        return 0;
+    }
+
+    const auto name = to_wstring(script::get_string(state, 0));
+
+    std::vector<std::string> events;
+    for (int i = 1; i < args_count; ++i)
+        events.push_back(script::get_string(state, i));
+
+    current_menu->add_entry(name, events);
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int menu::send_event(lua_State *state)
+{
+    auto args_count = script::get_args_count(state);
+    if (args_count < 1)
+    {
+        printf("invalid args count in function send_event\n");
+        return 0;
+    }
+
+    current_menu->send_event(script::get_string(state, 0));
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int menu::get_aircrafts(lua_State *state)
+{
+    int args_count = script::get_args_count(state);
+    std::vector<std::string> roles_list(args_count);
+    for (int i = 0; i < args_count; ++i)
+        roles_list[i] = script::get_string(state, i);
+
+    auto ac_list = game::get_aircraft_ids(roles_list);
+
+    std::vector<std::pair<std::string, std::string> > list(ac_list.size());
+    for (int i = 0; i < int(list.size()); ++i)
+    {
+        list[i].first = ac_list[i];
+        list[i].second = from_wstring(game::get_aircraft_name(ac_list[i]));
+    }
+
+    script::push_array(state, list, "id", "name");
+    return 1;
+}
+
+//------------------------------------------------------------
+
+int menu::get_locations(lua_State *state)
+{
+    script::push_array(state, game::get_locations_list(), "id", "name");
+    return 1;
+}
+
+//------------------------------------------------------------
+
+int menu::get_missions(lua_State *state)
+{
+    const auto &ms_list = game::get_missions_list();
+    std::vector<std::pair<std::string, std::string> > list(ms_list.size());
+
+    for (int i = 0; i < int(list.size()); ++i)
+    {
+        list[i].first = ms_list[i].id;
+        list[i].second = ms_list[i].name;
+    }
+
+    script::push_array(state, list, "id", "name");
+    return 1;
 }
 
 //------------------------------------------------------------
