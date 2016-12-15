@@ -30,7 +30,6 @@ void menu::init()
     m_fonts.load("UI/text/menuCommon.acf");
     m_bkg.load("UI/comp_simple_bg.lar");
     m_select.load("UI/comp_menu.lar");
-
     m_sounds.load("sound/common.acb");
 
     init_var("name", "PLAYER");
@@ -55,10 +54,12 @@ void menu::init()
         return;
     }
 
+    m_script.add_callback("get_var", get_var);
     m_script.add_callback("set_title", set_title);
     m_script.add_callback("add_entry", add_entry);
     m_script.add_callback("send_event", send_event);
     m_script.add_callback("get_aircrafts", get_aircrafts);
+    m_script.add_callback("get_aircraft_colors", get_aircraft_colors);
     m_script.add_callback("get_locations", get_locations);
     m_script.add_callback("get_missions", get_missions);
     m_script.call("init");
@@ -497,47 +498,6 @@ void menu::set_screen(const std::string &screen)
 
         add_entry(L"Start", {"start"});
     }
-    else if (screen == "ac_select")
-    {
-        std::vector<std::string> roles;
-        if (get_var("mode") == "ff" || get_var("mode") == "ms")
-            roles = {"fighter", "multirole", "attacker", "bomber"};
-        else
-            roles = {"fighter", "multirole"};
-
-        m_title = L"AIRCRAFT";
-        const auto planes = game::get_aircraft_ids(roles);
-        for (auto &p: planes)
-            add_entry(game::get_aircraft_name(p), {"ac="+p});
-
-        /*
-        //helicopters are not yet supported
-        add_entry(L"AH64", {"ac=ah64"});
-        add_entry(L"MI24", {"ac=mi24"});
-        add_entry(L"KA50", {"ac=ka50"});
-        add_entry(L"MH60", {"ac=mh60"});
-
-        //not yet supported
-        add_entry(L"A130", {"ac=a130"}); //b.unknown2 = 1312
-        */
-
-        for (auto &e: m_entries)
-            e.events.push_back("screen=color_select");
-    }
-    else if (screen == "color_select")
-    {
-        m_title = L"AIRCRAFT COLOR";
-        const int colors_count = renderer::aircraft::get_colors_count(m_vars["ac"].c_str());
-        for (int i = 0; i < colors_count; ++i)
-        {
-            wchar_t name[255];
-            char action[255];
-            swprintf(name, 255, L"Color%02d ", i);
-            sprintf(action, "color=%d", i);
-            auto cust_name = renderer::aircraft::get_color_name(m_vars["ac"].c_str(), i);
-            add_entry(name + cust_name, {action, "start"});
-        }
-    }
     else if (screen == "ac_view")
     {
         m_title = L"AIRCRAFT";
@@ -727,6 +687,19 @@ void menu::set_error(const std::string &error)
 
 //------------------------------------------------------------
 
+int menu::get_var(lua_State *state)
+{
+    auto args_count = script::get_args_count(state);
+    if (args_count < 1)
+    {
+        printf("invalid args count in function get_var\n");
+        return 0;
+    }
+
+    script::push_string(state, current_menu->get_var(script::get_string(state, 0)));
+    return 1;
+}
+
 int menu::set_title(lua_State *state)
 {
     auto args_count = script::get_args_count(state);
@@ -795,6 +768,32 @@ int menu::get_aircrafts(lua_State *state)
     }
 
     script::push_array(state, list, "id", "name");
+    return 1;
+}
+
+//------------------------------------------------------------
+
+int menu::get_aircraft_colors(lua_State *state)
+{
+    auto args_count = script::get_args_count(state);
+    if (args_count < 1)
+    {
+        printf("invalid args count in function get_aircraft_colors\n");
+        return 0;
+    }
+
+    auto ac = script::get_string(state, 0);
+    const int colors_count = renderer::aircraft::get_colors_count(ac.c_str());
+
+    std::vector<std::string> list(colors_count);
+    for (int i = 0; i < colors_count; ++i)
+    {
+        char buf[255];
+        sprintf(buf, "Color%02d ", i);
+        list[i] = buf + renderer::aircraft::get_color_name(ac.c_str(), i);
+    }
+
+    script::push_array(state, list);
     return 1;
 }
 

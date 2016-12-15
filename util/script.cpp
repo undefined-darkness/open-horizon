@@ -114,6 +114,13 @@ void script::push_float(lua_State *s, float value)
 
 //------------------------------------------------------------
 
+void script::push_string(lua_State *s, std::string value)
+{
+    lua_pushstring(s, value.c_str());
+}
+
+//------------------------------------------------------------
+
 void script::push_array(lua_State *s, const std::vector<std::string> &array)
 {
     lua_createtable(s, 0, (int)array.size());

@@ -50,11 +50,14 @@ private:
     void play_sound(std::string name);
 
 private:
+    static int get_var(lua_State *state);
+
     static int set_title(lua_State *state);
     static int add_entry(lua_State *state);
     static int send_event(lua_State *state);
 
     static int get_aircrafts(lua_State *state);
+    static int get_aircraft_colors(lua_State *state);
     static int get_locations(lua_State *state);
     static int get_missions(lua_State *state);
 

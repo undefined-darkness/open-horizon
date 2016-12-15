@@ -99,7 +99,7 @@ public:
 
     //info
     static unsigned int get_colors_count(const char *plane_name);
-    static std::wstring get_color_name(const char *plane_name, int idx);
+    static std::string get_color_name(const char *plane_name, int idx);
     static std::string get_sound_name(const char *plane_name);
     static std::string get_voice_name(const char *plane_name);
 

@@ -20,28 +20,55 @@ function on_set_screen(screen)
         add_entry("Settings", "screen=settings");
         --add_entry("Aircraft viewer", "mode=none", "screen=ac_view")
         add_entry("Exit", "exit")
+
         return
     end
 
     if screen == "map_select" then
         set_title("LOCATION")
-        for i,entry in ipairs(get_locations()) do add_entry(entry.name, "map="..entry.id, "screen=ac_select") end
+
+        for i,entry in ipairs(get_locations()) do
+            add_entry(entry.name, "map="..entry.id, "screen=ac_select") 
+        end
+
         return
     end
 
     if screen == "mission_select" then
         set_title("MISSION")
+
         send_event("reset_mission_desc");
-        for i,entry in ipairs(get_missions()) do add_entry(entry.name, "mission="..entry.id, "screen=ac_select", "update_mission_desc") end
+        for i,entry in ipairs(get_missions()) do
+            add_entry(entry.name, "mission="..entry.id, "screen=ac_select", "update_mission_desc")
+        end
+
         return
     end
 
     if screen == "ac_select" then
         set_title("AIRCRAFT")
 
-        ac_list = get_aircrafts("fighter", "multirole", "attacker", "bomber")
+        if get_var("mode") == "ff" or get_var("mode") == "ms" then
+            ac_list = get_aircrafts("fighter", "multirole", "attacker", "bomber")
+        else
+            ac_list = get_aircrafts("fighter", "multirole")
+        end
 
-        --ToDo
+        for i,entry in ipairs(ac_list) do
+            add_entry(entry.name, "ac="..entry.id, "screen=color_select")
+        end
+
+        return
+    end
+
+    if screen == "color_select" then
+        set_title("AIRCRAFT COLOR")
+
+        for i,name in ipairs(get_aircraft_colors(get_var("ac"))) do
+            add_entry(name, "color="..(i-1), "start")
+        end
+
+        return
     end
 
     --ToDo
