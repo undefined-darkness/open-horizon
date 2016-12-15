@@ -15,6 +15,8 @@
 
 #include "util/controls.h"
 #include "util/resources.h"
+#include "util/config.h"
+#include "util/platform.h"
 
 #include <thread>
 #include <chrono>

@@ -8,6 +8,7 @@
 #include "game/game.h"
 #include "game/locations_list.h"
 #include "game/missions_list.h"
+#include "util/resources.h"
 
 namespace gui
 {
@@ -32,39 +33,54 @@ void menu::init()
     m_select.load("UI/comp_menu.lar");
     m_sounds.load("sound/common.acb");
 
-    init_var("name", "PLAYER");
-    init_var("address", "127.0.0.1");
-    init_var("port", "8001");
+    m_font_color = nya_math::vec4(89 / 255.0, 203 / 255.0, 136 / 255.0, 1.0);
 
     init_var("master_volume", config::get_var("master_volumes"));
     init_var("music_volume", config::get_var("music_volume"));
 
+    load_script();
+}
+
+//------------------------------------------------------------
+
+bool menu::load_script()
+{
     current_menu = this;
 
     nya_memory::tmp_buffer_scoped menu_res(load_resource("menu.lua"));
     if (!menu_res.get_data())
     {
         printf("unable to load menu.lua\n");
-        return;
+        return false;
     }
 
     if (!m_script.load(std::string((char *)menu_res.get_data(),menu_res.get_size())))
     {
         printf("unable to load menu.lua: %s\n", m_script.get_error().c_str());
-        return;
+        return false;
     }
 
+    m_script.add_callback("init_var", init_var);
     m_script.add_callback("get_var", get_var);
     m_script.add_callback("set_title", set_title);
+    m_script.add_callback("set_bkg", set_bkg);
+    m_script.add_callback("set_bkg_pic", set_bkg_pic);
+    m_script.add_callback("set_sel_pic", set_sel_pic);
+    m_script.add_callback("set_font_color", set_font_color);
     m_script.add_callback("add_entry", add_entry);
+    m_script.add_callback("add_input", add_input);
     m_script.add_callback("send_event", send_event);
+    m_script.add_callback("set_history", set_history);
     m_script.add_callback("get_aircrafts", get_aircrafts);
     m_script.add_callback("get_aircraft_colors", get_aircraft_colors);
     m_script.add_callback("get_locations", get_locations);
     m_script.add_callback("get_missions", get_missions);
+    m_script.add_callback("get_campaigns", get_campaigns);
+
     m_script.call("init");
 
     set_screen("main");
+    return true;
 }
 
 //------------------------------------------------------------
@@ -79,18 +95,22 @@ void menu::draw(const render &r)
 
     rect sr(0, 0, r.get_width(), r.get_height());
     const nya_math::vec4 white(1.0, 1.0, 1.0, 1.0);
-    const nya_math::vec4 font_color(89 / 255.0, 203 / 255.0, 136 / 255.0, 1.0);
 
-    if (m_screens.back() == "main")
-        m_bkg.draw_tx(r, 0, 0, sr, white);
-    else if (m_screens.back() == "mission_select" ||  m_screens.back() == "map_select" || m_screens.back() == "mp"
-             || m_screens.back() == "mp_create" || m_screens.back() == "mp_connect")
-        m_bkg.draw_tx(r, 0, 2, sr, white);
-    else if (m_screens.back() == "ac_select" || m_screens.back() == "color_select" || m_screens.back() == "settings" || m_screens.back() == "joystick")
-        m_bkg.draw_tx(r, 0, 1, sr, white);
+    if (m_current_bkg >= 0)
+        m_bkg.draw_tx(r, 0, m_current_bkg, sr, white);
+    else if (m_bkg_pic.get_width() > 0)
+    {
+        static std::vector<rect_pair> fsq(1);
+        fsq[0].r.w = r.get_width();
+        fsq[0].r.y = r.get_height();
+        fsq[0].r.h = -r.get_height();
+        fsq[0].tc.w = m_bkg_pic.get_width();
+        fsq[0].tc.h = m_bkg_pic.get_height();
+        r.draw(fsq, m_bkg_pic);
+    }
 
     int x = 155, y = 155;
-    m_fonts.draw_text(r, m_title.c_str(), "ZurichBD_M", x, 80, font_color);
+    m_fonts.draw_text(r, m_title.c_str(), "ZurichBD_M", x, 80, m_font_color);
     const int count = 15;
     for (int i = ((m_selected + (m_selected >= (count - 1) ? 1 : 0)) / (count - 1)) * (count - 2), j = 0;
          i < (int)m_entries.size() && j < count; ++i, ++j)
@@ -98,17 +118,31 @@ void menu::draw(const render &r)
         auto &e = m_entries[i];
         if (m_selected == i)
         {
-            rect rct;
-            rct.x = x - 20, rct.y = y;
-            rct.w = 550, rct.h = 34;
-            m_select.draw_tx(r, 0, 3, rct, white);
+            if (m_select_pic.get_width() > 0)
+            {
+                static std::vector<rect_pair> q(1);
+                q[0].r.x = x - 20;
+                q[0].r.w = m_select_pic.get_width();
+                q[0].r.y = y + (34 + m_select_pic.get_height())/2;
+                q[0].r.h = -m_select_pic.get_height();
+                q[0].tc.w = m_select_pic.get_width();
+                q[0].tc.h = m_select_pic.get_height();
+                r.draw(q, m_select_pic);
+            }
+            else
+            {
+                rect rct;
+                rct.x = x - 20, rct.y = y;
+                rct.w = 550, rct.h = 34;
+                m_select.draw_tx(r, 0, 3, rct, white);
+            }
         }
 
-        auto off = m_fonts.draw_text(r, e.name.c_str(), "ZurichBD_M", x, y, font_color);
+        auto off = m_fonts.draw_text(r, e.name.c_str(), "ZurichBD_M", x, y, m_font_color);
         if (!e.sub_select.empty())
-            m_fonts.draw_text(r, e.sub_select[e.sub_selected].first.c_str(), "ZurichBD_M", x + off, y, font_color);
+            m_fonts.draw_text(r, e.sub_select[e.sub_selected].first.c_str(), "ZurichBD_M", x + off, y, m_font_color);
         if (!e.input.empty())
-            m_fonts.draw_text(r, e.input.c_str(), "ZurichBD_M", x + off, y, font_color);
+            m_fonts.draw_text(r, e.input.c_str(), "ZurichBD_M", x + off, y, m_font_color);
 
         y += 34;
     }
@@ -118,7 +152,7 @@ void menu::draw(const render &r)
     x = 700, y = 155;
     for (auto &d: m_desc)
     {
-        m_fonts.draw_text(r, d.c_str(), "ZurichBD_M", x, y, font_color);
+        m_fonts.draw_text(r, d.c_str(), "ZurichBD_M", x, y, m_font_color);
         y += 34;
     }
 
@@ -131,6 +165,20 @@ void menu::draw(const render &r)
 
 void menu::update(int dt, const menu_controls &controls)
 {
+    if (m_need_load_campaign)
+    {
+        m_need_load_campaign = false;
+        if (set_zip_mod(get_var("campaign").c_str()))
+        {
+            m_screens.clear();
+            if (!load_script())
+            {
+                set_zip_mod(0);
+                load_script();
+            }
+        }
+    }
+
     if (controls.up && controls.up != m_prev_controls.up)
     {
         play_sound("SYS_CURSOR");
@@ -384,14 +432,14 @@ void menu::add_sub_entry(const std::wstring &name, const std::string &value)
 
 //------------------------------------------------------------
 
-void menu::add_input(const std::string &event, bool numeric_only)
+void menu::add_input(const std::string &event, bool numeric_only, bool allow_input)
 {
     if (m_entries.empty())
         return;
 
     auto &e = m_entries.back();
 
-    e.allow_input = true;
+    e.allow_input = allow_input;
     e.input_numeric = numeric_only;
     e.input_event = event;
 
@@ -423,36 +471,10 @@ void menu::set_screen(const std::string &screen)
     m_entries.clear();
     m_back_events.clear();
 
-    //ToDo: move all to lua
-
-    if (screen == "mp")
-    {
-        m_title = L"MULTIPLAYER";
-        //add_entry(L"Internet servers", {"screen=mp_inet", "multiplayer=client"});
-        //add_entry(L"Local network servers", {"screen=mp_local", "multiplayer=client"});
-        add_entry(L"Connect to address", {"screen=mp_connect", "multiplayer=client"});
-        add_entry(L"Start server", {"screen=mp_create", "multiplayer=server"});
-    }
-    else if (screen == "mp_connect")
-    {
-        m_screens.clear();
-        m_screens.push_back("main");
-        m_screens.push_back("mp");
-
-        m_title = L"CONNECT TO SERVER";
-
-        add_entry(L"Name: ", {});
-        add_input("name");
-
-        add_entry(L"Address: ", {});
-        add_input("address");
-        add_entry(L"Port: ", {});
-        add_input("port", true);
-        add_entry(L"Connect", {"connect"});
-    }
-    else if (screen == "mp_create")
+    if (screen == "mp_create")
     {
         m_title = L"START SERVER";
+        m_current_bkg = 2;
 
         add_entry(L"Name: ", {});
         add_input("name");
@@ -466,8 +488,7 @@ void menu::set_screen(const std::string &screen)
 
         add_entry(L"Max players: ", {});
         send_event("max_players=8");
-        add_input("max_players", true);
-        m_entries.back().allow_input = false;
+        add_input("max_players", true, false);
 /*
         add_entry(L"Public: ", {}, "mp_public", {});
         add_sub_entry(L"Yes", "true");
@@ -501,6 +522,8 @@ void menu::set_screen(const std::string &screen)
     else if (screen == "ac_view")
     {
         m_title = L"AIRCRAFT";
+        m_current_bkg = -1;
+
         send_event("viewer_start");
         m_back_events = {"viewer_end"};
 
@@ -532,6 +555,7 @@ void menu::set_screen(const std::string &screen)
     else if (screen == "settings")
     {
         m_title = L"SETTINGS";
+        m_current_bkg = 1;
 
         add_entry(L"Fullscreen: ", {}, "fullscreen");
         add_sub_entry(L"No", "false");
@@ -540,18 +564,17 @@ void menu::set_screen(const std::string &screen)
             std::swap(m_entries.back().sub_select[0], m_entries.back().sub_select[1]);
 
         add_entry(L"Master volume: ", {});
-        add_input("master_volume", true);
-        m_entries.back().allow_input = false;
+        add_input("master_volume", true, false);
 
         add_entry(L"Music volume: ", {});
-        add_input("music_volume", true);
-        m_entries.back().allow_input = false;
+        add_input("music_volume", true, false);
 
         add_entry(L"Configure joystick", {"screen=joystick"});
     }
     else if (screen == "joystick")
     {
         m_title = L"CONFIGURE JOYSTICK";
+        m_current_bkg = 1;
 
         add_entry(L"Pitch up: ", {}), m_entries.back().input_event = "+pitch";
         add_entry(L"Pitch down: ", {}), m_entries.back().input_event = "-pitch";
@@ -624,6 +647,7 @@ void menu::send_event(const std::string &event)
                 e.input = to_wstring(value);
         }
 
+        m_script.call("on_set_var", {var, value});
         return;
     }
 
@@ -674,6 +698,14 @@ void menu::send_event(const std::string &event)
         return;
     }
 
+    if (event == "load_campaign")
+    {
+        m_need_load_campaign = true;
+        return;
+    }
+
+    m_script.call("on_event", {event});
+
     if (m_on_action)
         m_on_action(event);
 }
@@ -683,6 +715,21 @@ void menu::send_event(const std::string &event)
 void menu::set_error(const std::string &error)
 {
     m_error = to_wstring(error);
+}
+
+//------------------------------------------------------------
+
+int menu::init_var(lua_State *state)
+{
+    auto args_count = script::get_args_count(state);
+    if (args_count < 2)
+    {
+        printf("invalid args count in function init_var\n");
+        return 0;
+    }
+
+    current_menu->init_var(script::get_string(state, 0), script::get_string(state, 1));
+    return 0;
 }
 
 //------------------------------------------------------------
@@ -700,6 +747,8 @@ int menu::get_var(lua_State *state)
     return 1;
 }
 
+//------------------------------------------------------------
+
 int menu::set_title(lua_State *state)
 {
     auto args_count = script::get_args_count(state);
@@ -710,6 +759,71 @@ int menu::set_title(lua_State *state)
     }
 
     current_menu->m_title = to_wstring(script::get_string(state, 0));
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int menu::set_bkg(lua_State *state)
+{
+    auto args_count = script::get_args_count(state);
+    if (args_count < 1)
+    {
+        printf("invalid args count in function set_bkg\n");
+        return 0;
+    }
+
+    current_menu->m_current_bkg = script::get_int(state, 0);
+    current_menu->m_bkg_pic.unload();
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int menu::set_bkg_pic(lua_State *state)
+{
+    auto args_count = script::get_args_count(state);
+    if (args_count < 1)
+    {
+        printf("invalid args count in function set_bkg_pic\n");
+        return 0;
+    }
+
+    current_menu->m_current_bkg = -1;
+    current_menu->m_bkg_pic.load(script::get_string(state, 0).c_str());
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int menu::set_sel_pic(lua_State *state)
+{
+    auto args_count = script::get_args_count(state);
+    if (args_count < 1)
+    {
+        printf("invalid args count in function set_sel_pic\n");
+        return 0;
+    }
+
+    current_menu->m_select_pic.load(script::get_string(state, 0).c_str());
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int menu::set_font_color(lua_State *state)
+{
+    auto args_count = script::get_args_count(state);
+    if (args_count < 3)
+    {
+        printf("invalid args count in function set_font_color\n");
+        return 0;
+    }
+
+    float alpha = args_count > 3 ? script::get_int(state, 3)/255.0f : 1.0f;
+    current_menu->m_font_color.set(script::get_int(state, 0)/255.0f,
+                                   script::get_int(state, 1)/255.0f,
+                                   script::get_int(state, 2)/255.0f, alpha);
     return 0;
 }
 
@@ -736,6 +850,23 @@ int menu::add_entry(lua_State *state)
 
 //------------------------------------------------------------
 
+int menu::add_input(lua_State *state)
+{
+    auto args_count = script::get_args_count(state);
+    if (args_count < 1)
+    {
+        printf("invalid args count in function add_input\n");
+        return 0;
+    }
+
+    const bool numeric = args_count > 1 ? script::get_bool(state, 1) : false;
+    const bool allow_input = args_count > 2 ? script::get_bool(state, 2) : false;
+    current_menu->add_input(script::get_string(state, 0), numeric, allow_input);
+    return 0;
+}
+
+//------------------------------------------------------------
+
 int menu::send_event(lua_State *state)
 {
     auto args_count = script::get_args_count(state);
@@ -746,6 +877,17 @@ int menu::send_event(lua_State *state)
     }
 
     current_menu->send_event(script::get_string(state, 0));
+    return 0;
+}
+
+//------------------------------------------------------------
+
+int menu::set_history(lua_State *state)
+{
+    current_menu->m_screens.clear();
+    auto args_count = script::get_args_count(state);
+    for (int i = 0; i < args_count; ++i)
+        current_menu->m_screens.push_back(script::get_string(state, i));
     return 0;
 }
 
@@ -816,6 +958,37 @@ int menu::get_missions(lua_State *state)
     {
         list[i].first = ms_list[i].id;
         list[i].second = ms_list[i].name;
+    }
+
+    script::push_array(state, list, "id", "name");
+    return 1;
+}
+
+//------------------------------------------------------------
+
+int menu::get_campaigns(lua_State *state)
+{
+    static std::vector<std::pair<std::string, std::string> > list;
+    if (list.empty())
+    {
+        auto campaigns = list_files("campaigns/");
+        for (auto &c: campaigns)
+        {
+            nya_resources::zip_resources_provider zprov;
+            if (!zprov.open_archive(c.c_str()))
+                continue;
+
+            pugi::xml_document doc;
+            if (!load_xml(zprov.access("info.xml"), doc))
+                continue;
+
+            auto root = doc.first_child();
+            std::string name = root.attribute("name").as_string();
+            if (name.empty())
+                continue;
+
+            list.push_back({c, name});
+        }
     }
 
     script::push_array(state, list, "id", "name");

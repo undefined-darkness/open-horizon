@@ -2,8 +2,6 @@
 // open horizon -- undefined_darkness@outlook.com
 //
 
-#pragma once
-
 #include "containers/qdf_provider.h"
 #include "containers/dpl_provider.h"
 
@@ -12,6 +10,7 @@
 
 #include "resources/file_resources_provider.h"
 #include "resources/composite_resources_provider.h"
+#include "extensions/zip_resources_provider.h"
 
 #include "system/system.h"
 
@@ -19,9 +18,13 @@
     #include <unistd.h>
 #endif
 
+#include "resources.h"
+
+namespace { nya_resources::zip_resources_provider zprov; }
+
 //------------------------------------------------------------
 
-static bool setup_resources()
+bool setup_resources()
 {
 #ifndef _WIN32
     chdir(nya_system::get_app_path());
@@ -79,6 +82,9 @@ static bool setup_resources()
             if (!resource_name)
                 return 0;
 
+            if (zprov.has(resource_name))
+                return zprov.access(resource_name);
+
             if (m_dlc_provider.has(resource_name))
                 return m_dlc_provider.access(resource_name);
 
@@ -107,11 +113,18 @@ static bool setup_resources()
             return m_provider.has(("target/" + str).c_str()) || m_provider.has(("common/" + str).c_str()) || m_provider.has(resource_name) ||
                    m_fprov.has(resource_name) || m_fprov2.has(resource_name);
         }
-        
+
     } static trp(qdfp);
 
     nya_resources::set_resources_provider(&trp);
     return true;
+}
+
+//------------------------------------------------------------
+
+bool set_zip_mod(const char *name)
+{
+    return zprov.open_archive(name);
 }
 
 //------------------------------------------------------------

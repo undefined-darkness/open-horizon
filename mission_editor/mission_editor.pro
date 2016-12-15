@@ -66,7 +66,8 @@ SOURCES += \
     ../deps/nya-engine/extensions/zip_resources_provider.cpp \
     ../util/script.cpp \
     ../util/platform_dialogs.cpp \
-    ../util/location.cpp
+    ../util/location.cpp \
+    ../util/resources.cpp
 
 HEADERS += \
     ../containers/fhm.h \

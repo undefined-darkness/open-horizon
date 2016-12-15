@@ -133,6 +133,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClCompile Include="..\util\location.cpp" />
     <ClCompile Include="..\util\platform.cpp" />
     <ClCompile Include="..\util\platform_dialogs.cpp" />
+    <ClCompile Include="..\util\resources.cpp" />
     <ClCompile Include="..\util\script.cpp" />
     <ClCompile Include="demo.cpp" />
     <ClCompile Include="../game/game.cpp" />

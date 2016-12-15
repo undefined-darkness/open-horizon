@@ -48,18 +48,27 @@ private:
     void set_screen(const std::string &screen);
     void init_var(const std::string &name, const std::string &value);
     void play_sound(std::string name);
+    bool load_script();
 
 private:
+    static int init_var(lua_State *state);
     static int get_var(lua_State *state);
 
     static int set_title(lua_State *state);
+    static int set_bkg(lua_State *state);
+    static int set_bkg_pic(lua_State *state);
+    static int set_sel_pic(lua_State *state);
+    static int set_font_color(lua_State *state);
     static int add_entry(lua_State *state);
+    static int add_input(lua_State *state);
     static int send_event(lua_State *state);
+    static int set_history(lua_State *state);
 
     static int get_aircrafts(lua_State *state);
     static int get_aircraft_colors(lua_State *state);
     static int get_locations(lua_State *state);
     static int get_missions(lua_State *state);
+    static int get_campaigns(lua_State *state);
 
 private:
     sound::world_2d &m_sound_world;
@@ -71,6 +80,9 @@ private:
     std::map<std::string, std::string> m_vars;
     menu_controls m_prev_controls;
     std::wstring m_title;
+    int m_current_bkg = -1;
+    nya_scene::texture m_bkg_pic;
+    nya_scene::texture m_select_pic;
     std::vector<std::wstring> m_desc;
     std::wstring m_error;
 
@@ -94,7 +106,7 @@ private:
     void add_entry(const std::wstring &name, const std::vector<std::string> &events,
                    const std::string &sub_event = "", const std::vector<std::string> &sub_events = {});
     void add_sub_entry(const std::wstring &name, const std::string &value);
-    void add_input(const std::string &event, bool numeric_only = false);
+    void add_input(const std::string &event, bool numeric_only = false, bool allow_input = true);
 
     std::vector<entry> m_entries;
     uvalue m_selected;
@@ -107,6 +119,8 @@ private:
     game::servers_list m_servers_list;
 
     script m_script;
+    nya_math::vec4 m_font_color;
+    bool m_need_load_campaign = false;
 };
 
 //------------------------------------------------------------

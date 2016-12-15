@@ -26,6 +26,7 @@
 		F530D2461E016E430072BB48 /* script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F530D2441E016E430072BB48 /* script.cpp */; };
 		F530D2481E0180130072BB48 /* menu.lua in Resources */ = {isa = PBXBuildFile; fileRef = F530D2471E0180130072BB48 /* menu.lua */; };
 		F530D2491E0184AF0072BB48 /* menu.lua in CopyFiles */ = {isa = PBXBuildFile; fileRef = F530D2471E0180130072BB48 /* menu.lua */; };
+		F530D24B1E02C9880072BB48 /* resources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F530D24A1E02C9880072BB48 /* resources.cpp */; };
 		F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53304C61B09DEC300D8C3C7 /* menu.cpp */; };
 		F538BB0B1CC2B8EA0055F394 /* app_protocol_simple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */; };
 		F53EFF561D0FF74C009B6A0A /* objects.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F53EFF541D0FECC2009B6A0A /* objects.xml */; };
@@ -170,6 +171,7 @@
 		F530D2441E016E430072BB48 /* script.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = script.cpp; path = ../util/script.cpp; sourceTree = "<group>"; };
 		F530D2451E016E430072BB48 /* script.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = script.h; path = ../util/script.h; sourceTree = "<group>"; };
 		F530D2471E0180130072BB48 /* menu.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = menu.lua; path = ../resources/menu.lua; sourceTree = "<group>"; };
+		F530D24A1E02C9880072BB48 /* resources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = resources.cpp; path = ../util/resources.cpp; sourceTree = "<group>"; };
 		F53304C61B09DEC300D8C3C7 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = menu.cpp; path = ../gui/menu.cpp; sourceTree = "<group>"; };
 		F53304C71B09DEC300D8C3C7 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = menu.h; path = ../gui/menu.h; sourceTree = "<group>"; };
 		F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = app_protocol_simple.cpp; path = ../deps/miso/src/app_protocol_simple.cpp; sourceTree = "<group>"; };
@@ -526,6 +528,7 @@
 				F50B755C1CABD1410004E04F /* platform.cpp */,
 				F50B755D1CABD1410004E04F /* platform.h */,
 				F591D4EB1D2E7B4000DD8D98 /* platform_dialogs.cpp */,
+				F530D24A1E02C9880072BB48 /* resources.cpp */,
 				F53EFF531D0F26DA009B6A0A /* resources.h */,
 				F530D2441E016E430072BB48 /* script.cpp */,
 				F530D2451E016E430072BB48 /* script.h */,
@@ -812,6 +815,7 @@
 				F5DC44881C7CD9AF00F68115 /* mesh.cpp in Sources */,
 				F572C1F11CA715AC00AB1D1F /* poc.cpp in Sources */,
 				F50EE6311CD3C0D100DDED72 /* file.cpp in Sources */,
+				F530D24B1E02C9880072BB48 /* resources.cpp in Sources */,
 				F5E3FE4D1DB4C53F002446F8 /* mesh_sm.cpp in Sources */,
 				F5C6D3911AF969A5006FB7E6 /* dpl.cpp in Sources */,
 				F50D9C9C1C9F2E5700A56812 /* pac6.cpp in Sources */,

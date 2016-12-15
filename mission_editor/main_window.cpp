@@ -290,7 +290,7 @@ void main_window::on_new_mission()
     auto &list = game::get_locations_list();
     for (auto &l: list)
     {
-        auto str = QString::fromWCharArray(l.second.c_str(), l.second.size());
+        auto str = QString::fromStdString(l.second);
         str.append((" [" + l.first + "]").c_str());
         items << str;
     }
