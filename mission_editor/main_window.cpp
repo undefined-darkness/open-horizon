@@ -309,6 +309,7 @@ void main_window::on_new_mission()
     m_location = list[idx].first;
     m_scene_view->load_location(m_location);
     scene_view::object p;
+    plr.attributes["align"] = "ally";
     p.pos.y = m_scene_view->get_height(p.pos.x, p.pos.z);
     p.y = 100.0f;
     m_scene_view->set_player(p);
@@ -366,10 +367,15 @@ void main_window::on_load_mission()
 
     auto p = root.child("player");
     scene_view::object plr;
+    plr.attributes["align"] = "ally";
     plr.yaw = p.attribute("yaw").as_float();
     plr.pos = read_vec3(p);
     plr.y = p.attribute("editor_y").as_float();
     plr.pos.y -= plr.y;
+    auto at = p.child("attribute");
+    for (auto a = at.attributes_begin(); a != at.attributes_end(); ++a)
+        plr.attributes[a->name()] = a->value();
+
     m_scene_view->set_player(plr);
 
     for (auto o = root.child("object"); o; o = o.next_sibling("object"))
@@ -477,7 +483,15 @@ void main_window::on_save_mission()
     str += "z=\"" + std::to_string(p.pos.z) + "\" ";
     str += "yaw=\"" + std::to_string(p.yaw.get_deg()) + "\" ";
     str += "editor_y=\"" + std::to_string(p.y) + "\" ";
+    str += ">\n";
+    str += "\t\t<attribute ";
+    for (auto &a: p.attributes)
+    {
+        if (!a.second.empty())
+            str += a.first + "=\"" + a.second + "\" ";
+    }
     str += "/>\n";
+    str += "\t</player>\n";
 
     for (auto &o: m_scene_view->get_objects())
     {

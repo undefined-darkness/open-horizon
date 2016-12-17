@@ -138,9 +138,6 @@ void hud::draw(const render &r)
         m_fonts.draw_text(r, m_popup_text.c_str(), "Zurich30", (r.get_width() - twidth)/ 2, popup_pos_y - 2, m_popup_color);
     }
 
-    if (m_hide)
-        return;
-
     if (m_radio_time > 0)
     {
         int radio_pos_y = 50;
@@ -179,6 +176,9 @@ void hud::draw(const render &r)
             radio_pos_y += 35;
         }
     }
+
+    if (m_hide)
+        return;
 
     const float anim = fabsf(m_anim_time / 500.0f - 1.0);
 

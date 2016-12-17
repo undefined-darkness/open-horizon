@@ -87,6 +87,7 @@ private:
     };
 
     std::vector<mission_unit> m_units;
+    std::string m_player_on_destroy;
 
 private:
     struct zone

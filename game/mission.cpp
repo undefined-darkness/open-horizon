@@ -15,6 +15,7 @@ namespace { mission *current_mission = 0; }
 void mission::start(const char *plane, int color, const char *mission)
 {
     m_paths.clear();
+    m_player_on_destroy.clear();
 
     nya_resources::zip_resources_provider zprov;
     if (!zprov.open_archive(mission))
@@ -35,6 +36,7 @@ void mission::start(const char *plane, int color, const char *mission)
         m_player->set_pos(read_vec3(p));
         m_player->set_rot(quat(0.0, angle_deg(p.attribute("yaw").as_float()), 0.0));
         m_player->reset_state();
+        m_player_on_destroy = p.attribute("on_destroy").as_string();
     }
 
     for (auto p = root.child("path"); p; p = p.next_sibling("path"))
@@ -340,6 +342,9 @@ void mission::on_kill(const object_ptr &k, const object_ptr &v)
 {
     if (!v)
         return;
+
+    if (!m_player_on_destroy.empty() && v == m_player)
+        m_script.call(m_player_on_destroy, {"player"});
 
     for (auto &u: m_units)
     {
