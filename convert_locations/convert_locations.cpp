@@ -11,6 +11,7 @@
 #include "containers/fhm.h"
 #include "formats/tga.h"
 #include "renderer/texture_gim.h"
+#include "renderer/mesh_ndxr.h"
 #include "renderer/mesh_sm.h"
 #include "render/bitmap.h"
 #include "zip.h"
@@ -581,6 +582,79 @@ bool write_texture_ntxr(nya_memory::tmp_buffer_ref tex_data, std::string name, z
 
 //------------------------------------------------------------
 
+std::string write_mesh_ndxr(nya_memory::tmp_buffer_ref data, std::string folder, std::string name, zip_t *zip)
+{
+    renderer::mesh_ndxr mesh;
+    if(!mesh.load(data.get_data(), data.get_size(), nya_render::skeleton(), true))
+    {
+        data.free();
+        return "";
+    }
+    data.free();
+
+    assert(mesh.indices4b.empty()); //ToDo
+
+    obj_writer w;
+
+    for (auto &v: mesh.verts)
+    {
+        w.add_pos(v.pos); //nya_math::vec4(v.color[0], v.color[1], v.color[2], v.color[3]) / 255.0f); //ToDo
+        w.add_normal(v.get_normal());
+        w.add_tc(v.tc);
+    }
+
+    for (auto &g: mesh.groups)
+    {
+        int rg_idx = 0;
+        for (auto &rg: g.rgroups)
+        {
+            assume(!rg.textures.empty());
+
+            auto mat_name = base_name(g.name + "_material", rg_idx++);
+            w.add_material(mat_name, tex_name("tex", rg.textures[0]));
+
+            w.add_group(g.name, mat_name);
+
+            const uint16_t primitive_restart = uint16_t(-1);
+
+            for (int i = rg.offset + 2, flip = 0; i < rg.offset + rg.count; ++i)
+            {
+                if (mesh.indices2b[i] == primitive_restart)
+                {
+                    i += 2;
+                    flip = 0;
+                    continue;
+                }
+
+                w.add_face(mesh.indices2b[i],mesh.indices2b[i-2+flip],mesh.indices2b[i-1-flip]);
+                flip = 1 - flip;
+            }
+        }
+    }
+
+    bool transparent = false;
+
+    if (transparent)
+        name.append("_transparent");
+
+    auto vdata = w.get_string(name + ".mtl");
+    auto mdata = w.get_mat_string();
+
+    name = folder + name;
+
+    zip_entry_open(zip, (name + ".obj").c_str());
+    zip_entry_write(zip, vdata.data(), vdata.length());
+    zip_entry_close(zip);
+
+    zip_entry_open(zip, (name + ".mtl").c_str());
+    zip_entry_write(zip, mdata.data(), mdata.length());
+    zip_entry_close(zip);
+
+    return name + ".obj";
+}
+
+//------------------------------------------------------------
+
 bool convert_location6(const void *data, size_t size, std::string name, std::string filename)
 {
     struct data_adaptor: public nya_resources::resource_data
@@ -616,11 +690,15 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
     if (loc_folder.folders.size() < 3)
         return false;
 
+    std::vector<std::string> meshes;
+    for (auto f: loc_folder.folders[0].files)
+        meshes.push_back(write_mesh_ndxr(load_resource(p, f), "objects/", base_name("object", int(meshes.size())), zip));
+
     if (eff_folder.files.size() > 2)
         write_entry(p, eff_folder.files[2], "sky.sph", zip);
 
     int tex_count = 0;
-    for (auto &tidx: loc_folder.folders[2].files)
+    for (auto tidx: loc_folder.folders[2].files)
         write_texture_ntxr(load_resource(p, tidx), tex_name("land", tex_count++, "tga"), zip);
 
     std::string info_str = "<!--Open Horizon location-->\n";

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F524A5821DF6BEF800D6EB88 /* mesh_ndxr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F524A5801DF6BEF800D6EB88 /* mesh_ndxr.cpp */; };
 		F5272CFD1D9B18C1000FF7C8 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = F5272CFB1D9B18C1000FF7C8 /* zip.c */; };
 		F5272D131DA4074C000FF7C8 /* mesh_sm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5272D111DA4074C000FF7C8 /* mesh_sm.cpp */; };
 		F544747D1D9A5FC800561F4C /* texture_gim.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F544747B1D9A5FC800561F4C /* texture_gim.cpp */; };
@@ -52,6 +53,8 @@
 
 /* Begin PBXFileReference section */
 		F524A5781DF4ABEF00D6EB88 /* dxt_decoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dxt_decoder.h; sourceTree = "<group>"; };
+		F524A5801DF6BEF800D6EB88 /* mesh_ndxr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = mesh_ndxr.cpp; path = ../renderer/mesh_ndxr.cpp; sourceTree = "<group>"; };
+		F524A5811DF6BEF800D6EB88 /* mesh_ndxr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mesh_ndxr.h; path = ../renderer/mesh_ndxr.h; sourceTree = "<group>"; };
 		F5272CFA1D9B18C1000FF7C8 /* miniz.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = miniz.h; path = ../deps/zip/src/miniz.h; sourceTree = "<group>"; };
 		F5272CFB1D9B18C1000FF7C8 /* zip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = zip.c; path = ../deps/zip/src/zip.c; sourceTree = "<group>"; };
 		F5272CFC1D9B18C1000FF7C8 /* zip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zip.h; path = ../deps/zip/src/zip.h; sourceTree = "<group>"; };
@@ -129,6 +132,8 @@
 			isa = PBXGroup;
 			children = (
 				F54474911D9A5FF200561F4C /* containers */,
+				F524A5801DF6BEF800D6EB88 /* mesh_ndxr.cpp */,
+				F524A5811DF6BEF800D6EB88 /* mesh_ndxr.h */,
 				F5272D111DA4074C000FF7C8 /* mesh_sm.cpp */,
 				F5272D121DA4074C000FF7C8 /* mesh_sm.h */,
 				F544747B1D9A5FC800561F4C /* texture_gim.cpp */,
@@ -248,6 +253,7 @@
 				F544748E1D9A5FEF00561F4C /* pac5.cpp in Sources */,
 				F544747D1D9A5FC800561F4C /* texture_gim.cpp in Sources */,
 				F5272D131DA4074C000FF7C8 /* mesh_sm.cpp in Sources */,
+				F524A5821DF6BEF800D6EB88 /* mesh_ndxr.cpp in Sources */,
 				F544748D1D9A5FEF00561F4C /* cpk.cpp in Sources */,
 				F544748F1D9A5FEF00561F4C /* pac6.cpp in Sources */,
 				F544748C1D9A5FEF00561F4C /* cdp.cpp in Sources */,

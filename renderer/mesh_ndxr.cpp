@@ -540,20 +540,24 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
             {
                 indices4b.resize(rgt.offset + rgt.count);
 
-                if (endianness)
-                    for (uint i = 0; i < rgt.count; ++i)
-                        indices4b[i + rgt.offset] = first_index + swap_bytes(ndxr_indices[i]);
-                else
-                    for (uint i = 0; i < rgt.count; ++i)
-                        indices4b[i + rgt.offset] = first_index + ndxr_indices[i];
+                assert(!endianness); //ToDo
+
+                for (uint i = 0; i < rgt.count; ++i)
+                    indices4b[i + rgt.offset] = first_index + ndxr_indices[i];
             }
             else
             {
                 indices2b.resize(rgt.offset + rgt.count);
 
                 if (endianness)
+                {
+                    const uint16_t primitive_restart = uint16_t(-1);
                     for (uint i = 0; i < rgt.count; ++i)
-                        indices2b[i + rgt.offset] = first_index + swap_bytes(ndxr_indices[i]);
+                    {
+                        const auto idx = swap_bytes(ndxr_indices[i]);
+                        indices2b[i + rgt.offset] = idx == primitive_restart ? primitive_restart : first_index + idx;
+                    }
+                }
                 else
                     for (uint i = 0; i < rgt.count; ++i)
                         indices2b[i + rgt.offset] = first_index + ndxr_indices[i];
