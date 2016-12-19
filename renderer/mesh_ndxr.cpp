@@ -400,7 +400,10 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
                 }
 
                 for (int j = 0; j < 4; ++j)
+                {
                     verts[i].normal[j] = verts[i].tangent[j] = verts[i].bitangent[j] = 0;
+                    verts[i].color[j] = 255;
+                }
             }
 
             const ushort format = rgf.header.vertex_format;
@@ -494,7 +497,13 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
                     ndxr_verts += 2;
                 }
 
-                if (has_normal && has_color) ++ndxr_verts;
+                if (has_normal && has_color)
+                {
+                    memcpy(&verts[i].color, ndxr_verts, sizeof(verts[0].color));
+                    if (endianness)
+                        change_endianness(verts[i].color);
+                    ++ndxr_verts;
+                }
 
                 if (uv_count)
                 {

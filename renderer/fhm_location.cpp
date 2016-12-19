@@ -805,6 +805,7 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
             pos.y = o.attribute("y").as_float();
             pos.z = o.attribute("z").as_float();
             const int group = o.attribute("group").as_int(-1);
+            nya_math::angle_deg yaw = o.attribute("yaw").as_float(0);
             const std::string file = o.attribute("file").as_string();
 
             const bool transparent = file.find("_transparent") != std::string::npos;
@@ -822,6 +823,7 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
                 i.bbox.origin += pos;
                 i.pos = pos;
                 i.group = group;
+                i.yaw = yaw.get_rad();
                 continue;
             }
 
@@ -907,6 +909,7 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
             i.bbox.origin += pos;
             i.pos = pos;
             i.group = group;
+            i.yaw = yaw.get_rad();
 
             m.draw_dist = b.delta.length() * 200.0f;
             m.draw_dist *= m.draw_dist;

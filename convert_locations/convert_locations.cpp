@@ -611,11 +611,16 @@ std::string write_mesh_ndxr(nya_memory::tmp_buffer_ref data, std::string folder,
 
     assert(mesh.indices4b.empty()); //ToDo
 
+    if (mesh.groups.empty())
+        return "";
+
+    //ToDo: ac6 stores all mesh instances geometry in one file. Extract rotations and colors like it's done in acah to support instanced drawing
+
     obj_writer w;
 
     for (auto &v: mesh.verts)
     {
-        w.add_pos(v.pos); //nya_math::vec4(v.color[0], v.color[1], v.color[2], v.color[3]) / 255.0f); //ToDo
+        w.add_pos(v.pos, nya_math::vec4(v.color[0], v.color[1], v.color[2], v.color[3]) / 255.0f); //ToDo
         w.add_normal(v.get_normal());
         w.add_tc(v.tc);
     }
@@ -708,6 +713,7 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
         return false;
 
     std::vector<std::string> mesh_names;
+
     for (auto f: loc_folder.folders[0].files)
         mesh_names.push_back(write_mesh_ndxr(load_resource(p, f), "objects/", base_name("object", int(mesh_names.size())), zip));
 
@@ -748,7 +754,7 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
             objects_str += "\t<object x=\"" + std::to_string(pos.x) + "\" " +
             "y=\"" + std::to_string(pos.y) + "\" " +
             "z=\"" + std::to_string(pos.z) + "\" " +
-            "group=\"" + std::to_string(group_idx) + "\" " +
+            "group=\"" + std::to_string(group_idx) + "\" " + //ToDo
             "file=\"" + mesh_names[model_idx] + "\"/>\n";
         }
     }

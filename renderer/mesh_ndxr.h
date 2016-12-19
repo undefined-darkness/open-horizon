@@ -19,6 +19,7 @@ struct mesh_ndxr
         nya_math::vec3 pos;
         nya_math::vec2 tc;
         float param_tc;
+        uint8_t color[4];
         uint16_t normal[4]; //half float
         uint16_t tangent[4];
         uint16_t bitangent[4];
