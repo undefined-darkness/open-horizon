@@ -52,6 +52,7 @@ protected:
             nya_math::aabb bbox;
             nya_math::vec3 pos;
             float yaw = 0;
+            int group = -1;
         };
 
         std::vector<instance> instances;

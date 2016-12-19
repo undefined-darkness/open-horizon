@@ -582,6 +582,23 @@ bool write_texture_ntxr(nya_memory::tmp_buffer_ref tex_data, std::string name, z
 
 //------------------------------------------------------------
 
+bool write_texture_ntxr_hex_id(nya_memory::tmp_buffer_ref tex_data, std::string name, zip_t *zip)
+{
+    if (!tex_data.get_size())
+        return false;
+
+    nya_memory::memory_reader reader(tex_data.get_data(), tex_data.get_size());
+    reader.seek(28);
+    auto offset = swap_bytes(reader.read<uint16_t>());
+    assert(reader.seek(offset) && reader.test("GIDX",4));
+    reader.seek(offset+8);
+    auto hash_id = swap_bytes(reader.read<uint32_t>());
+
+    return write_texture_ntxr(tex_data, name + std::to_string(hash_id) + ".tga", zip);
+}
+
+//------------------------------------------------------------
+
 std::string write_mesh_ndxr(nya_memory::tmp_buffer_ref data, std::string folder, std::string name, zip_t *zip)
 {
     renderer::mesh_ndxr mesh;
@@ -687,12 +704,63 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
     auto &loc_folder = r.folders[0];
     auto &eff_folder = r.folders[1];
 
-    if (loc_folder.folders.size() < 3)
+    if (loc_folder.files.size() < 11 || loc_folder.folders.size() < 3)
         return false;
 
-    std::vector<std::string> meshes;
+    std::vector<std::string> mesh_names;
     for (auto f: loc_folder.folders[0].files)
-        meshes.push_back(write_mesh_ndxr(load_resource(p, f), "objects/", base_name("object", int(meshes.size())), zip));
+        mesh_names.push_back(write_mesh_ndxr(load_resource(p, f), "objects/", base_name("object", int(mesh_names.size())), zip));
+
+    auto obj_pos_data = load_resource(p, loc_folder.files[11]);
+    nya_memory::memory_reader obj_pos_reader(obj_pos_data.get_data(), obj_pos_data.get_size());
+    std::string objects_str = "<!--Open Horizon location objects-->\n";
+    objects_str += "<objects>\n";
+
+    const int location_size = 16;
+    for (int pz = 0; pz < location_size; ++pz)
+    for (int px = 0; px < location_size; ++px)
+    {
+        const int idx = pz * location_size + px;
+        obj_pos_reader.seek(idx * 16);
+        uint32_t count = swap_bytes(obj_pos_reader.read<uint32_t>());
+        uint32_t offset = swap_bytes(obj_pos_reader.read<uint32_t>());
+        uint32_t unknown = swap_bytes(obj_pos_reader.read<uint32_t>());
+        assume(obj_pos_reader.read<uint32_t>() == 0);
+
+        const float base_x = 512.0f * (8 + 16 * (px - location_size/2));
+        const float base_z = 512.0f * (8 + 16 * (pz - location_size/2));
+
+        obj_pos_reader.seek(offset);
+        for (int i = 0; i < count; ++i)
+        {
+            nya_math::vec3 pos = obj_pos_reader.read<nya_math::vec3>();
+            auto *u = (uint32_t *)&pos;
+            for (int j = 0; j < 3; ++j)
+                u[j] = swap_bytes(u[j]);
+
+            pos.x += base_x;
+            pos.z += base_z;
+
+            auto unknown = obj_pos_reader.read<uint8_t>();
+            auto model_idx = obj_pos_reader.read<uint8_t>();
+            auto group_idx = swap_bytes(obj_pos_reader.read<uint16_t>());
+
+            objects_str += "\t<object x=\"" + std::to_string(pos.x) + "\" " +
+            "y=\"" + std::to_string(pos.y) + "\" " +
+            "z=\"" + std::to_string(pos.z) + "\" " +
+            "group=\"" + std::to_string(group_idx) + "\" " +
+            "file=\"" + mesh_names[model_idx] + "\"/>\n";
+        }
+    }
+
+    objects_str += "</objects>\n\n";
+    obj_pos_data.free();
+    zip_entry_open(zip, "objects.xml");
+    zip_entry_write(zip, objects_str.c_str(), objects_str.size());
+    zip_entry_close(zip);
+
+    for (auto tidx: loc_folder.folders[1].files)
+        write_texture_ntxr_hex_id(load_resource(p, tidx), "objects/tex", zip);
 
     if (eff_folder.files.size() > 2)
         write_entry(p, eff_folder.files[2], "sky.sph", zip);

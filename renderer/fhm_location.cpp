@@ -804,7 +804,8 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
             pos.x = o.attribute("x").as_float();
             pos.y = o.attribute("y").as_float();
             pos.z = o.attribute("z").as_float();
-            std::string file = o.attribute("file").as_string();
+            const int group = o.attribute("group").as_int(-1);
+            const std::string file = o.attribute("file").as_string();
 
             const bool transparent = file.find("_transparent") != std::string::npos;
             auto &meshes = transparent ? m_mptx_transparent_meshes : m_mptx_meshes;
@@ -820,6 +821,7 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
                 i.bbox = boxes[idx];
                 i.bbox.origin += pos;
                 i.pos = pos;
+                i.group = group;
                 continue;
             }
 
@@ -904,6 +906,7 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
             i.bbox = b;
             i.bbox.origin += pos;
             i.pos = pos;
+            i.group = group;
 
             m.draw_dist = b.delta.length() * 200.0f;
             m.draw_dist *= m.draw_dist;
@@ -939,8 +942,11 @@ void fhm_location::draw(const std::vector<mptx_mesh> &meshes)
         m_map_parts_color_texture.set(mesh.color);
         auto &vbo = mesh.vbo.get();
 
+        int group_idx = -1;
         for (auto &g: mesh.groups)
         {
+            ++group_idx;
+
             m_map_parts_diffuse_texture.set(g.diff);
             m_map_parts_specular_texture.set(g.spec);
 
@@ -948,6 +954,9 @@ void fhm_location::draw(const std::vector<mptx_mesh> &meshes)
             for (size_t i = 0; i < mesh.instances.size(); ++i)
             {
                 const auto &instance = mesh.instances[i];
+
+                if (instance.group >= 0 && instance.group != group_idx) //ToDo: ineffective
+                    continue;
 
                 if ((instance.pos - cp).length_sq() > mesh.draw_dist)
                     continue;
