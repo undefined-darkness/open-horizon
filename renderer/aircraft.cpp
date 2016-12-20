@@ -12,6 +12,7 @@
 #include "containers/dpl.h"
 #include "renderer/shared.h"
 #include "renderer/scene.h"
+#include "renderer/texture.h"
 #include "util/xml.h"
 #include <stdint.h>
 
@@ -103,34 +104,8 @@ public:
 
         nya_scene::texture load_texture(std::string name)
         {
-            if (name.empty())
-                return nya_scene::texture();
-
-            nya_resources::zip_resources_provider z;
-            z.open_archive(zip_name.c_str());
-            auto tr = z.access(name.c_str());
-            if (!tr)
-            {
-                z.close_archive();
-                return nya_scene::texture();
-            }
-
-            nya_scene::resource_data d(tr->get_size());
-            tr->read_all(d.get_data());
-            tr->release();
-            z.close_archive();
-
-            nya_scene::shared_texture stex;
-            if (!nya_scene::texture::load_tga(stex, d, name.c_str()))
-            {
-                d.free();
-                return nya_scene::texture();
-            }
-
-            d.free();
-            nya_scene::texture tex;
-            tex.create(stex);
-            return tex;
+            nya_resources::zip_resources_provider z(zip_name.c_str());
+            return renderer::load_texture(z, name.c_str());
         }
     };
 

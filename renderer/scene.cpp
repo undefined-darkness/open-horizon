@@ -5,6 +5,8 @@
 #include "scene.h"
 #include "shared.h"
 #include "scene/camera.h"
+#include "util/location.h"
+#include "renderer/texture.h"
 #include <algorithm>
 
 namespace renderer
@@ -95,6 +97,27 @@ void scene::set_location(const char *name)
         m_particles_render.init();
     }
 
+    if (is_native_location(name))
+    {
+        auto &zip = get_native_location_provider(name);
+        auto tex = load_texture(zip, "tonecurve.tga");
+        if (tex.get_width() > 0)
+        {
+            auto rtex = tex.internal().get_shared_data()->tex;
+            rtex.set_wrap(nya_render::texture::wrap_clamp, nya_render::texture::wrap_clamp);
+            m_curve.set(tex);
+        }
+        else
+            m_curve.set(load_tonecurve("Map/tonecurve_default.tcb"));
+    }
+    else
+    {
+        if (m_location_name == "def" || m_location_name.empty())
+            m_curve.set(load_tonecurve("Map/tonecurve_default.tcb"));
+        else
+            m_curve.set(load_tonecurve(("Map/tonecurve_" + m_location_name + ".tcb").c_str()));
+    }
+
     world::set_location(name);
 
     for (auto &a: m_aircrafts)
@@ -103,10 +126,6 @@ void scene::set_location(const char *name)
     m_flare.apply_location(m_location.get_params());
 
     auto &p = m_location.get_params();
-    if (m_location_name == "def" || m_location_name.empty())
-        m_curve.set(load_tonecurve("Map/tonecurve_default.tcb"));
-    else
-        m_curve.set(load_tonecurve(("Map/tonecurve_" + m_location_name + ".tcb").c_str()));
     set_shader_param("bloom_param", nya_math::vec4(p.hdr.bloom_threshold, p.hdr.bloom_offset, p.hdr.bloom_scale, 1.0));
     set_shader_param("saturation", nya_math::vec4(p.tone_saturation * 0.01, 0.0, 0.0, 0.0));
     m_luminance_speed = p.hdr.luminance_speed;

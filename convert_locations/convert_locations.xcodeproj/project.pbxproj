@@ -10,6 +10,7 @@
 		F524A5821DF6BEF800D6EB88 /* mesh_ndxr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F524A5801DF6BEF800D6EB88 /* mesh_ndxr.cpp */; };
 		F5272CFD1D9B18C1000FF7C8 /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = F5272CFB1D9B18C1000FF7C8 /* zip.c */; };
 		F5272D131DA4074C000FF7C8 /* mesh_sm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5272D111DA4074C000FF7C8 /* mesh_sm.cpp */; };
+		F530D2571E07DB350072BB48 /* pugixml.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F530D2551E07DB350072BB48 /* pugixml.cpp */; };
 		F544747D1D9A5FC800561F4C /* texture_gim.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F544747B1D9A5FC800561F4C /* texture_gim.cpp */; };
 		F544748B1D9A5FEF00561F4C /* fhm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F544747E1D9A5FEF00561F4C /* fhm.cpp */; };
 		F544748C1D9A5FEF00561F4C /* cdp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F54474801D9A5FEF00561F4C /* cdp.cpp */; };
@@ -61,6 +62,9 @@
 		F5272D111DA4074C000FF7C8 /* mesh_sm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = mesh_sm.cpp; path = ../renderer/mesh_sm.cpp; sourceTree = "<group>"; };
 		F5272D121DA4074C000FF7C8 /* mesh_sm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mesh_sm.h; path = ../renderer/mesh_sm.h; sourceTree = "<group>"; };
 		F5272D191DA992D6000FF7C8 /* obj_writer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = obj_writer.h; sourceTree = "<group>"; };
+		F530D2541E07DB350072BB48 /* pugiconfig.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugiconfig.hpp; path = "../deps/pugixml-1.4/src/pugiconfig.hpp"; sourceTree = "<group>"; };
+		F530D2551E07DB350072BB48 /* pugixml.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pugixml.cpp; path = "../deps/pugixml-1.4/src/pugixml.cpp"; sourceTree = "<group>"; };
+		F530D2561E07DB350072BB48 /* pugixml.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = pugixml.hpp; path = "../deps/pugixml-1.4/src/pugixml.hpp"; sourceTree = "<group>"; };
 		F544746C1D9A5E1700561F4C /* convert_locations */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = convert_locations; sourceTree = BUILT_PRODUCTS_DIR; };
 		F54474781D9A5F6A00561F4C /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = ../util/util.h; sourceTree = "<group>"; };
 		F544747B1D9A5FC800561F4C /* texture_gim.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = texture_gim.cpp; path = ../renderer/texture_gim.cpp; sourceTree = "<group>"; };
@@ -107,12 +111,23 @@
 			name = zip;
 			sourceTree = "<group>";
 		};
+		F530D2511E07DB0C0072BB48 /* xml */ = {
+			isa = PBXGroup;
+			children = (
+				F530D2541E07DB350072BB48 /* pugiconfig.hpp */,
+				F530D2551E07DB350072BB48 /* pugixml.cpp */,
+				F530D2561E07DB350072BB48 /* pugixml.hpp */,
+			);
+			name = xml;
+			sourceTree = "<group>";
+		};
 		F54474631D9A5E1700561F4C = {
 			isa = PBXGroup;
 			children = (
 				F54474921D9A606900561F4C /* convert_locations.cpp */,
 				F524A5781DF4ABEF00D6EB88 /* dxt_decoder.h */,
 				F5272D191DA992D6000FF7C8 /* obj_writer.h */,
+				F530D2511E07DB0C0072BB48 /* xml */,
 				F5272CF91D9B18A0000FF7C8 /* zip */,
 				F54474941D9A60B900561F4C /* nya_engine.xcodeproj */,
 				F544747A1D9A5F7B00561F4C /* open horizon */,
@@ -252,6 +267,7 @@
 				F5272CFD1D9B18C1000FF7C8 /* zip.c in Sources */,
 				F544748E1D9A5FEF00561F4C /* pac5.cpp in Sources */,
 				F544747D1D9A5FC800561F4C /* texture_gim.cpp in Sources */,
+				F530D2571E07DB350072BB48 /* pugixml.cpp in Sources */,
 				F5272D131DA4074C000FF7C8 /* mesh_sm.cpp in Sources */,
 				F524A5821DF6BEF800D6EB88 /* mesh_ndxr.cpp in Sources */,
 				F544748D1D9A5FEF00561F4C /* cpk.cpp in Sources */,

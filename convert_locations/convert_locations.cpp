@@ -15,6 +15,7 @@
 #include "renderer/mesh_sm.h"
 #include "render/bitmap.h"
 #include "zip.h"
+#include "util/xml.h"
 #include "dxt_decoder.h"
 #include "obj_writer.h"
 #include <set>
@@ -599,6 +600,50 @@ bool write_texture_ntxr_hex_id(nya_memory::tmp_buffer_ref tex_data, std::string 
 
 //------------------------------------------------------------
 
+bool write_color_curve(nya_math::vec3 in_min, nya_math::vec3 in_gamma, nya_math::vec3 in_max, nya_math::vec3 out_min, nya_math::vec3 out_max, zip_t *zip)
+{
+    nya_formats::tga tga;
+    tga.width = 256;
+    tga.height = 1;
+    tga.channels = nya_formats::tga::bgr;
+
+    nya_memory::tmp_buffer_scoped tex(256*3 + nya_formats::tga::tga_minimum_header_size);
+    tga.encode_header(tex.get_data());
+
+    nya_math::vec3 colors[256];
+    typedef nya_math::vec3 vec3;
+    for (int j = 0; j < 256; ++j)
+    {
+        const float fc = j / 255.0f;
+        const vec3 in_c(fc, fc, fc);
+        vec3 &out_c = colors[j];
+
+        out_c = vec3::min(vec3::max(in_c - vec3(in_min), vec3()) / (vec3(in_max) - vec3(in_min)), vec3(1.0f, 1.0f, 1.0f));
+
+        out_c.x = powf(out_c.x, 1.0f / in_gamma.x);
+        out_c.y = powf(out_c.y, 1.0f / in_gamma.y);
+        out_c.z = powf(out_c.z, 1.0f / in_gamma.z);
+
+        out_c = out_min + (out_max - out_min) * out_c;
+    }
+
+    uint8_t *ucolors = (uint8_t *)tex.get_data(nya_formats::tga::tga_minimum_header_size);
+    for (auto &c: colors)
+    {
+        c = c.clamp(nya_math::vec3(0.0, 0.0, 0.0), nya_math::vec3(1.0, 1.0, 1.0)) * 255.0f;
+        *ucolors++ = c.z;
+        *ucolors++ = c.y;
+        *ucolors++ = c.x;
+    }
+
+    zip_entry_open(zip, "tonecurve.tga");
+    zip_entry_write(zip, tex.get_data(), tex.get_size());
+    zip_entry_close(zip);
+    return true;
+}
+
+//------------------------------------------------------------
+
 std::string write_mesh_ndxr(nya_memory::tmp_buffer_ref data, std::string folder, std::string name, zip_t *zip)
 {
     renderer::mesh_ndxr mesh;
@@ -770,6 +815,51 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
 
     if (eff_folder.files.size() > 2)
         write_entry(p, eff_folder.files[2], "sky.sph", zip);
+
+    if (eff_folder.files.size() > 3)
+    {
+        pugi::xml_document doc;
+        auto buf = load_resource(p, eff_folder.files[3]);
+        doc.load_buffer((const char *)buf.get_data(), buf.get_size());
+        buf.free();
+
+        auto root = doc.first_child();
+
+        nya_math::vec3 in_min, in_gamma, in_max, out_min, out_max;
+
+        float sat_delta = 0.0f; //ToDo
+
+        for (auto it = root.first_child(); it; it = it.next_sibling())
+        {
+            std::string name = it.attribute("name").as_string();
+            auto v = it.first_child().value();
+            float f = atof(v);
+
+            if (name == ".Saturation.Delta") sat_delta = f; //ToDo: / 255.0f; ?
+
+            else if (name == ".LevelCorrection.In.Min.R") in_min.x = f / 255.0f;
+            else if (name == ".LevelCorrection.In.Min.G") in_min.y = f / 255.0f;
+            else if (name == ".LevelCorrection.In.Min.B") in_min.z = f / 255.0f;
+
+            else if (name == ".LevelCorrection.In.Gamma.R") in_gamma.x = f;
+            else if (name == ".LevelCorrection.In.Gamma.G") in_gamma.y = f;
+            else if (name == ".LevelCorrection.In.Gamma.B") in_gamma.z = f;
+
+            else if (name == ".LevelCorrection.In.Max.R") in_max.x = f / 255.0f;
+            else if (name == ".LevelCorrection.In.Max.G") in_max.y = f / 255.0f;
+            else if (name == ".LevelCorrection.In.Max.B") in_max.z = f / 255.0f;
+
+            else if (name == ".LevelCorrection.Out.Min.R") out_min.x = f / 255.0f;
+            else if (name == ".LevelCorrection.Out.Min.G") out_min.y = f / 255.0f;
+            else if (name == ".LevelCorrection.Out.Min.B") out_min.z = f / 255.0f;
+
+            else if (name == ".LevelCorrection.Out.Max.R") out_max.x = f / 255.0f;
+            else if (name == ".LevelCorrection.Out.Max.G") out_max.y = f / 255.0f;
+            else if (name == ".LevelCorrection.Out.Max.B") out_max.z = f / 255.0f;
+        }
+
+        write_color_curve(in_min, in_gamma, in_max, out_min, out_max, zip);
+    }
 
     int tex_count = 0;
     for (auto tidx: loc_folder.folders[2].files)

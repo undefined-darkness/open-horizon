@@ -172,6 +172,7 @@
 		F530D2451E016E430072BB48 /* script.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = script.h; path = ../util/script.h; sourceTree = "<group>"; };
 		F530D2471E0180130072BB48 /* menu.lua */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = menu.lua; path = ../resources/menu.lua; sourceTree = "<group>"; };
 		F530D24A1E02C9880072BB48 /* resources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = resources.cpp; path = ../util/resources.cpp; sourceTree = "<group>"; };
+		F530D25B1E094FBE0072BB48 /* texture.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = texture.h; path = ../renderer/texture.h; sourceTree = "<group>"; };
 		F53304C61B09DEC300D8C3C7 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = menu.cpp; path = ../gui/menu.cpp; sourceTree = "<group>"; };
 		F53304C71B09DEC300D8C3C7 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = menu.h; path = ../gui/menu.h; sourceTree = "<group>"; };
 		F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = app_protocol_simple.cpp; path = ../deps/miso/src/app_protocol_simple.cpp; sourceTree = "<group>"; };
@@ -507,6 +508,7 @@
 				F59AB59F1AFA4F1800137527 /* shared.h */,
 				F50BFC601C53BBCB000B8500 /* sky.cpp */,
 				F50BFC611C53BBCB000B8500 /* sky.h */,
+				F530D25B1E094FBE0072BB48 /* texture.h */,
 				F5A55F341D1FC9C800A7889B /* texture_gim.cpp */,
 				F5A55F351D1FC9C800A7889B /* texture_gim.h */,
 				F59AB5AF1AFA4FEC00137527 /* world.cpp */,

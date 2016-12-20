@@ -10,6 +10,7 @@
 #include "memory/tmp_buffer.h"
 #include "memory/memory_reader.h"
 #include "render/render.h"
+#include "renderer/texture.h"
 #include "scene/camera.h"
 #include "scene/transform.h"
 #include "scene/shader.h"
@@ -754,13 +755,7 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
     {
         char name[255];
         sprintf(name, "land%03d.tga", i);
-        auto data = load_resource(zip.access(name));
-
-        nya_scene::shared_texture stex;
-        if (nya_scene::texture::load_tga(stex, data, name))
-            location_load_data.textures[i].create(stex);
-
-        data.free();
+        location_load_data.textures[i] = load_texture(zip, name);
     }
 
     auto tc_off = load_resource(zip.access("tex_offsets.bin"));
@@ -890,11 +885,7 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
                     auto it = textures.find(tex_name);
                     if (it == textures.end())
                     {
-                        nya_scene::resource_data data = load_resource(zip.access(tex_name.c_str()));
-                        nya_scene::shared_texture res;
-                        if (nya_scene::texture::load_tga(res, data, tex_name.c_str()))
-                            textures[tex_name].create(res);
-                        data.free();
+                        textures[tex_name] = load_texture(zip, tex_name.c_str());
                         it = textures.find(tex_name);
                     }
 
