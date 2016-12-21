@@ -148,3 +148,14 @@ bool location_params::load(const char *file_name)
 }
 
 //------------------------------------------------------------
+
+bool location_params::load_native(nya_resources::resources_provider &prov, const char *file_name)
+{
+    *this = location_params(); //reset if was loaded already
+
+    //ToDo
+
+    return true;
+}
+
+//------------------------------------------------------------

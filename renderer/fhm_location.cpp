@@ -909,14 +909,30 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
 
     finish_load_location(location_load_data);
 
+    auto &s = params.sky.mapspecular;
+    auto &d = params.detail;
+
     nya_scene::material::param light_dir(-params.sky.sun_dir, 0.0f);
     nya_scene::material::param fog_color(fcolor.x, fcolor.y, fcolor.z, -0.01*params.sky.fog_density);
     nya_scene::material::param fog_height(params.sky.fog_height_fresnel, params.sky.fog_height,
                                           -0.01 * params.sky.fog_height_fade_density, -0.01 * params.sky.fog_height_density);
-    auto &m = m_land_material;
+    nya_scene::material::param map_param_vs(s.parts_power, 0, 0, 0);
+    nya_scene::material::param map_param_ps(s.parts_scale, s.parts_fog_power, s.parts_fresnel_max, s.parts_fresnel);
+    nya_scene::material::param map_param2_ps(d.mesh_range, d.mesh_power, d.mesh_repeat, s.parts_reflection_power);
+
+    auto &lm = m_land_material;
+    lm.set_param(lm.get_param_idx("light dir"), light_dir);
+    lm.set_param(lm.get_param_idx("fog color"), fog_color);
+    lm.set_param(lm.get_param_idx("fog height"), fog_height);
+
+    auto &m = m_map_parts_material;
     m.set_param(m.get_param_idx("light dir"), light_dir);
     m.set_param(m.get_param_idx("fog color"), fog_color);
     m.set_param(m.get_param_idx("fog height"), fog_height);
+    m.set_param(m.get_param_idx("map param vs"), map_param_vs);
+    m.set_param(m.get_param_idx("map param ps"), map_param_ps);
+    m.set_param(m.get_param_idx("map param2 ps"), map_param2_ps);
+    m.set_param(m.get_param_idx("specular color"), s.parts_color.x, s.parts_color.y, s.parts_color.z, s.parts_contrast);
 
     return true;
 }

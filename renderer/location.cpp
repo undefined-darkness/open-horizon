@@ -32,7 +32,7 @@ bool location::load(const char *name)
 
     if (is_native_location(name))
     {
-        m_params = location_params();
+        m_params.load_native(get_native_location_provider(name), "effects.xml");
         m_location.load_native(name, m_params, m_sky.get_fog_color());
 
         name = "def"; //ToDo
