@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -129,7 +129,7 @@
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
     <ClCompile Include="../renderer/mesh_ndxr.cpp">
-        <Filter>Source Files\renderer</Filter>
+      <Filter>Source Files\renderer</Filter>
     </ClCompile>
     <ClCompile Include="..\game\network.cpp">
       <Filter>Source Files\game</Filter>
@@ -156,13 +156,13 @@
       <Filter>Source Files\util</Filter>
     </ClCompile>
     <ClCompile Include="..\util\location.cpp">
-        <Filter>Source Files\util</Filter>
+      <Filter>Source Files\util</Filter>
     </ClCompile>
     <ClCompile Include="..\util\platform.cpp">
       <Filter>Source Files\util</Filter>
     </ClCompile>
     <ClCompile Include="..\util\resources.cpp">
-        <Filter>Source Files\util</Filter>
+      <Filter>Source Files\util</Filter>
     </ClCompile>
     <ClCompile Include="..\util\platform_dialogs.cpp">
       <Filter>Source Files\util</Filter>
@@ -218,6 +218,9 @@
     <ClCompile Include="..\game\mission.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
+    <ClCompile Include="..\renderer\mesh_obj.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\game\ai.h">
@@ -260,7 +263,7 @@
       <Filter>Source Files\renderer</Filter>
     </ClInclude>
     <ClInclude Include="../renderer/mesh_ndxr.h">
-        <Filter>Source Files\renderer</Filter>
+      <Filter>Source Files\renderer</Filter>
     </ClInclude>
     <ClInclude Include="../renderer/scene.h">
       <Filter>Source Files\renderer</Filter>
@@ -353,7 +356,7 @@
       <Filter>Source Files\util</Filter>
     </ClInclude>
     <ClInclude Include="..\util\location.h">
-        <Filter>Source Files\util</Filter>
+      <Filter>Source Files\util</Filter>
     </ClInclude>
     <ClInclude Include="..\util\platform.h">
       <Filter>Source Files\util</Filter>
@@ -402,6 +405,9 @@
     </ClInclude>
     <ClInclude Include="..\game\mission.h">
       <Filter>Source Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\renderer\mesh_obj.h">
+      <Filter>Source Files\renderer</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

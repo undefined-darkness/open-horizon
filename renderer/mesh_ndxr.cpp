@@ -10,7 +10,7 @@
 
 template<typename t> void change_endianness(t &o)
 {
-    uint *u = (uint *)&o;
+    auto *u = (uint32_t *)&o;
     for (int i = 0; i < sizeof(t)/4; ++i)
         u[i] = swap_bytes(u[i]);
 }
@@ -409,9 +409,9 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
             const ushort format = rgf.header.vertex_format;
             const ushort uv_count = format >> 12;
             const bool has_tbn = format & (1<<0);
-            const bool has_skining = format & (1<<4);
-            const bool has_normal = format & (1<<8);
-            const bool has_color = format & (1<<9);
+            const bool has_skining = (format & (1<<4)) > 0;
+            const bool has_normal = (format & (1<<8)) > 0;
+            const bool has_color = (format & (1<<9)) > 0;
 
             assume(uv_count == 1 || uv_count == 2);
             if(has_skining)
@@ -585,7 +585,7 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
 void mesh_ndxr::reduce_groups()
 {
     std::vector<unsigned short> regroup_indices2b;
-    std::vector<uint> regroup_indices4b;
+    std::vector<unsigned int> regroup_indices4b;
     const bool use_indices4b = !indices4b.empty();
 
     std::vector<group> new_groups(2);
@@ -609,13 +609,13 @@ void mesh_ndxr::reduce_groups()
                 auto &nrg = ng.rgroups.back();
                 if (use_indices4b)
                 {
-                    const auto off = nrg.offset = (uint)regroup_indices4b.size();
+                    const auto off = nrg.offset = (unsigned int)regroup_indices4b.size();
                     regroup_indices4b.resize(off + rg.count);
                     memcpy(&regroup_indices4b[off], &indices4b[rg.offset], rg.count * 4);
                 }
                 else
                 {
-                    const auto off = nrg.offset = (uint)regroup_indices2b.size();
+                    const auto off = nrg.offset = (unsigned int)regroup_indices2b.size();
                     regroup_indices2b.resize(off + rg.count);
                     memcpy(&regroup_indices2b[off], &indices2b[rg.offset], rg.count * 2);
                 }
@@ -637,7 +637,7 @@ void mesh_ndxr::reduce_groups()
 
                         if (use_indices4b)
                         {
-                            const uint ioff1 = (uint)regroup_indices4b.size();
+                            const auto ioff1 = (unsigned int)regroup_indices4b.size();
 
                             //degenerate triangle
                             if (!regroup_indices4b.empty())
@@ -646,14 +646,14 @@ void mesh_ndxr::reduce_groups()
                             if ( (ioff1 - nrg.offset) % 2 )
                                 regroup_indices4b.push_back(regroup_indices4b.back());
 
-                            const uint ioff2 = (uint)regroup_indices4b.size();
+                            const auto ioff2 = (unsigned int)regroup_indices4b.size();
                             regroup_indices4b.resize(ioff2 + arg.count);
                             memcpy(&regroup_indices4b[ioff2], &indices4b[arg.offset], arg.count * 2);
-                            nrg.count += (uint)regroup_indices4b.size() - ioff1;
+                            nrg.count += (unsigned int)regroup_indices4b.size() - ioff1;
                         }
                         else
                         {
-                            const uint ioff1 = (uint)regroup_indices2b.size();
+                            const auto ioff1 = (unsigned int)regroup_indices2b.size();
 
                             //degenerate triangle
                             if (!regroup_indices2b.empty())
@@ -662,10 +662,10 @@ void mesh_ndxr::reduce_groups()
                             if ( (ioff1 - nrg.offset) % 2 )
                                 regroup_indices2b.push_back(regroup_indices2b.back());
 
-                            const uint ioff2 = (uint)regroup_indices2b.size();
+                            const auto ioff2 = (unsigned int)regroup_indices2b.size();
                             regroup_indices2b.resize(ioff2 + arg.count);
                             memcpy(&regroup_indices2b[ioff2], &indices2b[arg.offset], arg.count * 2);
-                            nrg.count += (uint)regroup_indices2b.size() - ioff1;
+                            nrg.count += (unsigned int)regroup_indices2b.size() - ioff1;
                         }
 
                         arg.count = 0; //used

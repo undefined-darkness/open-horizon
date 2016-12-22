@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -126,6 +126,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClCompile Include="..\game\team_deathmatch.cpp" />
     <ClCompile Include="..\gui\hud.cpp" />
     <ClCompile Include="..\gui\menu.cpp" />
+    <ClCompile Include="..\renderer\mesh_obj.cpp" />
     <ClCompile Include="..\renderer\missile_trail.cpp" />
     <ClCompile Include="..\sound\file.cpp" />
     <ClCompile Include="..\sound\sound.cpp" />
@@ -211,6 +212,7 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClInclude Include="..\game\team_deathmatch.h" />
     <ClInclude Include="..\gui\hud.h" />
     <ClInclude Include="..\gui\menu.h" />
+    <ClInclude Include="..\renderer\mesh_obj.h" />
     <ClInclude Include="..\renderer\missile_trail.h" />
     <ClInclude Include="..\sound\file.h" />
     <ClInclude Include="..\sound\sound.h" />
