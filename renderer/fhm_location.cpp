@@ -870,7 +870,8 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
                 m.vbo->set_normals(3*4);
                 m.vbo->set_tc(0, (3+3)*4, 3);
 
-                m.color.build(colors.data(), (int)colors.size(), 1, nya_render::texture::color_rgba32f);
+                if(!m.color.build(colors.data(), (int)colors.size(), 1, nya_render::texture::color_rgba32f))
+                    m.color = shared::get_white_texture();
 
                 m.groups.resize(obj.groups.size());
                 for (size_t i = 0; i < m.groups.size(); ++i)
@@ -882,14 +883,26 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
                     t.count = f.count;
 
                     std::string tex_name = obj.materials[f.mat_idx].tex_diffuse;
-                    auto it = textures.find(tex_name);
-                    if (it == textures.end())
-                    {
-                        textures[tex_name] = load_texture(zip, tex_name.c_str());
-                        it = textures.find(tex_name);
-                    }
 
-                    t.diff = (it == textures.end()) ? shared::get_white_texture() : it->second;
+                    //special case, land texture outside of the objects folder
+                    const std::string land_prefix("objects/../land");
+                    if (!tex_name.compare(0, land_prefix.size(), land_prefix))
+                    {
+                        const int idx = atoi(tex_name.substr(land_prefix.size()).c_str());
+                        t.diff = location_load_data.textures[idx];
+                    }
+                    else
+                    {
+                        //normal case
+                        auto it = textures.find(tex_name);
+                        if (it == textures.end())
+                        {
+                            textures[tex_name] = load_texture(zip, tex_name.c_str());
+                            it = textures.find(tex_name);
+                        }
+
+                        t.diff = (it == textures.end()) ? shared::get_white_texture() : it->second;
+                    }
                     t.spec = shared::get_black_texture();
                 }
             }

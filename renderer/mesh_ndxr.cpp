@@ -430,11 +430,11 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
                 prev_skining_off = ndxr_verts = (float *)reader.get_data();
             }
 
-            const std::vector<ushort> known_formats = {4096,4102,4112,4358,4359,4369,4371,4870,4871,8454,8455,8710,8966,8967};
+            const std::vector<ushort> known_formats = {4096,4102,4112,4358,4359,4369,4371,4608,4614,4870,4871,8454,8455,8710,8966,8967};
             if(std::find(known_formats.begin(), known_formats.end(), format) == known_formats.end())
             {
                 nya_log::log()<<"unknown vertex format: "<<format<<"\t"<<to_bits(format)<<"\n";
-                //print_data(reader,reader.get_offset(),512);
+                //print_data(reader,reader.get_offset(),512,0,0,endianness);
             }
             else if (has_skining)
             {
@@ -516,6 +516,9 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
                 if (has_color && !has_normal) ++ndxr_verts; //ToDo: color
 
                 if (uv_count > 1) ndxr_verts += (uv_count - 1) * 2; //ToDo: uv2
+
+                if (format == 4614)
+                    ++ndxr_verts;
             }
 
             //ToDo

@@ -583,19 +583,24 @@ bool write_texture_ntxr(nya_memory::tmp_buffer_ref tex_data, std::string name, z
 
 //------------------------------------------------------------
 
-bool write_texture_ntxr_hex_id(nya_memory::tmp_buffer_ref tex_data, std::string name, zip_t *zip)
+unsigned int get_texture_ntxr_hex_id(nya_memory::tmp_buffer_ref tex_data)
 {
     if (!tex_data.get_size())
-        return false;
+        return 0;
 
     nya_memory::memory_reader reader(tex_data.get_data(), tex_data.get_size());
     reader.seek(28);
     auto offset = swap_bytes(reader.read<uint16_t>());
     assert(reader.seek(offset) && reader.test("GIDX",4));
     reader.seek(offset+8);
-    auto hash_id = swap_bytes(reader.read<uint32_t>());
+    return swap_bytes(reader.read<uint32_t>());
+}
 
-    return write_texture_ntxr(tex_data, name + std::to_string(hash_id) + ".tga", zip);
+//------------------------------------------------------------
+
+bool write_texture_ntxr_hex_id(nya_memory::tmp_buffer_ref tex_data, std::string name, zip_t *zip)
+{
+    return write_texture_ntxr(tex_data, name + std::to_string(get_texture_ntxr_hex_id(tex_data)) + ".tga", zip);
 }
 
 //------------------------------------------------------------
@@ -644,7 +649,7 @@ bool write_color_curve(nya_math::vec3 in_min, nya_math::vec3 in_gamma, nya_math:
 
 //------------------------------------------------------------
 
-std::string write_mesh_ndxr(nya_memory::tmp_buffer_ref data, std::string folder, std::string name, zip_t *zip)
+std::string write_mesh_ndxr(nya_memory::tmp_buffer_ref data, std::string folder, const std::vector<unsigned int> &location_tex_hashes, std::string name, zip_t *zip)
 {
     renderer::mesh_ndxr mesh;
     if(!mesh.load(data.get_data(), data.get_size(), nya_render::skeleton(), true))
@@ -678,7 +683,16 @@ std::string write_mesh_ndxr(nya_memory::tmp_buffer_ref data, std::string folder,
             assume(!rg.textures.empty());
 
             auto mat_name = base_name(g.name + "_material", rg_idx++);
-            w.add_material(mat_name, tex_name("tex", rg.textures[0]));
+
+            std::string tex;
+
+            auto loc_hash = std::find(location_tex_hashes.begin(), location_tex_hashes.end(), rg.textures[0]);
+            if (loc_hash != location_tex_hashes.end())
+                tex = tex_name("../land", int(loc_hash - location_tex_hashes.begin()), "tga");
+            else
+                tex = tex_name("tex", rg.textures[0]);
+
+            w.add_material(mat_name, tex);
 
             w.add_group(g.name, mat_name);
 
@@ -700,7 +714,7 @@ std::string write_mesh_ndxr(nya_memory::tmp_buffer_ref data, std::string folder,
     }
 
     bool transparent = false;
-
+    //ToDo
     if (transparent)
         name.append("_transparent");
 
@@ -757,10 +771,23 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
     if (loc_folder.files.size() < 11 || loc_folder.folders.size() < 3)
         return false;
 
+    printf("\tterrain textures\n");
+
+    std::vector<unsigned int> location_tex_hashes;
+    int tex_count = 0;
+    for (auto tidx: loc_folder.folders[2].files)
+    {
+        auto r = load_resource(p, tidx);
+        location_tex_hashes.push_back(get_texture_ntxr_hex_id(r));
+        write_texture_ntxr(r, tex_name("land", tex_count++, "tga"), zip);
+    }
+
+    printf("\tobjects\n");
+
     std::vector<std::string> mesh_names;
 
     for (auto f: loc_folder.folders[0].files)
-        mesh_names.push_back(write_mesh_ndxr(load_resource(p, f), "objects/", base_name("object", int(mesh_names.size())), zip));
+        mesh_names.push_back(write_mesh_ndxr(load_resource(p, f), "objects/", location_tex_hashes, base_name("object", int(mesh_names.size())), zip));
 
     auto obj_pos_data = load_resource(p, loc_folder.files[11]);
     nya_memory::memory_reader obj_pos_reader(obj_pos_data.get_data(), obj_pos_data.get_size());
@@ -810,8 +837,12 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
     zip_entry_write(zip, objects_str.c_str(), objects_str.size());
     zip_entry_close(zip);
 
+    printf("\tobject textures\n");
+
     for (auto tidx: loc_folder.folders[1].files)
         write_texture_ntxr_hex_id(load_resource(p, tidx), "objects/tex", zip);
+
+    printf("\tother\n");
 
     if (eff_folder.files.size() > 2)
         write_entry(p, eff_folder.files[2], "sky.sph", zip);
@@ -857,13 +888,9 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
             else if (name == ".LevelCorrection.Out.Max.G") out_max.y = f / 255.0f;
             else if (name == ".LevelCorrection.Out.Max.B") out_max.z = f / 255.0f;
         }
-
+        
         write_color_curve(in_min, in_gamma, in_max, out_min, out_max, zip);
     }
-
-    int tex_count = 0;
-    for (auto tidx: loc_folder.folders[2].files)
-        write_texture_ntxr(load_resource(p, tidx), tex_name("land", tex_count++, "tga"), zip);
 
     std::string info_str = "<!--Open Horizon location-->\n";
     info_str += "<location name=\"" + name + "\">\n";
@@ -889,7 +916,11 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
         auto hdata = load_resource(p, loc_folder.files[5]);
         auto uhdata = (uint32_t *)hdata.get_data();
         for (int i = 0; i < hdata.get_size()/4; ++i, ++uhdata)
+        {
             *uhdata = swap_bytes(*uhdata);
+            if (*(float *)uhdata > 9990.0f)
+                *(float *)uhdata = -9999.0f; //make consistent with ACAH
+        }
         zip_entry_open(zip, "heights.bin");
         zip_entry_write(zip, hdata.get_data(), hdata.get_size());
         zip_entry_close(zip);
@@ -937,24 +968,32 @@ int main(int argc, const char * argv[])
     cdp_file pak4;
     pac5_file pak5;
     pac6_file pak6;
-
+/*
     if (pak4.open((src_path + "DATA.CDP").c_str()))
     {
         for (int i = 1, idx = 0; i <= 100; ++i, ++idx)
         {
+            printf("Convertiong AC4 location: %d\n", idx);
+
             nya_memory::tmp_buffer_scoped b(pak4.get_file_size(i));
             if (!pak4.read_file_data(i, b.get_data()))
                 continue;
 
             convert_location4(b.get_data(), b.get_size(), loc_name("AC4", idx), loc_filename(dst_path + "ac4", idx));
         }
+
+        printf("Done\n");
     }
-    else if (pak5.open((src_path + "DATA.PAC").c_str()))
+    else
+*/
+    if (pak5.open((src_path + "DATA.PAC").c_str()))
     {
-        if (pak5.get_files_count() < 1000) //ac5
+        if (pak5.get_files_count() < 1200) //ac5
         {
             for (int i = 3, idx = 0; i <= 72; ++i, ++idx)
             {
+                printf("Converting AC5 location: %d\n", idx);
+
                 nya_memory::tmp_buffer_scoped b(pak5.get_file_size(i));
                 if (!pak5.read_file_data(i, b.get_data()))
                     continue;
@@ -966,6 +1005,8 @@ int main(int argc, const char * argv[])
         {
             for (int i = 8, idx = 0; i <= 116; ++i, ++idx)
             {
+                printf("Converting ACZ location: %d\n", idx);
+
                 nya_memory::tmp_buffer_scoped b(pak5.get_file_size(i));
                 if (!pak5.read_file_data(i, b.get_data()))
                     continue;
@@ -973,17 +1014,23 @@ int main(int argc, const char * argv[])
                 convert_location5(b.get_data(), b.get_size(), loc_name("ACZ", idx), loc_filename(dst_path + "acz", idx));
             }
         }
+
+        printf("Done\n");
     }
     else if (pak6.open((src_path + "DATA00.PAC").c_str()))
     {
         for (int i = 119, idx = 0; i <= 133; ++i, ++idx)
         {
+            printf("Converting AC6 location: %d\n", idx);
+
             nya_memory::tmp_buffer_scoped b(pak6.get_file_size(i));
             if (!pak6.read_file_data(i, b.get_data()))
                 continue;
 
             convert_location6(b.get_data(), b.get_size(), loc_name("AC6", idx), loc_filename(dst_path + "ac6", idx));
         }
+
+        printf("Done\n");
     }
     else
         printf("No data found in src directory.\n");
