@@ -147,6 +147,9 @@ private:
     const static unsigned int location_size = 16;
     unsigned char m_height_patches[location_size * location_size];
     std::vector<float> m_heights;
+    int m_height_quad_size = 0;
+    int m_height_quad_frags = 0;
+    int m_height_subquads_per_quad = 0;
 
     std::vector<mesh> m_meshes;
 

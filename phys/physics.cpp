@@ -7,6 +7,8 @@
 #include "math/scalar.h"
 #include "memory/memory_reader.h"
 #include "containers/fhm.h"
+#include "util/location.h"
+#include "util/xml.h"
 #include <algorithm>
 
 namespace phys
@@ -42,6 +44,50 @@ void world::set_location(const char *name)
     m_heights.clear();
     m_meshes.clear();
     m_qtree = nya_math::quadtree();
+
+    m_height_quad_size = 1024;
+    m_height_quad_frags = 8;
+    m_height_subquads_per_quad = 8;
+
+    if (is_native_location(name))
+    {
+        auto &zip = get_native_location_provider(name);
+
+        pugi::xml_document doc;
+        if (!load_xml(zip.access("info.xml"), doc))
+            return;
+
+        auto tiles = doc.first_child().child("tiles");
+        m_height_quad_size = tiles.attribute("quad_size").as_int();
+        m_height_quad_frags = tiles.attribute("quad_frags").as_int();
+        m_height_subquads_per_quad = tiles.attribute("subfrags").as_int();
+
+        auto height_off = load_resource(zip.access("height_offsets.bin"));
+        assert(height_off.get_size() >= sizeof(m_height_patches));
+        height_off.copy_to(m_height_patches, sizeof(m_height_patches));
+        height_off.free();
+
+        auto heights = load_resource(zip.access("heights.bin"));
+        std::string format = doc.first_child().child("heightmap").attribute("format").as_string();
+        if (format == "byte")
+        {
+            m_heights.resize(heights.get_size());
+            auto hdata = (unsigned char *)heights.get_data();
+            const float hscale = doc.first_child().child("heightmap").attribute("scale").as_float(1.0f);
+            for (size_t i = 0; i < m_heights.size(); ++i)
+                m_heights[i] = hdata[i] * hscale;
+        }
+        else if (format == "float")
+        {
+            m_heights.resize(heights.get_size()/4);
+            heights.copy_to(m_heights.data(), heights.get_size());
+        }
+        heights.free();
+
+        //ToDo: objects
+
+        return;
+    }
 
     fhm_file fhm;
     if (!fhm.open((std::string("Map/") + name + ".fhm").c_str()))
@@ -373,44 +419,36 @@ float world::get_height(float x, float z, bool include_objects) const
     if (m_heights.empty())
         return 0.0f;
 
-    const int patch_size = 1024;
-    const unsigned int quads_per_patch = 8, hquads_per_quad = 8;
+    const int hpatch_size = m_height_quad_size / m_height_subquads_per_quad;
 
-    const int hpatch_size = patch_size / hquads_per_quad;
-
-    const int base = location_size/2 * patch_size * quads_per_patch;
+    const int base = location_size/2 * m_height_quad_size * m_height_quad_frags;
 
     const int idx_x = int(x + base) / hpatch_size;
     const int idx_z = int(z + base) / hpatch_size;
 
-    if (idx_x < 0 || idx_x + 1 >= location_size * quads_per_patch * hquads_per_quad)
+    if (idx_x < 0 || idx_x + 1 >= location_size * m_height_quad_frags * m_height_subquads_per_quad)
         return 0.0f;
 
-    if (idx_z < 0 || idx_z + 1 >= location_size * quads_per_patch * hquads_per_quad)
+    if (idx_z < 0 || idx_z + 1 >= location_size * m_height_quad_frags * m_height_subquads_per_quad)
         return 0.0f;
 
-    const int tmp_idx_x = idx_x / hquads_per_quad;
-    const int tmp_idx_z = idx_z / hquads_per_quad;
-
-    const int pidx_x = tmp_idx_x / quads_per_patch;
-    const int pidx_z = tmp_idx_z / quads_per_patch;
-
-    const int qidx_x = tmp_idx_x - pidx_x * hquads_per_quad;
-    const int qidx_z = tmp_idx_z - pidx_z * hquads_per_quad;
-
-    const int hpw = quads_per_patch*quads_per_patch+1;
+    const int pidx_x = idx_x / (m_height_quad_frags * m_height_subquads_per_quad);
+    const int pidx_z = idx_z / (m_height_quad_frags * m_height_subquads_per_quad);
+    const int hpw = m_height_quad_frags * m_height_subquads_per_quad + 1;
     const int h_idx = m_height_patches[pidx_z * location_size + pidx_x] * hpw * hpw;
 
-    const int hpp = (hpw-1)/quads_per_patch;
-    const float *h = &m_heights[h_idx+(qidx_x + qidx_z * hpw)*hpp];
+    const int qidx_x = idx_x / m_height_subquads_per_quad - pidx_x * m_height_quad_frags;
+    const int qidx_z = idx_z / m_height_subquads_per_quad - pidx_z * m_height_quad_frags;
 
-    const unsigned int hhpw = hquads_per_quad*hquads_per_quad+1;
+    const float *h = &m_heights[h_idx + (qidx_x + qidx_z * hpw) * m_height_subquads_per_quad];
 
-    const int hidx_x = idx_x - tmp_idx_x * hquads_per_quad;
-    const int hidx_z = idx_z - tmp_idx_z * hquads_per_quad;
+    const int hidx_x = idx_x % m_height_subquads_per_quad;
+    const int hidx_z = idx_z % m_height_subquads_per_quad;
 
     const float kx = (x + base) / hpatch_size - idx_x;
     const float kz = (z + base) / hpatch_size - idx_z;
+
+    const unsigned int hhpw = m_height_quad_frags * m_height_subquads_per_quad + 1;
 
     const float h00 = h[hidx_x + hidx_z * hhpw];
     const float h10 = h[hidx_x + 1 + hidx_z * hhpw];
