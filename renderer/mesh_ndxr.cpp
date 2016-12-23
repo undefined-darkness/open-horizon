@@ -430,7 +430,7 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
                 prev_skining_off = ndxr_verts = (float *)reader.get_data();
             }
 
-            const std::vector<ushort> known_formats = {4096,4102,4112,4358,4359,4369,4371,4608,4614,4870,4871,8454,8455,8710,8966,8967};
+            const std::vector<ushort> known_formats = {4096,4102,4112,4358,4359,4369,4371,4608,4614,4865,4870,4871,8454,8455,8710,8966,8967};
             if(std::find(known_formats.begin(), known_formats.end(), format) == known_formats.end())
             {
                 nya_log::log()<<"unknown vertex format: "<<format<<"\t"<<to_bits(format)<<"\n";
@@ -470,31 +470,50 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
 
                 if (format == 4102) ++ndxr_verts; //ToDo?
 
-                if (has_normal)
+                if (format == 4865)
                 {
-                    memcpy(verts[i].normal, ndxr_verts, sizeof(verts[0].normal));
+                    ++ndxr_verts;
                     if (endianness)
-                        for (auto &n: verts[i].normal)
-                            n = swap_bytes(n);
+                    {
+                        auto n = *(nya_math::vec3 *)ndxr_verts;
+                        change_endianness(n);
+                        float3_to_half3(&n.x, verts[i].normal);
+                    }
+                    else
+                        float3_to_half3(ndxr_verts, verts[i].normal);
+                    ndxr_verts += 3;
+                    ++ndxr_verts;
+
                     assume(is_normal(verts[i].normal));
-                    ndxr_verts += 2;
                 }
-
-                if (has_tbn)
+                else
                 {
-                    memcpy(verts[i].bitangent, ndxr_verts, sizeof(verts[0].bitangent));
-                    if (endianness)
-                        for (auto &n: verts[i].bitangent)
-                            n = swap_bytes(n);
-                    assume(is_normal(verts[i].bitangent));
-                    ndxr_verts += 2;
+                    if (has_normal)
+                    {
+                        memcpy(verts[i].normal, ndxr_verts, sizeof(verts[0].normal));
+                        if (endianness)
+                            for (auto &n: verts[i].normal)
+                                n = swap_bytes(n);
+                        assume(is_normal(verts[i].normal));
+                        ndxr_verts += 2;
+                    }
 
-                    memcpy(verts[i].tangent, ndxr_verts, sizeof(verts[0].tangent));
-                    if (endianness)
-                        for (auto &n: verts[i].tangent)
-                            n = swap_bytes(n);
-                    assume(is_normal(verts[i].tangent));
-                    ndxr_verts += 2;
+                    if (has_tbn)
+                    {
+                        memcpy(verts[i].bitangent, ndxr_verts, sizeof(verts[0].bitangent));
+                        if (endianness)
+                            for (auto &n: verts[i].bitangent)
+                                n = swap_bytes(n);
+                        assume(is_normal(verts[i].bitangent));
+                        ndxr_verts += 2;
+
+                        memcpy(verts[i].tangent, ndxr_verts, sizeof(verts[0].tangent));
+                        if (endianness)
+                            for (auto &n: verts[i].tangent)
+                                n = swap_bytes(n);
+                        assume(is_normal(verts[i].tangent));
+                        ndxr_verts += 2;
+                    }
                 }
 
                 if (has_normal && has_color)

@@ -453,18 +453,15 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                     const int idx_x = int(pos.x + base) / hpatch_size;
                     const int idx_z = int(pos.z + base) / hpatch_size;
 
-                    const int tmp_idx_x = idx_x / load_data.subquads_per_quad;
-                    const int tmp_idx_z = idx_z / load_data.subquads_per_quad;
+                    const int qidx_x = idx_x / load_data.subquads_per_quad - px * load_data.quad_frags;
+                    const int qidx_z = idx_z / load_data.subquads_per_quad - py * load_data.quad_frags;
 
-                    const int qidx_x = tmp_idx_x - px * load_data.subquads_per_quad;
-                    const int qidx_z = tmp_idx_z - py * load_data.subquads_per_quad;
+                    const float *h = &load_data.heights[h_idx + (qidx_x + qidx_z * hpw) * load_data.subquads_per_quad];
 
-                    const float *h = &load_data.heights[h_idx+(qidx_x + qidx_z * hpw)*load_data.quad_frags];
+                    const uint hhpw = load_data.quad_frags * load_data.subquads_per_quad + 1;
 
-                    const uint hhpw = load_data.subquads_per_quad * load_data.subquads_per_quad + 1;
-
-                    const int hidx_x = idx_x - tmp_idx_x * load_data.subquads_per_quad;
-                    const int hidx_z = idx_z - tmp_idx_z * load_data.subquads_per_quad;
+                    const int hidx_x = idx_x % load_data.subquads_per_quad;
+                    const int hidx_z = idx_z % load_data.subquads_per_quad;
 
                     const float kx = (pos.x + base) / hpatch_size - idx_x;
                     const float kz = (pos.z + base) / hpatch_size - idx_z;
