@@ -1012,7 +1012,7 @@ int main(int argc, const char * argv[])
         }
         else //acz
         {
-            for (int i = 8, idx = 0; i <= 116; ++i, ++idx)
+            for (int i = 8, idx = 0; i <= 111; ++i, ++idx)
             {
                 printf("Converting ACZ location: %d\n", idx);
 

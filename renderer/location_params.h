@@ -161,7 +161,7 @@ struct location_params
     //ToDo
 
 public:
-    location_params() { sky.sun_dir.y = -1.0f; sky.fog_density = 0.14f * 0.14f; }
+    location_params() { sky.sun_dir.y = -1.0f; sky.fog_density = 0.14f * 0.14f; sky.mapspecular.parts_power = 1.0f; }
 
 public:
     bool load(const char *file_name);
