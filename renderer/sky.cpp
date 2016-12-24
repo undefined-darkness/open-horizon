@@ -190,7 +190,7 @@ bool sky_mesh::load(const char *name)
 
     renderer::sph::color_table ct(t.data[0]);
 
-    solid_sphere s(20000.0, ct);
+    solid_sphere s(64000.0, ct);
 
     m_mesh.set_vertex_data(&s.vertices[0], sizeof(solid_sphere::vert), (unsigned int)s.vertices.size());
     m_mesh.set_colors(sizeof(solid_sphere::vert::pos), 3);

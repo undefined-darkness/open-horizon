@@ -12,12 +12,11 @@ namespace renderer
 bool mesh_sm::load(const void *data, size_t size)
 {
     nya_memory::memory_reader r(data, size);
-    //print_data(r);
 
     struct sm_header
     {
         uint32_t sign;
-        uint32_t unknown_5;
+        uint32_t version;
         float unknown2;
         float unknown3;
         uint32_t node_count;
@@ -33,14 +32,17 @@ bool mesh_sm::load(const void *data, size_t size)
 
     } const header = r.read<sm_header>();
 
+    if (r.get_remained() <= 0)
+        return true;
+
     if (header.sign != '\0MCA')
         return false;
 
     for (auto &z: header.zero) assume(z == 0);
-    assume(header.size + 32 == size);
-    assume(header.unknown_5 == 5);
-    assume(header.unknown_1 == 1);
-    assume(header.node_count == header.groups_count + 1);
+    //assume(header.size + 32 == size);
+    //assume(header.unknown_5 == 5);
+    //assume(header.unknown_1 == 1);
+    //assume(header.node_count == header.groups_count + 1);
 
     if (!r.seek(header.groups_offset))
         return false;
@@ -64,15 +66,15 @@ bool mesh_sm::load(const void *data, size_t size)
         struct group_header
         {
             uint8_t unknown; //about face count x 10
+            uint8_t unknown2;
             uint8_t unknown_zero;
-            uint8_t unknown_zero2;
             uint8_t unknown_96;
-            uint32_t unknown_zero3;
+            uint32_t unknown_zero2;
 
         } const gh = r.read<group_header>();
 
-        assume(gh.unknown_zero == 0 && gh.unknown_zero2 == 0);
-        assume(gh.unknown_zero3 == 0);
+        assume(gh.unknown_zero == 0);
+        assume(gh.unknown_zero2 == 0);
         assume(gh.unknown_96 == 96);
 
         while (r.get_remained() > 4)
@@ -117,15 +119,58 @@ bool mesh_sm::load(const void *data, size_t size)
                 {
                     assume(eh.count == 1);
                     const uint32_t vcount = r.read<uint32_t>();
-                    const uint32_t unknown_1 = r.read<uint32_t>();
-                    assume(unknown_1 == 1);
-                    assume(eh.count == 1);
+                    const uint32_t unknown_1_0 = r.read<uint32_t>();
+                    assume(unknown_1_0 == 1 || unknown_1_0 == 0);
+
+                    if (eh.type == 108)
+                        r.skip(8);
 
                     f.verts.resize(vcount);
                     continue;
                 }
 
                 assume(eh.count == f.verts.size());
+
+                if (eh.type == 108)
+                {
+                    switch(j)
+                    {
+                        case 1:
+                            for (auto &v: f.verts)
+                            {
+                                v.pos = r.read<nya_math::vec3>();
+                                r.skip(4); //1.0f
+                            }
+                            break;
+
+                        case 2:
+                            for (auto &v: f.verts)
+                            {
+                                v.normal = r.read<nya_math::vec3>();
+                                r.skip(4); //1.0f
+                            }
+                            break;
+
+                        case 3:
+                            for (auto &v: f.verts)
+                            {
+                                auto c = r.read<nya_math::vec4>() / 255.0f;
+                                v.color[0] = uint8_t(c.x);
+                                v.color[1] = uint8_t(c.y);
+                                v.color[2] = uint8_t(c.z);
+                                v.color[3] = c.w > 127.0f ? 255 : uint8_t(c.w) * 2;
+                            }
+                            break;
+
+                        case 4:
+                            for (auto &v: f.verts)
+                            {
+                                v.tc = r.read<nya_math::vec2>();
+                                r.skip(4*2); //1.0f 0.0f
+                            }
+                            break;
+                    }
+                }
 
                 switch (eh.type)
                 {

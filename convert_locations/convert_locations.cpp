@@ -27,6 +27,10 @@
 
 //------------------------------------------------------------
 
+const std::string version = "0.1";
+
+//------------------------------------------------------------
+
 inline std::string base_name(std::string base, int idx) { return base + (idx < 100 ? "0" : "" ) + (idx < 10 ? "0" : "" ) + std::to_string(idx); }
 inline std::string tex_name(std::string base, int idx, std::string extension = "tga") { return base_name(base, idx) + "." + extension; }
 inline std::string loc_name(std::string base, int idx) { return base_name(base + " ", idx); }
@@ -154,10 +158,13 @@ std::string write_mesh(nya_memory::tmp_buffer_ref data, std::string folder, std:
             not_transparent = true;
     }
 
-    if (transparent)
-        assume(!not_transparent);
+    if (transparent && not_transparent)
+        printf("warning: mmixed transparency in mesh %s\n", name.c_str());
 
-    if (transparent)
+    //if (transparent)
+    //    assume(!not_transparent);
+
+    if (!not_transparent)
         name.append("_transparent");
 
     auto vdata = w.get_string(name + ".mtl");
@@ -253,7 +260,7 @@ bool convert_location4(const void *data, size_t size, std::string name, std::str
     }
 
     std::string info_str = "<!--Open Horizon location-->\n";
-    info_str += "<location name=\"" + name + "\">\n";
+    info_str += "<location name=\"" + name + "\" convertor_version=\"" + version + "\" >\n";
 
     //ToDo
 
@@ -398,7 +405,7 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
     tc_ind.free();
 
     std::string info_str = "<!--Open Horizon location-->\n";
-    info_str += "<location name=\"" + name + "\">\n";
+    info_str += "<location name=\"" + name + "\" convertor_version=\"" + version + "\" >\n";
 
     nya_memory::tmp_buffer_scoped res(load_resource(p, 7));
     nya_memory::tmp_buffer_scoped pal_res(load_resource(p, 8));
@@ -893,7 +900,7 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
     }
 
     std::string info_str = "<!--Open Horizon location-->\n";
-    info_str += "<location name=\"" + name + "\">\n";
+    info_str += "<location name=\"" + name + "\" convertor_version=\"" + version + "\" >\n";
 
     if (loc_folder.files.size() > 11)
     {
@@ -964,6 +971,8 @@ int main(int argc, const char * argv[])
         if (!dst_path.empty() && dst_path.back() != '/')
             dst_path.push_back('/');
     }
+
+    create_path(dst_path.c_str());
 
     cdp_file pak4;
     pac5_file pak5;
