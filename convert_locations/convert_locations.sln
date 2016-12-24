@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "convert_locations", "convert_locations.vcxproj", "{520B1BF3-3AC8-4CF2-8AC6-BF3095276A0A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{35C1C4FC-C0E4-4DA2-B857-D23D6F7832D0} = {35C1C4FC-C0E4-4DA2-B857-D23D6F7832D0}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nya_engine_desktop_opengl", "..\deps\nya-engine\build\vs2015\nya_engine_desktop_opengl.vcxproj", "{35C1C4FC-C0E4-4DA2-B857-D23D6F7832D0}"
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\deps\nya-engine\build\vs2015\nya_engine.vcxitems*{35c1c4fc-c0e4-4da2-b857-d23d6f7832d0}*SharedItemsImports = 4
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{520B1BF3-3AC8-4CF2-8AC6-BF3095276A0A}.Debug|x64.ActiveCfg = Debug|Win32
+		{520B1BF3-3AC8-4CF2-8AC6-BF3095276A0A}.Debug|x86.ActiveCfg = Debug|Win32
+		{520B1BF3-3AC8-4CF2-8AC6-BF3095276A0A}.Debug|x86.Build.0 = Debug|Win32
+		{520B1BF3-3AC8-4CF2-8AC6-BF3095276A0A}.Release|x64.ActiveCfg = Release|Win32
+		{520B1BF3-3AC8-4CF2-8AC6-BF3095276A0A}.Release|x86.ActiveCfg = Release|Win32
+		{520B1BF3-3AC8-4CF2-8AC6-BF3095276A0A}.Release|x86.Build.0 = Release|Win32
+		{520B1BF3-3AC8-4CF2-8AC6-BF3095276A0A}.Release|x86.Deploy.0 = Release|Win32
+		{35C1C4FC-C0E4-4DA2-B857-D23D6F7832D0}.Debug|x64.ActiveCfg = Debug|x64
+		{35C1C4FC-C0E4-4DA2-B857-D23D6F7832D0}.Debug|x64.Build.0 = Debug|x64
+		{35C1C4FC-C0E4-4DA2-B857-D23D6F7832D0}.Debug|x86.ActiveCfg = Debug|Win32
+		{35C1C4FC-C0E4-4DA2-B857-D23D6F7832D0}.Debug|x86.Build.0 = Debug|Win32
+		{35C1C4FC-C0E4-4DA2-B857-D23D6F7832D0}.Release|x64.ActiveCfg = Release|x64
+		{35C1C4FC-C0E4-4DA2-B857-D23D6F7832D0}.Release|x64.Build.0 = Release|x64
+		{35C1C4FC-C0E4-4DA2-B857-D23D6F7832D0}.Release|x86.ActiveCfg = Release|Win32
+		{35C1C4FC-C0E4-4DA2-B857-D23D6F7832D0}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

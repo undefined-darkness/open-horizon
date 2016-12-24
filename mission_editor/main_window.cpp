@@ -309,7 +309,7 @@ void main_window::on_new_mission()
     m_location = list[idx].first;
     m_scene_view->load_location(m_location);
     scene_view::object p;
-    plr.attributes["align"] = "ally";
+    p.attributes["align"] = "ally";
     p.pos.y = m_scene_view->get_height(p.pos.x, p.pos.z);
     p.y = 100.0f;
     m_scene_view->set_player(p);
