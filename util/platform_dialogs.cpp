@@ -6,8 +6,8 @@
 #include "string.h"
 
 #ifdef QT_GUI_LIB
-    #include <QMessageBox.h>
-    #include <QFileDialog.h>
+    #include <QMessageBox>
+    #include <QFileDialog>
 #elif _WIN32
     #undef APIENTRY
     #include <windows.h>

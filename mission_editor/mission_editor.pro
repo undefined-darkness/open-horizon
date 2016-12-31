@@ -5,6 +5,7 @@
 
 QT += core gui opengl widgets
 win32: LIBS += -lopengl32 -lwinmm
+linux: LIBS += -lz -llua5.2
 macx: LIBS += -lz
 win32: LIBS += ../deps/zlib-1.2.8/zlib.lib
 
@@ -14,12 +15,14 @@ win32: LIBS += ../deps/lua-5.2.4/lua52.lib
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_CXXFLAGS += -msse -msse2
 
+linux: QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-parameter -Wno-reorder
 macx: QMAKE_CXXFLAGS_WARN_ON = -Wall -Wno-unused-parameter -Wno-reorder
 
 TARGET = mission_editor
 TEMPLATE = app
 
 win32: PLATFORM_NAME = win32
+linux: PLATFORM_NAME = linux
 macx: PLATFORM_NAME = mac
 
 CONFIG(debug, debug | release): BIN_DIR_NAME = $${PLATFORM_NAME}_debug
@@ -103,5 +106,13 @@ HEADERS += \
     ../deps/zip/src/miniz.h \
     ../deps/zip/src/zip.h \
     ../deps/nya-engine/extensions/zip_resources_provider.h
+
+#-------------------------------------------------
+
+copydata.commands = $(COPY_DIR) $$_PRO_FILE_PWD_/../resources/* $$DESTDIR
+first.depends = $(first) copydata
+export(first.depends)
+export(copydata.commands)
+QMAKE_EXTRA_TARGETS += first copydata
 
 #-------------------------------------------------

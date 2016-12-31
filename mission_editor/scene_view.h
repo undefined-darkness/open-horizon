@@ -4,7 +4,18 @@
 
 #pragma once
 
-#include <QOpenGLWidget>
+#include <QtGlobal>
+#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
+    #define LEGACY_QGL
+#endif
+
+#ifdef LEGACY_QGL
+    #include <QGLWidget>
+    #define QOpenGLWidget QGLWidget
+#else
+    #include <QOpenGLWidget>
+#endif
+
 #include "renderer/location.h"
 #include "renderer/model.h"
 #include "phys/physics.h"
