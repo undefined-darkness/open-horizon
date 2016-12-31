@@ -788,7 +788,7 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
     if (load_xml(zip.access("objects.xml"), doc))
     {
         std::map<std::string, nya_scene::texture> textures;
-        std::vector<std::string> loaded;
+        std::map<std::string, size_t> loaded;
         std::vector<nya_math::aabb> boxes;
         for (auto o = doc.first_child().child("object"); o; o = o.next_sibling())
         {
@@ -803,11 +803,10 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
             const bool transparent = file.find("_transparent") != std::string::npos;
             auto &meshes = transparent ? m_mptx_transparent_meshes : m_mptx_meshes;
 
-            auto l = std::find(loaded.begin(), loaded.end(), file);
+            auto l = loaded.find(file);
             if (l != loaded.end())
             {
-                auto idx = l - loaded.begin();
-
+                auto idx = l->second;
                 meshes[idx].instances.resize( meshes[idx].instances.size() + 1);
                 auto &i = meshes[idx].instances.back();
 
@@ -819,7 +818,7 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
                 continue;
             }
 
-            loaded.push_back(file);
+            loaded[file] = meshes.size();
             meshes.resize(meshes.size() + 1);
             boxes.resize(boxes.size()+1);
 
