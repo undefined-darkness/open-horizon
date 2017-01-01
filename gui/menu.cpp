@@ -284,6 +284,19 @@ void menu::update(int dt, const menu_controls &controls)
                     send_event(e);
 
                 set_screen(last);
+
+                auto it = m_choices.find(last);
+                if (it != m_choices.end())
+                {
+                    for (int i = 0; i < (int)m_entries.size(); ++i)
+                    {
+                        if (m_entries[i].name == it->second)
+                        {
+                            m_selected = (uvalue)i;
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
@@ -625,7 +638,12 @@ void menu::send_event(const std::string &event)
         m_vars[var] = value;
         config::set_var(var, value);
         if (var == "screen")
+        {
+            if (!m_screens.empty() && m_selected < m_entries.size())
+                m_choices[m_screens.back()] = m_entries[m_selected].name;
+
             set_screen(m_vars[var]);
+        }
 
         if (var == "master_volume" || var == "music_volume")
         {

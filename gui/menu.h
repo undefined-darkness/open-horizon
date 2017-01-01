@@ -111,6 +111,7 @@ private:
     std::vector<entry> m_entries;
     uvalue m_selected;
     std::list<std::string> m_screens;
+    std::map<std::string, std::wstring> m_choices;
     std::vector<std::string> m_back_events;
 
     tiles m_bkg;
