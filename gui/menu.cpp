@@ -112,8 +112,7 @@ void menu::draw(const render &r)
     int x = 155, y = 155;
     m_fonts.draw_text(r, m_title.c_str(), "ZurichBD_M", x, 80, m_font_color);
     const int count = 15;
-    for (int i = ((m_selected + (m_selected >= (count - 1) ? 1 : 0)) / (count - 1)) * (count - 2), j = 0;
-         i < (int)m_entries.size() && j < count; ++i, ++j)
+    for (int i = m_selected / (count - 1) * (count - 1), j = 0; i < (int)m_entries.size() && j < count; ++i, ++j)
     {
         auto &e = m_entries[i];
         if (m_selected == i)

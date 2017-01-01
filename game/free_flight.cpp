@@ -15,9 +15,7 @@ void free_flight::start(const char *plane, int color, const char *location)
     m_respawn_time = 0;
 
     m_world.set_ally_handler(std::bind(&free_flight::is_ally, std::placeholders::_1, std::placeholders::_2));
-
-    m_spawn_pos.x = -300.0f, m_spawn_pos.z = 2000.0f;
-    m_spawn_pos.y = m_world.get_height(m_spawn_pos.x, m_spawn_pos.z) + 100.0f;
+    update_spawn_pos();
 }
 
 //------------------------------------------------------------
@@ -73,8 +71,7 @@ void free_flight::set_location(const char *location)
     if (!m_player)
         return;
 
-    m_spawn_pos.x = -300.0f, m_spawn_pos.z = 2000.0f;
-    m_spawn_pos.y = m_world.get_height(m_spawn_pos.x, m_spawn_pos.z) + 100.0f;
+    update_spawn_pos();
 
     m_player->set_pos(m_spawn_pos);
     m_player->set_rot(nya_math::quat());
@@ -102,4 +99,22 @@ void free_flight::set_plane(const char *plane, int color)
 }
 
 //------------------------------------------------------------
+
+void free_flight::update_spawn_pos()
+{
+    const float height_off = 100.0f;
+    m_spawn_pos.set(-300.0f, height_off, 2000.0f);
+
+    //adjust start height so first 10 seconds of the flight wil be safe
+    for (int i = 0; i < 10; ++i)
+    {
+        const float mps = 800.0f / 3.6f;
+        const float h = m_world.get_height(m_spawn_pos.x, m_spawn_pos.z + mps * i) + height_off;
+        if (m_spawn_pos.y < h)
+            m_spawn_pos.y = h;
+    }
 }
+
+//------------------------------------------------------------
+}
+

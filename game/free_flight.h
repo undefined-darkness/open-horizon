@@ -25,6 +25,8 @@ public:
 protected:
     static bool is_ally(const plane_ptr &a, const plane_ptr &b) { return true; }
 
+    void update_spawn_pos();
+
     plane_ptr m_player;
     ivalue m_respawn_time;
     nya_math::vec3 m_spawn_pos;
