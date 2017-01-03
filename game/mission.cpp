@@ -3,6 +3,7 @@
 //
 
 #include "mission.h"
+#include "world.h"
 #include "extensions/zip_resources_provider.h"
 #include "util/xml.h"
 

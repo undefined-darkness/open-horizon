@@ -3,6 +3,7 @@
 //
 
 #include "free_flight.h"
+#include "world.h"
 
 namespace game
 {

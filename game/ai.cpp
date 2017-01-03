@@ -3,6 +3,7 @@
 //
 
 #include "ai.h"
+#include "world.h"
 
 namespace game
 {

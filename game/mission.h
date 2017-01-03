@@ -5,6 +5,7 @@
 #pragma once
 
 #include "game.h"
+#include "units.h"
 #include "util/script.h"
 
 namespace game

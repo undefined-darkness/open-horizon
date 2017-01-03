@@ -92,6 +92,15 @@
     <ClCompile Include="../game/hangar.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
+    <ClCompile Include="../game/plane.cpp">
+        <Filter>Source Files\game</Filter>
+    </ClCompile>
+    <ClCompile Include="../game/units.cpp">
+        <Filter>Source Files\game</Filter>
+    </ClCompile>
+    <ClCompile Include="../game/world.cpp">
+        <Filter>Source Files\game</Filter>
+    </ClCompile>
     <ClCompile Include="..\gui\hud.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
@@ -234,6 +243,18 @@
     </ClInclude>
     <ClInclude Include="..\game\deathmatch.h">
       <Filter>Source Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\plane.h">
+        <Filter>Source Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\units.h">
+        <Filter>Source Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\world.h">
+        <Filter>Source Files\game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\game\weapon_information.h">
+        <Filter>Source Files\game</Filter>
     </ClInclude>
     <ClInclude Include="../renderer/aircraft.h">
       <Filter>Source Files\renderer</Filter>

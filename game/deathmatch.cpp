@@ -3,6 +3,7 @@
 //
 
 #include "deathmatch.h"
+#include "world.h"
 #include "util/xml.h"
 
 namespace game

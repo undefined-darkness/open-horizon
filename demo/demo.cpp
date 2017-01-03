@@ -9,6 +9,7 @@
 #include "game/network_client.h"
 #include "game/network_server.h"
 #include "game/hangar.h"
+#include "game/world.h"
 #include "gui/menu.h"
 
 #include "scene/camera.h"

@@ -16,8 +16,14 @@ namespace game
 {
 //------------------------------------------------------------
 
-std::vector<std::string> get_aircraft_ids(const std::vector<std::string> &roles);
+ //ToDo
+static const int missile_damage = 80;
+static const float missile_dmg_radius = 20;
+static const float bomb_dmg_radius = 80;
 
+//------------------------------------------------------------
+
+std::vector<std::string> get_aircraft_ids(const std::vector<std::string> &roles);
 const std::wstring &get_aircraft_name(const std::string &id);
 
 //------------------------------------------------------------
@@ -102,116 +108,6 @@ struct wpn_params
 
 //------------------------------------------------------------
 
-struct missile;
-struct bomb;
-
-//------------------------------------------------------------
-
-struct plane: public object, public std::enable_shared_from_this<plane>
-{
-    std::wstring name;
-    std::wstring player_name;
-
-    net_plane_ptr net;
-    game_data local_game_data; //local general data
-    game_data net_game_data; //sync over network
-    plane_controls controls;
-    plane_controls last_controls;
-    ivalue change_target_hold_time;
-
-    enum { change_target_hold_max_time = 500 };
-
-    phys::plane_ptr phys;
-    renderer::aircraft_ptr render;
-    bvalue special_weapon_selected;
-    bvalue need_fire_missile;
-    ivalue missile_bay_time;
-    ivalue mgun_fire_update;
-    ivalue mgp_fire_update;
-    bvalue jammed;
-    ivalue ecm_time;
-
-    wpn_params missile;
-    ivalue missile_cooldown[2];
-    std::vector<ivalue> missile_mount_cooldown;
-    ivalue missile_mount_idx;
-    ivalue missile_count, missile_max_count;
-
-    wpn_params special;
-    ivalue special_cooldown[2];
-    std::vector<ivalue> special_mount_cooldown;
-    ivalue special_mount_idx;
-    ivalue special_count, special_max_count;
-    bvalue special_internal;
-
-    fvalue hit_radius;
-
-    sound::pack sounds;
-    std::map<std::string, sound::source_ptr> sound_srcs;
-    std::map<std::string, ivalue> sounds_ui;
-    typedef std::pair<vec3, sound::source_ptr> sound_rel_src;
-    std::vector<sound_rel_src> sound_rel_srcs;
-
-    std::vector<nya_math::vec3> alert_dirs;
-
-    struct target_lock
-    {
-        object_wptr target;
-        ivalue locked;
-        fvalue dist;
-        fvalue cos;
-
-        bool can_lock(const wpn_params &p) const { return dist < p.lockon_range && cos > p.lockon_angle_cos; }
-    };
-
-    std::vector<target_lock> targets;
-    ivalue lock_timer;
-
-    w_ptr<game::missile> saam_missile;
-
-    struct bomb_mark
-    {
-        w_ptr<bomb> b;
-        vec3 p;
-        bvalue need_update;
-    };
-
-    std::vector<bomb_mark> bomb_marks;
-
-    void reset_state();
-    void set_pos(const vec3 &pos) { if (phys) phys->pos = pos; }
-    void set_rot(const quat &rot) { if (phys) phys->rot = rot; }
-    vec3 get_dir() { return get_rot().rotate(vec3::forward()); }
-    void select_target(const object_wptr &o);
-    void update(int dt, world &w);
-    void update_hud(world &w, gui::hud &h);
-    bool is_ecm_active() const { return special.id=="ECM" && ecm_time > 0;}
-
-    //object
-public:
-    virtual vec3 get_pos() override { return phys ? phys->pos : vec3(); }
-    virtual vec3 get_vel() override { return phys ? phys->vel : vec3(); }
-    virtual quat get_rot() override { return phys ? phys->rot : quat(); }
-    virtual std::wstring get_name() override { return player_name; }
-    virtual std::wstring get_type_name() override { return name; }
-    virtual bool is_targetable(bool air, bool ground) override { return air && hp > 0; }
-    virtual bool is_ally(const plane_ptr &p, world &w) override;
-    virtual void take_damage(int damage, world &w, bool net_src = true) override;
-    virtual float get_hit_radius() override { return hit_radius; }
-
-private:
-    void update_sound(world &w, std::string name, bool enabled, float volume = 1.0f);
-    void update_ui_sound(world &w, std::string name, bool enabled);
-    void play_relative(world &w, std::string name, int idx, vec3 offset);
-    void update_targets(world &w);
-    void update_render(world &w);
-    void update_weapons_hud();
-    bool is_mg_bay_ready();
-    bool is_special_bay_ready();
-};
-
-//------------------------------------------------------------
-
 struct missile
 {
     net_missile_ptr net;
@@ -259,170 +155,6 @@ typedef ptr<bomb> bomb_ptr;
 
 //------------------------------------------------------------
 
-struct unit;
-typedef w_ptr<unit> unit_wptr;
-typedef ptr<unit> unit_ptr;
-
-struct unit: public object
-{
-    virtual void set_active(bool a) { m_active = a; if (m_render.is_valid()) m_render->visible = a; }
-
-    typedef std::list<vec3> path;
-    virtual void set_path(const path &p, bool loop) {}
-    virtual void set_follow(object_wptr target) {}
-    virtual void set_target(object_wptr target) {}
-
-    enum target_search_mode { search_all, search_player, search_none };
-    virtual void set_target_search(target_search_mode mode) {}
-
-    enum align { align_target, align_enemy, align_ally, align_neutral };
-    virtual void set_align(align a) { m_align = a; }
-    virtual void set_type_name(std::wstring name) { m_type_name = name; }
-
-    virtual void set_pos(const vec3 &p) { if (m_render.is_valid()) m_render->mdl.set_pos(p + m_dpos); }
-    virtual void set_yaw(angle_deg yaw) { if (m_render.is_valid()) m_render->mdl.set_rot(quat(0.0f, yaw, 0.0f)); }
-
-    virtual void set_speed(float speed) {}
-    virtual void set_speed_limit(float speed) {}
-
-    virtual bool is_active() const { return m_active; }
-    virtual align get_align() const { return m_align; }
-
-    virtual bool is_ally(const unit_ptr &u) const;
-
-    //object
-public:
-    virtual vec3 get_pos() override { return m_render.is_valid() ? m_render->mdl.get_pos() - m_dpos : vec3(); }
-    virtual quat get_rot() override { return m_render.is_valid() ? m_render->mdl.get_rot() : quat(); }
-    virtual std::wstring get_type_name() { return m_type_name; }
-    virtual bool get_tgt() { return m_align == align_target; }
-    virtual bool is_ally(const plane_ptr &p, world &w) override { return m_align > align_enemy; }
-    virtual void take_damage(int damage, world &w, bool net_src = true) override;
-
-public:
-    virtual void load_model(std::string model, float dy, renderer::world &w)
-    {
-        m_render = w.add_object(model.c_str());
-        m_dpos.y = dy;
-
-        if (m_render.is_valid())
-            m_render->visible = m_active;
-    }
-
-    virtual void update(int dt, world &w) {}
-
-protected:
-    bool m_active = true;
-    renderer::object_ptr m_render;
-    vec3 m_dpos;
-    align m_align;
-    std::wstring m_type_name;
-};
-
-//------------------------------------------------------------
-
-class world
-{
-public:
-    void set_location(const char *name);
-    void stop_sounds();
-
-    plane_ptr add_plane(const char *preset, const char *player_name, int color, bool player, net_plane_ptr ptr = net_plane_ptr());
-    missile_ptr add_missile(const plane_ptr &p, net_missile_ptr ptr = net_missile_ptr());
-    missile_ptr add_missile(const char *id, const renderer::model &m, net_missile_ptr ptr = net_missile_ptr());
-    bomb_ptr add_bomb(const plane_ptr &p);
-    bomb_ptr add_bomb(const char *id, const renderer::model &m);
-    unit_ptr add_unit(const char *id);
-
-    void spawn_explosion(const vec3 &pos, float radius, bool net_src = true);
-    void spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, const plane_ptr &owner);
-
-    bool area_damage(const vec3 &pos, float radius, int damage, const plane_ptr &owner);
-
-    void respawn(const plane_ptr &p, const vec3 &pos, const quat &rot);
-
-    int get_planes_count() const { return (int)m_planes.size(); }
-    plane_ptr get_plane(int idx);
-    plane_ptr get_plane(object_wptr t);
-    plane_ptr get_player() { return m_player.lock(); }
-    const char *get_player_name() const;
-
-    int get_missiles_count() const { return (int)m_missiles.size(); }
-    missile_ptr get_missile(int idx);
-
-    int get_units_count() const { return (int)m_units.size(); }
-    unit_ptr get_unit(int idx);
-
-    //planes, units
-    int get_objects_count() const;
-    object_ptr get_object(int idx);
-
-    float get_height(float x, float z) const { return m_phys_world.get_height(x, z, false); }
-
-    bool is_ally(const plane_ptr &a, const plane_ptr &b);
-    typedef std::function<bool(const plane_ptr &a, const plane_ptr &b)> is_ally_handler;
-    void set_ally_handler(const is_ally_handler &handler) { m_ally_handler = handler; }
-
-    void on_kill(const object_ptr &a, const object_ptr &b);
-    typedef std::function<void(const object_ptr &k, const object_ptr &v)> on_kill_handler;
-    void set_on_kill_handler(const on_kill_handler &handler) { m_on_kill_handler = handler; }
-
-    gui::hud &get_hud() { return m_hud; }
-    void popup_hit(bool destroyed);
-    void popup_miss();
-    void popup_mission_clear();
-    void popup_mission_update();
-    void popup_mission_fail();
-
-    void update(int dt);
-
-    void set_network(network_interface *n) { m_network = n; }
-    network_interface *get_network() { return m_network; }
-    bool is_host() const { return !m_network || m_network->is_server(); }
-    bool net_data_updated() const { return m_net_data_updated; }
-
-    unsigned int get_net_time() const { return m_network ? m_network->get_time() : 0; }
-
-    sound::source_ptr add_sound(sound::file &f, bool loop = false) { return m_sound_world.add(f, loop); }
-    sound::source_ptr add_sound(std::string name, int idx = 0, bool loop = false);
-    unsigned int play_sound_ui(std::string name, bool loop = false);
-    void stop_sound_ui(unsigned int id);
-    void play_sound(std::string name, int idx, vec3 pos);
-
-    world(renderer::world &w, sound::world &s, gui::hud &h): m_render_world(w), m_sound_world(s), m_hud(h), m_network(0) {}
-
-private:
-    missile_ptr add_missile(const char *id, const renderer::model &m, bool add_to_phys_world);
-
-private:
-    plane_ptr get_plane(const phys::object_ptr &o);
-    missile_ptr get_missile(const phys::object_ptr &o);
-    bomb_ptr get_bomb(const phys::object_ptr &o);
-
-private:
-    std::vector<plane_ptr> m_planes;
-    w_ptr<plane> m_player;
-    std::vector<missile_ptr> m_missiles;
-    std::vector<bomb_ptr> m_bombs;
-    std::vector<unit_ptr> m_units;
-    renderer::world &m_render_world;
-    gui::hud &m_hud;
-    phys::world m_phys_world;
-    sound::world &m_sound_world;
-    sound::pack m_sounds;
-    sound::pack m_sounds_ui;
-    sound::pack m_sounds_common;
-
-    is_ally_handler m_ally_handler;
-    on_kill_handler m_on_kill_handler;
-
-private:
-    network_interface *m_network;
-    bool m_net_data_updated = false;
-};
-
-//------------------------------------------------------------
-
 class game_mode
 {
 public:
@@ -435,5 +167,22 @@ protected:
     world &m_world;
 };
 
+
+//------------------------------------------------------------
+
+inline bool line_sphere_intersect(const vec3 &start, const vec3 &end, const vec3 &sp_center, const float sp_radius)
+{
+    const vec3 diff = end - start;
+    const float len = nya_math::clamp(diff.dot(sp_center - start) / diff.length_sq(), 0.0f, 1.0f);
+    const vec3 inter_pt = start + len  * diff;
+    return (inter_pt - sp_center).length_sq() <= sp_radius * sp_radius;
+}
+
+
+//------------------------------------------------------------
+
+inline const params::text_params &get_arms_param() { static params::text_params ap("Arms/ArmsParam.txt"); return ap; }
+
 //------------------------------------------------------------
 }
+

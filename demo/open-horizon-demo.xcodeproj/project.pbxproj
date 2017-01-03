@@ -29,6 +29,9 @@
 		F530D24B1E02C9880072BB48 /* resources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F530D24A1E02C9880072BB48 /* resources.cpp */; };
 		F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53304C61B09DEC300D8C3C7 /* menu.cpp */; };
 		F538BB0B1CC2B8EA0055F394 /* app_protocol_simple.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */; };
+		F53D27CF1E1BD62600729D1F /* units.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53D27C81E1BD62600729D1F /* units.cpp */; };
+		F53D27D01E1BD62600729D1F /* world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53D27C91E1BD62600729D1F /* world.cpp */; };
+		F53D27D11E1BD62600729D1F /* plane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F53D27CC1E1BD62600729D1F /* plane.cpp */; };
 		F53EFF561D0FF74C009B6A0A /* objects.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F53EFF541D0FECC2009B6A0A /* objects.xml */; };
 		F5696AAA1B1136B100C7BFC9 /* joystick.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5696AA11B10E3F800C7BFC9 /* joystick.xml */; };
 		F572C1F11CA715AC00AB1D1F /* poc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F572C1EF1CA715AC00AB1D1F /* poc.cpp */; };
@@ -176,6 +179,13 @@
 		F53304C61B09DEC300D8C3C7 /* menu.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = menu.cpp; path = ../gui/menu.cpp; sourceTree = "<group>"; };
 		F53304C71B09DEC300D8C3C7 /* menu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = menu.h; path = ../gui/menu.h; sourceTree = "<group>"; };
 		F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = app_protocol_simple.cpp; path = ../deps/miso/src/app_protocol_simple.cpp; sourceTree = "<group>"; };
+		F53D27C81E1BD62600729D1F /* units.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = units.cpp; path = ../game/units.cpp; sourceTree = "<group>"; };
+		F53D27C91E1BD62600729D1F /* world.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = world.cpp; path = ../game/world.cpp; sourceTree = "<group>"; };
+		F53D27CA1E1BD62600729D1F /* units.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = units.h; path = ../game/units.h; sourceTree = "<group>"; };
+		F53D27CB1E1BD62600729D1F /* weapon_information.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = weapon_information.h; path = ../game/weapon_information.h; sourceTree = "<group>"; };
+		F53D27CC1E1BD62600729D1F /* plane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = plane.cpp; path = ../game/plane.cpp; sourceTree = "<group>"; };
+		F53D27CD1E1BD62600729D1F /* plane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = plane.h; path = ../game/plane.h; sourceTree = "<group>"; };
+		F53D27CE1E1BD62600729D1F /* world.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = world.h; path = ../game/world.h; sourceTree = "<group>"; };
 		F53EFF501D0EE6FF009B6A0A /* locations_list.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = locations_list.h; path = ../game/locations_list.h; sourceTree = "<group>"; };
 		F53EFF531D0F26DA009B6A0A /* resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = resources.h; path = ../util/resources.h; sourceTree = "<group>"; };
 		F53EFF541D0FECC2009B6A0A /* objects.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = objects.xml; path = ../resources/objects.xml; sourceTree = "<group>"; };
@@ -465,8 +475,15 @@
 				F5961A261CCCBFEE00B92BE4 /* network_server.cpp */,
 				F5961A271CCCBFEE00B92BE4 /* network_server.h */,
 				F53EFF551D0FEFEE009B6A0A /* objects.h */,
+				F53D27CC1E1BD62600729D1F /* plane.cpp */,
+				F53D27CD1E1BD62600729D1F /* plane.h */,
 				F5A2A2E31B05466C009765C1 /* team_deathmatch.cpp */,
 				F5A2A2DF1B05466C009765C1 /* team_deathmatch.h */,
+				F53D27C81E1BD62600729D1F /* units.cpp */,
+				F53D27CA1E1BD62600729D1F /* units.h */,
+				F53D27CB1E1BD62600729D1F /* weapon_information.h */,
+				F53D27C91E1BD62600729D1F /* world.cpp */,
+				F53D27CE1E1BD62600729D1F /* world.h */,
 			);
 			name = game;
 			sourceTree = "<group>";
@@ -834,6 +851,7 @@
 				F59AB5AC1AFA4F1800137527 /* clouds.cpp in Sources */,
 				F59AB5AB1AFA4F1800137527 /* model.cpp in Sources */,
 				F53304C81B09DEC300D8C3C7 /* menu.cpp in Sources */,
+				F53D27D01E1BD62600729D1F /* world.cpp in Sources */,
 				F59AB5B71AFA7D1600137527 /* plane_camera.cpp in Sources */,
 				F5961A281CCCBFEE00B92BE4 /* network_client.cpp in Sources */,
 				F5C6D39A1AF969BE006FB7E6 /* plane_params.cpp in Sources */,
@@ -849,6 +867,7 @@
 				F5C6D3861AF9694D006FB7E6 /* demo.cpp in Sources */,
 				F59AB5AA1AFA4F1800137527 /* location_params.cpp in Sources */,
 				F586B6821CF786DF00A2B7BE /* zip_resources_provider.cpp in Sources */,
+				F53D27D11E1BD62600729D1F /* plane.cpp in Sources */,
 				F524A57D1DF6BC8E00D6EB88 /* mesh_ndxr.cpp in Sources */,
 				F5A2A2E71B05466C009765C1 /* team_deathmatch.cpp in Sources */,
 				F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */,
@@ -860,6 +879,7 @@
 				F50BFC621C53BBCB000B8500 /* sky.cpp in Sources */,
 				F5D20A0B1CC2228100189814 /* server_tcp.cpp in Sources */,
 				F5BE29E71CB39B3200345699 /* cpk.cpp in Sources */,
+				F53D27CF1E1BD62600729D1F /* units.cpp in Sources */,
 				F5A55F3C1D21200800A7889B /* mission.cpp in Sources */,
 				F59AB5A71AFA4F1800137527 /* scene.cpp in Sources */,
 			);
