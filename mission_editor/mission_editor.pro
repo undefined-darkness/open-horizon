@@ -109,7 +109,9 @@ HEADERS += \
 
 #-------------------------------------------------
 
-copydata.commands = $(COPY_DIR) $$_PRO_FILE_PWD_/../resources/* $$DESTDIR
+COPY_RES_SRC = $$shell_path($$_PRO_FILE_PWD_/../resources/*)
+COPY_RES_DST = $$shell_path($$DESTDIR)
+copydata.commands = $(COPY_DIR) $$COPY_RES_SRC $$COPY_RES_DST
 first.depends = $(first) copydata
 export(first.depends)
 export(copydata.commands)
