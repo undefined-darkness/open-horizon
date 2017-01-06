@@ -167,7 +167,6 @@ protected:
     world &m_world;
 };
 
-
 //------------------------------------------------------------
 
 inline bool line_sphere_intersect(const vec3 &start, const vec3 &end, const vec3 &sp_center, const float sp_radius)
@@ -178,11 +177,9 @@ inline bool line_sphere_intersect(const vec3 &start, const vec3 &end, const vec3
     return (inter_pt - sp_center).length_sq() <= sp_radius * sp_radius;
 }
 
-
 //------------------------------------------------------------
 
 inline const params::text_params &get_arms_param() { static params::text_params ap("Arms/ArmsParam.txt"); return ap; }
 
 //------------------------------------------------------------
 }
-

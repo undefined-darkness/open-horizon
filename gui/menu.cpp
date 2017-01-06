@@ -60,8 +60,6 @@ bool menu::load_script()
         return false;
     }
 
-    m_script.add_callback("init_var", init_var);
-    m_script.add_callback("get_var", get_var);
     m_script.add_callback("set_title", set_title);
     m_script.add_callback("set_bkg", set_bkg);
     m_script.add_callback("set_bkg_pic", set_bkg_pic);
@@ -71,14 +69,18 @@ bool menu::load_script()
     m_script.add_callback("add_input", add_input);
     m_script.add_callback("send_event", send_event);
     m_script.add_callback("set_history", set_history);
+
+    m_script.add_callback("init_var", init_var);
+    m_script.add_callback("get_var", get_var);
+    m_script.add_callback("set_var", set_var);
+
     m_script.add_callback("get_aircrafts", get_aircrafts);
     m_script.add_callback("get_aircraft_colors", get_aircraft_colors);
     m_script.add_callback("get_locations", get_locations);
     m_script.add_callback("get_missions", get_missions);
     m_script.add_callback("get_campaigns", get_campaigns);
 
-    m_script.call("init");
-
+    script_call("init");
     set_screen("main");
     return true;
 }
@@ -516,7 +518,7 @@ void menu::set_screen(const std::string &screen)
 
         send_sub_events(m_entries.back());
 
-        add_entry(L"Aircraft: ", {""}, "ac", {"update_ac"});
+        add_entry(L"Aircraft: ", {""}, "aircraft", {"update_ac"});
         const auto planes = game::get_aircraft_ids({"fighter", "multirole", "attacker", "bomber"});
         for (auto &p: planes)
             add_sub_entry(game::get_aircraft_name(p), {p});
@@ -548,7 +550,7 @@ void menu::set_screen(const std::string &screen)
 
         send_sub_events(m_entries.back());
 
-        add_entry(L"Aircraft: ", {""}, "ac", {"update_ac","viewer_update_ac"});
+        add_entry(L"Aircraft: ", {""}, "aircraft", {"update_ac","viewer_update_ac"});
         const auto planes = game::get_aircraft_ids({"fighter", "multirole", "attacker", "bomber"});
         for (auto &p: planes)
             add_sub_entry(game::get_aircraft_name(p), p);
@@ -620,7 +622,7 @@ void menu::set_screen(const std::string &screen)
         }
     }
     else
-        m_script.call("on_set_screen", {screen});
+        script_call("on_set_screen", {screen});
 
     m_screens.push_back(screen);
 }
@@ -664,7 +666,7 @@ void menu::send_event(const std::string &event)
                 e.input = to_wstring(value);
         }
 
-        m_script.call("on_set_var", {var, value});
+        script_call("on_set_var", {var, value});
         return;
     }
 
@@ -678,7 +680,7 @@ void menu::send_event(const std::string &event)
             e.sub_select.clear();
             e.sub_selected = 0;
 
-            const int colors_count = renderer::aircraft::get_colors_count(m_vars["ac"].c_str());
+            const int colors_count = renderer::aircraft::get_colors_count(m_vars["aircraft"].c_str());
             for (int i = 0; i < colors_count; ++i)
             {
                 wchar_t name[255];
@@ -721,7 +723,7 @@ void menu::send_event(const std::string &event)
         return;
     }
 
-    m_script.call("on_event", {event});
+    script_call("on_event", {event});
 
     if (m_on_action)
         m_on_action(event);
@@ -762,6 +764,24 @@ int menu::get_var(lua_State *state)
 
     script::push_string(state, current_menu->get_var(script::get_string(state, 0)));
     return 1;
+}
+
+//------------------------------------------------------------
+
+int menu::set_var(lua_State *state)
+{
+    auto args_count = script::get_args_count(state);
+    if (args_count < 2)
+    {
+        printf("invalid args count in function set_var\n");
+        return 0;
+    }
+
+    auto var = script::get_string(state, 0);
+    auto value = script::get_string(state, 1);
+    current_menu->m_vars[var] = value;
+    config::set_var(var, value);
+    return 0;
 }
 
 //------------------------------------------------------------
@@ -1010,6 +1030,18 @@ int menu::get_campaigns(lua_State *state)
 
     script::push_array(state, list, "id", "name");
     return 1;
+}
+
+//------------------------------------------------------------
+
+void menu::script_call(std::string function, const std::vector<script::value> &values)
+{
+    if (m_script.call(function.c_str(), values))
+        return;
+
+    auto error = m_script.get_error();
+    if (!error.empty())
+        printf("script error in function %s: %s\n", function.c_str(), error.c_str());
 }
 
 //------------------------------------------------------------

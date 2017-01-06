@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "math/vector.h"
 #include <string>
 #include <vector>
 
@@ -22,8 +23,11 @@ public:
     static int get_args_count(lua_State *s);
     static std::string get_string(lua_State *s, int arg_idx);
     static int get_int(lua_State *s, int arg_idx);
+    static float get_float(lua_State *s, int arg_idx);
     static bool get_bool(lua_State *s, int arg_idx);
+    static nya_math::vec3 get_vec3(lua_State *s, int arg_idx);
     static void push_float(lua_State *s, float value);
+    static void push_vec3(lua_State *s, const nya_math::vec3 &value);
     static void push_string(lua_State *s, std::string value);
     static void push_array(lua_State *s, const std::vector<std::string> &array);
     static void push_array(lua_State *s, const std::vector<std::pair<std::string, std::string> > &array);

@@ -5,6 +5,7 @@
 #include "mission.h"
 #include "world.h"
 #include "extensions/zip_resources_provider.h"
+#include "gui/menu.h"
 #include "util/xml.h"
 
 namespace game
@@ -132,6 +133,9 @@ void mission::start(const char *plane, int color, const char *mission)
         if (!script.empty())
             script_res->read_all(&script[0]);
         m_script.load(script);
+        auto error = m_script.get_error();
+        if (!error.empty())
+            printf("script error: %s\n", error.c_str());
         script_res->release();
     }
 
@@ -149,6 +153,8 @@ void mission::start(const char *plane, int color, const char *mission)
     m_script.add_callback("set_speed_limit", set_speed_limit);
 
     m_script.add_callback("get_height", get_height);
+    m_script.add_callback("get_pos", get_pos);
+    m_script.add_callback("set_pos", set_pos);
 
     m_script.add_callback("destroy", destroy);
 
@@ -162,13 +168,23 @@ void mission::start(const char *plane, int color, const char *mission)
     m_script.add_callback("mission_update", mission_update);
     m_script.add_callback("mission_fail", mission_fail);
 
+    m_script.add_callback("init_var", gui::menu::init_var);
+    m_script.add_callback("get_var", gui::menu::get_var);
+    m_script.add_callback("set_var", gui::menu::set_var);
+
+    m_script.add_callback("get_aircrafts", gui::menu::get_aircrafts);
+    m_script.add_callback("get_aircraft_colors", gui::menu::get_aircraft_colors);
+    m_script.add_callback("get_locations", gui::menu::get_locations);
+    m_script.add_callback("get_missions", gui::menu::get_missions);
+    m_script.add_callback("get_campaigns", gui::menu::get_campaigns);
+
     m_finished = false;
     m_hide_hud = false;
     current_mission = this;
-    m_script.call("init");
+    script_call("init");
     update_zones();
 
-    for (auto &u: m_units) if (u.u->is_active() && !u.on_init.empty()) m_script.call(u.on_init, {u.name}), u.on_init.clear();
+    for (auto &u: m_units) if (u.u->is_active() && !u.on_init.empty()) script_call(u.on_init, {u.name}), u.on_init.clear();
 }
 
 //------------------------------------------------------------
@@ -282,7 +298,7 @@ void mission::update(int dt, const plane_controls &player_controls)
     }
 
     for (auto &t: to_call)
-        m_script.call(t.first, {t.second});
+        script_call(t.first, {t.second});
 
     if (!m_radio_messages.empty())
     {
@@ -345,7 +361,7 @@ void mission::on_kill(const object_ptr &k, const object_ptr &v)
         return;
 
     if (!m_player_on_destroy.empty() && v == m_player)
-        m_script.call(m_player_on_destroy, {"player"});
+        script_call(m_player_on_destroy, {"player"});
 
     for (auto &u: m_units)
     {
@@ -353,7 +369,7 @@ void mission::on_kill(const object_ptr &k, const object_ptr &v)
             continue;
 
         if (!u.on_destroy.empty())
-            m_script.call(u.on_destroy, {u.name});
+            script_call(u.on_destroy, {u.name});
         break;
     }
 }
@@ -460,7 +476,7 @@ int mission::set_active(lua_State *state)
 
         u.u->set_active(active);
         if (!u.on_init.empty())
-            current_mission->m_script.call(u.on_init, {u.name}), u.on_init.clear();
+            current_mission->script_call(u.on_init, {u.name}), u.on_init.clear();
     }
 
     bool need_update_zones = false;
@@ -616,7 +632,7 @@ int mission::set_speed(lua_State *state)
 {
     if (script::get_args_count(state) < 2)
     {
-        printf("invalid args count in function set_align\n");
+        printf("invalid args count in function set_speed\n");
         return 0;
     }
 
@@ -636,7 +652,7 @@ int mission::set_speed_limit(lua_State *state)
 {
     if (script::get_args_count(state) < 2)
     {
-        printf("invalid args count in function set_align\n");
+        printf("invalid args count in function set_speed_limit\n");
         return 0;
     }
 
@@ -675,11 +691,108 @@ int mission::get_height(lua_State *state)
 
 //------------------------------------------------------------
 
+int mission::get_pos(lua_State *state)
+{
+    int args_count = script::get_args_count(state);
+    if (args_count < 1)
+    {
+        printf("invalid args count in function get_pos\n");
+        return 0;
+    }
+
+    auto id = script::get_string(state, 0);
+    if (id == "player")
+    {
+        auto p = current_mission->m_world.get_player();
+        script::push_vec3(state, p ? p->get_pos() : nya_math::vec3());
+        return 1;
+    }
+
+    auto o = current_mission->get_object(id);
+    if (o)
+    {
+        script::push_vec3(state, o->get_pos());
+        return 1;
+    }
+
+    for (auto &p: current_mission->m_paths)
+    {
+        if(p.first != id)
+            continue;
+
+        auto path = p.second.first;
+        if (path.empty())
+            continue;
+
+        int idx = 0;
+        if (args_count > 1)
+        {
+            idx = script::get_int(state, 1);
+            const bool loop = p.second.second;
+            const int count = (int)path.size();
+            if (loop)
+            {
+                idx = idx % count;
+                if (idx < 0)
+                    idx += count;
+            }
+            else
+            {
+                if( idx >= count)
+                    idx = count -1;
+                if (idx < 0)
+                    idx = 0;
+            }
+        }
+
+        script::push_vec3(state, *std::next(path.begin(), idx));
+        return 1;
+    }
+
+    script::push_vec3(state, nya_math::vec3());
+    return 1;
+}
+
+//------------------------------------------------------------
+
+int mission::set_pos(lua_State *state)
+{
+    if (script::get_args_count(state) < 2)
+    {
+        printf("invalid args count in function set_pos\n");
+        return 0;
+    }
+
+    auto id = script::get_string(state, 0);
+    const nya_math::vec3 pos = script::get_vec3(state, 1);
+
+    if (id == "player")
+    {
+        auto p = current_mission->m_world.get_player();
+        if (p)
+            p->set_pos(pos);
+        return 0;
+    }
+
+    for (auto &u: current_mission->m_units)
+    {
+        if (u.name == id)
+        {
+            u.u->set_pos(pos);
+            return 0;
+        }
+    }
+
+    return 0;
+}
+
+//------------------------------------------------------------
+
 int mission::destroy(lua_State *state)
 {
     if (script::get_args_count(state) < 1)
     {
-        printf("invalid args count in function get_height\n");
+        printf("invalid args count in function destroy\n");
         return 0;
     }
 
@@ -856,6 +969,18 @@ void mission::update_zones()
             m_world.get_hud().add_zone(z.pos, z.radius, hf, z.display == zone::display_cylinder);
         }
     }
+}
+
+//------------------------------------------------------------
+
+void mission::script_call(std::string function, const std::vector<script::value> &values)
+{
+    if (m_script.call(function.c_str(), values))
+        return;
+
+    auto error = m_script.get_error();
+    if (!error.empty())
+        printf("script error in function %s: %s\n", function.c_str(), error.c_str());
 }
 
 //------------------------------------------------------------

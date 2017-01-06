@@ -77,7 +77,7 @@ function on_set_screen(screen)
         end
 
         for i,entry in ipairs(ac_list) do
-            add_entry(entry.name, "ac="..entry.id, "screen=color_select")
+            add_entry(entry.name, "aircraft="..entry.id, "screen=color_select")
         end
 
         return
@@ -87,7 +87,7 @@ function on_set_screen(screen)
         set_title("AIRCRAFT COLOR")
         set_bkg(1)
 
-        for i,name in ipairs(get_aircraft_colors(get_var("ac"))) do
+        for i,name in ipairs(get_aircraft_colors(get_var("aircraft"))) do
             add_entry(name, "color="..(i-1), "start")
         end
 

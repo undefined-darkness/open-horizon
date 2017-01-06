@@ -100,6 +100,13 @@ int script::get_int(lua_State *state, int arg_idx)
 
 //------------------------------------------------------------
 
+float script::get_float(lua_State *state, int arg_idx)
+{
+    return state ? (float)luaL_checknumber(state, arg_idx + 1) : 0.0f;
+}
+
+//------------------------------------------------------------
+
 bool script::get_bool(lua_State *state, int arg_idx)
 {
     return lua_isboolean(state, arg_idx + 1) ? lua_toboolean(state, arg_idx + 1) > 0 : false;
@@ -107,9 +114,52 @@ bool script::get_bool(lua_State *state, int arg_idx)
 
 //------------------------------------------------------------
 
+nya_math::vec3 script::get_vec3(lua_State *s, int arg_idx)
+{
+    nya_math::vec3 p;
+
+    if (!lua_istable(s, arg_idx + 1))
+        return p;
+
+    lua_getfield(s, -1, "x");
+    p.x = (float)luaL_checknumber(s, -1);
+    lua_pop(s, 1);
+
+    lua_getfield(s, -1, "y");
+    p.y = (float)luaL_checknumber(s, -1);
+    lua_pop(s, 1);
+
+    lua_getfield(s, -1, "z");
+    p.z = (float)luaL_checknumber(s, -1);
+    lua_pop(s, 1);
+
+    return p;
+}
+
+//------------------------------------------------------------
+
 void script::push_float(lua_State *s, float value)
 {
     lua_pushnumber(s, value);
+}
+
+//------------------------------------------------------------
+
+void script::push_vec3(lua_State *s, const nya_math::vec3 &value)
+{
+    lua_createtable(s, 0, 3);
+
+    lua_pushstring(s, "x");
+    lua_pushnumber(s, value.x);
+    lua_settable(s, -3);
+
+    lua_pushstring(s, "y");
+    lua_pushnumber(s, value.y);
+    lua_settable(s, -3);
+
+    lua_pushstring(s, "z");
+    lua_pushnumber(s, value.z);
+    lua_settable(s, -3);
 }
 
 //------------------------------------------------------------

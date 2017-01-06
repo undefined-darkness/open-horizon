@@ -49,11 +49,9 @@ private:
     void init_var(const std::string &name, const std::string &value);
     void play_sound(std::string name);
     bool load_script();
+    void script_call(std::string function, const std::vector<script::value> &values = {});
 
 private:
-    static int init_var(lua_State *state);
-    static int get_var(lua_State *state);
-
     static int set_title(lua_State *state);
     static int set_bkg(lua_State *state);
     static int set_bkg_pic(lua_State *state);
@@ -63,6 +61,11 @@ private:
     static int add_input(lua_State *state);
     static int send_event(lua_State *state);
     static int set_history(lua_State *state);
+
+public:
+    static int init_var(lua_State *state);
+    static int get_var(lua_State *state);
+    static int set_var(lua_State *state);
 
     static int get_aircrafts(lua_State *state);
     static int get_aircraft_colors(lua_State *state);

@@ -38,6 +38,18 @@
         <height min="0" max="0"/>
     </type>
 
+    <type id="boat" hp="50" hit_radius="3">
+        <speed cruise="120" max="150" accel="30" decel="50"/>
+        <turn speed="0.5"/>
+        <height min="0" max="0"/>
+    </type>
+
+    <type id="ship" hp="150" hit_radius="7" target_radius="15" formation_radius="300">
+        <speed cruise="100" max="120" accel="10" decel="20"/>
+        <turn speed="0.1"/>
+        <height min="0" max="0"/>
+    </type>
+
     <type id="truck" hp="30" hit_radius="3">
         <speed cruise="60" max="80" accel="30" decel="50"/>
         <turn speed="0.5"/>
@@ -195,18 +207,18 @@
     </group>
 
     <group name="naval - ships">
-        <object id="aegs" type="ship" model="s_aegs"/>
-        <object id="aist" type="ship" model="s_aist"/>
-        <object id="boat" type="ship" model="s_boat"/>
+        <object id="aegs" type="ship" model="s_aegs" hp="200"/>
+        <object id="aist" type="boat" model="s_aist"/>
+        <object id="boat" type="boat" model="s_boat"/>
         <object id="ctsl" type="ship" model="s_ctsl"/>
-        <object id="derg" type="ship" model="s_derg"/>
+        <object id="derg" type="boat" model="s_derg"/>
         <object id="kara" type="ship" model="s_kara"/>
-        <object id="kriv" type="ship" model="s_kriv"/>
-        <object id="krov" type="ship" model="s_krov"/>
-        <object id="kuzn" type="ship" model="s_kuzn"/>
-        <object id="mgyt" type="ship" model="s_mgyt"/>
-        <object id="mslb" type="ship" model="s_mslb"/>
-        <object id="ptrb" type="ship" model="s_ptrb"/>
+        <object id="kriv" type="ship" model="s_kriv" hp="250"/>
+        <object id="krov" type="ship" model="s_krov" hp="300"/>
+        <object id="kuzn" type="ship" model="s_kuzn" hp="400"/>
+        <object id="mgyt" type="boat" model="s_mgyt"/>
+        <object id="mslb" type="boat" model="s_mslb"/>
+        <object id="ptrb" type="boat" model="s_ptrb"/>
         <object id="tara" type="ship" model="s_tara"/>
 <!--
         <object id="cts1" type="ship" model="s_cts1"/>

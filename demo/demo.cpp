@@ -111,7 +111,7 @@ int main()
             sound_world.set_music(music_names[rand() % (sizeof(music_names) / sizeof(music_names[0]))]);
 
             auto location = menu.get_var("map");
-            auto plane = menu.get_var("ac");
+            auto plane = menu.get_var("aircraft");
             const int color = atoi(menu.get_var("color").c_str());
 
             is_client = false, is_server = false;
@@ -191,7 +191,7 @@ int main()
         else if (event == "viewer_update_ac")
         {
             const auto dr = scene.camera.get_delta_rot();
-            hangar.set_plane(menu.get_var("ac").c_str());
+            hangar.set_plane(menu.get_var("aircraft").c_str());
             scene.camera.add_delta_rot(dr.x, dr.y - 3.14f);
         }
         else if (event == "viewer_update_color")

@@ -39,6 +39,8 @@ protected:
     static int set_speed_limit(lua_State *state);
 
     static int get_height(lua_State *state);
+    static int get_pos(lua_State *state);
+    static int set_pos(lua_State *state);
 
     static int destroy(lua_State *state);
 
@@ -51,6 +53,8 @@ protected:
     static int mission_clear(lua_State *state);
     static int mission_update(lua_State *state);
     static int mission_fail(lua_State *state);
+
+    void script_call(std::string function, const std::vector<script::value> &values = {});
 
 private:
     object_ptr get_object(std::string id) const;

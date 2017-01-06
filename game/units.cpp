@@ -82,7 +82,7 @@ void unit_vehicle::update(int dt, world &w)
         {
             auto f = m_follow.lock();
             vec3 diff = get_pos() - f->get_pos();
-            if (diff.length() < 100.0f)
+            if (diff.length() < m_params.formation_radius)
                 m_formation_offset = f->get_rot().rotate_inv(diff);
             else
                 m_formation_offset.set(0, 0, -15.0f);
@@ -163,7 +163,7 @@ void unit_vehicle::update(int dt, world &w)
     {
         has_target = true;
         target_dir = m_path.front() - get_pos();
-        if (target_dir.length() < m_vel.length() * kdt * 2.0)
+        if (target_dir.length() < m_vel.length() * kdt * m_params.target_radius)
         {
             if (m_path_loop)
                 m_path.push_back(m_path.front());

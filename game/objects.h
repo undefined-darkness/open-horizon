@@ -17,6 +17,8 @@ struct object_params
     std::string ai;
     int hp = 0;
     float hit_radius = 0.0f;
+    float target_radius = 15.0f;
+    float formation_radius = 100.0f;
     float speed_min = 0.0f, speed_cruise = 0.0f, speed_max = 0.0f, accel = 0.0f, decel = 0.0f;
     float turn_speed = 0.0f, turn_roll = 0.0f;
     float height_min = 0.0, height_max = 0.0f;
@@ -60,6 +62,8 @@ static const objects_list &get_objects_list()
             auto &tp = types[t.attribute("id").as_string()];
             tp.hp = t.attribute("hp").as_int();
             tp.hit_radius = t.attribute("hit_radius").as_float();
+            tp.target_radius = t.attribute("target_radius").as_float(tp.target_radius);
+            tp.formation_radius = t.attribute("formation_radius").as_float(tp.formation_radius);
             tp.ai = t.attribute("ai").as_string();
             auto s = t.child("speed");
             if (s)
@@ -100,6 +104,7 @@ static const objects_list &get_objects_list()
                 obj.name = to_wstring(o.attribute("name").as_string());
                 obj.type = o.attribute("type").as_string();
                 obj.params = types[obj.type];
+                obj.params.hp = o.attribute("hp").as_int(obj.params.hp);
                 obj.group = group;
                 obj.model = o.attribute("model").as_string();
                 obj.y = o.attribute("y").as_float(0.0f);
