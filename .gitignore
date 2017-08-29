@@ -21,3 +21,4 @@ mission_editor/Makefile*
 build-mission_editor-Desktop*
 *.stash
 *.user
+.DS_Store
