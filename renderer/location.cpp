@@ -25,6 +25,8 @@ bool location::load(const char *name)
         m_location.m_map_parts_material.set_texture("ocean", nya_scene::texture_proxy());
         m_location.m_map_parts_material.set_texture("normal", nya_scene::texture_proxy());
         m_sky.release();
+        m_env.unload();
+        m_ibl.unload();
         return false;
     }
 
@@ -40,11 +42,14 @@ bool location::load(const char *name)
         //ToDo
     }
 
+    m_env = shared::load_texture_nocache((std::string("Map/sub_envmap_") + name + ".nut").c_str());
+    m_ibl = shared::load_texture_nocache((std::string("Map/ibl_") + name + ".nut").c_str());
+
     if (strcmp(name, "def") == 0)
     {
         m_params = location_params();
 
-        auto e = shared::get_texture(shared::load_texture("Map/envmap_def.nut"));
+        auto e = shared::load_texture_nocache("Map/envmap_def.nut");
         m_location.m_map_parts_material.set_texture("reflection", e);
     }
     else
@@ -55,8 +60,17 @@ bool location::load(const char *name)
         m_location.load((std::string("Map/") + name + "_mpt.fhm").c_str(), m_params, m_sky.get_fog_color());
         m_trees.load((std::string("Map/") + name + "_tree_nut.fhm").c_str());
         m_trees.load((std::string("Map/") + name + "_tree_nud.fhm").c_str());
+        for (int i = 0; i < m_trees.get_lods_count(); ++i)
+        {
+            auto &mesh = m_trees.get_mesh(i);
+            for (int j = 0; j < mesh.get_groups_count(); ++j)
+            {
+                auto &m = mesh.modify_material(j);
+                m.get_default_pass().get_state().set_cull_face(false);
+            }
+        }
 
-        auto e = shared::get_texture(shared::load_texture((std::string("Map/envmap_mapparts_") + name + ".nut").c_str()));
+        auto e = shared::load_texture_nocache((std::string("Map/envmap_mapparts_") + name + ".nut").c_str());
         m_location.m_map_parts_material.set_texture("reflection", e);
 
         auto &t = m_location.get_trees_texture();
@@ -70,11 +84,11 @@ bool location::load(const char *name)
         }
     }
 
-    auto t = shared::get_texture(shared::load_texture((std::string("Map/detail_") + name + ".nut").c_str()));
+    auto t = shared::load_texture_nocache((std::string("Map/detail_") + name + ".nut").c_str());
     m_location.m_land_material.set_texture("detail", t);
-    auto t2 = shared::get_texture(shared::load_texture((std::string("Map/ocean_") + name + ".nut").c_str()));
+    auto t2 = shared::load_texture_nocache((std::string("Map/ocean_") + name + ".nut").c_str());
     m_location.m_land_material.set_texture("ocean", t2);
-    auto t3 = shared::get_texture(shared::load_texture((std::string("Map/ocean_nrm_") + name + ".nut").c_str()));
+    auto t3 = shared::load_texture_nocache((std::string("Map/ocean_nrm_") + name + ".nut").c_str());
     m_location.m_land_material.set_texture("normal", t3);
 
     m_sun.init();
@@ -124,12 +138,6 @@ void location::update_tree_texture()
 
     auto prev_cam = nya_scene::get_camera_proxy();
 
-    nya_render::state_override s; //ToDo: fix tree material instead
-    s.override_cull_face = true;
-    s.cull_face = false;
-    auto prev_s = nya_render::get_state_override();
-    nya_render::set_state_override(s);
-
     static nya_scene::camera_proxy tree_cam = nya_scene::camera_proxy(nya_scene::camera());
     float size = 0.5f;
     nya_math::mat4 pm;
@@ -155,8 +163,6 @@ void location::update_tree_texture()
         m_trees.draw(i);
     }
     nya_render::scissor::disable();
-
-    nya_render::set_state_override(prev_s);
 
     //nya_render::set_clear_color(0.0, 0.0, 0.0, 0.0);
     nya_render::set_viewport(prev_vp);

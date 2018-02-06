@@ -21,7 +21,7 @@ public:
     bool load(const char *name, unsigned int color_idx, const location_params &params, bool player);
     void load_missile(const char *name, const location_params &params);
     void load_special(const char *name, const location_params &params);
-    void apply_location(const char *location_name, const location_params &params);
+    void apply_location(const nya_scene::texture ibl, const nya_scene::texture env, const location_params &params);
     void draw(int lod_idx);
     void draw_player();
     void draw_trails(const scene &s);

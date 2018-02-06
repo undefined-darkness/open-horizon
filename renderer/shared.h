@@ -12,6 +12,7 @@ namespace shared
 //------------------------------------------------------------
 
     unsigned int load_texture(const char *name);
+    nya_scene::texture load_texture_nocache(const char *name);
     unsigned int load_texture(const void *data, size_t size);
     void clear_textures();
     const nya_scene::texture &get_texture(unsigned int hash_id);

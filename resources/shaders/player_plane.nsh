@@ -21,11 +21,14 @@ varying vec3 tangent;
 varying vec3 bitangent;
 varying vec3 pos;
 varying vec3 normal_tr;
+varying vec3 env_dir;
 
 varying vec4 specular_param; //0.675,1.035,0.0,0.225
 varying vec4 ibl_param; //1,1,0,0
 varying vec4 rim_light_mtr; //0.9,2.0,0.345,0.0
 varying vec4 alpha_clip;
+
+uniform vec4 camera_pos;
 
 @vertex
 
@@ -41,12 +44,15 @@ void main()
     alpha_clip = texture2D(params_map,vec2(ptc, (0.5 + 3.0) / 5.0));
     
     pos = tr(gl_Vertex.xyz, gl_MultiTexCoord3, gl_MultiTexCoord4);
-    normal = tr(gl_Normal, gl_MultiTexCoord3, gl_MultiTexCoord4);
-    tangent = tr(gl_MultiTexCoord1.xyz, gl_MultiTexCoord3, gl_MultiTexCoord4);
-    bitangent = tr(gl_MultiTexCoord2.xyz, gl_MultiTexCoord3, gl_MultiTexCoord4);
+    normal = trn(gl_Normal, gl_MultiTexCoord3, gl_MultiTexCoord4);
+    tangent = trn(gl_MultiTexCoord1.xyz, gl_MultiTexCoord3, gl_MultiTexCoord4);
+    bitangent = trn(gl_MultiTexCoord2.xyz, gl_MultiTexCoord3, gl_MultiTexCoord4);
 
     tc = gl_MultiTexCoord0.xy;
     normal_tr = tr(normal, model_rot);
+
+    env_dir = tr(-reflect(normalize(camera_pos.xyz - pos), normal), model_rot);
+    env_dir.z = -env_dir.z;
 
     gl_Position = gl_ModelViewProjectionMatrix * vec4(pos, 1.0);
 }
@@ -60,7 +66,6 @@ uniform sampler2D spec_map;
 uniform samplerCube env_map;
 uniform samplerCube ibl_map;
 
-uniform vec4 camera_pos;
 uniform vec4 light_dir;
 
 void main()
@@ -88,8 +93,6 @@ void main()
     float nv_p = max(nv, 0.0);
 	float fresnel_diff = clamp(specular_param.y - nv_p, 0.0, 1.0);
 
-	vec3 env_dir = -reflect(v,n);
-	env_dir.z = -env_dir.z;
 	vec3 env = textureCube(env_map, env_dir).xyz * spec_mask.xyz * fresnel_diff;
 
     vec4 color;
@@ -132,5 +135,5 @@ void main()
 	if(1.0 - shadow < 0.015)
 	    color = vec4(0.0);
 
-	gl_FragColor = color;
+    gl_FragColor = color;
 }

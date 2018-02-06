@@ -43,8 +43,6 @@ void render::init()
         {
             v[j].x=j>1?0.0f:1.0f,v[j].y=j%2?1.0f:0.0f;
             v[j].s=j>1? 0.0f:1.0f,v[j].t=j%2?1.0f:0.0f;
-            if (nya_render::get_render_api() == nya_render::render_api_directx11)
-                v[j].t=1.0f-v[j].t;
             v[j].i = i;
         }
 

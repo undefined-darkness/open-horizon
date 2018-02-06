@@ -37,18 +37,38 @@ unsigned int load_texture(const char *name)
     if (it != texture_names.end())
         return it->second;
 
-    auto *res = nya_resources::get_resources_provider().access(name);
-    if (!res)
+    nya_memory::tmp_buffer_scoped buf(load_resource(name));
+    if (!buf.get_data())
         return 0;
 
-    size_t size = res->get_size();
-    nya_memory::tmp_buffer_scoped buf(size);
-    res->read_all(buf.get_data());
-    res->release();
-
-    unsigned int hash_id = load_texture(buf.get_data(), size);
+    unsigned int hash_id = load_texture(buf.get_data(), buf.get_size());
     texture_names[name] = hash_id;
     return hash_id;
+}
+
+//------------------------------------------------------------
+
+nya_scene::texture load_texture_nocache(const char *name)
+{
+    nya_memory::tmp_buffer_scoped buf(load_resource(name));
+    if (!buf.get_size())
+        return 0;
+
+    nya_memory::memory_reader reader(buf.get_data(),buf.get_size());
+    reader.seek(48);
+    reader.seek(reader.read<int>() + 16);
+    if (reader.get_remained() < 128)
+        return nya_scene::texture();
+
+    nya_scene::shared_texture st;
+    nya_scene::resource_data data(reader.get_remained());
+    data.copy_from(reader.get_data(), reader.get_remained());
+    nya_scene::texture::load_dds(st, data, "");
+    data.free();
+
+    nya_scene::texture tex;
+    tex.create(st);
+    return tex;
 }
 
 //------------------------------------------------------------
@@ -67,14 +87,7 @@ unsigned int load_texture(const void *tex_data, size_t tex_size)
 
     if (reader.get_remained() < 128) //normal for ntxr
         return hash_id;
-/*
-    if (hash_id > 1000000000) //ToDo
-    {
-        unsigned int *mip_count = (unsigned int *)reader.get_data()+7;
-        assert(*mip_count > 10);
-        *mip_count = 5;
-    }
-*/
+
     nya_scene::shared_texture st;
     nya_scene::resource_data data(reader.get_remained());
     data.copy_from(reader.get_data(), reader.get_remained());

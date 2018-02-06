@@ -681,17 +681,12 @@ void aircraft::load_special(const char *name, const location_params &params)
 
 //------------------------------------------------------------
 
-void aircraft::apply_location(const char *location_name, const location_params &params)
+void aircraft::apply_location(const nya_scene::texture ibl, const nya_scene::texture env, const location_params &params)
 {
-    if (!location_name || !location_name[0])
-        return;
-
-    auto refl_tex = shared::get_texture(shared::load_texture((std::string("Map/sub_envmap_") + location_name + ".nut").c_str()));
-    m_mesh.set_texture(0, "reflection", refl_tex);
-    m_mesh.set_texture(m_engine_lod_idx, "reflection", refl_tex);
-    auto ibl_tex = shared::get_texture(shared::load_texture((std::string("Map/ibl_") + location_name + ".nut").c_str()));
-    m_mesh.set_texture(0, "ibl", ibl_tex);
-    m_mesh.set_texture(m_engine_lod_idx, "ibl", ibl_tex);
+    m_mesh.set_texture(0, "reflection", env);
+    m_mesh.set_texture(m_engine_lod_idx, "reflection", env);
+    m_mesh.set_texture(0, "ibl", ibl);
+    m_mesh.set_texture(m_engine_lod_idx, "ibl", ibl);
 }
 
 //------------------------------------------------------------

@@ -24,6 +24,8 @@ public:
 
 public:
     const location_params &get_params() const { return m_params; }
+    const nya_scene::texture &get_ibl() const { return m_ibl; }
+    const nya_scene::texture &get_env() const { return m_env; }
 
 private:
     fhm_location m_location;
@@ -33,6 +35,7 @@ private:
     fhm_mesh m_trees;
     nya_render::fbo m_tree_fbo;
     nya_scene::texture m_tree_depth;
+    nya_scene::texture m_ibl, m_env;
 };
 
 //------------------------------------------------------------

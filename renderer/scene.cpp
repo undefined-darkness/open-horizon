@@ -112,16 +112,16 @@ void scene::set_location(const char *name)
     }
     else
     {
-        if (m_location_name == "def" || m_location_name.empty())
+        if (!name[0] || strcmp(name, "def") == 0)
             m_curve.set(load_tonecurve("Map/tonecurve_default.tcb"));
         else
-            m_curve.set(load_tonecurve(("Map/tonecurve_" + m_location_name + ".tcb").c_str()));
+            m_curve.set(load_tonecurve(("Map/tonecurve_" + std::string(name) + ".tcb").c_str()));
     }
 
     world::set_location(name);
 
     for (auto &a: m_aircrafts)
-        a->apply_location(m_location_name.c_str(), m_location.get_params());
+        a->apply_location(m_location.get_ibl(), m_location.get_env(), m_location.get_params());
 
     m_flare.apply_location(m_location.get_params());
 

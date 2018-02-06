@@ -38,7 +38,7 @@ aircraft_ptr world::add_aircraft(const char *name, int color, bool player)
 {
     aircraft_ptr a(true);
     a->load(name, color, m_location.get_params(), player);
-    a->apply_location(m_location_name.c_str(), m_location.get_params());
+    a->apply_location(m_location.get_ibl(), m_location.get_env(), m_location.get_params());
 
     if (player)
         m_player_aircraft = a;
@@ -95,7 +95,7 @@ void world::set_location(const char *name)
     if (m_location_name != "def" && !m_location_name.empty())
         m_clouds.load(m_location_name.c_str(), m_location.get_params());
     if (m_player_aircraft.is_valid())
-        m_player_aircraft->apply_location(m_location_name.c_str(), m_location.get_params());
+        m_player_aircraft->apply_location(m_location.get_ibl(), m_location.get_env(), m_location.get_params());
 }
 
 //------------------------------------------------------------

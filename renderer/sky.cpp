@@ -214,6 +214,7 @@ bool sky_mesh::load(const char *name)
 void sky_mesh::draw()
 {
     nya_render::cull_face::disable();
+    nya_render::zwrite::disable();
     nya_scene::camera sky_cam=nya_scene::get_camera();
     sky_cam.set_pos(0, sky_cam.get_pos().y, 0);
     nya_render::set_modelview_matrix(sky_cam.get_view_matrix());
@@ -223,6 +224,8 @@ void sky_mesh::draw()
     m_mesh.draw();
     m_mesh.unbind();
     m_material.internal().unset();
+
+    nya_render::zwrite::enable();
 }
 
 //------------------------------------------------------------
@@ -296,7 +299,6 @@ void sun_mesh::apply_location(const location_params &params)
 void sun_mesh::draw() const
 {
     auto dir = nya_scene::get_camera().get_dir();
-    dir.z = -dir.z;
     if (dir.dot(m_dir.xyz()) < 0.0)
         return;
 

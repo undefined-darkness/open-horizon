@@ -25,7 +25,6 @@ static const nya_math::vec4 blue = nya_math::vec4(100,200,200,255)/255.0;
 
 void scene_view::load_location(std::string name)
 {
-    nya_render::set_clear_color(0.0f, 0.0f, 0.0f, 0.0f, true);
     makeCurrent();
     m_location = renderer::location();
     shared::clear_textures();
@@ -305,7 +304,7 @@ scene_view::scene_view(QWidget *parent): QOpenGLWidget(parent)
 
 void scene_view::initializeGL()
 {
-    nya_render::set_clear_color(0.2f,0.4f,0.5f,0.0f);
+    nya_render::set_clear_color(0.2f,0.4f,0.5f,1.0f);
     nya_render::apply_state(true);
     m_dd.set_point_size(4.0f);
     m_dd.set_line_width(1.5f);
@@ -327,6 +326,8 @@ void scene_view::paintGL()
 
     nya_scene::get_camera_proxy()->set_rot(m_camera_yaw, m_camera_pitch, 0.0f);
     nya_scene::get_camera_proxy()->set_pos(pos_h(m_camera_pos, height));
+
+    nya_render::set_clear_color(0.0, 0.0, 0.0, 1.0);
 
     nya_render::clear(true, true);
     m_location.update_tree_texture();

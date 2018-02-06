@@ -137,7 +137,6 @@ void lens_flare::draw() const
     auto da = m_dir_alpha.get();
 
     auto dir = nya_scene::get_camera().get_dir();
-    dir.z = -dir.z;
     float c = dir.dot(da.xyz());
     /*
      float a = acosf(c) * 180.0 / 3.1415;

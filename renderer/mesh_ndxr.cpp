@@ -25,6 +25,15 @@ inline void float3_to_half3(const float *from, unsigned short *to)
 
 //------------------------------------------------------------
 
+inline void vec3_to_half3(const nya_math::vec3 &from, unsigned short *to)
+{
+    to[0] = Float16Compressor::compress(from.x);
+    to[1] = Float16Compressor::compress(from.y);
+    to[2] = Float16Compressor::compress(from.z);
+}
+
+//------------------------------------------------------------
+
 inline nya_math::vec3 half3_as_vec3(const unsigned short *from)
 {
     nya_math::vec3 p;
@@ -447,10 +456,20 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
 
                     ndxr_verts++; //ToDo
 
-                    if (format == 4369) //ToDo: n
+                    if (format == 4369)
+                    {
+                        float3_to_half3(ndxr_verts, verts[i].normal);
                         ndxr_verts += 4;
-                    else if (format == 4371) //ToDo: nbt
-                        ndxr_verts += 12;
+                    }
+                    else if (format == 4371)
+                    {
+                        float3_to_half3(ndxr_verts, verts[i].normal);
+                        ndxr_verts += 4;
+                        float3_to_half3(ndxr_verts, verts[i].bitangent);
+                        ndxr_verts += 4;
+                        float3_to_half3(ndxr_verts, verts[i].tangent);
+                        ndxr_verts += 4;
+                    }
 
                     for (int j = 0; j < 4; ++j)
                         verts[i].bones[j] = *(int *)ndxr_verts++;
@@ -550,8 +569,14 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
             if (gf.header.bone_idx > 0)
             {
                 for (int i = first_index; i < first_index + rgf.header.vcount; ++i)
-                    *(nya_math::vec3 *)&verts[i].pos = skeleton.get_bone_rot(gf.header.bone_idx).rotate(*(nya_math::vec3 *)&verts[i].pos)
-                    + skeleton.get_bone_pos(gf.header.bone_idx);
+                {
+                    auto rot = skeleton.get_bone_rot(gf.header.bone_idx);
+                    *(nya_math::vec3 *)&verts[i].pos = rot.rotate(*(nya_math::vec3 *)&verts[i].pos) + skeleton.get_bone_pos(gf.header.bone_idx);
+
+                    vec3_to_half3(rot.rotate(half3_as_vec3(verts[i].normal)), verts[i].normal);
+                    vec3_to_half3(rot.rotate(half3_as_vec3(verts[i].tangent)), verts[i].tangent);
+                    vec3_to_half3(rot.rotate(half3_as_vec3(verts[i].bitangent)), verts[i].bitangent);
+                }
             }
 
             reader.seek(header.offset_to_indices + 48 + rgf.header.ibuf_offset); //rgf.header.icount

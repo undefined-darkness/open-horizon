@@ -826,7 +826,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
     auto &p=mat.get_pass(mat.add_pass(nya_scene::material::default_pass));
     p.set_shader(nya_scene::shader("shaders/object.nsh"));
     mat.set_param(mat.get_param_idx("light dir"), light_dir.x, light_dir.y, light_dir.z, 0.0f);
-    p.get_state().set_cull_face(true, nya_render::cull_face::ccw);
+    p.get_state().set_cull_face(true);
     p.get_state().depth_comparsion = nya_render::depth_test::not_greater;
 
     unsigned int total_rgf_count = 0;
@@ -835,7 +835,11 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
 
     l.params_buf.resize(total_rgf_count * lod::params_count);
     l.params_tex.create();
+    nya_render::texture::filter f[3];
+    nya_render::texture::get_default_filter(f[0],f[1],f[2]);
+    nya_render::texture::set_default_filter(nya_render::texture::filter_nearest,nya_render::texture::filter_nearest,nya_render::texture::filter_nearest);
     l.params_tex->build(&l.params_buf[0], total_rgf_count, lod::params_count, nya_render::texture::color_rgba32f);
+    nya_render::texture::set_default_filter(f[0],f[1],f[2]);
     mat.set_texture("params", l.params_tex);
 
     if (mesh.skeleton.get_bones_count()>=250)
