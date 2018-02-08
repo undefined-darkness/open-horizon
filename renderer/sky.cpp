@@ -291,7 +291,7 @@ void sun_mesh::apply_location(const location_params &params)
     m_dir.xyz() = -params.sky.sun_dir;
     m_dir.w = params.sky.low.sun_flare_size; //params.sky.sun_size;
     m_material.set_param(m_material.get_param_idx("light dir"), m_dir);
-    m_material.set_param(m_material.get_param_idx("color"), nya_math::vec3(1.0,1.0,1.0)); //params.sky.low.sun_flare_rgb
+    //m_material.set_param(m_material.get_param_idx("color"), nya_math::vec3(1.0,1.0,1.0)); //params.sky.low.sun_flare_rgb
 }
 
 //------------------------------------------------------------

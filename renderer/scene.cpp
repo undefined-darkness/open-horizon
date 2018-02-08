@@ -128,6 +128,8 @@ void scene::set_location(const char *name)
     auto &p = m_location.get_params();
     set_shader_param("bloom_param", nya_math::vec4(p.hdr.bloom_threshold, p.hdr.bloom_offset, p.hdr.bloom_scale, 1.0));
     set_shader_param("saturation", nya_math::vec4(p.tone_saturation * 0.01, 0.0, 0.0, 0.0));
+    set_shader_param("light dir", nya_math::vec4(-p.sky.sun_dir, 0.0f));
+
     m_luminance_speed = p.hdr.luminance_speed;
     m_fade_time = m_fade_max_time = 2000;
 }

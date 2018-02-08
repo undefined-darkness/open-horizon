@@ -2,7 +2,7 @@
 @predefined vp "nya viewport"
 
 @uniform light_dir "light dir"
-@uniform color "color"
+@uniform color "color" = 1.0,1.0,1.0
 
 @all
 
@@ -10,7 +10,6 @@ varying vec2 tc;
 
 @vertex
 
-uniform vec4 dir;
 uniform vec4 camera_pos;
 uniform vec4 light_dir;
 
@@ -20,8 +19,7 @@ void main()
 {
     vec4 p = gl_Vertex;
     tc=p.xy;//*0.5+vec2(0.5);
-
-    p.y *= vp.z/vp.w;
+    p.x *= vp.w/vp.z;
 
     vec4 sun_pos = gl_ModelViewProjectionMatrix * vec4(camera_pos.xyz + light_dir.xyz * 100.0, 1.0);
     sun_pos.xy /= sun_pos.w;

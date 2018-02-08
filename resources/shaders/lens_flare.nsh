@@ -32,7 +32,7 @@ void main()
     special = gl_MultiTexCoord0.a;
     color.a = light_dir.a;
 
-    p.y *= vp.z/vp.w;
+    p.x *= vp.w/vp.z;
 
     vec4 sun_pos = gl_ModelViewProjectionMatrix * vec4(camera_pos.xyz + light_dir.xyz * 100.0, 1.0);
     sun_pos.xy /= sun_pos.w;
