@@ -1,7 +1,7 @@
 @target main
   color = main_color
   depth = main_depth
-  depth_format=depth24
+  depth_format=depth32
   width = screen_width
   height = screen_height
 
@@ -98,7 +98,17 @@ height = screen_height/8
   width = screen_width/4
   height = screen_height/4
 
+@target shadows
+  depth = shadows
+  depth_format=depth16
+  width = 1024
+  height = 1024
+
 @clear
+
+@set_target shadows
+@clear
+@draw_scene shadows = player
 
 @set_target main
 @clear

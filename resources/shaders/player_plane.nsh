@@ -3,6 +3,7 @@
 @sampler norm_map "normal"
 @sampler spec_map "specular"
 @sampler env_map "reflection"
+@sampler shadow_map "shadows"
 @sampler ibl_map "ibl"
 @sampler params_map "params"
 
@@ -10,6 +11,7 @@
 @predefined model_rot "nya model rot"
 
 @uniform light_dir "light dir":local_rot
+@uniform shadow_tr "shadows tr"
 
 @include "skeleton.nsh"
 
@@ -22,6 +24,7 @@ varying vec3 bitangent;
 varying vec3 pos;
 varying vec3 normal_tr;
 varying vec3 env_dir;
+varying vec3 shadow_tc;
 
 varying vec4 specular_param; //0.675,1.035,0.0,0.225
 varying vec4 ibl_param; //1,1,0,0
@@ -31,6 +34,8 @@ varying vec4 alpha_clip;
 uniform vec4 camera_pos;
 
 @vertex
+
+uniform vec4 shadow_tr[4];
 
 uniform sampler2D params_map;
 uniform vec4 model_rot;
@@ -55,6 +60,10 @@ void main()
     env_dir.z = -env_dir.z;
 
     gl_Position = gl_ModelViewProjectionMatrix * vec4(pos, 1.0);
+
+    vec4 stc = mat4(shadow_tr[0], shadow_tr[1], shadow_tr[2], shadow_tr[3]) * vec4(tr(pos,model_rot), 1.0);
+    shadow_tc = stc.xyz / stc.w * 0.5 + 0.5;
+    shadow_tc.z -= 0.0001;
 }
 
 @fragment
@@ -65,6 +74,7 @@ uniform sampler2D norm_map;
 uniform sampler2D spec_map;
 uniform samplerCube env_map;
 uniform samplerCube ibl_map;
+uniform sampler2D shadow_map;
 
 uniform vec4 light_dir;
 
@@ -73,7 +83,15 @@ void main()
     vec4 base=texture2D(base_map, tc);
     if(base.a < alpha_clip.x) discard;
 
-    float shadow = 0.0; //ToDo
+    float shadow = 0.0;
+    if (texture2D(shadow_map, shadow_tc.xy + vec2(-0.94201624, -0.39906216) / 1024.0).z < shadow_tc.z)
+        shadow+=0.25;
+    if (texture2D(shadow_map, shadow_tc.xy + vec2(0.94558609, -0.76890725) / 1024.0).z < shadow_tc.z)
+        shadow+=0.25;
+    if (texture2D(shadow_map, shadow_tc.xy + vec2(-0.094184101, -0.92938870) / 1024.0).z < shadow_tc.z)
+        shadow+=0.25;
+    if (texture2D(shadow_map, shadow_tc.xy + vec2(0.34495938, 0.29387760) / 1024.0).z < shadow_tc.z)
+        shadow+=0.25;
 
     vec4 amb=texture2D(amb_map, tc);
     vec4 spec_mask=texture2D(spec_map, tc);
@@ -118,7 +136,7 @@ void main()
 
     float spe_pow=pow(max(0.0,dot(n,h)),20.0);
     vec3 spec=spec_mask.xyz*spe_pow*10.0;
-    vec3 light = vec3(0.7 + 0.3*max(0.0,dot(n,light_dir.xyz)));
+    vec3 light = vec3(0.6 + 0.6*max(0.0,dot(n,light_dir.xyz)-0.3) * (1.0-shadow));
     vec3 amb_light = amb.rgb;
 
 //-----------------------------------------------------------------------------------------
@@ -132,8 +150,5 @@ void main()
     //color.xyz = mix(fog_color.xyz, color.xyz, fog); //ToDo
 
 	color.xyz *= 0.8;
-	if(1.0 - shadow < 0.015)
-	    color = vec4(0.0);
-
     gl_FragColor = color;
 }

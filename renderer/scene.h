@@ -6,6 +6,7 @@
 #include "lens_flare.h"
 #include "plane_camera.h"
 #include "scene/postprocess.h"
+#include "scene/camera.h"
 #include "gui/hud.h"
 
 namespace renderer
@@ -40,13 +41,14 @@ private:
     particles_render m_particles_render;
     std::vector<std::pair<plane_trail, unsigned int> > m_plane_trails;
     std::vector<std::pair<missile_trail, unsigned int> > m_missile_trails;
+    nya_scene::camera_proxy m_shadow_camera;
 
 private:
     int m_frame_counter, m_frame_counter_time, m_fps;
 
 public:
     scene(): m_fade_time(0), m_fade_max_time(0), m_help_time(3000), m_frame_counter(0), m_frame_counter_time(0), m_fps(0), m_paused(false), m_loading(false),
-    m_fonts_loaded(false), m_was_dead(false) {}
+    m_fonts_loaded(false), m_was_dead(false) { m_shadow_camera.create(); }
 
 public:
     void switch_camera();

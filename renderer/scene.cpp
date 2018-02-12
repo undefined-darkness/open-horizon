@@ -123,6 +123,13 @@ void scene::set_location(const char *name)
     for (auto &a: m_aircrafts)
         a->apply_location(m_location.get_ibl(), m_location.get_env(), m_location.get_params());
 
+    const float hsize = fabsf(m_player_aircraft->get_wing_offset().x) * 1.2;//ToDo: aabb.dir.length()
+    nya_math::mat4 proj;
+    proj.ortho(-hsize, hsize, -hsize, hsize, -hsize, hsize);
+    m_shadow_camera->set_proj(proj);
+    m_shadow_camera->set_rot(m_location.get_params().sky.sun_dir);
+    m_player_aircraft->setup_shadows(get_texture("shadows").get(), m_shadow_camera->get_view_matrix() * m_shadow_camera->get_proj_matrix());
+
     m_flare.apply_location(m_location.get_params());
 
     auto &p = m_location.get_params();
@@ -285,7 +292,17 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
         if (m_player_aircraft.is_valid())
         {
             if (m_player_aircraft->get_camera_mode() == aircraft::camera_mode_third)
-                m_player_aircraft->draw_player();
+            {
+                if(strcmp(pass, "shadows") == 0)
+                {
+                    auto pc = nya_scene::get_camera_proxy();
+                    nya_scene::set_camera(m_shadow_camera);
+                    m_player_aircraft->draw_player_shadowcaster();
+                    nya_scene::set_camera(pc);
+                }
+                else
+                    m_player_aircraft->draw_player();
+            }
         }
     }
     if (t.has("particles"))

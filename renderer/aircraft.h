@@ -21,15 +21,17 @@ public:
     bool load(const char *name, unsigned int color_idx, const location_params &params, bool player);
     void load_missile(const char *name, const location_params &params);
     void load_special(const char *name, const location_params &params);
-    void apply_location(const nya_scene::texture ibl, const nya_scene::texture env, const location_params &params);
+    void apply_location(const nya_scene::texture &ibl, const nya_scene::texture &env, const location_params &params);
     void draw(int lod_idx);
     void draw_player();
+    void draw_player_shadowcaster();
     void draw_trails(const scene &s);
     void draw_fire_trail(const scene &s);
     void draw_mgun_flash(const scene &s);
     int get_lods_count() const { return m_mesh.get_lods_count(); }
     void update(int dt);
     void update_trail(int dt, scene &s);
+    void setup_shadows(const nya_scene::texture &tex, const nya_math::mat4 &m);
     void set_hide(bool value) { m_hide = value; }
 
     void set_pos(const nya_math::vec3 &pos) { m_mesh.set_pos(pos); }
@@ -37,7 +39,6 @@ public:
     const nya_math::vec3 &get_pos() { return m_mesh.get_pos(); }
     nya_math::quat get_rot() { return m_mesh.get_rot(); }
     nya_math::vec3 get_bone_pos(const char *name);
-
     nya_math::vec3 get_wing_offset();
 
     void set_damage(float value) { m_damage = value; }

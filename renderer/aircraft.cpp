@@ -543,16 +543,38 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
         }
     }
 
-    auto diff_tex = baker.bake();
-    m_mesh.set_texture(0, "diffuse", diff_tex );
-    m_mesh.set_texture(m_engine_lod_idx, "diffuse", diff_tex );
-
-    m_mesh.set_texture(0, "specular", spec_tex);
-    m_mesh.set_texture(m_engine_lod_idx, "specular", spec_tex);
-
     m_mesh.set_material(0, mat.materials[0], "shaders/player_plane.nsh");
     if (player && m_engine_lod_idx >= 0 && mat.materials.size() > 2)
         m_mesh.set_material(m_engine_lod_idx, mat.materials[2], "shaders/player_plane.nsh");
+
+    auto diff_tex = baker.bake();
+
+    int lods[] = {0, m_engine_lod_idx};
+    for (auto &l: lods)
+    {
+        if (l < 0)
+            continue;
+
+        m_mesh.set_texture(l, "diffuse", diff_tex );
+        m_mesh.set_texture(l, "specular", spec_tex);
+        m_mesh.set_texture(l, "shadows", shared::get_white_texture());
+
+        if (!player)
+            continue;
+
+        //ToDo: add single group
+        auto &mesh = m_mesh.get_mesh(l);
+        for (int i = 0; i < mesh.get_groups_count(); ++i)
+        {
+            auto &mat = mesh.modify_material(i);
+            if (mat.get_default_pass().get_state().blend)
+                continue;
+
+            auto &p = mat.get_pass(mat.add_pass("caster"));
+            p.set_shader("shaders/caster.nsh");
+            p.get_state().set_cull_face(true, nya_render::cull_face::cw);
+        }
+    }
 
     m_mesh.set_relative_anim_time(0, 'rudl', 0.5);
     m_mesh.set_relative_anim_time(0, 'rudr', 0.5);
@@ -681,7 +703,7 @@ void aircraft::load_special(const char *name, const location_params &params)
 
 //------------------------------------------------------------
 
-void aircraft::apply_location(const nya_scene::texture ibl, const nya_scene::texture env, const location_params &params)
+void aircraft::apply_location(const nya_scene::texture &ibl, const nya_scene::texture &env, const location_params &params)
 {
     m_mesh.set_texture(0, "reflection", env);
     m_mesh.set_texture(m_engine_lod_idx, "reflection", env);
@@ -1147,6 +1169,30 @@ void aircraft::update_trail(int dt, scene &s)
 
 //------------------------------------------------------------
 
+void aircraft::setup_shadows(const nya_scene::texture &tex, const nya_math::mat4 &m)
+{
+    const int lods[] = { 0, m_engine_lod_idx };
+    for (auto l: lods)
+    {
+        if (l < 0)
+            continue;
+
+        auto &mesh = m_mesh.get_mesh(l);
+        for (int i = 0; i < mesh.get_groups_count(); ++i)
+        {
+            auto &mat = mesh.modify_material(i);
+            mat.set_texture("shadows", tex);
+            static nya_scene::material::param_array a;
+            a.set_count(4);
+            for (int j = 0; j < 4; ++j)
+                a.set(j, nya_math::vec4(m[j]));
+            mat.set_param_array(mat.get_param_idx("shadows tr"), a);
+        }
+    }
+}
+
+//------------------------------------------------------------
+
 void aircraft::draw(int lod_idx)
 {
     if (m_hide)
@@ -1182,6 +1228,29 @@ void aircraft::draw_player()
         draw(m_engine_lod_idx);
 
     //draw(4); //landing gear
+}
+
+//------------------------------------------------------------
+
+void aircraft::draw_player_shadowcaster()
+{
+    if (m_hide)
+        return;
+
+    if (m_mesh.get_lods_count() < 1)
+        return;
+
+    const int lods[] = { 0, m_engine_lod_idx };
+    for (auto l: lods)
+    {
+        if (l < 0)
+            continue;
+
+        auto &mesh = m_mesh.get_mesh(l);
+        mesh.set_pos(vec3());
+        mesh.set_rot(get_rot());
+        mesh.draw("caster");
+    }
 }
 
 //------------------------------------------------------------

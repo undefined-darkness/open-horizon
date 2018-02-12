@@ -34,11 +34,14 @@ uniform sampler2D base_map;
 
 void main()
 {
-vec4 color = vec4(0.0,0.0,0.0,0.0);
+    vec4 color = vec4(0.0);
 
-const int Samples = 16;
-for (int i = 0; i < Samples; ++i)
-    color += texture2D(base_map, tc+float(i)/float(Samples)*dir)  * (1.0 - float(i)/float(Samples));
+    const int samples = 16;
+    for (int i = 0; i < samples; ++i)
+    {
+        float k = float(i) / float(samples);
+        color += texture2D(base_map, tc+k*dir) * (1.0 - k);
+    }
 
-    gl_FragColor = color/float(Samples)*4.0;
+    gl_FragColor = color * 4.0 / float(samples);
 }
