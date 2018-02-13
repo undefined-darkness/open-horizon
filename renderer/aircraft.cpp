@@ -558,21 +558,28 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
         m_mesh.set_texture(l, "diffuse", diff_tex );
         m_mesh.set_texture(l, "specular", spec_tex);
         m_mesh.set_texture(l, "shadows", shared::get_white_texture());
+    }
 
-        if (!player)
-            continue;
-
-        //ToDo: add single group
-        auto &mesh = m_mesh.get_mesh(l);
-        for (int i = 0; i < mesh.get_groups_count(); ++i)
+    //ToDo: add single group in fhm_mesh instead
+    if (player)
+    {
+        int lods[] = {0, m_engine_lod_idx};
+        for (auto &l: lods)
         {
-            auto &mat = mesh.modify_material(i);
-            if (mat.get_default_pass().get_state().blend)
+            if (l < 0)
                 continue;
 
-            auto &p = mat.get_pass(mat.add_pass("caster"));
-            p.set_shader("shaders/caster.nsh");
-            p.get_state().set_cull_face(true, nya_render::cull_face::cw);
+            auto &mesh = m_mesh.get_mesh(l);
+            for (int i = 0; i < mesh.get_groups_count(); ++i)
+            {
+                auto &mat = mesh.modify_material(i);
+                if (mat.get_default_pass().get_state().blend)
+                    continue;
+
+                auto &p = mat.get_pass(mat.add_pass("caster"));
+                p.set_shader("shaders/caster.nsh");
+                p.get_state().set_cull_face(true, nya_render::cull_face::cw);
+            }
         }
     }
 
@@ -1228,6 +1235,17 @@ void aircraft::draw_player()
         draw(m_engine_lod_idx);
 
     //draw(4); //landing gear
+}
+
+//------------------------------------------------------------
+
+void aircraft::draw_cockpit()
+{
+    //ToDo: also draw 2
+    auto &mesh = m_mesh.get_mesh(1);
+    mesh.set_pos(vec3());
+    mesh.set_rot(get_rot());
+    mesh.draw();
 }
 
 //------------------------------------------------------------

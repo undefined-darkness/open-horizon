@@ -76,7 +76,7 @@ void plane_camera::update()
     nya_math::quat r = m_rot;
     r.v.x = -r.v.x, r.v.y = -r.v.y;
 
-    r = r*nya_math::quat(m_drot.x, m_drot.y, 0.0f);
+    r = r * (m_ignore_drot ? nya_math::quat(0.0f, nya_math::constants::pi, 0.0f) : nya_math::quat(m_drot.x, m_drot.y, 0.0f));
     //nya_math::vec3 r=m_drot+m_rot;
 
     //cam->set_rot(r.y*180.0f/3.14f,r.x*180.0f/3.14f,0.0);
@@ -87,7 +87,7 @@ void plane_camera::update()
     
     //nya_math::vec3 pos=m_pos+rot.rotate(m_dpos);
     r.v.x = -r.v.x, r.v.y = -r.v.y;
-    nya_math::vec3 pos = m_pos + r.rotate(m_ignore_dpos? nya_math::vec3(0.0,-0.06,-0.06) : m_dpos);
+    nya_math::vec3 pos = m_pos + r.rotate(m_ignore_dpos? nya_math::vec3(0,-0.06,-0.06 + m_fixed_dist) : m_dpos);
     
     nya_scene::get_camera().set_pos(pos.x, pos.y, pos.z);
 }

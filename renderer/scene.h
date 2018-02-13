@@ -67,6 +67,7 @@ private:
     aircraft_ptr add_aircraft(const char *name, int color, bool player);
     void set_location(const char *name);
     void draw_scene(const char *pass,const nya_scene::tags &t) override;
+    void setup_shadow_camera(aircraft_ptr a);
 };
 
 //------------------------------------------------------------

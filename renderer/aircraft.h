@@ -24,6 +24,7 @@ public:
     void apply_location(const nya_scene::texture &ibl, const nya_scene::texture &env, const location_params &params);
     void draw(int lod_idx);
     void draw_player();
+    void draw_cockpit();
     void draw_player_shadowcaster();
     void draw_trails(const scene &s);
     void draw_fire_trail(const scene &s);
@@ -33,6 +34,7 @@ public:
     void update_trail(int dt, scene &s);
     void setup_shadows(const nya_scene::texture &tex, const nya_math::mat4 &m);
     void set_hide(bool value) { m_hide = value; }
+    bool is_visible() const { return !m_hide; }
 
     void set_pos(const nya_math::vec3 &pos) { m_mesh.set_pos(pos); }
     void set_rot(const nya_math::quat &rot) { m_mesh.set_rot(rot); }
@@ -44,6 +46,7 @@ public:
     void set_damage(float value) { m_damage = value; }
     float get_damage() const { return m_damage; }
     void set_dead(bool dead);
+    bool is_dead() const { return m_dead; }
 
     //aircraft animations
     void set_elev(float left, float right); //elevons and tailerons

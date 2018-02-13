@@ -39,6 +39,19 @@ nya_scene::texture load_tonecurve(const char *file_name)
 
 //------------------------------------------------------------
 
+void scene::setup_shadow_camera(aircraft_ptr a)
+{
+    const float hsize = std::max(fabsf(a->get_wing_offset().x) * 1.2f, 7.0f);//ToDo: aabb.dir.length()
+    nya_math::mat4 proj;
+    proj.ortho(-hsize, hsize, -hsize, hsize, -hsize, hsize);
+    m_shadow_camera->set_proj(proj);
+    m_shadow_camera->set_rot(m_location.get_params().sky.sun_dir);
+    a->setup_shadows(get_texture("shadows").get(), m_shadow_camera->get_view_matrix() * m_shadow_camera->get_proj_matrix());
+
+}
+
+//------------------------------------------------------------
+
 aircraft_ptr scene::add_aircraft(const char *name, int color, bool player)
 {
     nya_render::texture::set_default_aniso(2);
@@ -46,6 +59,8 @@ aircraft_ptr scene::add_aircraft(const char *name, int color, bool player)
     auto a = world::add_aircraft(name, color, player);
     if (!player)
         return a;
+
+    setup_shadow_camera(a);
 
     m_cam_fp_off = a->get_bone_pos("ckpp");
 
@@ -123,12 +138,8 @@ void scene::set_location(const char *name)
     for (auto &a: m_aircrafts)
         a->apply_location(m_location.get_ibl(), m_location.get_env(), m_location.get_params());
 
-    const float hsize = fabsf(m_player_aircraft->get_wing_offset().x) * 1.2;//ToDo: aabb.dir.length()
-    nya_math::mat4 proj;
-    proj.ortho(-hsize, hsize, -hsize, hsize, -hsize, hsize);
-    m_shadow_camera->set_proj(proj);
-    m_shadow_camera->set_rot(m_location.get_params().sky.sun_dir);
-    m_player_aircraft->setup_shadows(get_texture("shadows").get(), m_shadow_camera->get_view_matrix() * m_shadow_camera->get_proj_matrix());
+    if (m_player_aircraft.is_valid())
+        setup_shadow_camera(m_player_aircraft);
 
     m_flare.apply_location(m_location.get_params());
 
@@ -167,15 +178,30 @@ void scene::update(int dt)
 
     if (m_player_aircraft.is_valid())
     {
-        const bool is_camera_third = m_player_aircraft->get_camera_mode() == aircraft::camera_mode_third;
-        camera.set_ignore_delta_pos(!is_camera_third);
-        camera.set_pos(m_player_aircraft->get_bone_pos(is_camera_third ? "camp" : "ckpp"));
+        const bool is_dead = m_player_aircraft->is_dead();
+        if (is_dead)
+        {
+            camera.set_ignore_delta_pos(true);
+            camera.set_ignore_delta_rot(true);
+            camera.set_fixed_dist(50.0f);
+            camera.set_pos(m_player_aircraft->get_pos());
+        }
+        else
+        {
+            const bool is_camera_third = m_player_aircraft->get_camera_mode() == aircraft::camera_mode_third;
+            camera.set_ignore_delta_pos(!is_camera_third);
+            camera.set_pos(m_player_aircraft->get_bone_pos(is_camera_third ? "camp" : "ckpp"));
+        }
+
         camera.set_rot(m_player_aircraft->get_rot());
 
         set_shader_param("damage_frame_color", nya_math::vec4(1.0, 0.0, 0.0235, m_player_aircraft->get_damage()));
-        const bool is_dead = m_player_aircraft->get_damage() >= 1.0f;
         if (m_was_dead && !is_dead)
+        {
+            camera.set_ignore_delta_rot(false);
+            camera.set_fixed_dist(0.0f);
             m_fade_time = 1000, m_fade_max_time = m_fade_time * 1.5;
+        }
 
         m_was_dead = is_dead;
     }
@@ -346,17 +372,13 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
     }
     if (t.has("cockpit"))
     {
-        if (m_player_aircraft.is_valid() && m_player_aircraft->get_camera_mode() == aircraft::camera_mode_cockpit)
+        if (m_player_aircraft.is_valid() && m_player_aircraft->is_visible() && m_player_aircraft->get_camera_mode() == aircraft::camera_mode_cockpit)
         {
-             //move player and camera to 0.0 because floats sucks
              nya_render::clear(false, true);
-             auto pos = m_player_aircraft->get_pos();
              auto cam_pos = camera.get_pos();
-             m_player_aircraft->set_pos(nya_math::vec3());
              camera.set_pos(m_player_aircraft->get_rot().rotate(m_cam_fp_off));
              camera.set_near_far(0.01,10.0);
-             //m_player_aircraft->draw(2); //ToDo
-             m_player_aircraft->draw(1);
+             m_player_aircraft->draw_cockpit();
 
              //fill holes
              nya_render::set_state(nya_render::state());
@@ -366,7 +388,6 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
              m_cockpit_black.internal().unset();
 
              //restore
-             m_player_aircraft->set_pos(pos);
              camera.set_pos(cam_pos);
         }
     }
