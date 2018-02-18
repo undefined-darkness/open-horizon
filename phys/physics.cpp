@@ -44,6 +44,7 @@ void world::set_location(const char *name)
     m_heights.clear();
     m_meshes.clear();
     m_qtree = nya_math::quadtree();
+    m_instances.clear();
 
     m_height_quad_size = 1024;
     m_height_quad_frags = 8;

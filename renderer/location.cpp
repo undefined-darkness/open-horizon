@@ -108,14 +108,13 @@ void location::update(int dt)
 
 void location::draw()
 {
-    glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(1.0f, 1.0f);
     m_location.draw_landscape();
-    glPolygonOffset(-1.0f, 1.0f);
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    glPolygonOffset(-1.0f, 0);
     m_location.draw_mptx();
     m_location.draw_trees();
-    glDisable(GL_POLYGON_OFFSET_FILL);
     m_location.draw_mptx_transparent();
+    glDisable(GL_POLYGON_OFFSET_FILL);
 
     m_sky.draw();
     m_sun.draw();
