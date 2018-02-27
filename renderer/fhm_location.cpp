@@ -100,16 +100,14 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     class vbo_data
     {
     public:
-        void add_patch(float x, float y, int tc_idx, const float *h)
+        void add_patch(float x, float y, int tc_idx, const float *h, bool left, bool right, bool bottom, bool top)
         {
-            //ToDo: strips
             //ToDo: exclude patches with -9999.0 height
-            //ToDo: lod seams
 
             const int line_count = int(int(m_tex_width) / int(m_tile_size + m_tile_border));
 
-            int ty = tc_idx / line_count;
-            int tx = tc_idx - ty * line_count;
+            const int ty = tc_idx / line_count;
+            const int tx = tc_idx - ty * line_count;
 
             nya_math::vec4 tc(m_tile_border, m_tile_border, m_tile_size, m_tile_size);
 
@@ -129,7 +127,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             const uint hpw = m_quad_frags * m_subquads_per_quad + 1;
             const uint w = m_subquads_per_quad + 1;
 
-            uint voff = (uint)m_verts.size();
+            const uint voff = (uint)m_verts.size();
 
             tc.zw() -= tc.xy();
             tc.zw() /= float(m_subquads_per_quad);
@@ -148,18 +146,16 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 m_max = nya_math::vec3::max(v.pos, m_max);
             }
 
-            static std::vector<uint> low;
-            low.clear();
-            low.push_back(voff);
-            low.push_back(voff + w * w - 1);
-            low.push_back(voff + w - 1);
-            low.push_back((uint)low[0]);
-            low.push_back(voff + w * w - w);
-            low.push_back((uint)low[1]);
+            const uint inds[] = {voff, voff + w * w - w, voff + w - 1, voff + w * w - 1};
 
-            m_curr_indices_low.insert(m_curr_indices_low.end(), low.begin(), low.end());
+            m_curr_indices_low.push_back(inds[0]);
+            m_curr_indices_low.push_back(inds[1]);
+            m_curr_indices_low.push_back(inds[2]);
+            m_curr_indices_low.push_back(inds[2]);
+            m_curr_indices_low.push_back(inds[1]);
+            m_curr_indices_low.push_back(inds[3]);
 
-            float same_height = m_verts[voff].pos.y;
+            const float same_height = m_verts[voff].pos.y;
             bool all_same_height = true;
             for (int i = 1; i < w * w; ++i)
             {
@@ -172,15 +168,20 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
             if (all_same_height)
             {
-                m_curr_indices_hi.insert(m_curr_indices_hi.end(), low.begin(), low.end());
-                m_curr_indices_mid.insert(m_curr_indices_mid.end(), low.begin(), low.end());
+                m_curr_indices_hi.insert(m_curr_indices_hi.end(), m_curr_indices_low.end()-6, m_curr_indices_low.end());
+                m_curr_indices_mid.insert(m_curr_indices_mid.end(), m_curr_indices_low.end()-6, m_curr_indices_low.end());
                 return;
             }
+
+            if (bottom) weld_low(inds[0], inds[2]);
+            if (top) weld_low(inds[3], inds[1]);
+            if (left) weld_low(inds[1], inds[0]);
+            if (right) weld_low(inds[2], inds[3]);
 
             for (int hy=0; hy < m_subquads_per_quad; ++hy)
             for (int hx=0; hx < m_subquads_per_quad; ++hx)
             {
-                int i = voff + hx + hy * w;
+                const int i = voff + hx + hy * w;
 
                 m_curr_indices_hi.push_back(i);
                 m_curr_indices_hi.push_back(i + 1 + m_subquads_per_quad);
@@ -196,14 +197,26 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             for (int hy=0; hy < m_subquads_per_quad; hy += 2)
             for (int hx=0; hx < m_subquads_per_quad; hx += 2)
             {
-                int i = voff + hx + hy * w;
+                const uint i = voff + hx + hy * w;
+                const uint w2 = 2 * (1 + m_subquads_per_quad);
+                const uint inds[] = {i, i + w2, i + 2, i + w2 + 2};
 
-                m_curr_indices_mid.push_back(i);
-                m_curr_indices_mid.push_back(i + 2 * (1 + m_subquads_per_quad));
-                m_curr_indices_mid.push_back(i + 2);
-                m_curr_indices_mid.push_back(i + 2);
-                m_curr_indices_mid.push_back(i + 2 * (1 + m_subquads_per_quad));
-                m_curr_indices_mid.push_back(i + 2 * (1 + m_subquads_per_quad + 1));
+                m_curr_indices_mid.push_back(inds[0]);
+                m_curr_indices_mid.push_back(inds[1]);
+                m_curr_indices_mid.push_back(inds[2]);
+                m_curr_indices_mid.push_back(inds[2]);
+                m_curr_indices_mid.push_back(inds[1]);
+                m_curr_indices_mid.push_back(inds[3]);
+
+                if (bottom && hy == 0)
+                    weld_mid(inds[0], inds[2]);
+                else if (top && hy + 2 >= m_subquads_per_quad)
+                    weld_mid(inds[3], inds[1]);
+
+                if (left && hx == 0)
+                    weld_mid(inds[1], inds[0]);
+                else if (right && hx + 2 >= m_subquads_per_quad)
+                    weld_mid(inds[2], inds[3]);
             }
         }
 
@@ -245,6 +258,62 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             m_subquads_per_quad = subquads_per_quad;
         }
         void set_tex_patch_size(int border, int size) { m_tile_border = border, m_tile_size = size; }
+
+    private:
+        void weld_mid(uint a, uint b)
+        {
+            const uint c = (a + b) / 2;
+            if ((m_verts[a].pos.y + m_verts[b].pos.y) * 0.5f - m_verts[c].pos.y > 0.01f)
+            {
+                m_curr_indices_mid.push_back(a);
+                m_curr_indices_mid.push_back(b);
+                m_curr_indices_mid.push_back(c);
+            }
+        }
+
+        void weld_low(uint v0, uint v1)
+        {
+            float min_height = m_verts[v1].pos.y;
+            const int d = (v1 > v0 ? int(v1 - v0) : -int(v0 - v1)) / m_subquads_per_quad;
+            for (int i = v0; i != v1; i += d)
+                min_height = nya_math::min(min_height, m_verts[i].pos.y);
+
+            const bool t0 = fabsf(m_verts[v0].pos.y - min_height) > 0.01f;
+            const bool t1 = fabsf(m_verts[v1].pos.y - min_height) > 0.01f;
+
+            const uint v3 = (uint)m_verts.size();
+            if (t0)
+            {
+                auto v = m_verts[v0];
+                v.pos.y = min_height;
+                m_verts.push_back(v);
+
+                m_curr_indices_low.push_back(v0);
+                m_curr_indices_low.push_back(v1);
+                m_curr_indices_low.push_back(v3);
+            }
+
+            if (t1)
+            {
+                const uint v2 = (uint)m_verts.size();
+                auto v = m_verts[v1];
+                v.pos.y = min_height;
+                m_verts.push_back(v);
+
+                if (t0)
+                {
+                    m_curr_indices_low.push_back(v3);
+                    m_curr_indices_low.push_back(v1);
+                    m_curr_indices_low.push_back(v2);
+                }
+                else
+                {
+                    m_curr_indices_low.push_back(v0);
+                    m_curr_indices_low.push_back(v1);
+                    m_curr_indices_low.push_back(v2);
+                }
+            }
+        }
 
     private:
         float m_tex_width;
@@ -336,7 +405,10 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             const float pos_x = base_x + load_data.quad_size * x;
             const float pos_y = base_y + load_data.quad_size * y;
 
-            vdata.add_patch(pos_x, pos_y, load_data.tex_indices_data[tc_idx * 2], h);
+            const bool top = y == load_data.quad_frags - 1, bottom = y == 0;
+            const bool right = x == load_data.quad_frags -1, left = x == 0;
+
+            vdata.add_patch(pos_x, pos_y, load_data.tex_indices_data[tc_idx * 2], h, left, right, bottom, top);
 
             ++tc_idx;
         }
@@ -1107,7 +1179,8 @@ void fhm_location::draw_landscape()
     nya_render::set_modelview_matrix(c.get_view_matrix());
     m_land_material.internal().set();
 
-    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    if (debug_variable::get()>0)
+        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
     m_landscape.vbo->bind();
     for (const auto &p: m_landscape.patches)
@@ -1115,18 +1188,21 @@ void fhm_location::draw_landscape()
         if (!c.get_frustum().test_intersect(p.box))
             continue;
 
+        const float sq = p.box.sq_dist(c.get_pos());
+
         for (const auto &g: p.groups)
         {
             if (!c.get_frustum().test_intersect(g.box))
                 continue;
 
-            const float sq = g.box.sq_dist(c.get_pos());
+            //const float sq = g.box.sq_dist(c.get_pos());
+
             g.tex.internal().set();
 
             if (g.mid_count > 0)
             {
-                const float hi_dist = 10000.0f;
-                const float mid_dist = 15000.0f;
+                const float hi_dist = 8000.0f;
+                const float mid_dist = 16000.0f;
                 if (sq < hi_dist * hi_dist)
                     m_landscape.vbo->draw(g.hi_offset, g.hi_count);
                 else if (sq < mid_dist * mid_dist)
@@ -1141,7 +1217,8 @@ void fhm_location::draw_landscape()
         }
     }
 
-    //glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    if (debug_variable::get()>0)
+        glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
     nya_render::vbo::unbind();
     m_land_material.internal().unset();
