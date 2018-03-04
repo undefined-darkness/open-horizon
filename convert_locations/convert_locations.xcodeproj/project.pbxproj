@@ -53,7 +53,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		F524A5781DF4ABEF00D6EB88 /* dxt_decoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dxt_decoder.h; sourceTree = "<group>"; };
+		F524A5781DF4ABEF00D6EB88 /* dxt_util.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dxt_util.h; sourceTree = "<group>"; };
 		F524A5801DF6BEF800D6EB88 /* mesh_ndxr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = mesh_ndxr.cpp; path = ../renderer/mesh_ndxr.cpp; sourceTree = "<group>"; };
 		F524A5811DF6BEF800D6EB88 /* mesh_ndxr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mesh_ndxr.h; path = ../renderer/mesh_ndxr.h; sourceTree = "<group>"; };
 		F5272CFA1D9B18C1000FF7C8 /* miniz.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = miniz.h; path = ../deps/zip/src/miniz.h; sourceTree = "<group>"; };
@@ -125,7 +125,7 @@
 			isa = PBXGroup;
 			children = (
 				F54474921D9A606900561F4C /* convert_locations.cpp */,
-				F524A5781DF4ABEF00D6EB88 /* dxt_decoder.h */,
+				F524A5781DF4ABEF00D6EB88 /* dxt_util.h */,
 				F5272D191DA992D6000FF7C8 /* obj_writer.h */,
 				F530D2511E07DB0C0072BB48 /* xml */,
 				F5272CF91D9B18A0000FF7C8 /* zip */,

@@ -16,7 +16,7 @@
 #include "render/bitmap.h"
 #include "zip.h"
 #include "util/xml.h"
-#include "dxt_decoder.h"
+#include "dxt_util.h"
 #include "obj_writer.h"
 #include <set>
 #include <list>
@@ -526,6 +526,20 @@ bool convert_location5(const void *data, size_t size, std::string name, std::str
 
 //------------------------------------------------------------
 
+const size_t dds_header_size = 128;
+void write_dds_header(void *data, uint width, uint height, uint mips, bool alpha)
+{
+    memset(data, 0, dds_header_size);
+    uint header[dds_header_size/4] = {' SDD', dds_header_size - 4, 0x000a1007,
+        height, width, alpha ? width : width/2, 0, mips};
+    header[20] = 0x00000004;
+    header[21] = alpha ? '5TXD' : '1TXD';
+    header[27] = 0x00401008;
+    memcpy(data, header, dds_header_size);
+}
+
+//------------------------------------------------------------
+
 bool write_texture_ntxr(nya_memory::tmp_buffer_ref tex_data, std::string name, zip_t *zip)
 {
     if (!tex_data.get_size())
@@ -533,57 +547,47 @@ bool write_texture_ntxr(nya_memory::tmp_buffer_ref tex_data, std::string name, z
 
     nya_memory::memory_reader r(tex_data.get_data(), tex_data.get_size());
 
-    r.seek(34);
+    r.seek(32);
+    auto mip_count = swap_bytes(r.read<uint16_t>());
     auto format = swap_bytes(r.read<uint16_t>());
     auto width = swap_bytes(r.read<uint16_t>());
     auto height = swap_bytes(r.read<uint16_t>());
     r.seek(48);
+
+    if (format != 0 && format != 2)
+    {
+        printf("Warning: unsupported texture format: %d\n", 2);
+        tex_data.free();
+        return false;
+    }
+
     const size_t data_offset = swap_bytes(r.read<uint32_t>()) + 16;
+    const bool has_alpha = format == 2;
+    nya_memory::tmp_buffer_scoped tmp(dds_header_size + tex_data.get_size()-data_offset);
 
-    nya_memory::tmp_buffer_scoped tex(width*height*4 + nya_formats::tga::tga_minimum_header_size);
-    nya_memory::tmp_buffer_scoped tmp(tex_data.get_size()-data_offset);
-
-    nya_formats::tga tga;
-    tga.width = width;
-    tga.height = height;
-
-    uint8_t *color_data = (uint8_t *)tex.get_data(nya_formats::tga::tga_minimum_header_size);
-
-    switch(format)
+    const uint psize = has_alpha ? 16 : 8;
+    auto src = (const char *)tex_data.get_data(data_offset);
+    auto dst = (char *)tmp.get_data(dds_header_size);
+    for (uint i = 0, w = width, h = height; i < mip_count; ++i, w = w > 4 ? w/2 : 4, h = h > 4 ? h / 2 : 4)
     {
-        case 0:
-            ConvertFromLinearTexture((const char *)tex_data.get_data(data_offset), (char *)tmp.get_data(), width, height, false);
-            DecodeDXT1((const uint8_t *)tmp.get_data(), color_data, width, height);
-            nya_render::bitmap_rgba_to_rgb(color_data, width, height);
-            tga.channels = nya_formats::tga::bgr;
-            break;
-
-        case 2:
-            ConvertFromLinearTexture((const char *)tex_data.get_data(data_offset), (char *)tmp.get_data(), width, height, true);
-            DecodeDXT5((const uint8_t *)tmp.get_data(), color_data, width, height);
-            tga.channels = nya_formats::tga::bgra;
-
-            break;
-
-        default: printf("Warning: unsupported texture format: %d\n", 2); tex_data.free(); return false;
+        UntileDXT(src, dst, w, h, has_alpha);
+        const uint mip_size = w * h * psize / 16;
+        src += mip_size, dst += mip_size;
     }
 
-    if (tga.channels == 4)
-    {
-        for (int i = 0; i < width * height * 4; ++i)
-        {
-            auto &a = color_data[i+3];
-            a = a > 127 ? 255 : a * 2;
-        }
-    }
+    write_dds_header(tmp.get_data(), width, height, mip_count, has_alpha);
 
     tex_data.free();
-    nya_render::bitmap_rgb_to_bgr(color_data, width, height, tga.channels);
-    //nya_render::bitmap_flip_vertical(color_data, width, height, tga.channels);
-    tga.encode_header(tex.get_data());
+
+    auto *data = (ushort *)tmp.get_data(dds_header_size);
+    auto *end = data + (tmp.get_size() - dds_header_size)/2;
+    while(data < end)
+        *data = swap_bytes(*data), ++data;
+
+   // write_file("test.dds", tmp.get_data(), tmp.get_size());
 
     zip_entry_open(zip, name.c_str());
-    zip_entry_write(zip, tex.get_data(), nya_formats::tga::tga_header_size + width*height*tga.channels);
+    zip_entry_write(zip, tmp.get_data(), tmp.get_size());
     zip_entry_close(zip);
     return true;
 }
@@ -607,7 +611,7 @@ unsigned int get_texture_ntxr_hex_id(nya_memory::tmp_buffer_ref tex_data)
 
 bool write_texture_ntxr_hex_id(nya_memory::tmp_buffer_ref tex_data, std::string name, zip_t *zip)
 {
-    return write_texture_ntxr(tex_data, name + std::to_string(get_texture_ntxr_hex_id(tex_data)) + ".tga", zip);
+    return write_texture_ntxr(tex_data, name + std::to_string(get_texture_ntxr_hex_id(tex_data)) + ".dds", zip);
 }
 
 //------------------------------------------------------------
@@ -695,7 +699,7 @@ std::string write_mesh_ndxr(nya_memory::tmp_buffer_ref data, std::string folder,
 
             auto loc_hash = std::find(location_tex_hashes.begin(), location_tex_hashes.end(), rg.textures[0]);
             if (loc_hash != location_tex_hashes.end())
-                tex = tex_name("../land", int(loc_hash - location_tex_hashes.begin()), "tga");
+                tex = tex_name("../land", int(loc_hash - location_tex_hashes.begin()), "dds");
             else
                 tex = tex_name("tex", rg.textures[0]);
 
@@ -786,7 +790,7 @@ bool convert_location6(const void *data, size_t size, std::string name, std::str
     {
         auto r = load_resource(p, tidx);
         location_tex_hashes.push_back(get_texture_ntxr_hex_id(r));
-        write_texture_ntxr(r, tex_name("land", tex_count++, "tga"), zip);
+        write_texture_ntxr(r, tex_name("land", tex_count++, "dds"), zip); //TEST
     }
 
     printf("\tobjects\n");
