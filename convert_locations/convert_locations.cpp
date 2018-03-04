@@ -977,8 +977,13 @@ int main(int argc, const char * argv[])
     cdp_file pak4;
     pac5_file pak5;
     pac6_file pak6;
+
+    std::string ac4_path = src_path + "DATA.CDP";
+    std::string ac5_path = src_path + "DATA.PAC";
+    std::string ac6_path = src_path + "DATA00.PAC";
+
 /*
-    if (pak4.open((src_path + "DATA.CDP").c_str()))
+    if (file_exists(ac4_path.c_str()) && pak4.open(ac4_path.c_str()))
     {
         for (int i = 1, idx = 0; i <= 100; ++i, ++idx)
         {
@@ -995,7 +1000,8 @@ int main(int argc, const char * argv[])
     }
     else
 */
-    if (pak5.open((src_path + "DATA.PAC").c_str()))
+
+    if (file_exists(ac5_path.c_str()) && pak5.open(ac5_path.c_str()))
     {
         if (pak5.get_files_count() < 1200) //ac5
         {
@@ -1026,7 +1032,7 @@ int main(int argc, const char * argv[])
 
         printf("Done\n");
     }
-    else if (pak6.open((src_path + "DATA00.PAC").c_str()))
+    else if (file_exists(ac6_path.c_str()) && pak6.open(ac6_path.c_str()))
     {
         for (int i = 119, idx = 0; i <= 133; ++i, ++idx)
         {

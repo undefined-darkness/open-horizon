@@ -441,6 +441,14 @@ inline bool write_file(const char *name, const void *buf, size_t size)
 
 //------------------------------------------------------------
 
+inline bool file_exists(const char *name)
+{
+    struct stat sb;
+    return name && name[0] && stat(name, &sb)==0;
+}
+
+//------------------------------------------------------------
+
 template<typename t> nya_resources::resource_data *access(t &provider, int idx)
 {
     if (idx < 0 || idx >= provider.get_files_count())
