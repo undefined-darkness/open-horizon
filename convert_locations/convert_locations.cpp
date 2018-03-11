@@ -568,11 +568,20 @@ bool write_texture_ntxr(nya_memory::tmp_buffer_ref tex_data, std::string name, z
     const uint psize = has_alpha ? 16 : 8;
     auto src = (const char *)tex_data.get_data(data_offset);
     auto dst = (char *)tmp.get_data(dds_header_size);
+
     for (uint i = 0, w = width, h = height; i < mip_count; ++i, w = w > 4 ? w/2 : 4, h = h > 4 ? h / 2 : 4)
     {
         UntileDXT(src, dst, w, h, has_alpha);
+
+        if (w == 4 && h == 4) //ToDo: get 2 last mips
+        {
+            mip_count = i + 1;
+            break;
+        }
+
         const uint mip_size = w * h * psize / 16;
-        src += mip_size, dst += mip_size;
+        src += w > 64 ? mip_size : (w * h * 4);
+        dst += mip_size;
     }
 
     write_dds_header(tmp.get_data(), width, height, mip_count, has_alpha);
@@ -583,8 +592,6 @@ bool write_texture_ntxr(nya_memory::tmp_buffer_ref tex_data, std::string name, z
     auto *end = data + (tmp.get_size() - dds_header_size)/2;
     while(data < end)
         *data = swap_bytes(*data), ++data;
-
-   // write_file("test.dds", tmp.get_data(), tmp.get_size());
 
     zip_entry_open(zip, name.c_str());
     zip_entry_write(zip, tmp.get_data(), tmp.get_size());

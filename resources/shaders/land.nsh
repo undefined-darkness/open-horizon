@@ -51,22 +51,24 @@ uniform vec4 light_dir;
 
 void main()
 {
+    vec3 e = get_eye(vpos.xyz);
     vec4 base=texture2D(base_map,tc);
-    vec4 ocean=texture2D(ocean_map,ocean_tc);
-    vec4 detail=texture2D(detail_map,detail_tc)*0.5+vec4(0.5);
-    vec3 normal=normalize(texture2D(normal_map,normal_tc).rgb
-                          +texture2D(normal_map,normal_tc2).rgb
-                          -vec3(1.0));
-
-	vec3 e = get_eye(vpos.xyz);
-
-    float ol=1.0+dot(normal,light_dir.xyz);
-    vec3 h=normalize(light_dir.xyz-e);
-    float s=pow(max(0.0,dot(normal,h)),60.0)*0.5;
-
-    base.rgb=mix(ocean.rgb*ol+vec3(s),base.rgb*detail.rgb,base.a);
+    if (base.a < 0.5)
+    {
+        vec4 ocean=texture2D(ocean_map,ocean_tc);
+        vec3 normal=normalize(texture2D(normal_map,normal_tc).rgb
+                             +texture2D(normal_map,normal_tc2).rgb-vec3(1.0));
+        float ol=1.0+dot(normal,light_dir.xyz);
+        vec3 h=normalize(light_dir.xyz-e);
+        float s=pow(max(0.0,dot(normal,h)),60.0)*0.5;
+        base.rgb=ocean.rgb*ol+vec3(s);
+    }
+    else
+    {
+        vec4 detail = texture2D(detail_map,detail_tc)*0.5 + vec4(0.5);
+        base.rgb *= detail.rgb;
+    }
 
 	float fog = get_fog(vfogf, vfogh, e);
-
-	gl_FragColor=vec4(mix(fog_color.xyz,base.xyz,fog) * 0.8,1.0);
+	gl_FragColor=vec4(mix(fog_color.xyz, base.rgb, fog) * 0.8,1.0);
 }
