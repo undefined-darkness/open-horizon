@@ -1,0 +1,26 @@
+<difficulty>
+    <easy
+        name ="Easy"
+        ammo_ammount = "1.5"
+        player_missile_dmg = "100"
+        enemy_missile_dmg = "40"
+        missile_dmg_radius = "20"
+        bomb_dmg_radius = "80"
+    />
+    <medium
+        name = "Medium"
+        ammo_ammount = "1.25"
+        player_missile_dmg = "90"
+        enemy_missile_dmg = "60"
+        missile_dmg_radius = "20"
+        bomb_dmg_radius = "80"
+    />
+    <hard
+        name = "Hard"
+        ammo_ammount = "1.0"
+        player_missile_dmg = "80"
+        enemy_missile_dmg = "80"
+        missile_dmg_radius = "20"
+        bomb_dmg_radius = "80"
+    />
+</difficulty>

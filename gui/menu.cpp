@@ -8,6 +8,7 @@
 #include "game/game.h"
 #include "game/locations_list.h"
 #include "game/missions_list.h"
+#include "game/difficulty.h"
 #include "util/resources.h"
 
 namespace gui
@@ -582,6 +583,12 @@ void menu::set_screen(const std::string &screen)
 
         add_entry(L"Music volume: ", {});
         add_input("music_volume", true, false);
+
+        add_entry(L"Difficulty: ", {}, "difficulty");
+
+        auto &difficulties = game::get_difficulty_list();
+        for (auto &d: difficulties)
+            add_sub_entry(to_wstring(d.name), d.id);
 
         add_entry(L"Configure joystick", {"screen=joystick"});
     }

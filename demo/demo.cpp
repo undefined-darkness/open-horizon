@@ -43,6 +43,7 @@ int main()
     config::register_var("fullscreen", "false");
     config::register_var("master_volume", "10");
     config::register_var("music_volume", "5");
+    config::register_var("difficulty", "hard");
 
     platform platform;
     if (!platform.init(config::get_var_int("screen_width"), config::get_var_int("screen_height"), "Open Horizon 7th demo"))

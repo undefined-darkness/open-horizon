@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E31B74D206C87D7007EF689 /* difficulty.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0E548BE4206C839300139A4E /* difficulty.xml */; };
+		0E548BE5206C839300139A4E /* difficulty.xml in Resources */ = {isa = PBXBuildFile; fileRef = 0E548BE4206C839300139A4E /* difficulty.xml */; };
+		0EB17DA9200BCE6700F5328C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0EB17DA6200BCE5500F5328C /* Metal.framework */; };
 		F503E4DB19048C6700C3590A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E4DA19048C6700C3590A /* Cocoa.framework */; };
 		F503E52419048E2D00C3590A /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52319048E2D00C3590A /* libglfw3.a */; };
 		F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52519048E5000C3590A /* OpenGL.framework */; };
@@ -118,6 +121,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
+				0E31B74D206C87D7007EF689 /* difficulty.xml in CopyFiles */,
 				F530D2491E0184AF0072BB48 /* menu.lua in CopyFiles */,
 				F591D5101D31644A00DD8D98 /* missions in CopyFiles */,
 				F53EFF561D0FF74C009B6A0A /* objects.xml in CopyFiles */,
@@ -133,6 +137,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0E548BE1206C812000139A4E /* difficulty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = difficulty.h; path = ../game/difficulty.h; sourceTree = "<group>"; };
+		0E548BE4206C839300139A4E /* difficulty.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = difficulty.xml; path = ../resources/difficulty.xml; sourceTree = "<group>"; };
+		0EB17DA6200BCE5500F5328C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		F503E4D719048C6700C3590A /* open-horizon-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "open-horizon-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F503E4DA19048C6700C3590A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		F503E4DD19048C6700C3590A /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -318,6 +325,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0EB17DA9200BCE6700F5328C /* Metal.framework in Frameworks */,
 				F5CD8DF31D50672A00337674 /* CoreVideo.framework in Frameworks */,
 				F5B9E0F11D16DC1C0046BA9E /* liblua52.a in Frameworks */,
 				F586B6701CE8D14300A2B7BE /* libopenal.1.17.2.dylib in Frameworks */,
@@ -364,6 +372,7 @@
 		F503E4D919048C6700C3590A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0EB17DA6200BCE5500F5328C /* Metal.framework */,
 				F5CD8DF21D50672A00337674 /* CoreVideo.framework */,
 				F5B9E0F01D16DC1C0046BA9E /* liblua52.a */,
 				F586B66B1CE8C4C700A2B7BE /* libopenal.1.17.2.dylib */,
@@ -456,6 +465,7 @@
 				F5A2A2DD1B05466C009765C1 /* ai.h */,
 				F5A2A2E11B05466C009765C1 /* deathmatch.cpp */,
 				F5A2A2E81B0546EF009765C1 /* deathmatch.h */,
+				0E548BE1206C812000139A4E /* difficulty.h */,
 				F5A2A2E21B05466C009765C1 /* free_flight.cpp */,
 				F5A2A2DE1B05466C009765C1 /* free_flight.h */,
 				F59AB5901AFA389500137527 /* game.cpp */,
@@ -701,6 +711,7 @@
 			isa = PBXGroup;
 			children = (
 				F5C6D39B1AF96A08006FB7E6 /* DATA.PAC.xml */,
+				0E548BE4206C839300139A4E /* difficulty.xml */,
 				F5696AA11B10E3F800C7BFC9 /* joystick.xml */,
 				F5C6D39C1AF96A08006FB7E6 /* postprocess.txt */,
 				F530D2471E0180130072BB48 /* menu.lua */,
@@ -789,6 +800,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0E548BE5206C839300139A4E /* difficulty.xml in Resources */,
 				F5E3FE981DC3482A002446F8 /* icon.icns in Resources */,
 				F530D2481E0180130072BB48 /* menu.lua in Resources */,
 			);
