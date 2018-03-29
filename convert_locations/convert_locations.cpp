@@ -540,8 +540,27 @@ void write_dds_header(void *data, uint width, uint height, uint mips, bool alpha
 
 //------------------------------------------------------------
 
+//debug
+bool write_texture_white(std::string name, zip_t *zip)
+{
+    nya_formats::tga t;
+    t.width = t.height = 4;
+    t.channels = t.bgra;
+    nya_memory::tmp_buffer_scoped tmp(t.tga_minimum_header_size + t.width*t.height*t.channels);
+    memset(tmp.get_data(t.tga_minimum_header_size), 255, tmp.get_size()-t.tga_minimum_header_size);
+    t.encode_header(tmp.get_data());
+    zip_entry_open(zip, name.c_str());
+    zip_entry_write(zip, tmp.get_data(), tmp.get_size());
+    zip_entry_close(zip);
+    return true;
+}
+
+//------------------------------------------------------------
+
 bool write_texture_ntxr(nya_memory::tmp_buffer_ref tex_data, std::string name, zip_t *zip)
 {
+    //return write_texture_white(name, zip);
+
     if (!tex_data.get_size())
         return false;
 
@@ -572,15 +591,22 @@ bool write_texture_ntxr(nya_memory::tmp_buffer_ref tex_data, std::string name, z
     for (uint i = 0, w = width, h = height; i < mip_count; ++i, w = w > 4 ? w/2 : 4, h = h > 4 ? h / 2 : 4)
     {
         UntileDXT(src, dst, w, h, has_alpha);
+        const uint mip_size = w * h * psize / 16;
 
-        if (w == 4 && h == 4) //ToDo: get 2 last mips
+        if (w > 64)
+            src += mip_size;
+        else if (w == 64)
+            src += 64 * 64 * 4;
+        else if (w == 32)
+            src += 64 * 66 * 4;
+        else if (w == 16)
+            src -= 64 * 4;
+        else if (w == 8)
         {
             mip_count = i + 1;
             break;
         }
 
-        const uint mip_size = w * h * psize / 16;
-        src += w > 64 ? mip_size : (w * h * 4);
         dst += mip_size;
     }
 

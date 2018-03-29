@@ -106,7 +106,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
             const int line_count = int(int(m_tex_width) / int(m_tile_size + m_tile_border));
 
-            const int ty = tc_idx / line_count;
+            const int ty = line_count > 0 ? tc_idx / line_count : 0;
             const int tx = tc_idx - ty * line_count;
 
             nya_math::vec4 tc(m_tile_border, m_tile_border, m_tile_size, m_tile_size);
