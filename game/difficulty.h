@@ -13,11 +13,9 @@ namespace game
 struct difficulty_settings
 {
     std::string id, name;
-    float ammo_ammount;
-    float player_missile_dmg;
-    float enemy_missile_dmg;
-    float missile_dmg_radius;
-    float bomb_dmg_radius;
+    float ammo_ammount = 1.0f;
+    float dmg_take = 1.0f;
+    float dmg_inflict = 1.0f;
 };
 
 typedef std::vector<difficulty_settings> difficulty_list;
@@ -41,10 +39,8 @@ static const difficulty_list &get_difficulty_list()
             d.id = s.name();
             d.name = s.attribute("name").as_string();
             d.ammo_ammount = s.attribute("ammo_ammount").as_float(1.0f);
-            d.player_missile_dmg = s.attribute("player_missile_dmg").as_float();
-            d.enemy_missile_dmg = s.attribute("enemy_missile_dmg").as_float();
-            d.missile_dmg_radius = s.attribute("missile_dmg_radius").as_float();
-            d.bomb_dmg_radius = s.attribute("bomb_dmg_radius").as_float();
+            d.dmg_take = s.attribute("dmg_take").as_float();
+            d.dmg_inflict = s.attribute("dmg_inflict").as_float();
 
             list.push_back(d);
         }

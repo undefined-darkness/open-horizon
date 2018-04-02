@@ -185,7 +185,7 @@ void missile::update(int dt, world &w)
             const bool hit = w.area_damage(phys->pos, dmg_radius, dmg, owner.lock());
             if (!hit && target_alive)
             {
-                t->take_damage(missile_damage, w);
+                t->take_damage(dmg, w);
                 if (t->hp <= 0 )
                     w.on_kill(owner.lock(), t);
             }
