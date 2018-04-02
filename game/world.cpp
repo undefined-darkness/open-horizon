@@ -374,8 +374,29 @@ object_ptr world::get_object(int idx)
 
 //------------------------------------------------------------
 
+void world::update_difficulty()
+{
+    auto selected = config::get_var("difficulty");
+    auto list = get_difficulty_list();
+    for (auto &d: list)
+    {
+        if (d.id == selected)
+        {
+            m_difficulty = d;
+            return;
+        }
+    }
+
+    if (!list.empty())
+        m_difficulty = list.back();
+}
+
+//------------------------------------------------------------
+
 void world::set_location(const char *name)
 {
+    update_difficulty();
+
     m_render_world.set_location(name);
     m_phys_world.set_location(name);
     m_hud.set_location(name);

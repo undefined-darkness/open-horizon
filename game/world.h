@@ -5,6 +5,7 @@
 #pragma once
 
 #include "game.h"
+#include "difficulty.h"
 #include "plane.h"
 #include "units.h"
 
@@ -84,6 +85,9 @@ public:
     world(renderer::world &w, sound::world &s, gui::hud &h): m_render_world(w), m_sound_world(s), m_hud(h), m_network(0) {}
 
 private:
+    void update_difficulty();
+
+private:
     missile_ptr add_missile(const char *id, const renderer::model &m, bool add_to_phys_world);
 
 private:
@@ -92,6 +96,7 @@ private:
     bomb_ptr get_bomb(const phys::object_ptr &o);
 
 private:
+    difficulty_settings m_difficulty;
     std::vector<plane_ptr> m_planes;
     w_ptr<plane> m_player;
     std::vector<missile_ptr> m_missiles;
