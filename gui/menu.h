@@ -109,6 +109,7 @@ private:
     void add_entry(const std::wstring &name, const std::vector<std::string> &events,
                    const std::string &sub_event = "", const std::vector<std::string> &sub_events = {});
     void add_sub_entry(const std::wstring &name, const std::string &value);
+    void last_sub_select(const std::string &value);
     void add_input(const std::string &event, bool numeric_only = false, bool allow_input = true);
 
     std::vector<entry> m_entries;

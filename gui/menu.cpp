@@ -447,6 +447,25 @@ void menu::add_sub_entry(const std::wstring &name, const std::string &value)
 
 //------------------------------------------------------------
 
+void menu::last_sub_select(const std::string &value)
+{
+    if (m_entries.empty())
+        return;
+
+    uint i = 0;
+    for (auto &s: m_entries.back().sub_select)
+    {
+        if (s.second == value)
+        {
+            m_entries.back().sub_selected = i;
+            break;
+        }
+        ++i;
+    }
+}
+
+//------------------------------------------------------------
+
 void menu::add_input(const std::string &event, bool numeric_only, bool allow_input)
 {
     if (m_entries.empty())
@@ -575,8 +594,7 @@ void menu::set_screen(const std::string &screen)
         add_entry(L"Fullscreen: ", {}, "fullscreen");
         add_sub_entry(L"No", "false");
         add_sub_entry(L"Yes", "true");
-        if (config::get_var_bool("fullscreen"))
-            std::swap(m_entries.back().sub_select[0], m_entries.back().sub_select[1]);
+        last_sub_select(config::get_var("fullscreen"));
 
         add_entry(L"Master volume: ", {});
         add_input("master_volume", true, false);
@@ -585,10 +603,10 @@ void menu::set_screen(const std::string &screen)
         add_input("music_volume", true, false);
 
         add_entry(L"Difficulty: ", {}, "difficulty");
-
         auto &difficulties = game::get_difficulty_list();
         for (auto &d: difficulties)
             add_sub_entry(to_wstring(d.name), d.id);
+        last_sub_select(config::get_var("difficulty"));
 
         add_entry(L"Configure joystick", {"screen=joystick"});
     }
