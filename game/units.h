@@ -46,8 +46,8 @@ struct unit: public object
 public:
     virtual vec3 get_pos() override { return m_render.is_valid() ? m_render->mdl.get_pos() - m_dpos : vec3(); }
     virtual quat get_rot() override { return m_render.is_valid() ? m_render->mdl.get_rot() : quat(); }
-    virtual std::wstring get_type_name() { return m_type_name; }
-    virtual bool get_tgt() { return m_align == align_target; }
+    virtual std::wstring get_type_name() override { return m_type_name; }
+    virtual bool get_tgt() override { return m_align == align_target; }
     virtual bool is_ally(const plane_ptr &p, world &w) override { return m_align > align_enemy; }
     virtual void take_damage(int damage, world &w, bool net_src = true) override;
 
@@ -79,7 +79,7 @@ public:
     virtual void set_path(const path &p, bool loop) override { m_path = p; m_path_loop = loop; }
     virtual void set_follow(object_wptr f) override { m_follow = f; }
     virtual void set_target(object_wptr t) override { m_target = t; }
-    virtual void set_target_search(target_search_mode mode) { m_target_search = mode; }
+    virtual void set_target_search(target_search_mode mode) override { m_target_search = mode; }
     virtual void set_speed(float speed) override;
     virtual void set_speed_limit(float speed) override;
     virtual void update(int dt, world &w) override;

@@ -197,7 +197,7 @@ void cri_utf_table::debug_print() const
         {
             switch (v.type)
             {
-                case type_uint: printf(" %llu", v.u); break;
+                case type_uint: printf(" %llu", (long long unsigned int)v.u); break;
                 case type_float: printf(" %f", v.f); break;
                 case type_string: printf(" <%s>", v.s.c_str()); break;
                 case type_data: printf(" <data %ldb>", v.d.size()); break;

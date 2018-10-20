@@ -1179,8 +1179,8 @@ void fhm_location::draw_landscape()
     nya_render::set_modelview_matrix(c.get_view_matrix());
     m_land_material.internal().set();
 
-    if (debug_variable::get()>0)
-        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    //if (debug_variable::get()>0)
+    //    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
     m_landscape.vbo->bind();
     for (const auto &p: m_landscape.patches)
@@ -1217,8 +1217,8 @@ void fhm_location::draw_landscape()
         }
     }
 
-    if (debug_variable::get()>0)
-        glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    //if (debug_variable::get()>0)
+    //    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
     nya_render::vbo::unbind();
     m_land_material.internal().unset();

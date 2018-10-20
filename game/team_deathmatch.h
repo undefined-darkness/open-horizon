@@ -13,7 +13,7 @@ namespace game
 class team_deathmatch: public deathmatch
 {
 public:
-    virtual void start(const char *plane, int color, int special, const char *location, int bots_count);
+    virtual void start(const char *plane, int color, int special, const char *location, int bots_count) override;
     virtual void update(int dt, const plane_controls &player_controls) override;
     virtual void end() override;
 
@@ -22,7 +22,7 @@ public:
 protected:
     bool is_ally(const plane_ptr &a, const plane_ptr &b);
     void on_kill(const object_ptr &k, const object_ptr &v);
-    virtual void respawn(plane_ptr p);
+    virtual void respawn(plane_ptr p) override;
     virtual void update_scores() override;
     void rebalance();
 

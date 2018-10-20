@@ -53,7 +53,7 @@ public:
 public:
     void switch_camera();
     void resize(unsigned int width,unsigned int height);
-    void update(int dt);
+    void update(int dt) override;
     void draw();
     void pause(bool paused) { m_paused = paused; }
     void loading(bool loading) { m_loading = loading; }
@@ -64,8 +64,8 @@ public:
     void add_trail(const missile_trail &t) override { m_missile_trails.push_back(std::make_pair(t, 0)); }
 
 private:
-    aircraft_ptr add_aircraft(const char *name, int color, bool player);
-    void set_location(const char *name);
+    aircraft_ptr add_aircraft(const char *name, int color, bool player) override;
+    void set_location(const char *name) override;
     void draw_scene(const char *pass,const nya_scene::tags &t) override;
     void setup_shadow_camera(aircraft_ptr a);
 };
