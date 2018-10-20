@@ -184,11 +184,7 @@ void missile::update(int dt, world &w)
             const bool target_alive = t->hp > 0;
             const bool hit = w.area_damage(phys->pos, dmg_radius, dmg, owner.lock());
             if (!hit && target_alive)
-            {
-                t->take_damage(dmg, w);
-                if (t->hp <= 0 )
-                    w.on_kill(owner.lock(), t);
-            }
+                w.direct_damage(t, dmg, owner.lock());
 
             const bool destroyed = t->hp <= 0;
             if (owner.lock() == w.get_player() && target_alive)

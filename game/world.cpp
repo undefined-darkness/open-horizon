@@ -147,6 +147,8 @@ plane_ptr world::add_plane(const char *preset, const char *player_name, int colo
         p->missile_max_count = wi->missile.count;
     }
 
+    p->missile_max_count *= m_difficulty.ammo_ammount;
+    p->special_max_count *= m_difficulty.ammo_ammount;
     p->missile_count = p->missile_max_count;
     p->special_count = p->special_max_count;
 
@@ -236,14 +238,9 @@ void world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, con
             const float spread_coeff = 2.0f;
             if (line_sphere_intersect(pos, r, t->get_pos(), t->get_hit_radius() * spread_coeff))
             {
-                t->take_damage(60, *this);
-                const bool destroyed = t->hp <= 0;
-
-                if (destroyed)
-                    on_kill(owner, t);
-
+                direct_damage(t, 60, owner);
                 if (owner == get_player())
-                    popup_hit(destroyed);
+                    popup_hit(t->hp <= 0);
             }
         }
     }
@@ -256,6 +253,24 @@ void world::spawn_bullet(const char *type, const vec3 &pos, const vec3 &dir, con
 
 //------------------------------------------------------------
 
+bool world::direct_damage(const object_ptr &target, int damage, const plane_ptr &owner)
+{
+    if (!target || target->hp <= 0 || target->is_ally(owner, *this))
+        return false;
+
+    if (owner == get_player())
+        damage *= m_difficulty.dmg_inflict;
+    if (target == get_player())
+        damage *= m_difficulty.dmg_take;
+
+    target->take_damage(damage, *this);
+    if (target->hp <= 0)
+        on_kill(owner, target);
+    return true;
+}
+
+//------------------------------------------------------------
+
 bool world::area_damage(const vec3 &pos, float radius, int damage, const plane_ptr &owner)
 {
     bool hit = false;
@@ -263,14 +278,11 @@ bool world::area_damage(const vec3 &pos, float radius, int damage, const plane_p
     for (int i = 0; i < get_objects_count(); ++i)
     {
         auto o = get_object(i);
-        if (!o || o->hp <= 0 || o->is_ally(owner, *this) || (o->get_pos() - pos).length() > radius)
+        if (!o || (o->get_pos() - pos).length() > radius)
             continue;
 
-        o->take_damage(damage, *this);
-        hit = true;
-
-        if (o->hp <= 0)
-            on_kill(owner, o);
+        if (direct_damage(o, damage, owner))
+            hit = true;
     }
 
     return hit;
@@ -769,7 +781,7 @@ bool world::is_ally(const plane_ptr &a, const plane_ptr &b)
     if (a == b)
         return true;
 
-    if (!m_ally_handler)
+    if (!a || !b || !m_ally_handler)
         return false;
 
     return m_ally_handler(a, b);

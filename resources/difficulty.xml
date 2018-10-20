@@ -2,13 +2,13 @@
     <easy
         name ="Easy"
         ammo_ammount = "1.5"
-        dmg_take = "0.5"
+        dmg_take = "0.3"
         dmg_inflict = "1.5"
     />
     <medium
         name = "Medium"
         ammo_ammount = "1.25"
-        dmg_take = "0.75"
+        dmg_take = "0.6"
         dmg_inflict = "1.25"
     />
     <hard
