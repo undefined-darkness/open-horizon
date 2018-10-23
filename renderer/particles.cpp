@@ -172,6 +172,15 @@ void bullets::add_bullet(const nya_math::vec3 &pos, const nya_math::vec3 &vel)
 
 //------------------------------------------------------------
 
+void plane_engine::update(const nya_math::vec3 &pos, const nya_math::quat &rot, float afterburner, int dt)
+{
+    m_pos = pos;
+    m_rot = rot;
+    m_afterburner = afterburner;
+}
+
+//------------------------------------------------------------
+
 void particles_render::init()
 {
     auto t = shared::get_texture(shared::load_texture("Effect/Effect.nut"));
@@ -434,6 +443,20 @@ void particles_render::draw_heat(const explosion &e) const
 
     add_point(e.m_pos, r, atc, false, atc, false, color(1.0f, 1.0f, 1.0f, 1.0f) * 0.2f);
     draw_points();
+}
+
+//------------------------------------------------------------
+
+void particles_render::draw(const plane_engine &e) const
+{
+    //ToDo
+}
+
+//------------------------------------------------------------
+
+void particles_render::draw_heat(const plane_engine &e) const
+{
+    //ToDo
 }
 
 //------------------------------------------------------------

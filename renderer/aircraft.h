@@ -29,6 +29,7 @@ public:
     void draw_trails(const scene &s);
     void draw_fire_trail(const scene &s);
     void draw_mgun_flash(const scene &s);
+    void draw_engine_effect(const scene &s);
     int get_lods_count() const { return m_mesh.get_lods_count(); }
     void update(int dt);
     void update_trail(int dt, scene &s);
@@ -162,6 +163,9 @@ private:
 
     bool m_has_trail;
     std::pair<plane_trail, int> m_trails[2];
+
+    std::vector<std::pair<plane_engine, int> > m_engines;
+    float m_engine_thrust = 0.0f;
 
 private:
     struct mgun

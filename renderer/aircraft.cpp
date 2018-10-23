@@ -109,6 +109,12 @@ public:
         }
     };
 
+    struct engine_info
+    {
+        float radius = 0.0f;
+        float dist = 0.0f;
+    };
+
     struct info
     {
         std::string name;
@@ -116,6 +122,7 @@ public:
         std::vector<color_info> colors;
         std::vector<mod_info> color_mods;
         std::string sound, voice;
+        std::vector<engine_info> engines;
     };
 
     info *get_info(const char *name)
@@ -179,7 +186,14 @@ public:
                             if (c)
                                 inf->colors[i].colors[j] = vec3(c.attribute("r").as_int(), c.attribute("g").as_int(), c.attribute("b").as_int()) / 255.0;
                         }
+                    }
 
+                    for (pugi::xml_node eng = ac.child("engine"); eng; eng = eng.next_sibling("engine"))
+                    {
+                        engine_info ei;
+                        ei.radius = eng.attribute("radius").as_float();
+                        ei.dist = eng.attribute("dist").as_float();
+                        inf->engines.push_back(ei);
                     }
                 }
             }
@@ -678,6 +692,14 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
     m_trails[0].second = m_mesh.get_bone_idx(0, "clh2");
     m_trails[1].second = m_mesh.get_bone_idx(0, "clh3");
 
+    for (auto &ei: info->engines)
+    {
+        std::string bname = "nzlp";
+        if (info->engines.size() > 1)
+            bname += std::to_string(m_engines.size() + 1);
+        m_engines.push_back({plane_engine(ei.radius, ei.dist), m_mesh.get_bone_idx(0, bname.c_str())});
+    }
+
     return true;
 }
 
@@ -924,6 +946,7 @@ void aircraft::set_thrust(float value)
         value = 2.0f - value;
 
     m_mesh.set_anim_weight(3, 'nzln', value);
+    m_engine_thrust = value;
 }
 
 //------------------------------------------------------------
@@ -1143,6 +1166,9 @@ void aircraft::update(int dt)
         for (auto &m: m_mgps)
             m.flash.update(m_mesh.get_bone_pos(0, m.bone_idx) + dir * 1.5f, dir, dt);
     }
+
+    for (auto &e: m_engines)
+        e.first.update(m_mesh.get_bone_pos(0, e.second), m_mesh.get_bone_rot(0, e.second), m_engine_thrust, dt);
 }
 
 //------------------------------------------------------------
@@ -1305,6 +1331,17 @@ void aircraft::draw_mgun_flash(const scene &s)
         for (auto &m: m_mgps)
             s.get_part_renderer().draw(m.flash);
     }
+}
+
+//------------------------------------------------------------
+
+void aircraft::draw_engine_effect(const scene &s)
+{
+    if (m_dead || m_hide)
+        return;
+
+    for (auto &e: m_engines)
+        s.get_part_renderer().draw(e.first);
 }
 
 //------------------------------------------------------------

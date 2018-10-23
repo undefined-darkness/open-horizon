@@ -97,15 +97,16 @@ class plane_engine
     friend class particles_render;
 
 public:
-    void update(const nya_math::vec3 &pos, const nya_math::vec3 &ab, float power, int dt);
+    void update(const nya_math::vec3 &pos, const nya_math::quat &rot, float afterburner, int dt);
 
-    plane_engine(): m_radius(0) {}
-    plane_engine(float r): m_radius(r) {}
+    plane_engine(): m_radius(0),m_dist(0) {}
+    plane_engine(float r,float d): m_radius(r),m_dist(d) {}
 
 private:
     nya_math::vec3 m_pos;
-    float m_heat_rot;
-    float m_radius;
+    nya_math::quat m_rot;
+    float m_heat_rot, m_afterburner;
+    float m_radius, m_dist;
 };
 
 //------------------------------------------------------------
