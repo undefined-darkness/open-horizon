@@ -107,6 +107,7 @@ int main()
     {
         if (event == "start")
         {
+            controls = game::plane_controls();
             sound_world.stop_music();
             const char *music_names[] = {"BGM_ms10_08", "BGM_ms06", "BGM_ms08x", "BGM_ms11a", "BGM_ms11b", "BGM_ms12_02"};
             sound_world.set_music(music_names[rand() % (sizeof(music_names) / sizeof(music_names[0]))]);
@@ -333,7 +334,7 @@ int main()
             alpha_anim += dt;
             alpha_anim = alpha_anim % 4000;
             //alpha_anim = 1000;
-            scene.ui_render.draw(ui_ref_rects, ui_ref_texture, nya_math::vec4(1.0, 1.0, 1.0, fabsf(alpha_anim / 2000.0f - 1.0)));
+            scene.ui_render.draw(ui_ref_rects, ui_ref_texture, nya_math::vec4(1.0f, 1.0f, 1.0f, fabsf(alpha_anim / 2000.0f - 1.0f)));
         }
 
         platform.end_frame();
