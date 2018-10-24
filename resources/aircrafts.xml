@@ -90,6 +90,7 @@
 </aircraft>
 
 <aircraft id="f15c" role="fighter" name="F-15C Eagle">
+    <engine radius="0.39" dist="0.67"/>
     <msl id="MISSILE" model="msl_a0" count="216"/>
     <spc id="_4AAM" model="xma_a0" count="28"/>
     <spc id="SAAM" model="saa_a0" count="26"/>
@@ -104,6 +105,7 @@
 </aircraft>
 
 <aircraft id="su33" role="fighter" name="Su-33 Flanker-D">
+    <engine radius="0.45" dist="1.1"/>
     <msl id="MISSILE" model="msl_r0" count="198"/>
     <spc id="SAAM" model="saa_r0" count="24"/>
     <spc id="_6AAM" model="xla_r0" count="28"/>
@@ -148,6 +150,7 @@
 </aircraft>
 
 <aircraft id="f16c" role="fighter" name="F-16C Fighting Falcon">
+    <engine radius="0.43"/>
     <msl id="MISSILE" model="msl_a0" count="172"/>
     <spc id="QAAM" model="qaa_a0" count="26"/>
     <spc id="_4AAM" model="xma_a0" count="22"/>
@@ -234,6 +237,7 @@
 </aircraft>
 
 <aircraft id="f15e" role="multirole" name="F-15E Strike Eagle">
+    <engine radius="0.39" dist="0.67"/>
     <msl id="MISSILE" model="msl_a0" count="216"/>
     <spc id="_4AAM" model="xma_a0" count="28"/>
     <spc id="UGB" model="ugb_a1" count="40"/>
@@ -288,6 +292,7 @@
 </aircraft>
 
 <aircraft id="f16f" role="multirole" name="F-16F Fighting Falcon">
+    <engine radius="0.43"/>
     <msl id="MISSILE" model="msl_a0" count="180"/>
     <spc id="QAAM" model="qaa_a0" count="28"/>
     <spc id="GPB" model="gpb_a1" count="30"/>
@@ -324,6 +329,7 @@
 <!----------------------------------------------------------------------------->
 
 <aircraft id="su34" role="attacker" name="Su-34 Fullback">
+    <engine radius="0.45" dist="1.2"/>
     <msl id="MISSILE" model="msl_r0" count="172"/>
     <spc id="_4AGM" model="xag_r0" count="38"/>
     <spc id="GPB" model="gpb_r0" count="36"/>
@@ -334,6 +340,7 @@
 </aircraft>
 
 <aircraft id="f02a" role="attacker" name="F-2A">
+    <engine radius="0.43"/>
     <msl id="MISSILE" model="msl_j0" count="196"/>
     <spc id="LAGM" model="las_j0" count="20"/>
     <spc id="RKTL" model="rcl_j0" count="30"/>
@@ -353,6 +360,7 @@
 </aircraft>
 
 <aircraft id="a10a" role="attacker" name="A-10A Thunderbolt II">
+    <engine radius="0.4" dist="1.45"/>
     <msl id="MISSILE" model="msl_a0" count="226"/>
     <spc id="_4AGM" model="xag_a0" count="40"/>
     <spc id="RKTL" model="rcl_a0" count="36"/>
@@ -376,6 +384,7 @@
 </aircraft>
 
 <aircraft id="su25" role="attacker" name="Su-25TM Frogfoot">
+    <engine radius="0.3" dist="0.75"/>
     <msl id="MISSILE" model="msl_r0" count="198"/>
     <spc id="UGB" model="ugb_r0" count="38"/>
     <spc id="MGP" model="gpd_r0" count="680"/>
@@ -389,6 +398,8 @@
 <!----------------------------------------------------------------------------->
 
 <aircraft id="b01b" role="bomber" name="B-1B Lancer">
+    <engine radius="0.49" dist="0.8"/>
+    <engine radius="0.49" dist="0.8"/>
     <spc id="GPB" model="gpb_a1" count="218"/>
     <spc id="MUGB" model="ugb_a1" count="320"/>
     <decal0 name="USAF Dark Gray"/>
