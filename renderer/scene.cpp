@@ -349,7 +349,10 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
             m_missile_trails_renderer.draw(m->trail);
 
         for (auto &a: m_aircrafts)
+        {
+            a->draw_engine_effect(*this);
             a->draw_fire_trail(*this);
+        }
 
         m_particles_render.draw(m_bullets);
 

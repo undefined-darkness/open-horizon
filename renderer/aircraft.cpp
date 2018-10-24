@@ -941,12 +941,14 @@ void aircraft::set_intake_ramp(float value)
 
 void aircraft::set_thrust(float value)
 {
+    const float thrust_start = 0.97f;
+    m_engine_thrust = value > thrust_start ? (value - thrust_start) / (1.0f - thrust_start) : 0.0f;
+
     value *= 1.2;
     if (value > 1.0f)
         value = 2.0f - value;
 
     m_mesh.set_anim_weight(3, 'nzln', value);
-    m_engine_thrust = value;
 }
 
 //------------------------------------------------------------

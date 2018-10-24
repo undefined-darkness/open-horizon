@@ -152,11 +152,13 @@ private:
     nya_scene::material m_material;
     nya_scene::material m_trail_material;
     nya_scene::material m_bullet_material;
-    nya_render::vbo m_trail_mesh, m_point_mesh;
+    nya_scene::material m_engine_stream_material;
+    nya_render::vbo m_trail_mesh, m_point_mesh, m_engine_stream_mesh;
     mutable nya_scene::material::param_array_proxy m_trail_tr, m_trail_dir;
     mutable nya_scene::material::param_proxy m_trail_param;
     mutable nya_scene::material::param_array_proxy m_tr_pos, m_tr_tc_rgb, m_tr_tc_a, m_tr_off_rot_asp, m_col, m_b_dir;
     mutable nya_scene::material::param_proxy m_b_color, m_b_tc, m_b_size;
+    mutable nya_scene::material::param_proxy m_es_params;
 };
 
 //------------------------------------------------------------

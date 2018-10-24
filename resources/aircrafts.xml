@@ -1,557 +1,407 @@
 <!--ids from common/Arms/ArmsParam.txt-->
-
 <!--models from target/model_id/mech/weap/w_-->
 
-
 <aircrafts>
-
-
 <!----------------------------------------------------------------------------->
-
 <!--Fighters-->
-
-
 <!----------------------------------------------------------------------------->
-
 
 <aircraft id="f22a" role="fighter" name="F-22A Raptor">
-
-<msl id="MISSILE" model="msl_a0" count="226"/>
-<spc id="_4AAM" model="xma_a0" count="30"/>
-
-<spc id="QAAM" model="qaa_a0" count="36"/>
-
-
-<decal0 name="USAF Gray"/>
-<decal1 name="USAF Camouflage"/>
-<decal2 name="USAF Tiger Stripes"/>
-<decal3 name="Mobius 1"/>
-<decal4 name="Antares Squadron"/>
-<decal5 name="Warwolf"/>
-<decal6 name="Flash"/>
-
-<decal7 name="THE iDOLM@STER Haruka (Color)"/>
-
-<decal8 name="THE iDOLM@STER Haruka (Monochrome)"/>
-
+    <msl id="MISSILE" model="msl_a0" count="226"/>
+    <spc id="_4AAM" model="xma_a0" count="30"/>
+    <spc id="QAAM" model="qaa_a0" count="36"/>
+    <decal0 name="USAF Gray"/>
+    <decal1 name="USAF Camouflage"/>
+    <decal2 name="USAF Tiger Stripes"/>
+    <decal3 name="Mobius 1"/>
+    <decal4 name="Antares Squadron"/>
+    <decal5 name="Warwolf"/>
+    <decal6 name="Flash"/>
+    <decal7 name="THE iDOLM@STER Haruka (Color)"/>
+    <decal8 name="THE iDOLM@STER Haruka (Monochrome)"/>
 </aircraft>
-
 
 <aircraft id="su47" role="fighter" name="Su-47 Berkut">
-<msl id="MISSILE" model="msl_r0" count="198"/>
-<spc id="QAAM" model="qaa_r0" count="30"/>
-
-<spc id="SAAM" model="saa_r0" count="24"/>
-
-<decal0 name="Russian Black"/>
-<decal1 name="Russian Blue Camouflage"/>
-<decal2 name="Ferris Camouflage"/>
+    <msl id="MISSILE" model="msl_r0" count="198"/>
+    <spc id="QAAM" model="qaa_r0" count="30"/>
+    <spc id="SAAM" model="saa_r0" count="24"/>
+    <decal0 name="Russian Black"/>
+    <decal1 name="Russian Blue Camouflage"/>
+    <decal2 name="Ferris Camouflage"/>
 </aircraft>
+
 <aircraft id="yf23" role="fighter" name="YF-23 Black Widow II">
-
-<msl id="MISSILE" model="msl_a0" count="230"/>
-
-<spc id="QAAM" model="qaa_a0" count="36"/>
-<spc id="SAAM" model="saa_r0" count="28"/>
-
-<decal0 name="Gray Ghost"/>
-<decal1 name="Digital Camouflage"/>
-<decal2 name="Black Widow II"/>
+    <msl id="MISSILE" model="msl_a0" count="230"/>
+    <spc id="QAAM" model="qaa_a0" count="36"/>
+    <spc id="SAAM" model="saa_r0" count="28"/>
+    <decal0 name="Gray Ghost"/>
+    <decal1 name="Digital Camouflage"/>
+    <decal2 name="Black Widow II"/>
 </aircraft>
-
 
 <aircraft id="su35" role="fighter" name="Su-35 Flanker-E">
-<msl id="MISSILE" model="msl_r0" count="216"/>
-<spc id="_6AAM" model="xla_r0" count="32"/>
-
-<spc id="QAAM" model="qaa_r0" count="34"/>
-
-<decal0 name="Russian #709"/>
-<decal1 name="Russian Blue Camouflage"/>
-<decal2 name="Markov"/>
-<decal3 name="Tekken Jin"/>
-
-<decal4 name="Tekken Kazuya"/>
-
+    <msl id="MISSILE" model="msl_r0" count="216"/>
+    <spc id="_6AAM" model="xla_r0" count="32"/>
+    <spc id="QAAM" model="qaa_r0" count="34"/>
+    <decal0 name="Russian #709"/>
+    <decal1 name="Russian Blue Camouflage"/>
+    <decal2 name="Markov"/>
+    <decal3 name="Tekken Jin"/>
+    <decal4 name="Tekken Kazuya"/>
 </aircraft>
 
 <aircraft id="typn" role="fighter" name="Typhoon">
-<msl id="MISSILE" model="msl_a0" count="198"/>
-<spc id="_4AAM" model="xma_a0" count="26"/>
-<spc id="_6AAM" model="xla_a0" count="28"/>
-<decal0 name="RAF Grey"/>
-<decal1 name="Luftwaffe Gray"/>
-<decal2 name="BAe EAP Demonstrator"/>
-<decal3 name="THE iDOLM@STER Makoto (Color)"/>
-<decal4 name="THE iDOLM@STER Makoto (Monochrome)"/>
-
+    <msl id="MISSILE" model="msl_a0" count="198"/>
+    <spc id="_4AAM" model="xma_a0" count="26"/>
+    <spc id="_6AAM" model="xla_a0" count="28"/>
+    <decal0 name="RAF Grey"/>
+    <decal1 name="Luftwaffe Gray"/>
+    <decal2 name="BAe EAP Demonstrator"/>
+    <decal3 name="THE iDOLM@STER Makoto (Color)"/>
+    <decal4 name="THE iDOLM@STER Makoto (Monochrome)"/>
 </aircraft>
-
 
 <aircraft id="su37" role="fighter" name="Su-37 Terminator">
-<msl id="MISSILE" model="msl_r0" count="198"/>
-<spc id="QAAM" model="qaa_r0" count="30"/>
-
-<spc id="_4AAM" model="xma_r0" count="26"/>
-
-<decal0 name="Russian #711">
-    <color0 r="158" g="156" b="149"/>
-    <color1 r="155" g="140" b="96"/>
-    <color2 r="105" g="93" b="77"/>
-    <color3 r="189" g="189" b="189"/>
-    <color4 r="199" g="169" b="49"/>
-</decal0>
-
-<decal1 name="Russian #710">
-    <color0 r="178" g="188" b="192"/>
-    <color1 r="151" g="161" b="163"/>
-    <color2 r="147" g="171" b="176"/>
-    <color3 r="199" g="199" b="199"/>
-    <color4 r="207" g="202" b="202"/>
-</decal1>
-
-<decal2 name="Yellow 13">
-    <color0 r="161" g="159" b="137"/>
-    <color1 r="131" g="133" b="134"/>
-    <color2 r="99" g="100" b="102"/>
-    <color3 r="110" g="113" b="115"/>
-    <color4 r="160" g="141" b="95"/>
-    <color5 r="166" g="172" b="175"/>
-</decal2>
-
+    <msl id="MISSILE" model="msl_r0" count="198"/>
+    <spc id="QAAM" model="qaa_r0" count="30"/>
+    <spc id="_4AAM" model="xma_r0" count="26"/>
+    <decal0 name="Russian #711">
+        <color0 r="158" g="156" b="149"/>
+        <color1 r="155" g="140" b="96"/>
+        <color2 r="105" g="93" b="77"/>
+        <color3 r="189" g="189" b="189"/>
+        <color4 r="199" g="169" b="49"/>
+    </decal0>
+    <decal1 name="Russian #710">
+        <color0 r="178" g="188" b="192"/>
+        <color1 r="151" g="161" b="163"/>
+        <color2 r="147" g="171" b="176"/>
+        <color3 r="199" g="199" b="199"/>
+        <color4 r="207" g="202" b="202"/>
+    </decal1>
+    <decal2 name="Yellow 13">
+        <color0 r="161" g="159" b="137"/>
+        <color1 r="131" g="133" b="134"/>
+        <color2 r="99" g="100" b="102"/>
+        <color3 r="110" g="113" b="115"/>
+        <color4 r="160" g="141" b="95"/>
+        <color5 r="166" g="172" b="175"/>
+    </decal2>
 </aircraft>
 
-
 <aircraft id="f15c" role="fighter" name="F-15C Eagle">
-
-<msl id="MISSILE" model="msl_a0" count="216"/>
-<spc id="_4AAM" model="xma_a0" count="28"/>
-
-<spc id="SAAM" model="saa_a0" count="26"/>
-
-
-<decal0 name="USAF Gray"/>
-<decal1 name="65th Aggressor Blue"/>
-<decal2 name="USAF Tiger Stripes"/>
-<decal3 name="Cipher"/>
-
-<decal4 name="Pixy"/>
-
-<decal5 name="Death Rider"/>
-<decal6 name="Patriot"/>
-<decal7 name="White Dragon"/>
-
+    <msl id="MISSILE" model="msl_a0" count="216"/>
+    <spc id="_4AAM" model="xma_a0" count="28"/>
+    <spc id="SAAM" model="saa_a0" count="26"/>
+    <decal0 name="USAF Gray"/>
+    <decal1 name="65th Aggressor Blue"/>
+    <decal2 name="USAF Tiger Stripes"/>
+    <decal3 name="Cipher"/>
+    <decal4 name="Pixy"/>
+    <decal5 name="Death Rider"/>
+    <decal6 name="Patriot"/>
+    <decal7 name="White Dragon"/>
 </aircraft>
 
 <aircraft id="su33" role="fighter" name="Su-33 Flanker-D">
-
-<msl id="MISSILE" model="msl_r0" count="198"/>
-<spc id="SAAM" model="saa_r0" count="24"/>
-
-<spc id="_6AAM" model="xla_r0" count="28"/>
-
-
-<decal0 name="Russian Navy Blue"/>
-<decal1 name="Su-35 Prototype #703"/>
-<decal2 name="Russian Test Pilot"/>
-<decal3 name="Strigon Team"/>
-<decal4 name="THE iDOLM@STER Miki (Color)"/>
-
-<decal5 name="THE iDOLM@STER Miki (Monochrome)"/>
+    <msl id="MISSILE" model="msl_r0" count="198"/>
+    <spc id="SAAM" model="saa_r0" count="24"/>
+    <spc id="_6AAM" model="xla_r0" count="28"/>
+    <decal0 name="Russian Navy Blue"/>
+    <decal1 name="Su-35 Prototype #703"/>
+    <decal2 name="Russian Test Pilot"/>
+    <decal3 name="Strigon Team"/>
+    <decal4 name="THE iDOLM@STER Miki (Color)"/>
+    <decal5 name="THE iDOLM@STER Miki (Monochrome)"/>
 </aircraft>
 
-
 <aircraft id="f14d" role="fighter" name="F-14D Super Tomcat">
-<msl id="MISSILE" model="msl_a0" count="180"/>
-<spc id="_6AAM" model="xla_a0" count="26"/>
-<spc id="SAAM" model="saa_a0" count="22"/>
-<decal0 name="US Navy Gray"/>
-<decal1 name="US Navy Splinter Camouflage"/>
-<decal2 name="Super Tomcat 21"/>
-<decal3 name="Razgriz"/>
-<decal4 name="Zipang"/>
-
-<decal5 name="Jolly Rogers"/>
-
-<decal6 name="Halloween Pumpkin"/>
-
+    <engine radius="0.47" dist="1.45"/>
+    <msl id="MISSILE" model="msl_a0" count="180"/>
+    <spc id="_6AAM" model="xla_a0" count="26"/>
+    <spc id="SAAM" model="saa_a0" count="22"/>
+    <decal0 name="US Navy Gray"/>
+    <decal1 name="US Navy Splinter Camouflage"/>
+    <decal2 name="Super Tomcat 21"/>
+    <decal3 name="Razgriz"/>
+    <decal4 name="Zipang"/>
+    <decal5 name="Jolly Rogers"/>
+    <decal6 name="Halloween Pumpkin"/>
 </aircraft>
 
 <aircraft id="su24" role="fighter" name="Su-24MP Fencer">
-<msl id="MISSILE" model="msl_r0" count="172"/>
-
-<spc id="ECM" model="ecm_r0" count="12"/>
-<spc id="QAAM" model="qaa_r0" count="26"/>
-
-<decal0 name="Russian Blue"/>
-<decal1 name="Su-24MK Camouflage"/>
-<decal2 name="Su-24MR Moscow Airshow 1992"/>
+    <msl id="MISSILE" model="msl_r0" count="172"/>
+    <spc id="ECM" model="ecm_r0" count="12"/>
+    <spc id="QAAM" model="qaa_r0" count="26"/>
+    <decal0 name="Russian Blue"/>
+    <decal1 name="Su-24MK Camouflage"/>
+    <decal2 name="Su-24MR Moscow Airshow 1992"/>
 </aircraft>
-
 
 <aircraft id="m29a" role="fighter" name="MiG-29A Fulcrum">
-<msl id="MISSILE" model="msl_r0" count="180"/>
-
-<spc id="QAAM" model="qaa_r0" count="28"/>
-<spc id="_4AAM" model="xma_r0" count="24"/>
-
-<decal0 name="Russian Camouflage"/>
-<decal1 name="MiG-29K Black"/>
-<decal2 name="Red Moon Squadron"/>
+    <msl id="MISSILE" model="msl_r0" count="180"/>
+    <spc id="QAAM" model="qaa_r0" count="28"/>
+    <spc id="_4AAM" model="xma_r0" count="24"/>
+    <decal0 name="Russian Camouflage"/>
+    <decal1 name="MiG-29K Black"/>
+    <decal2 name="Red Moon Squadron"/>
 </aircraft>
 
-
 <aircraft id="f16c" role="fighter" name="F-16C Fighting Falcon">
-
-<msl id="MISSILE" model="msl_a0" count="172"/>
-<spc id="QAAM" model="qaa_a0" count="26"/>
-<spc id="_4AAM" model="xma_a0" count="22"/>
-
-<decal0 name="USAF Gray"/>
-<decal1 name="64th Aggressor Green"/>
-<decal2 name="Bats 50th Anniversary (Gold Falcon)"/>
-<decal3 name="Patriot"/>
+    <msl id="MISSILE" model="msl_a0" count="172"/>
+    <spc id="QAAM" model="qaa_a0" count="26"/>
+    <spc id="_4AAM" model="xma_a0" count="22"/>
+    <decal0 name="USAF Gray"/>
+    <decal1 name="64th Aggressor Green"/>
+    <decal2 name="Bats 50th Anniversary (Gold Falcon)"/>
+    <decal3 name="Patriot"/>
 </aircraft>
 
 <aircraft id="m21b" role="fighter" name="MiG-21bis Fishbed">
-
-<msl id="MISSILE" model="msl_r0" count="162"/>
-<spc id="MGP" model="gpd_r0" count="540"/>
-<spc id="SAAM" model="saa_r0" count="20"/>
-
-<decal0 name="Russian Gray"/>
-<decal1 name="Russian Green Camo #31"/>
-<decal2 name="IAI MiG-21-93"/>
+    <engine radius="0.4"/>
+    <msl id="MISSILE" model="msl_r0" count="162"/>
+    <spc id="MGP" model="gpd_r0" count="540"/>
+    <spc id="SAAM" model="saa_r0" count="20"/>
+    <decal0 name="Russian Gray"/>
+    <decal1 name="Russian Green Camo #31"/>
+    <decal2 name="IAI MiG-21-93"/>
 </aircraft>
-
 
 <!----------------------------------------------------------------------------->
 <!--Multirole-->
-
-
 <!----------------------------------------------------------------------------->
 
-
 <aircraft id="pkfa" role="multirole" name="PAK-FA" short_name = "T-50">
-
-<msl id="MISSILE" model="msl_r0" count="234"/>
-
-<spc id="_4AAM" model="xma_r0" count="32"/>
-
-<spc id="QAAM" model="qaa_r0" count="36"/>
-
-<decal0 name="Russian Black"/>
-<decal1 name="Su-27SKM #305"/>
-<decal2 name="Markov"/>
-<decal3 name="Akula DLC"/>
+    <msl id="MISSILE" model="msl_r0" count="234"/>
+    <spc id="_4AAM" model="xma_r0" count="32"/>
+    <spc id="QAAM" model="qaa_r0" count="36"/>
+    <decal0 name="Russian Black"/>
+    <decal1 name="Su-27SKM #305"/>
+    <decal2 name="Markov"/>
+    <decal3 name="Akula DLC"/>
 </aircraft>
 
 <aircraft id="fa44" role="multirole" name="CFA-44 Nosferatu">
-
-<msl id="MISSILE" model="msl_x0" count="234"/>
-
-<spc id="ADMM" model="adm_x0" count="26"/>
-
-<spc id="EML" model="eml_x0" count="14"/>
-<spc id="ECM" model="ecm_x0" count="10"/>
-
-<decal0 name="Emmeria Gray"/>
-<decal1 name="Estovakia Prototype"/>
-<decal2 name="Ilya Pasternak"/>
+    <msl id="MISSILE" model="msl_x0" count="234"/>
+    <spc id="ADMM" model="adm_x0" count="26"/>
+    <spc id="EML" model="eml_x0" count="14"/>
+    <spc id="ECM" model="ecm_x0" count="10"/>
+    <decal0 name="Emmeria Gray"/>
+    <decal1 name="Estovakia Prototype"/>
+    <decal2 name="Ilya Pasternak"/>
 </aircraft>
-
 
 <aircraft id="kwmr" role="multirole" name="ASF-X Shinden II">
-
-<msl id="MISSILE" model="msl_j0" count="226"/>
-
-<spc id="_6AAM" model="xla_j0" count="32" external="true"/>
-
-<spc id="RKTL" model="rcl_j0" count="36"/>
-<spc id="LAGM" model="las_j0" count="22"/>
-
-<decal0 name="JASDF Gray"/>
-<decal1 name="JASDF Blue"/>
-<decal2 name="19th Task Force (Nagase)"/>
+    <msl id="MISSILE" model="msl_j0" count="226"/>
+    <spc id="_6AAM" model="xla_j0" count="32" external="true"/>
+    <spc id="RKTL" model="rcl_j0" count="36"/>
+    <spc id="LAGM" model="las_j0" count="22"/>
+    <decal0 name="JASDF Gray"/>
+    <decal1 name="JASDF Blue"/>
+    <decal2 name="19th Task Force (Nagase)"/>
 </aircraft>
-
 
 <aircraft id="rflm" role="multirole" name="Rafale M" short_name = "Rafale M">
-<msl id="MISSILE" model="msl_f0" count="198"/>
-
-<spc id="_6AAM" model="xla_e0" count="28"/>
-
-<spc id="BDM" model="sod_f0" count="18"/>
-
-<spc id="LAGM" model="las_f0" count="20"/>
-
-<decal0 name="Aeronavale White"/>
-<decal1 name="Rafale B Camouflage"/>
-<decal2 name="Rafale A Demonstrator"/>
-<decal3 name="Tiger Pattern"/>
+    <msl id="MISSILE" model="msl_f0" count="198"/>
+    <spc id="_6AAM" model="xla_e0" count="28"/>
+    <spc id="BDM" model="sod_f0" count="18"/>
+    <spc id="LAGM" model="las_f0" count="20"/>
+    <decal0 name="Aeronavale White"/>
+    <decal1 name="Rafale B Camouflage"/>
+    <decal2 name="Rafale A Demonstrator"/>
+    <decal3 name="Tiger Pattern"/>
 </aircraft>
 
-
 <aircraft id="f15m" role="multirole" name="F-15S/MTD">
-<msl id="MISSILE" model="msl_a0" count="216"/>
-<spc id="QAAM" model="qaa_a0" count="34"/>
-<spc id="SAAM" model="saa_a0" count="26"/>
-<spc id="LAGM" model="las_a0" count="22"/>
-
-<decal0 name="USAF Gray"/>
-<decal1 name="Ferris Camouflage"/>
-<decal2 name="ACTIVE Stripes"/>
+    <msl id="MISSILE" model="msl_a0" count="216"/>
+    <spc id="QAAM" model="qaa_a0" count="34"/>
+    <spc id="SAAM" model="saa_a0" count="26"/>
+    <spc id="LAGM" model="las_a0" count="22"/>
+    <decal0 name="USAF Gray"/>
+    <decal1 name="Ferris Camouflage"/>
+    <decal2 name="ACTIVE Stripes"/>
 </aircraft>
 
 <aircraft id="f35b" role="multirole" name="F-35B Lightning II">
-
-<msl id="MISSILE" model="msl_a0" count="198"/>
-
-<spc id="QAAM" model="qaa_a0" count="30" external="true"/>
-
-<spc id="LAGM" model="las_a0" count="20"/>
-
-<spc id="GPB" model="gpb_a1" count="34"/>
-
-<decal0 name="USMC Gray"/>
-<decal1 name="Tiger Stripes"/>
-<decal2 name="JASDF Blue"/>
-<decal3 name="PAC-MAN"/>
+    <msl id="MISSILE" model="msl_a0" count="198"/>
+    <spc id="QAAM" model="qaa_a0" count="30" external="true"/>
+    <spc id="LAGM" model="las_a0" count="20"/>
+    <spc id="GPB" model="gpb_a1" count="34"/>
+    <decal0 name="USMC Gray"/>
+    <decal1 name="Tiger Stripes"/>
+    <decal2 name="JASDF Blue"/>
+    <decal3 name="PAC-MAN"/>
 </aircraft>
 
 <aircraft id="f15e" role="multirole" name="F-15E Strike Eagle">
-<msl id="MISSILE" model="msl_a0" count="216"/>
-<spc id="_4AAM" model="xma_a0" count="28"/>
-
-<spc id="UGB" model="ugb_a1" count="40"/>
-<spc id="_4AGM" model="agm_a0" count="38"/>
-
-<decal0 name="USAF Gray"/>
-<decal1 name="USAF Camouflage"/>
-<decal2 name="TF-15A 71-0290"/>
-<decal3 name="Garuda Team"/>
-<decal4 name="Tiger Pattern"/>
-<decal5 name="THE iDOLM@STER Chihaya (Color)"/>
-<decal6 name="THE iDOLM@STER Chihaya (Monochrome)"/>
+    <msl id="MISSILE" model="msl_a0" count="216"/>
+    <spc id="_4AAM" model="xma_a0" count="28"/>
+    <spc id="UGB" model="ugb_a1" count="40"/>
+    <spc id="_4AGM" model="agm_a0" count="38"/>
+    <decal0 name="USAF Gray"/>
+    <decal1 name="USAF Camouflage"/>
+    <decal2 name="TF-15A 71-0290"/>
+    <decal3 name="Garuda Team"/>
+    <decal4 name="Tiger Pattern"/>
+    <decal5 name="THE iDOLM@STER Chihaya (Color)"/>
+    <decal6 name="THE iDOLM@STER Chihaya (Monochrome)"/>
 </aircraft>
 
 <aircraft id="j39c" role="multirole" name="JAS-39C Gripen">
-<msl id="MISSILE" model="msl_a0" count="190"/>
-<spc id="QAAM" model="qaa_e0" count="32"/>
-<spc id="_4AAM" model="xma_a0" count="28"/>
-<spc id="RKTL" model="rcl_e0" count="32"/>
-
-<decal0 name="Flygvapnet Gray"/>
-<decal1 name="Flygvapnet Green Camouflage"/>
-<decal2 name="Ceske Letectvo Gray"/>
+    <msl id="MISSILE" model="msl_a0" count="190"/>
+    <spc id="QAAM" model="qaa_e0" count="32"/>
+    <spc id="_4AAM" model="xma_a0" count="28"/>
+    <spc id="RKTL" model="rcl_e0" count="32"/>
+    <decal0 name="Flygvapnet Gray"/>
+    <decal1 name="Flygvapnet Green Camouflage"/>
+    <decal2 name="Ceske Letectvo Gray"/>
 </aircraft>
-
 
 <aircraft id="f18f" role="multirole" name="F/A-18F Super Hornet">
-
-<msl id="MISSILE" model="msl_a0" count="206"/>
-
-<spc id="SAAM" model="saa_a0" count="26"/>
-
-<spc id="LAGM" model="las_a0" count="20"/>
-<spc id="ECM" model="ecm_a0" count="10"/>
-
-<decal0 name="US Navy Gray"/>
-<decal1 name="US Navy Camouflage"/>
-<decal2 name="F-18 HARV"/>
-<decal3 name="Red Devils"/>
-<decal4 name="Jolly Rogers"/>
+    <msl id="MISSILE" model="msl_a0" count="206"/>
+    <spc id="SAAM" model="saa_a0" count="26"/>
+    <spc id="LAGM" model="las_a0" count="20"/>
+    <spc id="ECM" model="ecm_a0" count="10"/>
+    <decal0 name="US Navy Gray"/>
+    <decal1 name="US Navy Camouflage"/>
+    <decal2 name="F-18 HARV"/>
+    <decal3 name="Red Devils"/>
+    <decal4 name="Jolly Rogers"/>
 </aircraft>
-
 
 <aircraft id="av8b" role="multirole" name="AV-8B Harrier II plus">
-<msl id="MISSILE" model="msl_a0" count="180"/>
-<spc id="_4AAM" model="xma_a0" count="24"/>
-
-<spc id="RKTL" model="rcl_a0" count="28"/>
-
-<spc id="_4AGM" model="agm_a0" count="32"/>
-
-<decal0 name="USMC Gray"/>
-
-<decal1 name="USMC Camouflage">
-    <color1 r="183" g="190" b="190"/>
-</decal1>
-
-<decal2 name="Flight Test Livery">
-    <color0 r="209" g="209" b="209"/>
-    <color1 r="49" g="49" b="49"/>
-    <color2 r="168" g="63" b="63"/>
-    <color3 r="79" g="63" b="49"/>
-    <color4 r="199" g="169" b="49"/>
-</decal2>
-
+    <msl id="MISSILE" model="msl_a0" count="180"/>
+    <spc id="_4AAM" model="xma_a0" count="24"/>
+    <spc id="RKTL" model="rcl_a0" count="28"/>
+    <spc id="_4AGM" model="agm_a0" count="32"/>
+    <decal0 name="USMC Gray"/>
+    <decal1 name="USMC Camouflage">
+        <color1 r="183" g="190" b="190"/>
+    </decal1>
+    <decal2 name="Flight Test Livery">
+        <color0 r="209" g="209" b="209"/>
+        <color1 r="49" g="49" b="49"/>
+        <color2 r="168" g="63" b="63"/>
+        <color3 r="79" g="63" b="49"/>
+        <color4 r="199" g="169" b="49"/>
+    </decal2>
 </aircraft>
-
 
 <aircraft id="f16f" role="multirole" name="F-16F Fighting Falcon">
-<msl id="MISSILE" model="msl_a0" count="180"/>
-
-<spc id="QAAM" model="qaa_a0" count="28"/>
-
-<spc id="GPB" model="gpb_a1" count="30"/>
-
-<spc id="ECM" model="ecm_a1" count="8"/>
-
-<decal0 name="United Arab Emirates Air Force"/>
-<decal1 name="USAF Gray"/>
-<decal2 name="USAF Tiger Stripes"/>
+    <msl id="MISSILE" model="msl_a0" count="180"/>
+    <spc id="QAAM" model="qaa_a0" count="28"/>
+    <spc id="GPB" model="gpb_a1" count="30"/>
+    <spc id="ECM" model="ecm_a1" count="8"/>
+    <decal0 name="United Arab Emirates Air Force"/>
+    <decal1 name="USAF Gray"/>
+    <decal2 name="USAF Tiger Stripes"/>
 </aircraft>
-
 
 <aircraft id="mr2k" role="multirole" name="Mirage 2000-5" short_name = "MIR-2000-5">
-<msl id="MISSILE" model="msl_f0" count="162"/>
-<spc id="_4AAM" model="xma_f0" count="22"/>
-
-<spc id="_4AGM" model="xag_f0" count="28"/>
-<spc id="LAGM" model="las_f0" count="16"/>
-
-<decal0 name="Armee de l'air Blue"/>
-<decal1 name="Tiger Meet (White Tiger)"/>
-<decal2 name="Mirage 4000 Livery"/>
-<decal3 name="THE iDOLM@STER Yayoi (Color)"/>
-<decal4 name="THE iDOLM@STER Yayoi (Monochrome)"/>
+    <msl id="MISSILE" model="msl_f0" count="162"/>
+    <spc id="_4AAM" model="xma_f0" count="22"/>
+    <spc id="_4AGM" model="xag_f0" count="28"/>
+    <spc id="LAGM" model="las_f0" count="16"/>
+    <decal0 name="Armee de l'air Blue"/>
+    <decal1 name="Tiger Meet (White Tiger)"/>
+    <decal2 name="Mirage 4000 Livery"/>
+    <decal3 name="THE iDOLM@STER Yayoi (Color)"/>
+    <decal4 name="THE iDOLM@STER Yayoi (Monochrome)"/>
 </aircraft>
-
 
 <aircraft id="f04e" role="multirole" name="F-4E Phantom II">
-
-<msl id="MISSILE" model="msl_a0" count="208"/>
-<spc id="SAAM" model="saa_a0" count="26"/>
-
-<spc id="UGB" model="ugb_a1" count="40"/>
-<spc id="ECM" model="ecm_a1" count="8"/>
-
-<decal0 name="USAF Gray"/>
-<decal1 name="USAF European One"/>
-<decal2 name="Steve Ritchie"/>
+    <msl id="MISSILE" model="msl_a0" count="208"/>
+    <spc id="SAAM" model="saa_a0" count="26"/>
+    <spc id="UGB" model="ugb_a1" count="40"/>
+    <spc id="ECM" model="ecm_a1" count="8"/>
+    <decal0 name="USAF Gray"/>
+    <decal1 name="USAF European One"/>
+    <decal2 name="Steve Ritchie"/>
 </aircraft>
 
 <!----------------------------------------------------------------------------->
-
 <!--Attackers-->
-
-
 <!----------------------------------------------------------------------------->
-
 
 <aircraft id="su34" role="attacker" name="Su-34 Fullback">
-
-<msl id="MISSILE" model="msl_r0" count="172"/>
-
-<spc id="_4AGM" model="xag_r0" count="38"/>
-
-<spc id="GPB" model="gpb_r0" count="36"/>
-
-<decal0 name="Russian Turquoise"/>
-<decal1 name="Su-27M #709"/>
-<decal2 name="Russian Airshow Livery"/>
-<decal3 name="Tekken Alisa & Xiaoyu"/>
+    <msl id="MISSILE" model="msl_r0" count="172"/>
+    <spc id="_4AGM" model="xag_r0" count="38"/>
+    <spc id="GPB" model="gpb_r0" count="36"/>
+    <decal0 name="Russian Turquoise"/>
+    <decal1 name="Su-27M #709"/>
+    <decal2 name="Russian Airshow Livery"/>
+    <decal3 name="Tekken Alisa & Xiaoyu"/>
 </aircraft>
-
 
 <aircraft id="f02a" role="attacker" name="F-2A">
-<msl id="MISSILE" model="msl_j0" count="196"/>
-
-<spc id="LAGM" model="las_j0" count="20"/>
-
-<spc id="RKTL" model="rcl_j0" count="30"/>
-
-<decal0 name="JASDF Blue"/>
-<decal1 name="JASDF F-1 Camouflage"/>
-<decal2 name="XF-2A 2nd Prototype"/>
-<decal3 name="Nagase"/>
+    <msl id="MISSILE" model="msl_j0" count="196"/>
+    <spc id="LAGM" model="las_j0" count="20"/>
+    <spc id="RKTL" model="rcl_j0" count="30"/>
+    <decal0 name="JASDF Blue"/>
+    <decal1 name="JASDF F-1 Camouflage"/>
+    <decal2 name="XF-2A 2nd Prototype"/>
+    <decal3 name="Nagase"/>
 </aircraft>
-
 
 <aircraft id="tnd4" role="attacker" name="Tornado GR.4">
-
-<msl id="MISSILE" model="msl_a0" count="198"/>
-
-<spc id="_4AGM" model="xag_a0" count="36"/>
-
-<spc id="BDM" model="sod_e0" count="18"/>
-
-<decal0 name="RAF Grey"/>
-<decal1 name="RAF Camouflage"/>
-<decal2 name="TND-ECR Luftwaffe Tiger Meet 1995"/>
+    <msl id="MISSILE" model="msl_a0" count="198"/>
+    <spc id="_4AGM" model="xag_a0" count="36"/>
+    <spc id="BDM" model="sod_e0" count="18"/>
+    <decal0 name="RAF Grey"/>
+    <decal1 name="RAF Camouflage"/>
+    <decal2 name="TND-ECR Luftwaffe Tiger Meet 1995"/>
 </aircraft>
+
 <aircraft id="a10a" role="attacker" name="A-10A Thunderbolt II">
-
-<msl id="MISSILE" model="msl_a0" count="226"/>
-
-<spc id="_4AGM" model="xag_a0" count="40"/>
-
-<spc id="RKTL" model="rcl_a0" count="36"/>
-
-<decal0 name="USAF Gray"/>
-<decal1 name="USAF European One"/>
-<decal2 name="USAF Flying Yankees"/>
-<decal3 name="Warthog"/>
-<decal4 name="Happy Holidays"/>
+    <msl id="MISSILE" model="msl_a0" count="226"/>
+    <spc id="_4AGM" model="xag_a0" count="40"/>
+    <spc id="RKTL" model="rcl_a0" count="36"/>
+    <decal0 name="USAF Gray"/>
+    <decal1 name="USAF European One"/>
+    <decal2 name="USAF Flying Yankees"/>
+    <decal3 name="Warthog"/>
+    <decal4 name="Happy Holidays"/>
 </aircraft>
 
 <aircraft id="f17a" role="attacker" name="F-117A Nighthawk">
-<msl id="MISSILE" model="msl_j0" count="194"/>
-<spc id="GPB" model="gpb_a1" count="34"/>
-
-<spc id="LAGM" model="las_a0" count="20"/>
-
-<decal0 name="USAF Black Jet"/>
-<decal1 name="USAF Gray Dragon"/>
-<decal2 name="USAF Camouflage"/>
-<decal3 name="Stars and Stripes"/>
-<decal4 name="THE iDOLM@STER Yukiho (Color)"/>
-<decal5 name="THE iDOLM@STER Yukiho (Monochrome)"/>
+    <msl id="MISSILE" model="msl_j0" count="194"/>
+    <spc id="GPB" model="gpb_a1" count="34"/>
+    <spc id="LAGM" model="las_a0" count="20"/>
+    <decal0 name="USAF Black Jet"/>
+    <decal1 name="USAF Gray Dragon"/>
+    <decal2 name="USAF Camouflage"/>
+    <decal3 name="Stars and Stripes"/>
+    <decal4 name="THE iDOLM@STER Yukiho (Color)"/>
+    <decal5 name="THE iDOLM@STER Yukiho (Monochrome)"/>
 </aircraft>
 
 <aircraft id="su25" role="attacker" name="Su-25TM Frogfoot">
-
-<msl id="MISSILE" model="msl_r0" count="198"/>
-<spc id="UGB" model="ugb_r0" count="38"/>
-
-<spc id="MGP" model="gpd_r0" count="680"/>
-
-<decal0 name="Russian Turquoise"/>
-<decal1 name="Russian Camouflage #84"/>
-<decal2 name="Su-25UT Livery"/>
+    <msl id="MISSILE" model="msl_r0" count="198"/>
+    <spc id="UGB" model="ugb_r0" count="38"/>
+    <spc id="MGP" model="gpd_r0" count="680"/>
+    <decal0 name="Russian Turquoise"/>
+    <decal1 name="Russian Camouflage #84"/>
+    <decal2 name="Su-25UT Livery"/>
 </aircraft>
-
 
 <!----------------------------------------------------------------------------->
 <!--Bombers-->
-
-
 <!----------------------------------------------------------------------------->
-
 
 <aircraft id="b01b" role="bomber" name="B-1B Lancer">
-<spc id="GPB" model="gpb_a1" count="218"/>
-
-<spc id="MUGB" model="ugb_a1" count="320"/>
-
-<decal0 name="USAF Dark Gray"/>
-<decal1 name="USAF Camouflage"/>
+    <spc id="GPB" model="gpb_a1" count="218"/>
+    <spc id="MUGB" model="ugb_a1" count="320"/>
+    <decal0 name="USAF Dark Gray"/>
+    <decal1 name="USAF Camouflage"/>
 </aircraft>
-
 
 <aircraft id="b02a" role="bomber" name="B-2 Spirit">
-
-<spc id="GPB" model="gpb_a1" count="180"/>
-
-<spc id="MUGB" model="ugb_a1" count="264"/>
-
-<decal0 name="Spirit of America"/>
-<decal1 name="USAF Digital Camouflage"/>
+    <spc id="GPB" model="gpb_a1" count="180"/>
+    <spc id="MUGB" model="ugb_a1" count="264"/>
+    <decal0 name="Spirit of America"/>
+    <decal1 name="USAF Digital Camouflage"/>
 </aircraft>
 
-
 <!----------------------------------------------------------------------------->
-
-
 </aircrafts>
+

@@ -245,10 +245,53 @@ void particles_render::init()
         indices[i + 5] = v + 3;
     }
 
-
     m_point_mesh.set_vertex_data(verts.data(), sizeof(quad_vert), (unsigned int)verts.size());
     m_point_mesh.set_index_data(indices.data(), nya_render::vbo::index2b, (unsigned int)indices.size());
     m_point_mesh.set_tc(0, sizeof(float) * 3, 2);
+
+    //engine stream
+
+    const int num_segments = 32;
+    struct engine_vert { float pos[3], tc[2], d; };
+    std::vector<engine_vert> everts(num_segments * 4);
+    std::vector<unsigned short> eindices((num_segments + 1) * 4 + 2);
+
+    for (int i = 0; i < 2; ++i)
+    {
+        const int voff = num_segments * 2 * i;
+        for(int j = 0; j < num_segments; ++j)
+        {
+            const float a = 2.0f * nya_math::constants::pi * float(j) / float(num_segments);
+            auto &v = everts[voff + j];
+            v.pos[0] = cosf(a);
+            v.pos[1] = sinf(a);
+            v.pos[2] = 0.0f;
+            v.tc[0] = fabsf(j - num_segments/2.0f); //repeat mirror
+            v.tc[1] = 0.0f;
+            v.d = i * 2.0f - 1.0f;
+
+            auto &v2 = everts[voff + num_segments + j];
+            v2 = v;
+            v2.pos[0] *= 0.5f, v2.pos[1] *= 0.5f;
+            v2.pos[2] = -1.0f, v2.tc[1] = 1.0f;
+        }
+
+        const int ioff = ((num_segments + 1) * 2 + 2) * i;
+        for (unsigned short j = 0; j < num_segments + 1; ++j)
+        {
+            const unsigned short v = j % num_segments + voff;
+            eindices[j * 2 + ioff] = v;
+            eindices[j * 2 + 1 + ioff] = v + num_segments;
+        }
+        if(i>0)
+            eindices[ioff - 2] = eindices[ioff - 3], eindices[ioff - 1] = eindices[ioff];
+    }
+
+    m_engine_stream_mesh.set_vertex_data(everts.data(), sizeof(engine_vert), (unsigned int)everts.size());
+    m_engine_stream_mesh.set_index_data(eindices.data(), nya_render::vbo::index2b, (unsigned int)eindices.size());
+    m_engine_stream_mesh.set_tc(0, sizeof(float) * 3, 3);
+    m_engine_stream_mesh.set_element_type(nya_render::vbo::points);
+    m_engine_stream_mesh.set_element_type(nya_render::vbo::triangle_strip);
 
     m_tr_pos.create();
     m_tr_off_rot_asp.create();
@@ -285,6 +328,14 @@ void particles_render::init()
     m_bullet_material.set_param(m_bullet_material.get_param_idx("b size"), m_b_size);
     m_bullet_material.set_texture("diffuse", t);
 
+    m_es_params.create();
+    auto &p4 = m_engine_stream_material.get_default_pass();
+    p4.set_shader(nya_scene::shader("shaders/engine_stream.nsh"));
+    p4.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::one);
+    p4.get_state().zwrite = false;
+    p4.get_state().set_cull_face(true);
+    m_engine_stream_material.set_param(m_engine_stream_material.get_param_idx("param"), m_es_params);
+    m_engine_stream_material.set_texture("diffuse", t);
 }
 
 //------------------------------------------------------------
@@ -449,7 +500,22 @@ void particles_render::draw_heat(const explosion &e) const
 
 void particles_render::draw(const plane_engine &e) const
 {
-    //ToDo
+    if (e.m_afterburner < 0.01f)
+        return;
+
+    auto m = nya_scene::get_camera().get_view_matrix();
+    m.translate(e.m_pos).rotate(e.m_rot);
+    nya_render::set_modelview_matrix(m);
+
+    m_engine_stream_mesh.bind();
+    m_es_params->set(e.m_radius, e.m_dist, e.m_afterburner * 5.0f, 0.0f);
+    m_engine_stream_material.internal().set();
+    if (e.m_dist > 0.001f)
+        m_engine_stream_mesh.draw();
+    else
+        m_engine_stream_mesh.draw(m_engine_stream_mesh.get_indices_count() / 2);
+    m_engine_stream_material.internal().unset();
+    m_engine_stream_mesh.unbind();
 }
 
 //------------------------------------------------------------
@@ -538,6 +604,7 @@ void particles_render::release()
     m_material.unload();
     m_trail_mesh.release();
     m_point_mesh.release();
+    m_engine_stream_mesh.release();
 }
 
 //------------------------------------------------------------
