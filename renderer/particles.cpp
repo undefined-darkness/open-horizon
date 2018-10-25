@@ -273,7 +273,7 @@ void particles_render::init()
             auto &v2 = everts[voff + num_segments + j];
             v2 = v;
             v2.pos[0] *= 0.5f, v2.pos[1] *= 0.5f;
-            v2.pos[2] = -1.0f, v2.tc[1] = 1.0f;
+            v2.pos[2] = v2.tc[1] = 1.0f;
         }
 
         const int ioff = ((num_segments + 1) * 2 + 2) * i;
@@ -328,13 +328,15 @@ void particles_render::init()
     m_bullet_material.set_param(m_bullet_material.get_param_idx("b size"), m_b_size);
     m_bullet_material.set_texture("diffuse", t);
 
-    m_es_params.create();
+    m_es_params.create(),m_es_tvc[0].create(),m_es_tvc[1].create();
     auto &p4 = m_engine_stream_material.get_default_pass();
     p4.set_shader(nya_scene::shader("shaders/engine_stream.nsh"));
     p4.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::one);
     p4.get_state().zwrite = false;
     p4.get_state().set_cull_face(true);
     m_engine_stream_material.set_param(m_engine_stream_material.get_param_idx("param"), m_es_params);
+    m_engine_stream_material.set_param(m_engine_stream_material.get_param_idx("vector l"), m_es_tvc[0]);
+    m_engine_stream_material.set_param(m_engine_stream_material.get_param_idx("vector r"), m_es_tvc[1]);
     m_engine_stream_material.set_texture("diffuse", t);
 }
 
@@ -508,7 +510,9 @@ void particles_render::draw(const plane_engine &e) const
     nya_render::set_modelview_matrix(m);
 
     m_engine_stream_mesh.bind();
-    m_es_params->set(e.m_radius, e.m_dist, e.m_afterburner * 5.0f, 0.0f);
+    m_es_params->set(e.m_radius, e.m_dist, 0.0f, 0.0f);
+    const float ab = e.m_afterburner * 5.0f;
+    m_es_tvc[0]->set(e.m_tvc[0] * ab, 0.0f), m_es_tvc[1]->set(e.m_tvc[1] * ab, 0.0f);
     m_engine_stream_material.internal().set();
     if (e.m_dist > 0.001f)
         m_engine_stream_mesh.draw();

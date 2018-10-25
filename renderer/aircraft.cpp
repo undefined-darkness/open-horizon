@@ -111,8 +111,8 @@ public:
 
     struct engine_info
     {
-        float radius = 0.0f;
-        float dist = 0.0f;
+        float radius = 0.0f, dist = 0.0f;
+        nya_math::vec2 tvc;
     };
 
     struct info
@@ -193,6 +193,8 @@ public:
                         engine_info ei;
                         ei.radius = eng.attribute("radius").as_float();
                         ei.dist = eng.attribute("dist").as_float();
+                        ei.tvc.x = ei.tvc.y = eng.attribute("tvc_xy").as_float();
+                        ei.tvc.y = eng.attribute("tvc_y").as_float(ei.tvc.y);
                         inf->engines.push_back(ei);
                     }
                 }
@@ -697,6 +699,8 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
         std::string bname = "nzlp";
         if (info->engines.size() > 1)
             bname += std::to_string(m_engines.size() + 1);
+        else
+            m_tvc_param = ei.tvc / 180.0f * nya_math::constants::pi;
         m_engines.push_back({plane_engine(ei.radius, ei.dist), m_mesh.get_bone_idx(0, bname.c_str())});
     }
 
@@ -1170,7 +1174,17 @@ void aircraft::update(int dt)
     }
 
     for (auto &e: m_engines)
+    {
         e.first.update(m_mesh.get_bone_pos(0, e.second), m_mesh.get_bone_rot(0, e.second), m_engine_thrust, dt);
+        if (m_tvc_param.y > 0.01f)
+        {
+            const float l = (m_mesh.get_relative_anim_time(3, 'vctl') * 2.0f - 1.0f) * m_tvc_param.y;
+            const float r = (m_mesh.get_relative_anim_time(3, 'vctr') * 2.0f - 1.0f) * m_tvc_param.y;
+            const float h = (m_mesh.get_relative_anim_time(3, 'vcth') * 2.0f - 1.0f) * m_tvc_param.x;
+            e.first.update_tvc(0, nya_math::vec3(sinf(h), sinf(l), -cosf(h) * cosf(l)));
+            e.first.update_tvc(1, nya_math::vec3(sinf(h), sinf(r), -cosf(h) * cosf(r)));
+        }
+    }
 }
 
 //------------------------------------------------------------

@@ -166,6 +166,7 @@ private:
 
     std::vector<std::pair<plane_engine, int> > m_engines;
     float m_engine_thrust = 0.0f;
+    nya_math::vec2 m_tvc_param;
 
 private:
     struct mgun

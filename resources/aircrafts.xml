@@ -22,6 +22,7 @@
 </aircraft>
 
 <aircraft id="su47" role="fighter" name="Su-47 Berkut">
+    <engine radius="0.6" dist="0.7"/>
     <msl id="MISSILE" model="msl_r0" count="198"/>
     <spc id="QAAM" model="qaa_r0" count="30"/>
     <spc id="SAAM" model="saa_r0" count="24"/>
@@ -40,6 +41,7 @@
 </aircraft>
 
 <aircraft id="su35" role="fighter" name="Su-35 Flanker-E">
+    <engine radius="0.42" dist="1.2" tvc_xy="15"/>
     <msl id="MISSILE" model="msl_r0" count="216"/>
     <spc id="_6AAM" model="xla_r0" count="32"/>
     <spc id="QAAM" model="qaa_r0" count="34"/>
@@ -51,6 +53,7 @@
 </aircraft>
 
 <aircraft id="typn" role="fighter" name="Typhoon">
+    <engine radius="0.35" dist="0.5"/>
     <msl id="MISSILE" model="msl_a0" count="198"/>
     <spc id="_4AAM" model="xma_a0" count="26"/>
     <spc id="_6AAM" model="xla_a0" count="28"/>
@@ -62,6 +65,7 @@
 </aircraft>
 
 <aircraft id="su37" role="fighter" name="Su-37 Terminator">
+    <engine radius="0.41" dist="1.2" tvc_xy="15"/>
     <msl id="MISSILE" model="msl_r0" count="198"/>
     <spc id="QAAM" model="qaa_r0" count="30"/>
     <spc id="_4AAM" model="xma_r0" count="26"/>
@@ -132,6 +136,7 @@
 </aircraft>
 
 <aircraft id="su24" role="fighter" name="Su-24MP Fencer">
+    <engine radius="0.42" dist="0.6"/>
     <msl id="MISSILE" model="msl_r0" count="172"/>
     <spc id="ECM" model="ecm_r0" count="12"/>
     <spc id="QAAM" model="qaa_r0" count="26"/>
@@ -141,6 +146,7 @@
 </aircraft>
 
 <aircraft id="m29a" role="fighter" name="MiG-29A Fulcrum">
+    <engine radius="0.4" dist="0.9"/>
     <msl id="MISSILE" model="msl_r0" count="180"/>
     <spc id="QAAM" model="qaa_r0" count="28"/>
     <spc id="_4AAM" model="xma_r0" count="24"/>
@@ -185,6 +191,7 @@
 </aircraft>
 
 <aircraft id="fa44" role="multirole" name="CFA-44 Nosferatu">
+    <engine radius="0.43" dist="1.2"/>
     <msl id="MISSILE" model="msl_x0" count="234"/>
     <spc id="ADMM" model="adm_x0" count="26"/>
     <spc id="EML" model="eml_x0" count="14"/>
@@ -205,6 +212,7 @@
 </aircraft>
 
 <aircraft id="rflm" role="multirole" name="Rafale M" short_name = "Rafale M">
+    <engine radius="0.35" dist="0.5"/>
     <msl id="MISSILE" model="msl_f0" count="198"/>
     <spc id="_6AAM" model="xla_e0" count="28"/>
     <spc id="BDM" model="sod_f0" count="18"/>
@@ -226,6 +234,7 @@
 </aircraft>
 
 <aircraft id="f35b" role="multirole" name="F-35B Lightning II">
+    <engine radius="0.4"/>
     <msl id="MISSILE" model="msl_a0" count="198"/>
     <spc id="QAAM" model="qaa_a0" count="30" external="true"/>
     <spc id="LAGM" model="las_a0" count="20"/>
@@ -252,6 +261,7 @@
 </aircraft>
 
 <aircraft id="j39c" role="multirole" name="JAS-39C Gripen">
+    <engine radius="0.29"/>
     <msl id="MISSILE" model="msl_a0" count="190"/>
     <spc id="QAAM" model="qaa_e0" count="32"/>
     <spc id="_4AAM" model="xma_a0" count="28"/>
@@ -262,6 +272,7 @@
 </aircraft>
 
 <aircraft id="f18f" role="multirole" name="F/A-18F Super Hornet">
+    <engine radius="0.35" dist="0.5"/>
     <msl id="MISSILE" model="msl_a0" count="206"/>
     <spc id="SAAM" model="saa_a0" count="26"/>
     <spc id="LAGM" model="las_a0" count="20"/>
@@ -274,6 +285,7 @@
 </aircraft>
 
 <aircraft id="av8b" role="multirole" name="AV-8B Harrier II plus">
+    <engine radius="0.3" dist="0.6"/>
     <msl id="MISSILE" model="msl_a0" count="180"/>
     <spc id="_4AAM" model="xma_a0" count="24"/>
     <spc id="RKTL" model="rcl_a0" count="28"/>
@@ -303,6 +315,7 @@
 </aircraft>
 
 <aircraft id="mr2k" role="multirole" name="Mirage 2000-5" short_name = "MIR-2000-5">
+    <engine radius="0.41"/>
     <msl id="MISSILE" model="msl_f0" count="162"/>
     <spc id="_4AAM" model="xma_f0" count="22"/>
     <spc id="_4AGM" model="xag_f0" count="28"/>
@@ -315,6 +328,7 @@
 </aircraft>
 
 <aircraft id="f04e" role="multirole" name="F-4E Phantom II">
+    <engine radius="0.39" dist="0.67"/>
     <msl id="MISSILE" model="msl_a0" count="208"/>
     <spc id="SAAM" model="saa_a0" count="26"/>
     <spc id="UGB" model="ugb_a1" count="40"/>
@@ -351,6 +365,7 @@
 </aircraft>
 
 <aircraft id="tnd4" role="attacker" name="Tornado GR.4">
+    <engine radius="0.31" dist="0.5"/>
     <msl id="MISSILE" model="msl_a0" count="198"/>
     <spc id="_4AGM" model="xag_a0" count="36"/>
     <spc id="BDM" model="sod_e0" count="18"/>
@@ -415,4 +430,3 @@
 
 <!----------------------------------------------------------------------------->
 </aircrafts>
-

@@ -98,15 +98,17 @@ class plane_engine
 
 public:
     void update(const nya_math::vec3 &pos, const nya_math::quat &rot, float afterburner, int dt);
+    void update_tvc(int idx, const nya_math::vec3 &dir) { m_tvc[idx] = dir; }
 
     plane_engine(): m_radius(0),m_dist(0) {}
-    plane_engine(float r,float d): m_radius(r),m_dist(d) {}
+    plane_engine(float r,float d): m_radius(r),m_dist(d) { m_tvc[0].z = m_tvc[1].z = -1.0f; }
 
 private:
     nya_math::vec3 m_pos;
     nya_math::quat m_rot;
     float m_heat_rot, m_afterburner;
     float m_radius, m_dist;
+    nya_math::vec3 m_tvc[2];
 };
 
 //------------------------------------------------------------
@@ -158,7 +160,7 @@ private:
     mutable nya_scene::material::param_proxy m_trail_param;
     mutable nya_scene::material::param_array_proxy m_tr_pos, m_tr_tc_rgb, m_tr_tc_a, m_tr_off_rot_asp, m_col, m_b_dir;
     mutable nya_scene::material::param_proxy m_b_color, m_b_tc, m_b_size;
-    mutable nya_scene::material::param_proxy m_es_params;
+    mutable nya_scene::material::param_proxy m_es_params, m_es_tvc[2];
 };
 
 //------------------------------------------------------------
