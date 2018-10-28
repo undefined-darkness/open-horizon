@@ -7,6 +7,7 @@
 <!----------------------------------------------------------------------------->
 
 <aircraft id="f22a" role="fighter" name="F-22A Raptor">
+    <engine radius="0.6" dist="0.7" yscale="0.4" tvc_y="15"/>
     <msl id="MISSILE" model="msl_a0" count="226"/>
     <spc id="_4AAM" model="xma_a0" count="30"/>
     <spc id="QAAM" model="qaa_a0" count="36"/>
@@ -31,7 +32,9 @@
     <decal2 name="Ferris Camouflage"/>
 </aircraft>
 
+<!-- Mostly broken
 <aircraft id="yf23" role="fighter" name="YF-23 Black Widow II">
+    <engine radius="0.44" dist="1.2" yscale="0.5"/>
     <msl id="MISSILE" model="msl_a0" count="230"/>
     <spc id="QAAM" model="qaa_a0" count="36"/>
     <spc id="SAAM" model="saa_r0" count="28"/>
@@ -39,6 +42,7 @@
     <decal1 name="Digital Camouflage"/>
     <decal2 name="Black Widow II"/>
 </aircraft>
+-->
 
 <aircraft id="su35" role="fighter" name="Su-35 Flanker-E">
     <engine radius="0.42" dist="1.2" tvc_xy="15"/>
@@ -202,6 +206,7 @@
 </aircraft>
 
 <aircraft id="kwmr" role="multirole" name="ASF-X Shinden II">
+    <engine radius="0.6" tvc_y="15"/>
     <msl id="MISSILE" model="msl_j0" count="226"/>
     <spc id="_6AAM" model="xla_j0" count="32" external="true"/>
     <spc id="RKTL" model="rcl_j0" count="36"/>
@@ -224,6 +229,7 @@
 </aircraft>
 
 <aircraft id="f15m" role="multirole" name="F-15S/MTD">
+    <engine radius="0.44" dist="0.67" yscale="0.35" tvc_y="10"/>
     <msl id="MISSILE" model="msl_a0" count="216"/>
     <spc id="QAAM" model="qaa_a0" count="34"/>
     <spc id="SAAM" model="saa_a0" count="26"/>
@@ -422,6 +428,8 @@
 </aircraft>
 
 <aircraft id="b02a" role="bomber" name="B-2 Spirit">
+    <engine radius="0.5" dist="0.8" yscale="0.5"/>
+    <engine radius="0.5" dist="0.8" yscale="0.5"/>
     <spc id="GPB" model="gpb_a1" count="180"/>
     <spc id="MUGB" model="ugb_a1" count="264"/>
     <decal0 name="Spirit of America"/>

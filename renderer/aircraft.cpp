@@ -111,7 +111,7 @@ public:
 
     struct engine_info
     {
-        float radius = 0.0f, dist = 0.0f;
+        float radius = 0.0f, dist = 0.0f, yscale = 1.0f;
         nya_math::vec2 tvc;
     };
 
@@ -193,6 +193,7 @@ public:
                         engine_info ei;
                         ei.radius = eng.attribute("radius").as_float();
                         ei.dist = eng.attribute("dist").as_float();
+                        ei.yscale = eng.attribute("yscale").as_float(1.0f);
                         ei.tvc.x = ei.tvc.y = eng.attribute("tvc_xy").as_float();
                         ei.tvc.y = eng.attribute("tvc_y").as_float(ei.tvc.y);
                         inf->engines.push_back(ei);
@@ -701,7 +702,7 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
             bname += std::to_string(m_engines.size() + 1);
         else
             m_tvc_param = ei.tvc / 180.0f * nya_math::constants::pi;
-        m_engines.push_back({plane_engine(ei.radius, ei.dist), m_mesh.get_bone_idx(0, bname.c_str())});
+        m_engines.push_back({plane_engine(ei.radius, ei.dist, ei.yscale), m_mesh.get_bone_idx(0, bname.c_str())});
     }
 
     return true;

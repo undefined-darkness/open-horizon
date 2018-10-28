@@ -7,7 +7,7 @@ varying vec4 color;
 
 @vertex
 
-uniform vec4 param; //radius dist
+uniform vec4 param; //radius dist yscale
 uniform vec4 vector_l;
 uniform vec4 vector_r;
 
@@ -18,6 +18,7 @@ void main()
 
     vec4 pos = gl_Vertex;
     pos.xy *= param.x;
+    pos.y *= param.z;
     pos.x += tc.z * param.y;
     pos.z = 0.0;
     pos.xyz += mix(vector_r.xyz, vector_l.xyz, tc.z * 0.5 + 0.5) * gl_Vertex.z;

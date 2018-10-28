@@ -100,14 +100,14 @@ public:
     void update(const nya_math::vec3 &pos, const nya_math::quat &rot, float afterburner, int dt);
     void update_tvc(int idx, const nya_math::vec3 &dir) { m_tvc[idx] = dir; }
 
-    plane_engine(): m_radius(0),m_dist(0) {}
-    plane_engine(float r,float d): m_radius(r),m_dist(d) { m_tvc[0].z = m_tvc[1].z = -1.0f; }
+    plane_engine(): m_radius(0) {}
+    plane_engine(float r, float d, float s): m_radius(r),m_dist(d),m_yscale(s) { m_tvc[0].z = m_tvc[1].z = -1.0f; }
 
 private:
     nya_math::vec3 m_pos;
     nya_math::quat m_rot;
     float m_heat_rot, m_afterburner;
-    float m_radius, m_dist;
+    float m_radius, m_dist, m_yscale;
     nya_math::vec3 m_tvc[2];
 };
 

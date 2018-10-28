@@ -510,7 +510,7 @@ void particles_render::draw(const plane_engine &e) const
     nya_render::set_modelview_matrix(m);
 
     m_engine_stream_mesh.bind();
-    m_es_params->set(e.m_radius, e.m_dist, 0.0f, 0.0f);
+    m_es_params->set(e.m_radius, e.m_dist, e.m_yscale, 0.0f);
     const float ab = e.m_afterburner * 5.0f;
     m_es_tvc[0]->set(e.m_tvc[0] * ab, 0.0f), m_es_tvc[1]->set(e.m_tvc[1] * ab, 0.0f);
     m_engine_stream_material.internal().set();
