@@ -1179,8 +1179,9 @@ void aircraft::update(int dt)
         e.first.update(m_mesh.get_bone_pos(0, e.second), m_mesh.get_bone_rot(0, e.second), m_engine_thrust, dt);
         if (m_tvc_param.y > 0.01f)
         {
-            const float l = (m_mesh.get_relative_anim_time(3, 'vctl') * 2.0f - 1.0f) * m_tvc_param.y;
-            const float r = (m_mesh.get_relative_anim_time(3, 'vctr') * 2.0f - 1.0f) * m_tvc_param.y;
+            const float n = m_mesh.get_relative_anim_time(3, 'vctn');
+            const float l = ((m_mesh.get_relative_anim_time(3, 'vctl') + n) * 2.0f - 1.0f) * m_tvc_param.y;
+            const float r = ((m_mesh.get_relative_anim_time(3, 'vctr') + n) * 2.0f - 1.0f) * m_tvc_param.y;
             const float h = (m_mesh.get_relative_anim_time(3, 'vcth') * 2.0f - 1.0f) * m_tvc_param.x;
             e.first.update_tvc(0, nya_math::vec3(sinf(h), sinf(l), -cosf(h) * cosf(l)));
             e.first.update_tvc(1, nya_math::vec3(sinf(h), sinf(r), -cosf(h) * cosf(r)));

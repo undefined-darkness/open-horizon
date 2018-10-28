@@ -106,9 +106,10 @@ public:
 private:
     nya_math::vec3 m_pos;
     nya_math::quat m_rot;
-    float m_heat_rot, m_afterburner;
+    float m_afterburner;
     float m_radius, m_dist, m_yscale;
     nya_math::vec3 m_tvc[2];
+    int m_time = 0;
 };
 
 //------------------------------------------------------------

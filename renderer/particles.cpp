@@ -177,6 +177,7 @@ void plane_engine::update(const nya_math::vec3 &pos, const nya_math::quat &rot, 
     m_pos = pos;
     m_rot = rot;
     m_afterburner = afterburner;
+    m_time += dt;
 }
 
 //------------------------------------------------------------
@@ -266,7 +267,7 @@ void particles_render::init()
             v.pos[0] = cosf(a);
             v.pos[1] = sinf(a);
             v.pos[2] = 0.0f;
-            v.tc[0] = fabsf(j - num_segments/2.0f); //repeat mirror
+            v.tc[0] = fabsf((j - num_segments/2.0f) / num_segments); //repeat mirror
             v.tc[1] = 0.0f;
             v.d = i * 2.0f - 1.0f;
 
@@ -510,7 +511,8 @@ void particles_render::draw(const plane_engine &e) const
     nya_render::set_modelview_matrix(m);
 
     m_engine_stream_mesh.bind();
-    m_es_params->set(e.m_radius, e.m_dist, e.m_yscale, 0.0f);
+    const int anim_period = 2000;
+    m_es_params->set(e.m_radius, e.m_dist, e.m_yscale, (e.m_time % anim_period) * (1.0f / anim_period));
     const float ab = e.m_afterburner * 5.0f;
     m_es_tvc[0]->set(e.m_tvc[0] * ab, 0.0f), m_es_tvc[1]->set(e.m_tvc[1] * ab, 0.0f);
     m_engine_stream_material.internal().set();

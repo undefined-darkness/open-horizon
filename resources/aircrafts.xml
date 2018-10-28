@@ -7,7 +7,7 @@
 <!----------------------------------------------------------------------------->
 
 <aircraft id="f22a" role="fighter" name="F-22A Raptor">
-    <engine radius="0.6" dist="0.7" yscale="0.4" tvc_y="15"/>
+    <engine radius="0.5" dist="0.7" yscale="0.5" tvc_y="15"/>
     <msl id="MISSILE" model="msl_a0" count="226"/>
     <spc id="_4AAM" model="xma_a0" count="30"/>
     <spc id="QAAM" model="qaa_a0" count="36"/>
