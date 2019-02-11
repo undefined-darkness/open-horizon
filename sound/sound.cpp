@@ -487,6 +487,9 @@ source_ptr world::add(file &f, bool loop)
 
 void world::set_volume(float volume)
 {
+    if (!context::valid())
+        return;
+
     alListenerf(AL_GAIN, volume);
 }
 
