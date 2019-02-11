@@ -64,8 +64,6 @@ gim_decoder::gim_decoder(const void *data, size_t size): m_indices4(0), m_indice
         if (!r.skip(header.width * header.height / 2 + 16))
             return;
 
-        long test = r.get_remained();
-
         if (r.get_offset() % 16 > 0)
             r.skip(16 - r.get_offset() % 16);
 

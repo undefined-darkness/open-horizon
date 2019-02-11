@@ -180,7 +180,7 @@ void hud::draw(const render &r)
     if (m_hide)
         return;
 
-    const float anim = fabsf(m_anim_time / 500.0f - 1.0);
+    const float anim = fabsf(m_anim_time / 500.0f - 1.0f);
 
     vec2 jam_glitch;
     if (m_jammed)

@@ -13,16 +13,6 @@ extern "C"
 
 //------------------------------------------------------------
 
-static int func_print(lua_State *state)
-{
-    const char *s = luaL_checkstring(state, 1);
-    if (s)
-        printf("script print: %s\n", s);
-    return 0;
-}
-
-//------------------------------------------------------------
-
 bool script::load(std::string text)
 {
     m_error.clear();

@@ -35,13 +35,12 @@ std::string platform::open_folder_dialog()
     CoTaskMemFree(pidl);
     return path;
 #elif __APPLE__
-    NSArray *fileTypes = [NSArray arrayWithObjects:nil];
     NSOpenPanel * panel = [NSOpenPanel openPanel];
     [panel setAllowsMultipleSelection:NO];
     [panel setCanChooseDirectories:YES];
     [panel setCanChooseFiles:NO];
     [panel setFloatingPanel:YES];
-    NSInteger result = [panel runModalForDirectory:NSHomeDirectory() file:nil types:fileTypes] == NSOKButton;
+    NSInteger result = [panel runModalForDirectory:NSHomeDirectory() file:nil types:nil] == NSOKButton;
     if(result == NSOKButton)
     {
         NSArray *urls = [panel URLs];

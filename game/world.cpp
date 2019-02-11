@@ -147,8 +147,12 @@ plane_ptr world::add_plane(const char *preset, const char *player_name, int colo
         p->missile_max_count = wi->missile.count;
     }
 
-    p->missile_max_count *= m_difficulty.ammo_ammount;
-    p->special_max_count *= m_difficulty.ammo_ammount;
+    if (!m_network) //ToDo: get difficulty setting from server
+    {
+        p->missile_max_count *= m_difficulty.ammo_ammount;
+        p->special_max_count *= m_difficulty.ammo_ammount;
+    }
+
     p->missile_count = p->missile_max_count;
     p->special_count = p->special_max_count;
 
@@ -258,10 +262,13 @@ bool world::direct_damage(const object_ptr &target, int damage, const plane_ptr 
     if (!target || target->hp <= 0 || target->is_ally(owner, *this))
         return false;
 
-    if (owner == get_player())
-        damage *= m_difficulty.dmg_inflict;
-    if (target == get_player())
-        damage *= m_difficulty.dmg_take;
+    if (!m_network) //ToDo: get difficulty setting from server
+    {
+        if (owner == get_player())
+            damage *= m_difficulty.dmg_inflict;
+        if (target == get_player())
+            damage *= m_difficulty.dmg_take;
+    }
 
     target->take_damage(damage, *this);
     if (target->hp <= 0)
