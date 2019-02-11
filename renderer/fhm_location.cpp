@@ -489,6 +489,21 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
     const float tree_tc_width = 1.0f / load_data.tree_types_count;
 
+    const float tree_half_size = 32.0f * 0.5f; //ToDo
+    std::vector<tree_vert> tree_verts(load_data.tree_types_count*4);
+    for (int i = 0; i < load_data.tree_types_count; ++i)
+    {
+        const static float tree_deltas[4][2] = { {-1.0f, -1.0f}, {-1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, -1.0f} };
+        for (int j = 0; j < 4; ++j)
+        {
+            auto &t = tree_verts[i*4+j];
+            t.tc[0] = Float16Compressor::compress((0.5f * (tree_deltas[j][0] + 1.0f) + i) * tree_tc_width);
+            t.tc[1] = Float16Compressor::compress(0.5f * (tree_deltas[j][1] + 1.0f));
+            t.delta[0] = Float16Compressor::compress(tree_deltas[j][0] * tree_half_size);
+            t.delta[1] = Float16Compressor::compress(tree_deltas[j][1] * tree_half_size);
+        }
+    }
+
     for (int py = 0; py < location_size; ++py)
     for (int px = 0; px < location_size; ++px)
     {
@@ -509,8 +524,6 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
             for (uint i = tpp.offset; i < tpp.offset + tpp.count; ++i)
             {
                 auto &to = load_data.tree_positions[i];
-
-                const float half_size = 32.0f * 0.5f; //ToDo
 
                 nya_math::vec3 pos;
                 pos.x = base_x + to.x;
@@ -550,20 +563,13 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 }
 
                 //pos.y = get_height(pos.x, pos.z); //ToDo
-                pos.y += half_size;
+                pos.y += tree_half_size;
 
                 for (int j = 0; j < 4; ++j)
                 {
+                    //assert(tpp.idx<load_data.tree_types_count);
+                    *curr_tree_vert = tree_verts[tpp.idx*4+j];
                     curr_tree_vert->pos = pos;
-
-                    static const float deltas[4][2] = { {-1.0f, -1.0f}, {-1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, -1.0f} };
-
-                    curr_tree_vert->tc[0] = Float16Compressor::compress((0.5f * (deltas[j][0] + 1.0f) + tpp.idx) * tree_tc_width);
-                    curr_tree_vert->tc[1] = Float16Compressor::compress(0.5f * (deltas[j][1] + 1.0f));
-
-                    curr_tree_vert->delta[0] = Float16Compressor::compress(deltas[j][0] * half_size);
-                    curr_tree_vert->delta[1] = Float16Compressor::compress(deltas[j][1] * half_size);
-
                     ++curr_tree_vert;
                 }
 

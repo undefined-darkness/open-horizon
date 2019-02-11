@@ -12,6 +12,12 @@
 #include "util/util.h"
 #include "util/zip.h"
 
+#define PARALLEL_UNPACK
+
+#ifdef PARALLEL_UNPACK
+    #include <future>
+#endif
+
 //------------------------------------------------------------
 
 bool dpl_file::open(const char *name)
@@ -145,6 +151,21 @@ uint32_t dpl_file::get_file_size(int idx) const
 
 //------------------------------------------------------------
 
+static bool unpack_buf(uint8_t *buf_from, uint8_t *buf_out, size_t packed_size, size_t unpacked_size, uint8_t key, bool archieved)
+{
+    decrypt(buf_from, packed_size, key);
+    if (archieved)
+    {
+        if (!unzip(buf_from, packed_size, buf_out, unpacked_size))
+            return false;
+    }
+    else
+        memcpy(buf_out, buf_from, packed_size);
+    return true;
+}
+
+//------------------------------------------------------------
+
 bool dpl_file::read_file_data(int idx, void *data) const
 {
     if (!data || idx < 0 || idx >= (int)m_infos.size())
@@ -172,10 +193,15 @@ bool dpl_file::read_file_data(int idx, void *data) const
         uint32_t packed_size;
     } header;
 
-    char *buf_out = (char *)data;
+    uint8_t *buf_out = (uint8_t *)data;
 
     nya_memory::memory_reader r(buf.get_data(), buf.get_size());
     uint16_t curr_idx = 0;
+
+#ifdef PARALLEL_UNPACK
+    std::vector<std::future<bool>> futures;
+#endif
+
     while (r.check_remained(sizeof(header)))
     {
         header = r.read<block_header>();
@@ -197,18 +223,23 @@ bool dpl_file::read_file_data(int idx, void *data) const
         if (!r.check_remained(header.packed_size))
             return false;
 
-        decrypt(buf_from, header.packed_size, e.key);
-        if (archieved)
-        {
-            if (!unzip(buf_from, header.packed_size, buf_out, header.unpacked_size))
-                return false;
-        }
-        else
-            memcpy(buf_out, buf_from, header.packed_size);
-
+#ifdef PARALLEL_UNPACK
+        futures.push_back(std::async(unpack_buf, buf_from, buf_out, header.packed_size, header.unpacked_size, e.key, archieved));
+#else
+        if(!unpack_buf(buf_from, buf_out, header.packed_size, header.unpacked_size, e.key, archieved))
+            return false;
+#endif
         buf_out += header.unpacked_size;
         r.skip(header.packed_size);
     }
+
+#ifdef PARALLEL_UNPACK
+    for(auto &e : futures)
+    {
+        if (!e.get())
+            return false;
+    }
+#endif
 
     return true;
 }
