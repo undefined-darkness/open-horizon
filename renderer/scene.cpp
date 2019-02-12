@@ -183,7 +183,10 @@ void scene::update(int dt)
         {
             camera.set_ignore_delta_pos(true);
             camera.set_ignore_delta_rot(true);
-            camera.set_fixed_dist(50.0f);
+            if(!m_was_dead)
+                camera.set_fixed_dist(40.0f);
+            else
+                camera.set_fixed_dist(camera.get_fixed_dist() + dt * 0.01f);
             camera.set_pos(m_player_aircraft->get_pos());
         }
         else

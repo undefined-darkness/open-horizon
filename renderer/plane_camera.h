@@ -21,6 +21,7 @@ public:
     void set_ignore_delta_pos(bool ignore) { m_ignore_dpos = ignore; }
     void set_ignore_delta_rot(bool ignore) { m_ignore_drot = ignore; }
     void set_fixed_dist(float d) { m_fixed_dist = d; update(); }
+    float get_fixed_dist() const { return m_fixed_dist; }
 
     void set_aspect(float aspect);
     void set_near_far(float znear, float zfar);
