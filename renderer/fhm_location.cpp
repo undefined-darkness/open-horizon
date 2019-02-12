@@ -90,12 +90,15 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
     auto &p2 = m_trees_material.get_default_pass();
     p2.set_shader(nya_scene::shader("shaders/trees.nsh"));
-    p2.get_state().set_cull_face(false);
     nya_scene::texture tree_tex;
     const uint tree_texture_resolution = 256;
     if (load_data.tree_types_count > 0)
         tree_tex.build(0, tree_texture_resolution * load_data.tree_types_count, tree_texture_resolution, nya_render::texture::color_bgra);
     m_trees_material.set_texture("diffuse", tree_tex);
+    m_trees_up.create();
+    m_trees_right.create();
+    m_trees_material.set_param(m_trees_material.get_param_idx("up"), m_trees_up);
+    m_trees_material.set_param(m_trees_material.get_param_idx("right"), m_trees_right);
 
     class vbo_data
     {
@@ -1148,6 +1151,11 @@ void fhm_location::draw_trees()
     nya_scene::transform::set(t);
 
     auto &c = nya_scene::get_camera();
+    auto euler = c.get_rot().get_euler();
+    nya_math::quat rot(nya_math::quat(-euler.x, -euler.y, 0.0f));
+    m_trees_up->set(rot.rotate(nya_math::vec3::up()), 0.0f);
+    m_trees_right->set(rot.rotate(nya_math::vec3::right()), 0.0f);
+
     nya_render::set_modelview_matrix(c.get_view_matrix());
     m_trees_material.internal().set();
 

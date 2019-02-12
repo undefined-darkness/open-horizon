@@ -138,15 +138,14 @@ void location::update_tree_texture()
     auto prev_cam = nya_scene::get_camera_proxy();
 
     static nya_scene::camera_proxy tree_cam = nya_scene::camera_proxy(nya_scene::camera());
-    float size = 0.5f;
+    float size = 0.4f;
     nya_math::mat4 pm;
     pm.ortho(-size, size, -size, size, -size, size);
-    pm.scale(1.99);
     tree_cam->set_proj(pm);
     tree_cam->set_pos(0.0, size, 0.0);
 
     auto r = prev_cam->get_rot().get_euler();
-    tree_cam->set_rot(nya_math::quat(-r.x, -r.y, 0.0f));
+    tree_cam->set_rot(nya_math::quat(r.x, r.y, 0.0f));
 
     nya_scene::set_camera(tree_cam);
 

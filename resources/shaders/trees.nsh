@@ -1,4 +1,6 @@
 @include "common.nsh"
+@uniform up "up" = 0.0,1.0,0.0
+@uniform right "right" = 1.0,0.0,0.0
 
 @all
 
@@ -8,19 +10,18 @@ varying float vfogh;
 varying float vfogf;
 
 @vertex
+uniform vec4 up;
+uniform vec4 right;
 
 void main()
 {
     vec4 p = gl_Vertex;
     vec2 d = gl_MultiTexCoord0.zw;
-        
-    vfogh = get_fogh(p.xyz);
 
     eye = get_eye(p.xyz);
-    vec3 right = normalize(vec3(eye.z, 0.0, -eye.x));
-    vec3 up = cross(eye, right.xyz);
+    vfogh = get_fogh(p.xyz);
 
-    p.xyz += d.x * right + d.y * up;
+    p.xyz += d.x * right.xyz + d.y * up.xyz;
 
     tc = gl_MultiTexCoord0.xy;
     
@@ -40,7 +41,6 @@ void main()
     vec4 color = texture2D(base_map, tc) * 1.2;
     if(color.a < 0.1)
         discard;
-        //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); else
         
     float fog = get_fog(vfogf, vfogh, eye);
 	color.xyz = mix(fog_color.xyz, color.xyz, fog);

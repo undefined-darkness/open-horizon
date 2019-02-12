@@ -130,7 +130,8 @@ protected:
     nya_scene::texture_proxy m_map_parts_specular_texture;
     nya_scene::material::param_array_proxy m_map_parts_tr;
     nya_scene::material m_trees_material;
-
+    nya_scene::material::param_proxy m_trees_up;
+    nya_scene::material::param_proxy m_trees_right;
     nya_scene::material m_land_material;
 
     nya_render::debug_draw m_debug_draw;
