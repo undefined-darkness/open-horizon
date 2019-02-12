@@ -12,6 +12,7 @@ namespace renderer
 
 static const int max_trail_points = 240;
 static const int max_smoke_points = 500;
+static const float fade_time = 5.0f;
 
 //------------------------------------------------------------
 
@@ -23,8 +24,27 @@ missile_trail::missile_trail()
 
 //------------------------------------------------------------
 
+bool missile_trail::is_dead() const { return (m_time - fade_time) > fade_time; }
+
+//------------------------------------------------------------
+
+void missile_trail::update(int dt)
+{
+    m_time += dt * 0.001f;
+
+    if(!m_fade)
+    {
+        m_fade_time = m_time;
+        m_fade = true;
+    }
+}
+
+//------------------------------------------------------------
+
 void missile_trail::update(const nya_math::vec3 &pos, int dt)
 {
+    m_time += dt * 0.001f;
+
     //trail
 
     auto &trp = m_trail_params.back();
@@ -33,8 +53,8 @@ void missile_trail::update(const nya_math::vec3 &pos, int dt)
     if (!curr_tr_count)
     {
         trp.tr.set_count(2);
-        trp.tr.set(0, pos);
-        trp.tr.set(1, pos);
+        trp.tr.set(0, pos, m_time);
+        trp.tr.set(1, pos, m_time);
         trp.dir.set_count(2);
         return;
     }
@@ -73,7 +93,7 @@ void missile_trail::update(const nya_math::vec3 &pos, int dt)
     else if (diff_len > 0.01f)
         diff /= diff_len;
 
-    m_trail_params.back().tr.set(curr_tr_count - 1, pos);
+    m_trail_params.back().tr.set(curr_tr_count - 1, pos, m_time);
     m_trail_params.back().dir.set(curr_tr_count - 1, diff, diff_len + m_trail_params.back().dir.get(curr_tr_count-2).w);
 
     //smoke puffs
@@ -98,7 +118,7 @@ void missile_trail::update(const nya_math::vec3 &pos, int dt)
         const int curr_sm_count = smp.get_count();
 
         smp.set_count(curr_sm_count + 1);
-        smp.set(curr_sm_count, pos, 0.25 * (rand() % 3));
+        smp.set(curr_sm_count, pos, m_time);
     }
 }
 
@@ -112,6 +132,7 @@ void missile_trails_render::init()
 
     m_trail_tr.create();
     m_trail_dir.create();
+    m_param.create();
 
     auto &p = m_trail_material.get_default_pass();
     p.set_shader(nya_scene::shader("shaders/missile_trail.nsh"));
@@ -120,6 +141,7 @@ void missile_trails_render::init()
     p.get_state().cull_face = false;
     m_trail_material.set_param_array(m_trail_material.get_param_idx("tr pos"), m_trail_tr);
     m_trail_material.set_param_array(m_trail_material.get_param_idx("tr dir"), m_trail_dir);
+    m_trail_material.set_param(m_trail_material.get_param_idx("tr param"), m_param);
     m_trail_material.set_texture("diffuse", t);
 
     std::vector<nya_math::vec2> trail_verts(max_trail_points * 2);
@@ -143,6 +165,7 @@ void missile_trails_render::init()
     p2.get_state().zwrite = false;
     p2.get_state().cull_face = false;
     m_smoke_material.set_param_array(m_smoke_material.get_param_idx("tr pos"), m_smoke_params);
+    m_smoke_material.set_param(m_smoke_material.get_param_idx("tr param"), m_param);
     m_smoke_material.set_texture("diffuse", t);
 
     struct quad_vert { float pos[2], i, tc[2]; };
@@ -155,11 +178,20 @@ void missile_trails_render::init()
         verts[i+2].pos[0] =  1.0f, verts[i+2].pos[1] =  1.0f;
         verts[i+3].pos[0] =  1.0f, verts[i+3].pos[1] = -1.0f;
 
-        for (int j = 0; j < 4; ++j)
+        const float f = 0.25f * (rand() % 3);
+        const float a = (rand() % 1000) * 0.002f * nya_math::constants::pi;
+        const float sa = sinf(a), ca = cosf(a);
+
+        for (int j = i; j < i+4; ++j)
         {
-            verts[i+j].tc[0] = 0.5f * (verts[i+j].pos[0] + 1.0f);
-            verts[i+j].tc[1] = 0.5f * (verts[i+j].pos[1] + 1.0f);
-            verts[i+j].i = float(idx);
+            const float x = verts[j].pos[0];
+            const float y = verts[j].pos[1];
+
+            verts[j].tc[0] = 0.5f * (x + 1.0f) * 0.25 + f;
+            verts[j].tc[1] = 0.5f * (y + 1.0f) * 0.25 + 0.75;
+            verts[j].pos[0] = x * ca - y * sa;
+            verts[j].pos[1] = x * sa + y * ca;
+            verts[j].i = float(idx);
         }
     }
 
@@ -186,6 +218,9 @@ void missile_trails_render::draw(const missile_trail &t) const
     nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
 
     //trail
+
+    m_param->x = t.m_time;
+    m_param->y = t.m_fade ? (1.0f - (t.m_time - t.m_fade_time) / fade_time) : 1.0f;
 
     m_trail_mesh.bind();
     for (auto &tp: t.m_trail_params)

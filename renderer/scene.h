@@ -40,7 +40,7 @@ private:
     missile_trails_render m_missile_trails_renderer;
     particles_render m_particles_render;
     std::vector<std::pair<plane_trail, unsigned int> > m_plane_trails;
-    std::vector<std::pair<missile_trail, unsigned int> > m_missile_trails;
+    std::vector<missile_trail> m_missile_trails;
     nya_scene::camera_proxy m_shadow_camera;
 
 private:
@@ -61,7 +61,7 @@ public:
 public:
     const particles_render &get_part_renderer() const { return m_particles_render; }
     void add_trail(const plane_trail &t) { m_plane_trails.push_back(std::make_pair(t, 0)); }
-    void add_trail(const missile_trail &t) override { m_missile_trails.push_back(std::make_pair(t, 0)); }
+    void add_trail(const missile_trail &t) override { m_missile_trails.push_back(t); }
 
 private:
     aircraft_ptr add_aircraft(const char *name, int color, bool player) override;

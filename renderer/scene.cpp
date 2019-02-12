@@ -171,10 +171,10 @@ void scene::update(int dt)
                                       { return t.second > 5000; }), m_plane_trails.end());
 
     for (auto &t: m_missile_trails)
-        t.second += dt;
+        t.update(dt);
 
-    m_missile_trails.erase(std::remove_if(m_missile_trails.begin(), m_missile_trails.end(), [](std::pair<missile_trail, unsigned int> &t)
-                                        { return t.second > 5000; }), m_missile_trails.end());
+    m_missile_trails.erase(std::remove_if(m_missile_trails.begin(), m_missile_trails.end(), [](missile_trail &t)
+                                        { return t.is_dead(); }), m_missile_trails.end());
 
     if (m_player_aircraft.is_valid())
     {
@@ -346,7 +346,7 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
             a->draw_trails(*this);
 
         for (auto &t: m_missile_trails)
-            m_missile_trails_renderer.draw(t.first);
+            m_missile_trails_renderer.draw(t);
 
         for (auto &m: m_missiles)
             m_missile_trails_renderer.draw(m->trail);
