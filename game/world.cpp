@@ -657,7 +657,7 @@ void world::update(int dt)
         auto m = this->get_missile(a);
         if (m && m->time > 0)
         {
-            this->spawn_explosion(m->phys->pos, m->dmg / 2.0f);
+            this->spawn_explosion(m->phys->pos, m->dmg_radius * 0.5f);
             m->time = 0;
             const bool target_alive = !m->target.expired() && m->target.lock()->hp > 0;
             const bool hit = area_damage(m->phys->pos, m->dmg_radius, m->dmg, m->owner.lock());
@@ -676,7 +676,7 @@ void world::update(int dt)
         auto m = this->get_bomb(a);
         if (m && !m->dead)
         {
-            this->spawn_explosion(m->phys->pos, m->dmg / 2.0f);
+            this->spawn_explosion(m->phys->pos, m->dmg_radius * 0.5f);
             m->dead = true;
             area_damage(m->phys->pos, m->dmg_radius, m->dmg, m->owner.lock());
         }

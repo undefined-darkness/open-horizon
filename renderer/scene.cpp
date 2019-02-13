@@ -373,8 +373,8 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
     if (t.has("heat"))
     {
         //ToDo
-        //for (auto &e: m_explosions)
-        //    m_particles_render.draw_heat(e);
+        for (auto &e: m_explosions)
+            m_particles_render.draw_heat(e);
     }
     if (t.has("cockpit"))
     {

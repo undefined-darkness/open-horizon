@@ -928,7 +928,7 @@ void plane::take_damage(int damage, world &w, bool net_src)
     if (hp <= 0)
     {
         render->set_dead(true);
-        w.spawn_explosion(get_pos(), 30.0f);
+        w.spawn_explosion(get_pos(), 20.0f);
         if (!saam_missile.expired())
             saam_missile.lock()->target.reset();
     }

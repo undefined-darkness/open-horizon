@@ -179,7 +179,7 @@ void missile::update(int dt, world &w)
             //if (vec3::normalize(target.lock()->phys->vel) * dir.normalize() < -0.5)  //direct shoot
             //    missile_damage *= 3;
 
-            w.spawn_explosion(phys->pos, dmg / 2.0);
+            w.spawn_explosion(phys->pos, dmg_radius * 0.5f);
 
             const bool target_alive = t->hp > 0;
             const bool hit = w.area_damage(phys->pos, dmg_radius, dmg, owner.lock());

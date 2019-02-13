@@ -473,9 +473,9 @@ void particles_render::draw(const explosion &e) const
         auto atc = tc(0, 1920, 128, 128);
         atc.x += atc.z * ti;
 
-        auto c = color(hdr_coeff, hdr_coeff, hdr_coeff, 0.7f);
+        auto c = color(hdr_coeff, hdr_coeff, hdr_coeff, 0.9f);
         if (e.m_time > 1.5)
-            c.w -= (e.m_time - 1.5);
+            c.w -= (e.m_time - 1.5) * 1.6;
 
         add_point(p, r, ctc, false, atc, true, c, nya_math::vec2(), e.m_fire_rots[i]);
     }
@@ -487,7 +487,10 @@ void particles_render::draw(const explosion &e) const
 
 void particles_render::draw_heat(const explosion &e) const
 {
-    const float life_time = 5.0f;
+    const float life_time = 3.0f;
+
+    if (e.m_time > life_time)
+        return;
 
     clear_points();
     auto atc = tc(1920, 1664, 128, 128);
@@ -495,7 +498,9 @@ void particles_render::draw_heat(const explosion &e) const
     auto t = nya_math::min(e.m_time, 1.0f) + nt * 0.1f;
     auto r = e.m_radius * t * 3.0f;
 
-    add_point(e.m_pos, r, atc, false, atc, false, color(1.0f, 1.0f, 1.0f, 1.0f) * 0.2f);
+    float c = nya_math::max(100.0f / (e.m_pos - nya_scene::get_camera().get_pos()).length(), 1.0f) - nt;
+
+    add_point(e.m_pos, r, atc, false, atc, false, color(c, c, c, c) * 0.2f);
     draw_points();
 }
 

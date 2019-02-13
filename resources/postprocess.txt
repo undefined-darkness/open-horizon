@@ -90,13 +90,15 @@ height = screen_height/8
 
 @target motion_blur
   color = motion_blur
-  width = screen_width/4
-  height = screen_height/4
+  width = screen_width/8
+  height = screen_height/8
 
 @target heat_blur
   color = heat_blur
-  width = screen_width/4
-  height = screen_height/4
+  depth = heat_depth
+  depth_format=depth16
+  width = screen_width/8
+  height = screen_height/8
 
 @target shadows
   depth = shadows
@@ -213,6 +215,9 @@ height = screen_height/8
 
 @set_target heat_blur
 @clear
+@set_texture depth = main_depth
+@set_shader shaders/sample_depth.nsh
+@draw_quad
 @draw_scene default = heat
 
 @set_target
