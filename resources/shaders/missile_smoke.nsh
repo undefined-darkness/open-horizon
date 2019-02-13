@@ -2,6 +2,7 @@
 
 @uniform pos "tr pos"
 @uniform param "tr param"
+@uniform light_dir "light dir"=0.0,1.0,0.0
 
 @all
 
@@ -13,6 +14,7 @@ varying vec4 color;
 uniform vec4 pos[500];
 uniform vec4 param;
 uniform vec4 camera_pos;
+uniform vec4 light_dir;
 
 void main()
 {
@@ -28,10 +30,12 @@ void main()
     float t = param.x - p.w;
     float size = min(0.5 + t * 3.0, 5.0);
 
-    color = vec4(0.7);
+    vec3 normal = (gl_Vertex.x * right + gl_Vertex.y * up);
+
+    color = vec4(max(0.0, 0.6 + 0.4 * dot(light_dir.xyz,normalize(normal))));
     color.a *= min(8.0-t, 1.0) * param.y;
 
-    p.xyz += (gl_Vertex.x * right + gl_Vertex.y * up) * size;
+    p.xyz += normal * size;
 
     tc = gl_MultiTexCoord0.xy;
     p.w = 1.0;

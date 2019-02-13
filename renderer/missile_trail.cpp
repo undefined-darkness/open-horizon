@@ -94,7 +94,7 @@ void missile_trail::update(const nya_math::vec3 &pos, int dt)
         diff /= diff_len;
 
     m_trail_params.back().tr.set(curr_tr_count - 1, pos, m_time);
-    m_trail_params.back().dir.set(curr_tr_count - 1, diff, diff_len + m_trail_params.back().dir.get(curr_tr_count-2).w);
+    m_trail_params.back().dir.set(curr_tr_count - 1, diff, diff_len * 0.01f + m_trail_params.back().dir.get(curr_tr_count-2).w);
 
     //smoke puffs
 
