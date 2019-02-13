@@ -222,28 +222,62 @@ void missile_trails_render::draw(const missile_trail &t) const
     m_param->x = t.m_time;
     m_param->y = t.m_fade ? (1.0f - (t.m_time - t.m_fade_time) / fade_time) : 1.0f;
 
-    m_trail_mesh.bind();
-    for (auto &tp: t.m_trail_params)
+    if (!t.m_trail_params.empty())
     {
-        m_trail_tr.set(tp.tr);
-        m_trail_dir.set(tp.dir);
-        m_trail_material.internal().set();
-        m_trail_mesh.draw(tp.tr.get_count() * 2);
-        m_trail_material.internal().unset();
+        m_trail_mesh.bind();
+        for (auto &tp: t.m_trail_params)
+        {
+            m_trail_tr.set(tp.tr);
+            m_trail_dir.set(tp.dir);
+            m_trail_material.internal().set();
+            m_trail_mesh.draw(tp.tr.get_count() * 2);
+            m_trail_material.internal().unset();
+        }
+        m_trail_mesh.unbind();
     }
-    m_trail_mesh.unbind();
 
     //smoke
 
-    m_smoke_mesh.bind();
-    for (auto &sp: t.m_smoke_params)
+    if (!t.m_smoke_params.empty())
     {
-        m_smoke_params.set(sp);
-        m_smoke_material.internal().set();
-        m_smoke_mesh.draw(sp.get_count() * 6);
-        m_smoke_material.internal().unset();
+        m_smoke_mesh.bind();
+        auto dir = (t.m_smoke_params.back().get(0) - t.m_smoke_params.front().get(t.m_smoke_params.front().get_count()-1)).xyz();
+        if (nya_scene::get_camera().get_dir().dot(dir) > 0)
+        {
+            m_param->z = 0.0f;
+            m_param->w = 1.0f;
+            for (auto &sp: t.m_smoke_params)
+            {
+                m_smoke_params.set(sp);
+                m_smoke_material.internal().set();
+                m_smoke_mesh.draw(sp.get_count() * 6);
+                m_smoke_material.internal().unset();
+            }
+        }
+        else
+        {
+            m_param->z = max_smoke_points-1.0f;
+            m_param->w = -1.0f;
+
+            for (int i = (int)t.m_smoke_params.size()-1; i >= 0; --i)
+            {
+                auto &sp = t.m_smoke_params[i];
+                m_smoke_params.set(sp);
+                m_smoke_material.internal().set();
+                m_smoke_mesh.draw((max_smoke_points-sp.get_count()) * 6, sp.get_count() * 6);
+                m_smoke_material.internal().unset();
+            }
+        }
+        m_smoke_mesh.unbind();
     }
-    m_smoke_mesh.unbind();
+}
+
+//------------------------------------------------------------
+
+void missile_trails_render::apply_location(const location_params &params)
+{
+    m_trail_material.set_param(m_smoke_material.get_param_idx("light dir"), params.sky.sun_dir);
+    m_smoke_material.set_param(m_smoke_material.get_param_idx("light dir"), params.sky.sun_dir);
 }
 
 //------------------------------------------------------------

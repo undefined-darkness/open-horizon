@@ -19,7 +19,7 @@ uniform vec4 light_dir;
 void main()
 {
     vec3 v = gl_Vertex.xyz;
-    int idx = int(v.z);
+    int idx = int(param.z + param.w * v.z);
 
     vec4 p = pos[idx];
     

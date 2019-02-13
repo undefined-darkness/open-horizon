@@ -6,6 +6,7 @@
 
 #include "scene/material.h"
 #include "render/vbo.h"
+#include "location_params.h"
 
 namespace renderer
 {
@@ -37,6 +38,7 @@ class missile_trails_render
 public:
     void init();
     void draw(const missile_trail &t) const;
+    void apply_location(const location_params &params);
     void release();
 
 private:
