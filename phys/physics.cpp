@@ -352,8 +352,15 @@ template<typename t> void world::update_projectiles(int dt, std::vector<t> &obje
         bool hit = pt.y < get_height(pt.x, pt.z, false) + 1.0f;
         if (!hit)
         {
+            vec3 b_min = o->pos;
+            vec3 b_max = pt;
+            if (b_min.x > b_max.x) std::swap(b_min.x, b_max.x);
+            if (b_min.y > b_max.y) std::swap(b_min.y, b_max.y);
+            if (b_min.z > b_max.z) std::swap(b_min.z, b_max.z);
+            nya_math::aabb b(b_min, b_max);
+
             static std::vector<int> insts;
-            if (m_qtree.get_objects(pt, insts))
+            if (m_qtree.get_objects(b, insts))
             {
                 for (auto &i:insts)
                 {
