@@ -18,10 +18,10 @@ void main()
     vec4 p = gl_Vertex;
     vec2 d = gl_MultiTexCoord0.zw;
 
+    p.xyz += d.x * right.xyz + d.y * up.xyz;
+
     eye = get_eye(p.xyz);
     vfogh = get_fogh(p.xyz);
-
-    p.xyz += d.x * right.xyz + d.y * up.xyz;
 
     tc = gl_MultiTexCoord0.xy;
     
@@ -38,12 +38,11 @@ uniform sampler2D base_map;
 
 void main()
 {
-    vec4 color = texture2D(base_map, tc) * 1.2;
-    if(color.a < 0.1)
+    vec4 color = texture2D(base_map, tc);
+    if(color.a < 0.4)
         discard;
         
     float fog = get_fog(vfogf, vfogh, eye);
-	color.xyz = mix(fog_color.xyz, color.xyz, fog);
-
-    gl_FragColor = color * 0.8;
+	color.xyz = mix(fog_color.xyz, color.xyz * 1.2, fog) * 0.8;
+    gl_FragColor = color;
 }
