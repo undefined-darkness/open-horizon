@@ -24,7 +24,7 @@ missile_trail::missile_trail()
 
 //------------------------------------------------------------
 
-bool missile_trail::is_dead() const { return (m_time - fade_time) > fade_time; }
+bool missile_trail::is_dead() const { return (m_time - m_fade_time) > fade_time; }
 
 //------------------------------------------------------------
 
