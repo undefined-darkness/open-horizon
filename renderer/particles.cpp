@@ -488,7 +488,6 @@ void particles_render::draw(const explosion &e) const
 void particles_render::draw_heat(const explosion &e) const
 {
     const float life_time = 3.0f;
-
     if (e.m_time > life_time)
         return;
 
@@ -498,9 +497,8 @@ void particles_render::draw_heat(const explosion &e) const
     auto t = nya_math::min(e.m_time, 1.0f) + nt * 0.1f;
     auto r = e.m_radius * t * 3.0f;
 
-    float c = nya_math::max(100.0f / (e.m_pos - nya_scene::get_camera().get_pos()).length(), 1.0f) - nt;
-
-    add_point(e.m_pos, r, atc, false, atc, false, color(c, c, c, c) * 0.2f);
+    const float c = (nya_math::max(100.0f / (e.m_pos - nya_scene::get_camera().get_pos()).length(), 1.0f) - nt) * 0.18f;
+    add_point(e.m_pos, r, atc, false, atc, false, color(c, c, c, c));
     draw_points();
 }
 
