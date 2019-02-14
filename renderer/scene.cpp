@@ -41,13 +41,15 @@ nya_scene::texture load_tonecurve(const char *file_name)
 
 void scene::setup_shadow_camera(aircraft_ptr a)
 {
+    if (!a.is_valid())
+        return;
+
     const float hsize = std::max(fabsf(a->get_wing_offset().x) * 1.2f, 7.0f);//ToDo: aabb.dir.length()
     nya_math::mat4 proj;
     proj.ortho(-hsize, hsize, -hsize, hsize, -hsize, hsize);
     m_shadow_camera->set_proj(proj);
     m_shadow_camera->set_rot(m_location.get_params().sky.sun_dir);
     a->setup_shadows(get_texture("shadows").get(), m_shadow_camera->get_view_matrix() * m_shadow_camera->get_proj_matrix());
-
 }
 
 //------------------------------------------------------------
@@ -249,6 +251,7 @@ void scene::resize(unsigned int width,unsigned int height)
     }
 
     nya_scene::postprocess::resize(width, height);
+    setup_shadow_camera(m_player_aircraft);
 
     if (height)
         camera.set_aspect(height > 0 ? float(width) / height : 1.0f);

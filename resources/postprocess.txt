@@ -87,12 +87,12 @@ height = screen_height/8
 color = shafts2
 width = screen_width/8
 height = screen_height/8
-
+/*
 @target motion_blur
   color = motion_blur
   width = screen_width/8
   height = screen_height/8
-
+*/
 @target heat_blur
   color = heat_blur
   depth = heat_depth
@@ -106,7 +106,7 @@ height = screen_height/8
   width = 1024
   height = 1024
 
-@clear
+//@clear
 
 @set_target shadows
 @clear
@@ -186,20 +186,25 @@ height = screen_height/8
 @set_shader shaders/bloom.nsh
 @draw_quad
 
-@set_target shafts
+@set_target heat_blur
 @clear
 @set_texture depth = main_depth
+@set_shader shaders/sample_depth.nsh
+@draw_quad
+@draw_scene default = heat
+
+@set_target shafts
+@clear
+@set_texture depth = heat_depth //downsampled 1/8
 @set_shader shaders/shafts_gen.nsh
 @draw_quad
 
 @set_target shafts2
-@clear
 @set_texture color = shafts
 @set_shader shaders/shafts_blur.nsh
 @draw_quad
 
 @set_target shafts
-@clear
 @set_texture diffuse = shafts2
 @set_shader shaders/gauss3x3.nsh
 @draw_quad
@@ -208,22 +213,15 @@ height = screen_height/8
 @set_target lens
 @clear
 @draw_scene default = flare
-*/
 
 @set_target motion_blur
 @clear
-
-@set_target heat_blur
-@clear
-@set_texture depth = main_depth
-@set_shader shaders/sample_depth.nsh
-@draw_quad
-@draw_scene default = heat
+*/
 
 @set_target
 @set_texture diffuse = main_color
 @set_texture lens = shafts
-@set_texture motion_blur = motion_blur
+//@set_texture motion_blur = motion_blur
 @set_texture heat_blur = heat_blur
 @set_texture curve0 = color_curve
 @set_texture curve1 = color_curve

@@ -39,7 +39,7 @@ uniform vec4 damage_frame_color;
 
 uniform sampler2D base_map;
 uniform sampler2D heat_blur_map;
-uniform sampler2D motion_blur_map;
+//uniform sampler2D motion_blur_map;
 uniform sampler2D lens_map;
 uniform sampler2D curve_map0;
 uniform sampler2D curve_map1;
@@ -55,11 +55,11 @@ void main()
 	heat_vec.xy += vec2(-0.5);
 	heat_vec.xy = heat_vec.xy * heat_vec.z + tc;
 	color = mix(texture2D(base_map, heat_vec.xy), color, heat_vec.w);
-
+/*
 	//motion blur
 	vec4 motion_blur = texture2D(motion_blur_map, tc);
 	color = mix(color, motion_blur, motion_blur.w);
-
+*/
 	//lens
 	vec4 lens_color = texture2D(lens_map, tc);
 	color = clamp(lens_color + color, vec4(0.0),vec4(1.0));
