@@ -1363,4 +1363,15 @@ void aircraft::draw_engine_effect(const scene &s)
 }
 
 //------------------------------------------------------------
+
+void aircraft::draw_engine_heat_effect(const scene &s)
+{
+    if (m_dead || m_hide)
+        return;
+
+    for (auto &e: m_engines)
+        s.get_part_renderer().draw_heat(e.first);
+}
+
+//------------------------------------------------------------
 }

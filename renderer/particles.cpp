@@ -531,7 +531,31 @@ void particles_render::draw(const plane_engine &e) const
 
 void particles_render::draw_heat(const plane_engine &e) const
 {
-    //ToDo
+    auto atc = tc(1920, 1664, 128, 128);
+
+    const float c = 0.1f;
+    float s = 2.0f;
+    const int anim_period = 175 * 137;
+    float r = (e.m_time % anim_period) * (1.0f / anim_period) * 2.0f * nya_math::constants::pi;
+    auto col = color(c, c, c, c);
+    static nya_math::vec2 offset;
+
+    clear_points();
+
+
+    for(int i = -1; i<1; ++i)
+    {
+        r *= 1.75f;
+        if (e.m_dist > 0.001f)
+        {
+            add_point(e.m_pos + e.m_rot.rotate(nya_math::vec3(-e.m_dist*0.5f, float(i), 0.0f)), s, atc, false, atc, false, col, offset, -r);
+            add_point(e.m_pos + e.m_rot.rotate(nya_math::vec3(e.m_dist*0.5f, float(i), 0.0f)), s, atc, false, atc, false, col, offset, r);
+        }
+        else
+            add_point(e.m_pos + e.m_rot.rotate(nya_math::vec3(0.0f, float(i), 0.0f)), s, atc, false, atc, false, col, offset, r);
+    }
+
+    draw_points();
 }
 
 //------------------------------------------------------------

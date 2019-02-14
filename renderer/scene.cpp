@@ -372,9 +372,11 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
     }
     if (t.has("heat"))
     {
-        //ToDo
         for (auto &e: m_explosions)
             m_particles_render.draw_heat(e);
+
+        if (m_player_aircraft.is_valid())
+            m_player_aircraft->draw_engine_heat_effect(*this);
     }
     if (t.has("cockpit"))
     {

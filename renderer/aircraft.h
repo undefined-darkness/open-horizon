@@ -30,6 +30,7 @@ public:
     void draw_fire_trail(const scene &s);
     void draw_mgun_flash(const scene &s);
     void draw_engine_effect(const scene &s);
+    void draw_engine_heat_effect(const scene &s);
     int get_lods_count() const { return m_mesh.get_lods_count(); }
     void update(int dt);
     void update_trail(int dt, scene &s);
