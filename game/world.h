@@ -51,7 +51,7 @@ public:
     int get_objects_count() const;
     object_ptr get_object(int idx);
 
-    float get_height(float x, float z) const { return m_phys_world.get_height(x, z, true); }
+    float get_height(float x, float z, bool include_objects = true) const { return m_phys_world.get_height(x, z, include_objects); }
 
     bool is_ally(const plane_ptr &a, const plane_ptr &b);
     typedef std::function<bool(const plane_ptr &a, const plane_ptr &b)> is_ally_handler;

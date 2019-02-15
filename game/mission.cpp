@@ -965,7 +965,7 @@ void mission::update_zones()
         }
         else if(z.display == zone::display_circle || z.display == zone::display_cylinder)
         {
-            auto hf = std::bind(&world::get_height, m_world, std::placeholders::_1, std::placeholders::_2);
+            auto hf = std::bind(&world::get_height, m_world, std::placeholders::_1, std::placeholders::_2, false);
             m_world.get_hud().add_zone(z.pos, z.radius, hf, z.display == zone::display_cylinder);
         }
     }

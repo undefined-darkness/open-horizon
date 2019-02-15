@@ -357,7 +357,8 @@ int fonts::draw_text(const render &r, const wchar_t *text, const char *font_name
         return 0;
 
     int width = 0;
-    std::vector<rect_pair> elements;
+    static std::vector<rect_pair> elements;
+    elements.clear();
     for (const wchar_t *c = text; *c; ++c)
     {
         rect_pair e;
@@ -658,7 +659,8 @@ void tiles::draw(const render &r, int id, int x, int y, const nya_math::vec4 &co
             r.draw(l, color, t);
     }
 
-    std::vector<rect_pair> rects;
+    static std::vector<rect_pair> rects;
+    rects.clear();
     int tex_idx = -1;
     for (size_t i = 0; i < h.type3.size(); ++i)
     {
@@ -748,7 +750,7 @@ void tiles::draw_tx(const render &r, int uitx_idx, int entry_idx, const rect &rc
     if (entry_idx < 0 || entry_idx >= (int)tx.entries.size())
         return;
 
-    std::vector<rect_pair> rects(1);
+    static std::vector<rect_pair> rects(1);
 
     auto &e = tx.entries[entry_idx];
 
@@ -766,7 +768,7 @@ void tiles::draw_tx(const render &r, int uitx_idx, int entry_idx, const rect &rc
 void tiles::debug_draw_tx(const render &r)
 {
     int y = 0, idx = 0;
-    std::vector<rect_pair> rects(1);
+    static std::vector<rect_pair> rects(1);
     for (auto &tx: m_uitxs)
     {
         int height = 0, x = 0;

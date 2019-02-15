@@ -502,7 +502,7 @@ void plane::update(int dt, world &w)
                 if (special.id == "GPB" && !targets.empty() && targets.front().locked > 0 && !targets.front().target.expired())
                 {
                     const vec3 p = get_pos();
-                    const float height = p.y - w.get_height(p.x, p.z);
+                    const float height = p.y - w.get_height(p.x, p.z, false);
                     const float t = get_fall_time(height, 0.0f, special.gravity);
 
                     auto tl = targets.front().target.lock();
@@ -756,7 +756,7 @@ void plane::update_hud(world &w, gui::hud &h)
         {
             const vec3 p = get_pos();
             const vec3 v = phys->vel + dir * special.speed_init;
-            const float ground_height = w.get_height(p.x, p.z);
+            const float ground_height = w.get_height(p.x, p.z, false);
             const float height = p.y - ground_height;
             const float t = get_fall_time(height, v.y, special.gravity);
 

@@ -61,7 +61,7 @@ void ai::update(const world &w, int dt)
     }
 
     //evade ground
-    const float minimal_height = 600.0f + w.get_height(next_pos.x, next_pos.z);
+    const float minimal_height = 600.0f + w.get_height(next_pos.x, next_pos.z, false);
     if (next_pos.y < minimal_height && p->get_dir().y < 0.0f)
     {
         if (p->phys->get_speed_kmh() > 700.0f)
