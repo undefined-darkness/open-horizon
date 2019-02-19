@@ -19,7 +19,7 @@ void hangar::end()
 {
     m_plane.free();
     m_object.free();
-    m_render_world.set_location(0);
+    //m_render_world.set_location("");
     m_render_world.update(0);
 }
 

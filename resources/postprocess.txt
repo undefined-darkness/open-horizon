@@ -106,7 +106,7 @@ height = screen_height/8
   width = 1024
   height = 1024
 
-//@clear
+@clear
 
 @set_target shadows
 @clear

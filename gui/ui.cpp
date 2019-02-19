@@ -6,7 +6,6 @@
 #include "containers/fhm.h"
 #include "renderer/shared.h"
 #include <algorithm>
-#include "render/platform_specific_gl.h"
 
 #ifdef min
 #undef min
@@ -159,7 +158,6 @@ void render::draw(const std::vector<nya_math::vec2> &elements, const nya_math::v
     m_tex.set(shared::get_white_texture());
     m_color.set(color);
 
-    glLineWidth(1.0);
     for (int b = 0; b < (int)elements.size();b+=elements_per_batch)
     {
         const int count=std::min((int)elements.size()-b,elements_per_batch);
