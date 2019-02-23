@@ -17,7 +17,7 @@ bool platform::init(int width, int height, const char *title)
 {
     if (!glfwInit())
         return false;
-
+/*
     if (nya_render::get_render_api() == nya_render::render_api_opengl3)
     {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -25,7 +25,7 @@ bool platform::init(int width, int height, const char *title)
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     }
-
+*/
     glfwSwapInterval(1);
 
     /*
@@ -78,7 +78,6 @@ void platform::end_frame()
     if (!m_window)
         return;
 
-    glfwSwapBuffers(m_window);
     m_last_buttons = m_buttons;
     glfwPollEvents();
 
@@ -86,6 +85,8 @@ void platform::end_frame()
     glfwGetCursorPos(m_window, &mx, &my);
     m_mouse_x = int(mx), m_mouse_y = int(my);
     glfwGetFramebufferSize(m_window, &m_screen_w, &m_screen_h);
+
+    glfwSwapBuffers(m_window);
 }
 
 //------------------------------------------------------------

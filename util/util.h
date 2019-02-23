@@ -14,6 +14,7 @@
 #include <vector>
 #include <algorithm>
 #include <stdint.h>
+#include <atomic>
 
 #if !defined __APPLE__ && defined __GNUC__ && __GNUC__ < 5
     #define NO_CODECVT
@@ -479,7 +480,7 @@ struct debug_variable
     static void set(int v) { *value() = v; printf("debug variable %d\n", v); }
 
 private:
-    static int *value() { static int *value = new int(0); return value; }
+    static std::atomic<int> *value() { static std::atomic<int> *value = new std::atomic<int>(0); return value; }
 };
 
 //------------------------------------------------------------
