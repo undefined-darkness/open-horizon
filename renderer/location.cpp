@@ -6,7 +6,6 @@
 #include "scene/camera.h"
 #include "extensions/zip_resources_provider.h"
 #include "util/location.h"
-#include "render/platform_specific_gl.h"
 #include "shared.h"
 
 namespace renderer
@@ -108,13 +107,10 @@ void location::update(int dt)
 
 void location::draw()
 {
-    m_location.draw_landscape();
-    glEnable(GL_POLYGON_OFFSET_FILL);
-    glPolygonOffset(-1.0f, 0);
     m_location.draw_mptx();
     m_location.draw_trees();
+    m_location.draw_landscape();
     m_location.draw_mptx_transparent();
-    glDisable(GL_POLYGON_OFFSET_FILL);
 
     m_sky.draw();
     m_sun.draw();

@@ -59,6 +59,7 @@ void main()
     vspec = pow(2.0, map_param_vs.x * log(ndoth) / log(2.0));
 
     pos = gl_ModelViewProjectionMatrix * pos;
+    pos.z -= 0.00001 * pos.w; //prevent zfighting
     vfogf = get_fogv(pos);
     gl_Position = pos;
 }

@@ -19,8 +19,6 @@
 #include "util/location.h"
 #include "util/xml.h"
 
-#include "render/platform_specific_gl.h"
-
 #include <math.h>
 #include <stdint.h>
 
@@ -93,7 +91,11 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     nya_scene::texture tree_tex;
     const uint tree_texture_resolution = 256;
     if (load_data.tree_types_count > 0)
-        tree_tex.build(0, tree_texture_resolution * load_data.tree_types_count, tree_texture_resolution, nya_render::texture::color_bgra);
+    {
+        nya_memory::tmp_buffer_scoped buf(tree_texture_resolution * load_data.tree_types_count * tree_texture_resolution * 4);
+        memset(buf.get_data(),0,buf.get_size());
+        tree_tex.build(buf.get_data(), tree_texture_resolution * load_data.tree_types_count, tree_texture_resolution, nya_render::texture::color_bgra);
+    }
     m_trees_material.set_texture("diffuse", tree_tex);
     m_trees_up.create();
     m_trees_right.create();
@@ -1193,9 +1195,6 @@ void fhm_location::draw_landscape()
     nya_render::set_modelview_matrix(c.get_view_matrix());
     m_land_material.internal().set();
 
-    //if (debug_variable::get()>0)
-    //    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-
     m_landscape.vbo->bind();
     for (const auto &p: m_landscape.patches)
     {
@@ -1230,9 +1229,6 @@ void fhm_location::draw_landscape()
             g.tex.internal().unset();
         }
     }
-
-    //if (debug_variable::get()>0)
-    //    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
     nya_render::vbo::unbind();
     m_land_material.internal().unset();
