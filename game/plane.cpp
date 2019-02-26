@@ -136,6 +136,7 @@ void plane::update_render(world &w)
 
     render->set_pos(phys->pos);
     render->set_rot(phys->rot);
+    render->set_vel(phys->vel);
 
     render->set_damage(max_hp ? float(max_hp-hp) / max_hp : 0.0);
 
@@ -161,7 +162,7 @@ void plane::update_render(world &w)
     render->set_intake_ramp(phys->thrust_time >= phys->params.move.accel.thrustMinWait ? 1.0 : -1.0);
     render->set_thrust(phys->get_thrust());
 
-    const float aoa = acosf(nya_math::vec3::dot(nya_math::vec3::normalize(phys->vel), get_dir()));
+    const float aoa = -asinf(get_rot().rotate_inv(nya_math::vec3::normalize(phys->vel)).y);
     render->set_aoa(aoa);
 
     render->set_missile_bay(missile_bay_time > 0);

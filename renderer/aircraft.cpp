@@ -946,6 +946,8 @@ void aircraft::set_intake_ramp(float value)
 
 void aircraft::set_thrust(float value)
 {
+    m_engine_rpm_n = value;
+
     const float thrust_start = 0.97f;
     m_engine_thrust = value > thrust_start ? (value - thrust_start) / (1.0f - thrust_start) : 0.0f;
 
@@ -1134,26 +1136,26 @@ void aircraft::update(int dt)
     m_mesh.set_relative_anim_time(1, 'altr', h / 10000.0f); //ToDo: adjust max height, trace
     m_mesh.set_relative_anim_time(1, 'alts', h / 10000.0f); //ToDo: adjust max height, trace
 
+    //variometer
+    m_mesh.set_relative_anim_time(1, 'vspm', m_vel.y / 1000.0f * 0.5f + 0.5f);
+
+    //engine rpm
+    m_mesh.set_relative_anim_time(1, 'erpm', m_engine_rpm_n * 0.9f);
+    m_mesh.set_relative_anim_time(1, 'ecsp', m_engine_rpm_n * 0.9f);
+
+    //ToDo: intt, mach, vspk, fufl, fasp, eopr
+
     //ToDo
     /*
     if (dt)
     {
-        //variometer
-        static nya_math::vec3 prev_pos = m_pos;
-        float vert_speed = ((m_pos - prev_pos) / float(dt)).y;
-        m_mesh.set_relative_anim_time(1, 'vspm', vert_speed * 0.5 + 0.5);
-        prev_pos = m_pos;
-
         //accel
         //float accel = (m_speed - prev_speed) / float(dt);
         //m_mesh.set_relative_anim_time(1, 'accm', accel * 0.5 + 0.5);
     }
-
-    m_mesh.set_relative_anim_time(1, 'ecsp', 0.5 + 0.5 * m_thrust_time/m_params.move.accel.thrustMinWait);
-     //erpm - engine rpm
     */
 
-    m_mesh.set_relative_anim_time(1, 'aoam', nya_math::min(10.0 * nya_math::max(m_aoa / nya_math::constants::pi, 0.0), 1.0));
+    m_mesh.set_relative_anim_time(1, 'aoam', nya_math::clamp(0.2f + 0.8f * 10.0f * m_aoa / nya_math::constants::pi, 0.0f, 1.0f));
 
     m_mesh.update(dt);
 

@@ -40,7 +40,9 @@ public:
 
     void set_pos(const nya_math::vec3 &pos) { m_mesh.set_pos(pos); }
     void set_rot(const nya_math::quat &rot) { m_mesh.set_rot(rot); }
+    void set_vel(const nya_math::vec3 &vel) { m_vel = vel; }
     const nya_math::vec3 &get_pos() { return m_mesh.get_pos(); }
+    const nya_math::vec3 &get_vel() { return m_vel; }
     nya_math::quat get_rot() { return m_mesh.get_rot(); }
     nya_math::vec3 get_bone_pos(const char *name);
     nya_math::vec3 get_wing_offset();
@@ -168,6 +170,9 @@ private:
     std::vector<std::pair<plane_engine, int> > m_engines;
     float m_engine_thrust = 0.0f;
     nya_math::vec2 m_tvc_param;
+
+    nya_math::vec3 m_vel;
+    float m_engine_rpm_n = 0.0f;
 
 private:
     struct mgun
