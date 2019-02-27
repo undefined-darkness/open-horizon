@@ -19,9 +19,9 @@ public:
     plane_camera camera;
     gui::hud hud;
     gui::render ui_render;
+    gui::fonts ui_fonts;
 
 private:
-    gui::fonts m_ui_fonts;
     bool m_paused;
     bool m_loading;
     bool m_fonts_loaded;
@@ -42,6 +42,7 @@ private:
     std::vector<std::pair<plane_trail, unsigned int> > m_plane_trails;
     std::vector<missile_trail> m_missile_trails;
     nya_scene::camera_proxy m_shadow_camera;
+    air m_air;
 
 private:
     int m_frame_counter, m_frame_counter_time, m_fps;

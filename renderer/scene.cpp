@@ -190,12 +190,16 @@ void scene::update(int dt)
             else
                 camera.set_fixed_dist(camera.get_fixed_dist() + dt * 0.01f);
             camera.set_pos(m_player_aircraft->get_pos());
+
+            m_air.update(dt, m_player_aircraft->get_pos(), nya_math::vec3::zero());
         }
         else
         {
             const bool is_camera_third = m_player_aircraft->get_camera_mode() == aircraft::camera_mode_third;
             camera.set_ignore_delta_pos(!is_camera_third);
             camera.set_pos(m_player_aircraft->get_bone_pos(is_camera_third ? "camp" : "ckpp"));
+
+            m_air.update(dt, m_player_aircraft->get_pos(), m_player_aircraft->get_vel());
         }
 
         camera.set_rot(m_player_aircraft->get_rot());
@@ -245,7 +249,7 @@ void scene::resize(unsigned int width,unsigned int height)
 
     if (!m_fonts_loaded)
     {
-        m_ui_fonts.load("UI/text/menuCommon.acf");
+        ui_fonts.load("UI/text/menuCommon.acf");
         ui_render.init();
         m_fonts_loaded = true;
     }
@@ -274,18 +278,18 @@ void scene::draw()
 
     wchar_t buf[255];
     swprintf(buf, sizeof(buf), L"FPS: %d", m_fps);
-    m_ui_fonts.draw_text(ui_render, buf, "NowGE20", ui_render.get_width() - 90, 0, white);
+    ui_fonts.draw_text(ui_render, buf, "NowGE20", ui_render.get_width() - 90, 0, white);
 
     if (m_loading)
     {
         m_loading = false;
-        m_ui_fonts.draw_text(ui_render, L"LOADING", "ZurichBD20outline", ui_render.get_width() * 0.5 - 50, ui_render.get_height() * 0.5, white);
+        ui_fonts.draw_text(ui_render, L"LOADING", "ZurichBD20outline", ui_render.get_width() * 0.5 - 50, ui_render.get_height() * 0.5, white);
     }
     else
     {
         hud.draw(ui_render);
         if (m_paused)
-            m_ui_fonts.draw_text(ui_render, L"PAUSED", "ZurichBD20outline", ui_render.get_width() * 0.5 - 45, ui_render.get_height() * 0.5, white);
+            ui_fonts.draw_text(ui_render, L"PAUSED", "ZurichBD20outline", ui_render.get_width() * 0.5 - 45, ui_render.get_height() * 0.5, white);
     }
 }
 
@@ -372,6 +376,8 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
 
         for (size_t i = 0; i < sorted.size(); ++i)
             m_particles_render.draw(m_explosions[sorted[i].second]);
+
+        m_particles_render.draw(m_air);
     }
     if (t.has("heat"))
     {

@@ -172,6 +172,47 @@ void bullets::add_bullet(const nya_math::vec3 &pos, const nya_math::vec3 &vel)
 
 //------------------------------------------------------------
 
+void air::update(int dt, const nya_math::vec3 &pos, const nya_math::vec3 &vel)
+{
+    const float kdt = dt * 0.001f;
+    const float v = vel.length();
+    const int count = std::min(int(v / 50) - 3, 16);
+    if (m_params.get_count() < count)
+        m_params.set_count(count);
+
+    m_pos = pos;
+    m_dir = vel;
+
+    int curr_count = 0;
+    for (int i = 0; i < m_params.get_count(); ++i)
+    {
+        auto &p = m_params.get(i);
+        if (p.w > 0.0f)
+        {
+            p.w -= kdt;
+            if (p.w < 0.0f)
+            {
+                p.w = 0.0f;
+                if (i >= count)
+                    continue;
+            }
+        }
+        else
+        {
+            if (i >= count)
+                continue;
+
+            p.z = random(0, 5);
+            p.w = random(0.1f, 1.0f);
+            p.xy() = nya_math::vec2(0.0,1.0).rotate(random(0.0f, nya_math::constants::pi * 2.0f));
+        }
+        curr_count = i + 1;
+    }
+    m_params.set_count(curr_count);
+}
+
+//------------------------------------------------------------
+
 void plane_engine::update(const nya_math::vec3 &pos, const nya_math::quat &rot, float afterburner, int dt)
 {
     m_pos = pos;
@@ -329,7 +370,7 @@ void particles_render::init()
     m_bullet_material.set_param(m_bullet_material.get_param_idx("b size"), m_b_size);
     m_bullet_material.set_texture("diffuse", t);
 
-    m_es_params.create(),m_es_tvc[0].create(),m_es_tvc[1].create();
+    m_es_params.create(), m_es_tvc[0].create(), m_es_tvc[1].create();
     auto &p4 = m_engine_stream_material.get_default_pass();
     p4.set_shader(nya_scene::shader("shaders/engine_stream.nsh"));
     p4.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::one);
@@ -339,6 +380,17 @@ void particles_render::init()
     m_engine_stream_material.set_param(m_engine_stream_material.get_param_idx("vector l"), m_es_tvc[0]);
     m_engine_stream_material.set_param(m_engine_stream_material.get_param_idx("vector r"), m_es_tvc[1]);
     m_engine_stream_material.set_texture("diffuse", t);
+
+    m_air_pos.create(), m_air_dir.create(), m_air_param.create();
+    auto &p5 = m_air_material.get_default_pass();
+    p5.set_shader("shaders/air.nsh");
+    p5.get_state().set_blend(true, nya_render::blend::src_alpha, nya_render::blend::one);
+    p5.get_state().zwrite = false;
+    p5.get_state().cull_face = false;
+    m_air_material.set_param(m_air_material.get_param_idx("pos"), m_air_pos);
+    m_air_material.set_param(m_air_material.get_param_idx("dir"), m_air_dir);
+    m_air_material.set_param_array(m_air_material.get_param_idx("param"), m_air_param);
+    m_air_material.set_texture("diffuse", t);
 }
 
 //------------------------------------------------------------
@@ -626,6 +678,26 @@ void particles_render::draw(const bullets &b) const
         m_point_mesh.draw(p.tr.get_count() * 6);
         m_bullet_material.internal().unset();
     }
+    m_point_mesh.unbind();
+}
+
+//------------------------------------------------------------
+
+void particles_render::draw(const air &a) const
+{
+    if (!a.m_params.get_count())
+        return;
+
+    nya_render::set_modelview_matrix(nya_scene::get_camera().get_view_matrix());
+
+    m_point_mesh.bind();
+    m_air_pos->set(a.m_pos, 0.0f);
+    float d = a.m_dir.length();
+    m_air_dir->set(a.m_dir / d, d);
+    m_air_param.set(a.m_params);
+    m_air_material.internal().set();
+    m_point_mesh.draw(a.m_params.get_count() * 6);
+    m_air_material.internal().unset();
     m_point_mesh.unbind();
 }
 
