@@ -92,15 +92,6 @@
     <ClCompile Include="../game/hangar.cpp">
       <Filter>Source Files\game</Filter>
     </ClCompile>
-    <ClCompile Include="../game/plane.cpp">
-        <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="../game/units.cpp">
-        <Filter>Source Files\game</Filter>
-    </ClCompile>
-    <ClCompile Include="../game/world.cpp">
-        <Filter>Source Files\game</Filter>
-    </ClCompile>
     <ClCompile Include="..\gui\hud.cpp">
       <Filter>Source Files\gui</Filter>
     </ClCompile>
@@ -188,12 +179,6 @@
     <ClCompile Include="..\deps\miso\src\generic_socket.cpp">
       <Filter>Source Files\deps\miso</Filter>
     </ClCompile>
-    <ClCompile Include="..\deps\miso\src\ipv4.cpp">
-      <Filter>Source Files\deps\miso</Filter>
-    </ClCompile>
-    <ClCompile Include="..\deps\miso\src\ipv6.cpp">
-      <Filter>Source Files\deps\miso</Filter>
-    </ClCompile>
     <ClCompile Include="..\deps\miso\src\platform.cpp">
       <Filter>Source Files\deps\miso</Filter>
     </ClCompile>
@@ -230,6 +215,15 @@
     <ClCompile Include="..\renderer\mesh_obj.cpp">
       <Filter>Source Files\renderer</Filter>
     </ClCompile>
+    <ClCompile Include="..\game\plane.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\game\units.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\game\world.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\game\ai.h">
@@ -243,18 +237,6 @@
     </ClInclude>
     <ClInclude Include="..\game\deathmatch.h">
       <Filter>Source Files\game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\game\plane.h">
-        <Filter>Source Files\game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\game\units.h">
-        <Filter>Source Files\game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\game\world.h">
-        <Filter>Source Files\game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\game\weapon_information.h">
-        <Filter>Source Files\game</Filter>
     </ClInclude>
     <ClInclude Include="../renderer/aircraft.h">
       <Filter>Source Files\renderer</Filter>
@@ -430,6 +412,10 @@
     <ClInclude Include="..\renderer\mesh_obj.h">
       <Filter>Source Files\renderer</Filter>
     </ClInclude>
+    <ClInclude Include="../game/plane.h" />
+    <ClInclude Include="../game/units.h" />
+    <ClInclude Include="../game/world.h" />
+    <ClInclude Include="../game/weapon_information.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc">

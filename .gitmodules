@@ -1,6 +1,7 @@
 [submodule "deps/nya-engine"]
 	path = deps/nya-engine
 	url = https://bitbucket.org/nyan_developer/nya-engine.git
+	branch = renderapi
 [submodule "deps/glfw"]
 	path = deps/glfw
 	url = https://github.com/glfw/glfw
