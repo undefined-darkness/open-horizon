@@ -126,7 +126,7 @@ void menu::draw(const render &r)
                 q[0].r.x = x - 20;
                 q[0].r.w = m_select_pic.get_width();
                 q[0].r.y = y + (34 + m_select_pic.get_height())/2;
-                q[0].r.h = -m_select_pic.get_height();
+                q[0].r.h = -(int)m_select_pic.get_height();
                 q[0].tc.w = m_select_pic.get_width();
                 q[0].tc.h = m_select_pic.get_height();
                 r.draw(q, m_select_pic);
@@ -160,7 +160,7 @@ void menu::draw(const render &r)
 
     //m_fonts.draw_text(r, L"ASDFGHJKLasdfghjklQWERTYUIOPqwertyuiopZXCVBNMzxcvbnm\"\'*_-=.,0123456789", "NowGE24", 50, 200, white);
     //m_fonts.draw_text(r, L"This is a test. The quick brown fox jumps over the lazy dog's back 1234567890", "NowGE24", 50, 100, white);
-    //m_fonts.draw_text(r, L"テストです。いろはにほへと ちりぬるを わかよたれそ つねならむ うゐのおくやま けふこえて あさきゆめみし えひもせす。", "ShinGo18outline", 50, 150, white);
+    //m_fonts.draw_text(r, L"テストです。いろはにほへと ちりぬるを わかよたれそ つねならむ ういのおくやま けふこえて あさきゆめみし えひもせす。", "ShinGo18outline", 50, 150, white);
 }
 
 //------------------------------------------------------------
@@ -452,7 +452,7 @@ void menu::last_sub_select(const std::string &value)
     if (m_entries.empty())
         return;
 
-    uint i = 0;
+    unsigned int i = 0;
     for (auto &s: m_entries.back().sub_select)
     {
         if (s.second == value)
