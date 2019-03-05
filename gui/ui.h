@@ -145,7 +145,8 @@ public:
     int get_id(int idx);
     void set_progress(int id, int sub_idx, float value);
 
-    void draw_tx(const render &r, int uitx_idx, int entry_idx, const rect &rct, const nya_math::vec4 &color);
+    void draw_tx(const render &r, int uitx_idx, int entry_idx, const rect &rct, const nya_math::vec4 &color,
+                 const render::transform &t = render::transform());
 
     void debug_draw(const render &r, int idx) { draw(r, get_id(idx), r.get_width() / 2,
                                                      r.get_height() / 2, nya_math::vec4(1.0, 1.0, 1.0, 1.0)); }

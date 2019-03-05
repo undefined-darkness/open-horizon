@@ -738,7 +738,7 @@ void tiles::set_progress(int id, int sub_idx, float value)
 
 //------------------------------------------------------------
 
-void tiles::draw_tx(const render &r, int uitx_idx, int entry_idx, const rect &rct, const nya_math::vec4 &color)
+void tiles::draw_tx(const render &r, int uitx_idx, int entry_idx, const rect &rct, const nya_math::vec4 &color, const render::transform &t)
 {
     if (uitx_idx < 0 || uitx_idx >= (int)m_uitxs.size())
         return;
@@ -758,7 +758,7 @@ void tiles::draw_tx(const render &r, int uitx_idx, int entry_idx, const rect &rc
     rects[0].tc.h = e.h;
     rects[0].r = rct;
 
-    r.draw(rects, m_textures[e.tex_idx]);
+    r.draw(rects, m_textures[e.tex_idx], color, t);
 }
 
 //------------------------------------------------------------

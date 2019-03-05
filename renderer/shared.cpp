@@ -17,6 +17,7 @@ namespace
 {
     std::map<unsigned int, nya_scene::texture> textures;
     std::map<std::string, unsigned int> texture_names;
+    std::function<void()> loading_callback;
 }
 
 //------------------------------------------------------------
@@ -43,6 +44,9 @@ unsigned int load_texture(const char *name)
 
     unsigned int hash_id = load_texture(buf.get_data(), buf.get_size());
     texture_names[name] = hash_id;
+
+    if(loading_callback)
+        loading_callback();
     return hash_id;
 }
 
@@ -68,6 +72,9 @@ nya_scene::texture load_texture_nocache(const char *name)
 
     nya_scene::texture tex;
     tex.create(st);
+
+    if(loading_callback)
+        loading_callback();
     return tex;
 }
 
@@ -101,6 +108,8 @@ unsigned int load_texture(const void *tex_data, size_t tex_size)
     tex.create(st);
     shared::add_texture(hash_id, tex);
 
+    if(loading_callback)
+        loading_callback();
     return hash_id;
 }
 
@@ -129,14 +138,12 @@ const nya_scene::texture &get_texture(unsigned int hash_id)
 const nya_scene::texture &get_white_texture()
 {
     static nya_scene::texture white;
-    static bool initialised=false;
-    if (!initialised)
+    if (!white.get_width())
     {
         const unsigned char data[4]={255,255,255,255};
         nya_scene::shared_texture res;
         res.tex.build_texture(data,1,1,nya_render::texture::color_rgba);
         white.create(res);
-        initialised=true;
     }
 
     return white;
@@ -147,14 +154,12 @@ const nya_scene::texture &get_white_texture()
 const nya_scene::texture &get_black_texture()
 {
     static nya_scene::texture black;
-    static bool initialised=false;
-    if (!initialised)
+    if (!black.get_width())
     {
         const unsigned char data[4]={0,0,0,0};
         nya_scene::shared_texture res;
         res.tex.build_texture(data,1,1,nya_render::texture::color_rgba);
         black.create(res);
-        initialised=true;
     }
 
     return black;
@@ -165,17 +170,22 @@ const nya_scene::texture &get_black_texture()
 const nya_scene::texture &get_normal_texture()
 {
     static nya_scene::texture normal;
-    static bool initialised=false;
-    if (!initialised)
+    if (!normal.get_width())
     {
         const unsigned char data[4]={0,128,0,128};
         nya_scene::shared_texture res;
         res.tex.build_texture(data,1,1,nya_render::texture::color_rgba);
         normal.create(res);
-        initialised=true;
     }
 
     return normal;
+}
+
+//------------------------------------------------------------
+
+void set_loading_callback(std::function<void()> f)
+{
+    loading_callback=f;
 }
 
 //------------------------------------------------------------
