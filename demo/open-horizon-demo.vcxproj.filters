@@ -224,6 +224,12 @@
     <ClCompile Include="..\game\world.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\deps\miso\src\ipv4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\miso\src\ipv6.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\game\ai.h">
