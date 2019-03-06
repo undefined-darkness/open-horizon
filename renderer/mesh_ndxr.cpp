@@ -435,7 +435,6 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
                     memcpy(&verts[i + first_index].tc, &ndxr_verts[i * 2], sizeof(verts[0].tc));
 
                 reader.seek(header.offset_to_indices + 48 + header.indices_buffer_size + header.vertices_buffer_size + add_vertex_offset);
-                ndxr_verts = (float *)reader.get_data();
                 prev_skining_off = ndxr_verts = (float *)reader.get_data();
             }
 

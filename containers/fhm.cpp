@@ -92,8 +92,8 @@ bool fhm_file::read_chunks_info(size_t base_offset, folder &f)
     {
         unsigned int nested = 0, offset = 0;
         size_t off = base_offset + 4 + i * 8;
-        m_data->read_chunk(&nested, 4, off); off+=4;
-        m_data->read_chunk(&offset, 4, off); off+=4;
+        m_data->read_chunk(&nested, 4, off);
+        m_data->read_chunk(&offset, 4, off + 4);
 
         if (nested == 1)
         {

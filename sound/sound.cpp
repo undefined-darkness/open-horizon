@@ -164,6 +164,7 @@ void world_2d::set_music(const std::string &name)
         auto *res1 = access(base, 1);
         nya_memory::tmp_buffer_scoped buf1(res1->get_size());
         res1->read_all(buf1.get_data());
+        res1->release();
         cri_utf_table t(buf1.get_data(), buf1.get_size());
         load_cues(t, cues);
 
@@ -187,7 +188,11 @@ void world_2d::set_music(const std::string &name)
     }
 
     if (idx < 0 || idx >= (int)waveform_remap.size())
+    {
+        base.close();
+        res->release();
         return;
+    }
 
     idx = waveform_remap[idx];
 
