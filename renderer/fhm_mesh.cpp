@@ -907,6 +907,7 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
         mesh.vbo.set_index_data(nmesh.indices2b.data(), nya_render::vbo::index2b, uint(nmesh.indices2b.size()));
 
     l.mesh.create(mesh);
+    shared::update_loading();
 
     //assert(!anims.empty());
 

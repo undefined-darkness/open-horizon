@@ -15,16 +15,20 @@ uniform vec4 right;
 
 void main()
 {
-    vec4 p = gl_Vertex;
-    vec2 d = gl_MultiTexCoord0.zw;
+    vec4 p = vec4(gl_Vertex.x, floor(gl_Vertex.y/128.0) * (10000.0 / 131072.0), gl_Vertex.z, 1.0);
 
-    p.xyz += d.x * right.xyz + d.y * up.xyz;
+    float idx = mod(gl_Vertex.y, 4.0);
+    vec2 d = vec2(2.0 * step(1.5, idx) - 1.0, 1.0 - 2.0 * step(0.5, idx) * (1.0 - step(2.5, idx)));
+
+    float tree_hsize = 16.0;
+    p.xyz += (d.x * right.xyz + d.y * up.xyz) * tree_hsize;
+    p.y += tree_hsize;
 
     eye = get_eye(p.xyz);
     vfogh = get_fogh(p.xyz);
 
-    tc = gl_MultiTexCoord0.xy;
-    
+    tc = vec2(mod(floor(gl_Vertex.y / 4.0), 32.0)/32.0, d.y * 0.5 + 0.5);
+
     p = gl_ModelViewProjectionMatrix * p;
     vfogf = get_fogv(p);
     gl_Position = p;

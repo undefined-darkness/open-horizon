@@ -102,6 +102,8 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     m_trees_material.set_param(m_trees_material.get_param_idx("up"), m_trees_up);
     m_trees_material.set_param(m_trees_material.get_param_idx("right"), m_trees_right);
 
+    shared::update_loading();
+
     class vbo_data
     {
     public:
@@ -449,9 +451,11 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     if (!m_landscape.vbo.is_valid())
         m_landscape.vbo.create();
 
-    m_landscape.vbo->set_vertex_data(vdata.get_vdata(), 5 * 4, vdata.get_vcount());
-    m_landscape.vbo->set_index_data(vdata.get_idata(), nya_render::vbo::index4b, vdata.get_icount());
     m_landscape.vbo->set_tc(0, 3 * 4, 2);
+    m_landscape.vbo->set_vertex_data(vdata.get_vdata(), 5 * 4, vdata.get_vcount());
+    shared::update_loading();
+    m_landscape.vbo->set_index_data(vdata.get_idata(), nya_render::vbo::index4b, vdata.get_icount());
+    shared::update_loading();
 
     //------------------------------------
 
@@ -487,27 +491,10 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     if (!trees_count)
         return true;
 
-    struct tree_vert { nya_math::vec3 pos; uint16_t tc[2], delta[2]; };
+    struct tree_vert { float x, y, z; };
     nya_memory::tmp_buffer_scoped tree_buf(trees_count * 4 * sizeof(tree_vert));
     tree_vert *curr_tree_vert = (tree_vert *)tree_buf.get_data();
     uint curr_tree_idx_off = 0;
-
-    const float tree_tc_width = 1.0f / load_data.tree_types_count;
-
-    const float tree_half_size = 32.0f * 0.5f; //ToDo
-    std::vector<tree_vert> tree_verts(load_data.tree_types_count*4);
-    for (int i = 0; i < load_data.tree_types_count; ++i)
-    {
-        const static float tree_deltas[4][2] = { {-1.0f, -1.0f}, {-1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, -1.0f} };
-        for (int j = 0; j < 4; ++j)
-        {
-            auto &t = tree_verts[i*4+j];
-            t.tc[0] = Float16Compressor::compress((0.5f * (tree_deltas[j][0] + 1.0f) + i) * tree_tc_width);
-            t.tc[1] = Float16Compressor::compress(0.5f * (tree_deltas[j][1] + 1.0f));
-            t.delta[0] = Float16Compressor::compress(tree_deltas[j][0] * tree_half_size);
-            t.delta[1] = Float16Compressor::compress(tree_deltas[j][1] * tree_half_size);
-        }
-    }
 
     for (int py = 0; py < location_size; ++py)
     for (int px = 0; px < location_size; ++px)
@@ -568,13 +555,17 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
                 }
 
                 //pos.y = get_height(pos.x, pos.z); //ToDo
-                pos.y += tree_half_size;
 
                 for (int j = 0; j < 4; ++j)
                 {
-                    //assert(tpp.idx<load_data.tree_types_count);
-                    *curr_tree_vert = tree_verts[tpp.idx*4+j];
-                    curr_tree_vert->pos = pos;
+                    curr_tree_vert->x = pos.x;
+                    curr_tree_vert->z = pos.z;
+
+                    const float max_height = 10000.0f;
+                    const int h = int(nya_math::clamp(pos.y, 0.0, max_height) * ((1 << 17) / max_height));
+                    const int tc = (j / 2 + tpp.idx) * (1 << 5) / load_data.tree_types_count;
+                    curr_tree_vert->y = float((h * (1 << 7)) | (tc * (1 << 2)) | j);
+
                     ++curr_tree_vert;
                 }
 
@@ -589,7 +580,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         m_landscape.tree_vbo.create();
 
     m_landscape.tree_vbo->set_vertex_data(tree_buf.get_data(), (uint)sizeof(tree_vert), trees_count * 4);
-    m_landscape.tree_vbo->set_tc(0, 3 * 4, 4, nya_render::vbo::float16);
+    shared::update_loading();
 
     assert(sizeof(tree_vert) * 4 >= sizeof(uint) * 6);
     uint *tree_indices = (uint *)tree_buf.get_data();
@@ -605,6 +596,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
     }
 
     m_landscape.tree_vbo->set_index_data(tree_buf.get_data(), nya_render::vbo::index4b, trees_count * 6);
+    shared::update_loading();
 
     return true;
 }
@@ -945,12 +937,14 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
                 }
 
                 m.vbo.create();
-                m.vbo->set_vertex_data(verts.data(), (int)sizeof(vert), (int)verts.size());
                 m.vbo->set_normals(3*4);
                 m.vbo->set_tc(0, (3+3)*4, 3);
+                m.vbo->set_vertex_data(verts.data(), (int)sizeof(vert), (int)verts.size());
 
                 if(!m.color.build(colors.data(), (int)colors.size(), 1, nya_render::texture::color_rgba32f))
                     m.color = shared::get_white_texture();
+
+                shared::update_loading();
 
                 m.groups.resize(obj.groups.size());
                 for (size_t i = 0; i < m.groups.size(); ++i)
@@ -1026,6 +1020,7 @@ bool fhm_location::load_native(const char *name, const location_params &params, 
     m.set_param(m.get_param_idx("map param2 ps"), map_param2_ps);
     m.set_param(m.get_param_idx("specular color"), s.parts_color.x, s.parts_color.y, s.parts_color.z, s.parts_contrast);
 
+    shared::update_loading();
     return true;
 }
 
@@ -1463,10 +1458,11 @@ bool fhm_location::read_mptx(memory_reader &reader)
     if (!mesh.vbo.is_valid())
         mesh.vbo.create();
 
-    mesh.vbo->set_vertex_data(&verts[0], sizeof(mptx_vert), header.vert_count);
     mesh.vbo->set_normals(12);
     mesh.vbo->set_tc(0, 24, 3);
+    mesh.vbo->set_vertex_data(&verts[0], sizeof(mptx_vert), header.vert_count);
 
+    shared::update_loading();
     return true;
 }
 

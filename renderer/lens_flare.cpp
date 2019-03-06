@@ -105,9 +105,9 @@ bool lens_flare::init(const nya_scene::texture_proxy &color, const nya_scene::te
     if (!m_mesh.is_valid())
         m_mesh.create();
 
-    m_mesh->set_vertex_data(verts, uint32_t(sizeof(vert)), uint32_t(sizeof(verts) / sizeof(verts[0])));
     m_mesh->set_vertices(0, 4);
     m_mesh->set_tc(0, 16, 4);
+    m_mesh->set_vertex_data(verts, uint32_t(sizeof(vert)), uint32_t(sizeof(verts) / sizeof(verts[0])));
 
     if (!m_dir_alpha.is_valid())
         m_dir_alpha.create();

@@ -151,9 +151,9 @@ void missile_trails_render::init()
         trail_verts[i * 2 + 1].set(1.0f, float(i));
     }
 
-    m_trail_mesh.set_vertex_data(trail_verts.data(), 2 * 4, (int)trail_verts.size());
     m_trail_mesh.set_vertices(0, 2);
     m_trail_mesh.set_element_type(nya_render::vbo::triangle_strip);
+    m_trail_mesh.set_vertex_data(trail_verts.data(), 2 * 4, (int)trail_verts.size());
 
     //smoke
 
@@ -206,9 +206,9 @@ void missile_trails_render::init()
         indices[i + 5] = v + 3;
     }
 
+    m_smoke_mesh.set_tc(0, sizeof(float) * 3, 2);
     m_smoke_mesh.set_vertex_data(verts.data(), sizeof(quad_vert), (unsigned int)verts.size());
     m_smoke_mesh.set_index_data(indices.data(), nya_render::vbo::index2b, (unsigned int)indices.size());
-    m_smoke_mesh.set_tc(0, sizeof(float) * 3, 2);
 }
 
 //------------------------------------------------------------

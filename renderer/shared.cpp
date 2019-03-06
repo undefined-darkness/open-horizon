@@ -45,8 +45,7 @@ unsigned int load_texture(const char *name)
     unsigned int hash_id = load_texture(buf.get_data(), buf.get_size());
     texture_names[name] = hash_id;
 
-    if(loading_callback)
-        loading_callback();
+    update_loading();
     return hash_id;
 }
 
@@ -73,8 +72,7 @@ nya_scene::texture load_texture_nocache(const char *name)
     nya_scene::texture tex;
     tex.create(st);
 
-    if(loading_callback)
-        loading_callback();
+    update_loading();
     return tex;
 }
 
@@ -108,8 +106,7 @@ unsigned int load_texture(const void *tex_data, size_t tex_size)
     tex.create(st);
     shared::add_texture(hash_id, tex);
 
-    if(loading_callback)
-        loading_callback();
+    update_loading();
     return hash_id;
 }
 
@@ -186,6 +183,14 @@ const nya_scene::texture &get_normal_texture()
 void set_loading_callback(std::function<void()> f)
 {
     loading_callback=f;
+}
+
+//------------------------------------------------------------
+
+void update_loading()
+{
+    if(loading_callback)
+        loading_callback();
 }
 
 //------------------------------------------------------------

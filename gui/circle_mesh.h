@@ -58,8 +58,8 @@ public:
         }
 
         m_vbo.create();
-        m_vbo->set_vertex_data(verts.data(), sizeof(verts[0]), (int)verts.size());
         m_vbo->set_vertices(0, 4);
+        m_vbo->set_vertex_data(verts.data(), sizeof(verts[0]), (int)verts.size());
 
         if (height > 0.1f)
         {

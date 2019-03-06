@@ -54,9 +54,9 @@ void render::init()
         inds[i][5] = i * 4 + 3;
     }
 
-    m_quads_mesh.set_vertex_data(verts,sizeof(verts[0][0]), elements_per_batch * 4);
     m_quads_mesh.set_vertices(0,2);
     m_quads_mesh.set_tc(0,2*4,3);
+    m_quads_mesh.set_vertex_data(verts,sizeof(verts[0][0]), elements_per_batch * 4);
     m_quads_mesh.set_index_data(inds, nya_render::vbo::index2b, elements_per_batch * 6);
 
     vert line_verts[elements_per_batch];
@@ -67,14 +67,14 @@ void render::init()
         v.i = i;
     }
 
-    m_lines_mesh.set_vertex_data(line_verts, sizeof(line_verts[0]), elements_per_batch);
     m_lines_mesh.set_vertices(0, 2);
     m_lines_mesh.set_tc(0, 2*4, 3);
+    m_lines_mesh.set_vertex_data(line_verts, sizeof(line_verts[0]), elements_per_batch);
     m_lines_mesh.set_element_type(nya_render::vbo::lines);
 
-    m_lines_loop_mesh.set_vertex_data(line_verts, sizeof(line_verts[0]), elements_per_batch);
     m_lines_loop_mesh.set_vertices(0, 2);
     m_lines_loop_mesh.set_tc(0, 2*4, 3);
+    m_lines_loop_mesh.set_vertex_data(line_verts, sizeof(line_verts[0]), elements_per_batch);
     m_lines_loop_mesh.set_element_type(nya_render::vbo::line_strip);
 
     auto &pass = m_material.get_pass(m_material.add_pass(nya_scene::material::default_pass));

@@ -120,10 +120,10 @@ bool effect_clouds::load(const char *location_name, const location_params &param
     if (!m_mesh.is_valid())
         m_mesh.create();
 
-    m_mesh->set_vertex_data(&verts[0], uint32_t(sizeof(verts[0])), uint32_t(verts.size()));
     m_mesh->set_vertices(0, 3);
     m_mesh->set_tc(0, 12, 4); //tc1, tc2
     m_mesh->set_tc(1, 12+16, 4); //dir, size
+    m_mesh->set_vertex_data(&verts[0], uint32_t(sizeof(verts[0])), uint32_t(verts.size()));
 
     m_shader_obj.load("shaders/clouds.nsh");
     m_shader_hi_flat.load("shaders/clouds_hi_flat.nsh");

@@ -141,7 +141,7 @@ int main()
                             }
                             const int anim_time = (int)nya_system::get_time();
 
-                            if(!first && render.get_buffer_size()<4*1024*1024)
+                            if(!first && render.get_buffer_size()<16*1024*1024)
                                 return;
 
                             first = false;
@@ -220,6 +220,7 @@ int main()
                             game_mode_ff.start(plane.c_str(), color, location.c_str());
                         }
 
+                        shared::update_loading();
                         shared::set_loading_callback(0);
                     }
                     else if (event == "connect")

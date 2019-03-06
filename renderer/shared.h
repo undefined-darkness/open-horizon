@@ -20,6 +20,7 @@ namespace shared
     const nya_scene::texture &get_black_texture();
     const nya_scene::texture &get_normal_texture();
     void set_loading_callback(std::function<void()> f);
+    void update_loading();
 
 //------------------------------------------------------------
 }

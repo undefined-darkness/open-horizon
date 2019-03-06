@@ -192,8 +192,8 @@ bool sky_mesh::load(const char *name)
 
     solid_sphere s(64000.0, ct);
 
-    m_mesh.set_vertex_data(&s.vertices[0], sizeof(solid_sphere::vert), (unsigned int)s.vertices.size());
     m_mesh.set_colors(sizeof(solid_sphere::vert::pos), 3);
+    m_mesh.set_vertex_data(&s.vertices[0], sizeof(solid_sphere::vert), (unsigned int)s.vertices.size());
     m_mesh.set_index_data(&s.indices[0], nya_render::vbo::index2b, (unsigned int)s.indices.size());
 
     auto dithering = shared::get_texture(shared::load_texture("PostProcess/dithering.nut"));
@@ -278,8 +278,8 @@ bool sun_mesh::init()
     v[4].pos = nya_math::vec2(  1.0f,  1.0f );
     v[5].pos = nya_math::vec2(  1.0f, -1.0f );
 
-    m_mesh.set_vertex_data(verts, uint32_t(sizeof(vert)), uint32_t(sizeof(verts) / sizeof(verts[0])));
     m_mesh.set_vertices(0, 2);
+    m_mesh.set_vertex_data(verts, uint32_t(sizeof(vert)), uint32_t(sizeof(verts) / sizeof(verts[0])));
 
     return true;
 }
