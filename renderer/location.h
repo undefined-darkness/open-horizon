@@ -21,6 +21,7 @@ public:
     void update(int dt);
     void update_tree_texture();
     void draw();
+    void release();
 
 public:
     const location_params &get_params() const { return m_params; }

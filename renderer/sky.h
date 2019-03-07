@@ -33,6 +33,7 @@ public:
     bool init();
     void apply_location(const location_params &params);
     void draw() const;
+    void release();
 
 private:
     nya_scene::material m_material;

@@ -30,6 +30,7 @@ public:
     void draw_landscape();
     void draw_trees();
     void draw_cols() { m_debug_draw.draw(); }
+    void release();
 
     const nya_scene::texture_proxy &get_trees_texture() const;
 
@@ -102,15 +103,16 @@ protected:
         };
 
         std::vector<patch> patches;
-        nya_scene::proxy<nya_render::vbo> vbo;
-        nya_scene::proxy<nya_render::vbo> tree_vbo;
+        nya_render::vbo vbo;
+        nya_render::vbo tree_vbo;
 
-        ~landscape()
+        void release()
         {
-            if (vbo.get_ref_count() == 1)
-                vbo->release();
-            if (tree_vbo.get_ref_count() == 1)
-                tree_vbo->release();
+            vbo.release();
+            tree_vbo.release();
+            heights_width = heights_height = 0;
+            heights.clear();
+            patches.clear();
         }
 
     public:

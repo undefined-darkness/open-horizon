@@ -14,7 +14,7 @@ namespace renderer
 
 bool location::load(const char *name)
 {
-    m_trees = fhm_mesh();
+    release();
 
     if (!name || !name[0])
     {
@@ -93,7 +93,7 @@ bool location::load(const char *name)
     m_sun.init();
     m_sun.apply_location(m_params);
 
-   return true;
+    return true;
 }
 
 //------------------------------------------------------------
@@ -162,6 +162,20 @@ void location::update_tree_texture()
     nya_render::set_viewport(prev_vp);
     nya_scene::set_camera(prev_cam);
     m_tree_fbo.unbind();
+}
+
+//------------------------------------------------------------
+
+void location::release()
+{
+    m_sky.release();
+    m_sun.release();
+    m_trees = fhm_mesh();
+    m_tree_fbo.release();
+    m_tree_depth.unload();
+    m_ibl.unload();
+    m_env.unload();
+    m_location.release();
 }
 
 //------------------------------------------------------------

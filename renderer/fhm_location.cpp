@@ -448,13 +448,10 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         }
     }
 
-    if (!m_landscape.vbo.is_valid())
-        m_landscape.vbo.create();
-
-    m_landscape.vbo->set_tc(0, 3 * 4, 2);
-    m_landscape.vbo->set_vertex_data(vdata.get_vdata(), 5 * 4, vdata.get_vcount());
+    m_landscape.vbo.set_tc(0, 3 * 4, 2);
+    m_landscape.vbo.set_vertex_data(vdata.get_vdata(), 5 * 4, vdata.get_vcount());
     shared::update_loading();
-    m_landscape.vbo->set_index_data(vdata.get_idata(), nya_render::vbo::index4b, vdata.get_icount());
+    m_landscape.vbo.set_index_data(vdata.get_idata(), nya_render::vbo::index4b, vdata.get_icount());
     shared::update_loading();
 
     //------------------------------------
@@ -576,10 +573,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         curr_tree_idx_off += p.tree_count;
     }
 
-    if (!m_landscape.tree_vbo.is_valid())
-        m_landscape.tree_vbo.create();
-
-    m_landscape.tree_vbo->set_vertex_data(tree_buf.get_data(), (uint)sizeof(tree_vert), trees_count * 4);
+    m_landscape.tree_vbo.set_vertex_data(tree_buf.get_data(), (uint)sizeof(tree_vert), trees_count * 4);
     shared::update_loading();
 
     assert(sizeof(tree_vert) * 4 >= sizeof(uint) * 6);
@@ -595,7 +589,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         tree_indices[i + 5] = v + 3;
     }
 
-    m_landscape.tree_vbo->set_index_data(tree_buf.get_data(), nya_render::vbo::index4b, trees_count * 6);
+    m_landscape.tree_vbo.set_index_data(tree_buf.get_data(), nya_render::vbo::index4b, trees_count * 6);
     shared::update_loading();
 
     return true;
@@ -1139,7 +1133,7 @@ void fhm_location::draw_mptx_transparent()
 
 void fhm_location::draw_trees()
 {
-    if (!m_landscape.tree_vbo.is_valid())
+    if (!m_trees_up.is_valid())
         return;
 
     const float tree_draw_distance = 7000;
@@ -1156,7 +1150,7 @@ void fhm_location::draw_trees()
     nya_render::set_modelview_matrix(c.get_view_matrix());
     m_trees_material.internal().set();
 
-    m_landscape.tree_vbo->bind();
+    m_landscape.tree_vbo.bind();
     for (const auto &p: m_landscape.patches)
     {
         if (!c.get_frustum().test_intersect(p.box))
@@ -1166,7 +1160,7 @@ void fhm_location::draw_trees()
         if (sq > tree_draw_distance * tree_draw_distance)
             continue;
 
-        m_landscape.tree_vbo->draw(p.tree_offset, p.tree_count);
+        m_landscape.tree_vbo.draw(p.tree_offset, p.tree_count);
     }
     nya_render::vbo::unbind();
     m_trees_material.internal().unset();
@@ -1183,14 +1177,11 @@ const nya_scene::texture_proxy &fhm_location::get_trees_texture() const
 
 void fhm_location::draw_landscape()
 {
-    if (!m_landscape.vbo.is_valid())
-        return;
-
     auto &c = nya_scene::get_camera();
     nya_render::set_modelview_matrix(c.get_view_matrix());
     m_land_material.internal().set();
 
-    m_landscape.vbo->bind();
+    m_landscape.vbo.bind();
     for (const auto &p: m_landscape.patches)
     {
         if (!c.get_frustum().test_intersect(p.box))
@@ -1212,14 +1203,14 @@ void fhm_location::draw_landscape()
                 const float hi_dist = 8000.0f;
                 const float mid_dist = 16000.0f;
                 if (sq < hi_dist * hi_dist)
-                    m_landscape.vbo->draw(g.hi_offset, g.hi_count);
+                    m_landscape.vbo.draw(g.hi_offset, g.hi_count);
                 else if (sq < mid_dist * mid_dist)
-                    m_landscape.vbo->draw(g.mid_offset, g.mid_count);
+                    m_landscape.vbo.draw(g.mid_offset, g.mid_count);
                 else
-                    m_landscape.vbo->draw(g.low_offset, g.low_count);
+                    m_landscape.vbo.draw(g.low_offset, g.low_count);
             }
             else
-                m_landscape.vbo->draw(g.hi_offset, g.hi_count);
+                m_landscape.vbo.draw(g.hi_offset, g.hi_count);
 
             g.tex.internal().unset();
         }
@@ -1464,6 +1455,22 @@ bool fhm_location::read_mptx(memory_reader &reader)
 
     shared::update_loading();
     return true;
+}
+
+//------------------------------------------------------------
+
+void fhm_location::release()
+{
+    m_mptx_meshes.clear();
+    m_mptx_transparent_meshes.clear();
+
+    m_map_parts_material.unload();
+    m_trees_material.unload();
+    m_trees_up.free();
+    m_land_material.unload();
+    m_map_parts_color_texture.free();
+
+    m_landscape.release();
 }
 
 //------------------------------------------------------------
