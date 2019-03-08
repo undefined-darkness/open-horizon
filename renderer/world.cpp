@@ -78,7 +78,7 @@ void world::spawn_explosion(const nya_math::vec3 &pos,float radius)
 void world::set_location(const char *name)
 {
     m_location.release();
-    m_clouds = effect_clouds();
+    m_clouds.release();
 
     shared::clear_textures();
 

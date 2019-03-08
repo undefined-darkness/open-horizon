@@ -426,6 +426,11 @@ int fonts::get_text_width(const wchar_t *text, const char *font_name) const
 
 bool tiles::load(const char *name)
 {
+    m_hud.clear();
+    m_hud_map.clear();
+    m_uitxs.clear();
+    m_textures.clear();
+
     fhm_file m;
     if (!m.open(name))
         return false;

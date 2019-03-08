@@ -17,8 +17,7 @@ public:
     bool load(const char *location_name, const location_params &params);
     void draw_flat();
     void draw_obj();
-
-    ~effect_clouds() { if (m_mesh.get_ref_count() == 1) m_mesh->release(); }
+    void release();
 
 private:
     typedef unsigned int uint;
@@ -66,7 +65,7 @@ private:
     };
 
 private:
-    nya_scene::proxy<nya_render::vbo> m_mesh;
+    nya_render::vbo m_mesh;
 
     struct vert
     {
