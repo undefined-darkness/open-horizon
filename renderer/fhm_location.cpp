@@ -560,7 +560,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
 
                     const float max_height = 10000.0f;
                     const int h = int(nya_math::clamp(pos.y, 0.0, max_height) * ((1 << 17) / max_height));
-                    const int tc = (j / 2 + tpp.idx) * (1 << 5) / load_data.tree_types_count;
+                    const int tc = j / 2 + tpp.idx;
                     curr_tree_vert->y = float((h * (1 << 7)) | (tc * (1 << 2)) | j);
 
                     ++curr_tree_vert;
@@ -589,6 +589,7 @@ bool fhm_location::finish_load_location(fhm_location_load_data &load_data)
         tree_indices[i + 5] = v + 3;
     }
 
+    m_landscape.tree_types_count = load_data.tree_types_count;
     m_landscape.tree_vbo.set_index_data(tree_buf.get_data(), nya_render::vbo::index4b, trees_count * 6);
     shared::update_loading();
 
@@ -1144,7 +1145,7 @@ void fhm_location::draw_trees()
     auto &c = nya_scene::get_camera();
     auto euler = c.get_rot().get_euler();
     nya_math::quat rot(nya_math::quat(-euler.x, -euler.y, 0.0f));
-    m_trees_up->set(rot.rotate(nya_math::vec3::up()), 0.0f);
+    m_trees_up->set(rot.rotate(nya_math::vec3::up()), (float)m_landscape.tree_types_count);
     m_trees_right->set(rot.rotate(nya_math::vec3::right()), 0.0f);
 
     nya_render::set_modelview_matrix(c.get_view_matrix());

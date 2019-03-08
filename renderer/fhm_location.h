@@ -117,11 +117,9 @@ protected:
 
     public:
         std::vector<float> heights;
-        unsigned int heights_width;
-        unsigned int heights_height;
-
-    public:
-        landscape(): heights_width(0),heights_height(0) {}
+        unsigned int heights_width = 0;
+        unsigned int heights_height = 0;
+        unsigned int tree_types_count = 0;
 
     } m_landscape;
 

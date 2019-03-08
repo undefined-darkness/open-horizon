@@ -27,7 +27,7 @@ void main()
     eye = get_eye(p.xyz);
     vfogh = get_fogh(p.xyz);
 
-    tc = vec2(mod(floor(gl_Vertex.y / 4.0), 32.0)/32.0, d.y * 0.5 + 0.5);
+    tc = vec2(mod(floor(gl_Vertex.y / 4.0), 32.0) / up.w, d.y * 0.5 + 0.5);
 
     p = gl_ModelViewProjectionMatrix * p;
     vfogf = get_fogv(p);
