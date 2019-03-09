@@ -1,6 +1,43 @@
 <!--os: windows osx linux-->
 
 <joysticks>
+    <joystick name="Xbox 360 Controller">
+
+        <!--left stick-->
+        <axis0 control="roll" dead="0.1"/>
+        <axis1 control="pitch" dead="0.1"/>
+        <axis1 control="menu_up_down" dead="0.5"/>
+
+        <!--right stick-->
+        <axis2 control="camera_yaw" invert="true" dead="0.1"/>
+        <axis3 control="camera_pitch" invert="true" dead="0.1"/>
+        <btn19 control="change_camera"/>
+
+        <!--start-->
+		<btn6 control="back"/>
+        <btn7 control="pause"/>
+
+        <!--triggers-->
+        <btn4 control="brake"/>
+        <btn5 control="throttle"/>
+		<axis4 control="-yaw" dead="0.1"/>
+		<axis5 control="+yaw" dead="0.1"/>
+
+        <!--dpad-->
+        <btn10 control="menu_up"/>
+        <btn11 control="menu_next"/>
+        <btn12 control="menu_down"/>
+        <btn13 control="menu_prev"/>
+
+        <!--buttons-->
+		<btn2 control="change_weapon"/>
+        <btn3 control="change_target"/>
+        <btn1 control="missile"/>
+        <btn0 control="mgun"/>
+        <btn1 control="menu_next"/>
+        <btn0 control="menu_prev"/>
+    </joystick>
+
     <joystick name="Xbox Wireless Controller">
 
         <!--left stick-->

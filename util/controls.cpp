@@ -66,7 +66,7 @@ void joystick_config::init(const char *name)
         }
     }
 
-    update_config();
+    //update_config(); //ToDo
 }
 
 //------------------------------------------------------------
@@ -147,8 +147,8 @@ void joystick_config::apply_controls(game::plane_controls &controls, bool &pause
                 case '-ppc': if (v > 0.0f) controls.rot.x = -v; break;
                 case '+prl': if (v > 0.0f) controls.rot.z = v; break;
                 case '-prl': if (v > 0.0f) controls.rot.z = -v; break;
-                case '+pyw': if (v > 0.0f) controls.rot.x = v; break;
-                case '-pyw': if (v > 0.0f) controls.rot.x = -v; break;
+                case '+pyw': if (v > 0.0f) controls.rot.y = v; break;
+                case '-pyw': if (v > 0.0f) controls.rot.y = -v; break;
 
                 case 'pyaw': controls.rot.y = v; break;
                 case 'ppch': controls.rot.x = v; break;
@@ -215,6 +215,8 @@ void joystick_config::apply_controls(gui::menu_controls &controls)
 {
     for (int i = 0; i < (int)m_joy_axes.size(); ++i)
     {
+        //nya_log::log("axis %2d %f\n",i, m_joy_axes[i]);
+
         for (auto &a: m_axes)
         {
             if (a.idx != i)
@@ -249,7 +251,7 @@ void joystick_config::apply_controls(gui::menu_controls &controls)
         if (!m_joy_btns[i])
             continue;
 
-        //printf("btn %2d\n",i);
+        //nya_log::log("btn %2d\n",i);
 
         for (auto &b: m_buttons)
         {

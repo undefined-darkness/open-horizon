@@ -608,7 +608,7 @@ void menu::set_screen(const std::string &screen)
             add_sub_entry(to_wstring(d.name), d.id);
         last_sub_select(config::get_var("difficulty"));
 
-        add_entry(L"Configure joystick", {"screen=joystick"});
+        //add_entry(L"Configure joystick", {"screen=joystick"}); //ToDo
     }
     else if (screen == "joystick")
     {
