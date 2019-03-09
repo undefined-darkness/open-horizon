@@ -1,6 +1,34 @@
 <!--os: windows osx linux-->
 
 <joysticks>
+    <joystick name="Xbox Wireless Controller">
+
+        <!--left stick-->
+        <axis0 control="roll" dead="0.1"/>
+        <axis1 control="pitch" invert="true" dead="0.1"/>
+        <axis1 control="menu_up_down" invert="true" dead="0.5"/>
+        <btn1/>
+
+        <!--right stick-->
+        <axis2 control="camera_yaw" invert="true" dead="0.1"/>
+        <axis3 control="camera_pitch" invert="true" dead="0.1"/>
+        <btn14 control="change_camera"/>
+
+        <!--start-->
+        <btn11 control="pause"/>
+
+        <!--triggers-->
+        <btn6 control="brake"/>
+        <btn7 control="throttle"/>
+
+        <!--buttons-->
+        <btn3 control="change_weapon"/>
+        <btn4 control="change_target"/>
+        <btn1 control="missile"/>
+        <btn0 control="mgun"/>
+        <btn1 control="menu_next"/>
+        <btn0 control="menu_prev"/>
+    </joystick>
 
     <joystick name="PLAYSTATION(R)3 Controller"> <!--part of the name, ignoring case-->
 
