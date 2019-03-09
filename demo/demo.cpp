@@ -29,10 +29,19 @@
 
 #ifdef _WIN32
     #undef APIENTRY
+    #include "log/composite_log.h"
+    #include "log/windbg_log.h"
     #include <windows.h>
-    #undef min
+
     int main();
-    int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) { return main(); }
+    int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) 
+    { 
+        auto log = new nya_log::composite_log();
+        log->add_log(&nya_log::log());
+        log->add_log(new nya_log::windbg_log());
+        nya_log::set_log(log);
+        return main(); 
+    }
 #endif
 
 //------------------------------------------------------------
@@ -71,7 +80,7 @@ int main()
         int axis_count = 0, buttons_count = 0;
         glfwGetJoystickAxes(i, &axis_count);
         glfwGetJoystickButtons(i, &buttons_count);
-        printf("joy%d: %s %d axis %d buttons\n", i, name, axis_count, buttons_count);
+        nya_log::log("joy%d: %s %d axis %d buttons\n", i, name, axis_count, buttons_count);
     }
     auto render = nya_render::render_buffered(nya_render::get_api_interface());
     nya_render::set_render_api(&render);
@@ -285,7 +294,7 @@ int main()
                         platform_terminate=true;
                     }
                     else
-                        printf("unknown event: %s\n", event.c_str());
+                        nya_log::log("unknown event: %s\n", event.c_str());
                 };
 
                 menu.set_callback(on_menu_action);
