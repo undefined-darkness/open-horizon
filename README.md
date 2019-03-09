@@ -1,5 +1,4 @@
-open-horizon
-============
+# open-horizon
 
 An open source implementation of [Ace Combat: Assault Horizon](http://acecombat.wikia.com/wiki/Ace_Combat:_Assault_Horizon)‘s render and physics.
 
@@ -26,3 +25,7 @@ Requires resource files from the original game.
 ![Open Horizon screenshot](http://zxstudio.org/blog/wp-content/uploads/2016/07/Mission01.png)
 
 ![Open Horizon screenshot](http://zxstudio.org/blog/wp-content/uploads/2016/07/Mission03.png)
+
+## Build status:
+
+Windows [![Build status](https://ci.appveyor.com/api/projects/status/070bsencsnrncjmc?svg=true)](https://ci.appveyor.com/project/undefined-darkness/open-horizon)
