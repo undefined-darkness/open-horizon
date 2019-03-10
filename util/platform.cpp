@@ -13,7 +13,7 @@ platform::key_callback platform::m_key_callback;
 
 //------------------------------------------------------------
 
-bool platform::init(int width, int height, const char *title)
+bool platform::init(int width, int height, const char *title, bool fullscreen)
 {
     if (!glfwInit())
         return false;
@@ -38,7 +38,22 @@ bool platform::init(int width, int height, const char *title)
 #endif
     */
 
-    m_window = glfwCreateWindow(width, height, title, NULL, NULL);
+    if (fullscreen)
+    {
+        auto monitor = glfwGetPrimaryMonitor();
+        if (!monitor)
+            return init(width, height, title, false);
+
+        auto mode = glfwGetVideoMode(monitor);
+        glfwWindowHint(GLFW_RED_BITS, mode->redBits);
+        glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+        glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
+        glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+        m_window = glfwCreateWindow(mode->width, mode->height, title, monitor, NULL);
+        m_screen_w = mode->width, m_screen_h = mode->height;
+    }
+    else
+        m_window = glfwCreateWindow(width, height, title, NULL, NULL);
     if (!m_window)
     {
         glfwTerminate();
@@ -122,6 +137,7 @@ void platform::set_fullscreen(bool value, int windowed_width, int windowed_heigh
     if (!monitor)
         return;
 
+#if GLFW_VERSION_MAJOR > 3 || GLFW_VERSION_MINOR >= 2
     auto mode = glfwGetVideoMode(monitor);
     const int desktop_width = mode->width, desktop_height = mode->height;
 
@@ -136,6 +152,7 @@ void platform::set_fullscreen(bool value, int windowed_width, int windowed_heigh
         glfwSetWindowMonitor(m_window, 0, x, y, windowed_width, windowed_height, 0);
         m_screen_w = windowed_width, m_screen_h = windowed_height;
     }
+#endif
 }
 
 //------------------------------------------------------------

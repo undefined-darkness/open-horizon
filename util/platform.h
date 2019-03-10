@@ -15,7 +15,7 @@ struct GLFWwindow;
 class platform
 {
 public:
-    bool init(int width, int height, const char *title);
+    bool init(int width, int height, const char *title, bool fullscreen);
     void terminate();
     bool should_terminate();
     void end_frame();

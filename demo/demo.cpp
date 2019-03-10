@@ -62,10 +62,8 @@ int main()
     config::register_var("difficulty", "hard");
 
     platform platform;
-    if (!platform.init(config::get_var_int("screen_width"), config::get_var_int("screen_height"), "Open Horizon 7th demo"))
+    if (!platform.init(config::get_var_int("screen_width"), config::get_var_int("screen_height"), "Open Horizon", config::get_var_bool("fullscreen")))
         return -1;
-
-    platform.set_fullscreen(config::get_var_bool("fullscreen"), config::get_var_int("screen_width"), config::get_var_int("screen_height"));
 
     std::vector<joystick_config> joysticks;
 
