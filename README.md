@@ -29,3 +29,5 @@ Requires resource files from the original game.
 ## Build status:
 
 Windows [![Build status](https://ci.appveyor.com/api/projects/status/070bsencsnrncjmc?svg=true)](https://ci.appveyor.com/project/undefined-darkness/open-horizon)
+
+Linux [![Build status](https://api.travis-ci.org/undefined-darkness/open-horizon.svg)](https://travis-ci.org/undefined-darkness/open-horizon)
