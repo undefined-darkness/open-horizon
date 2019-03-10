@@ -1,0 +1,19 @@
+dist: xenial
+sudo: required
+
+language: cpp
+
+os: linux
+
+compiler:
+    - gcc
+    - clang
+
+install: sudo apt-get install freeglut3-dev xorg-dev build-essential libopenal-dev lua5.1 lua5.1-dev libglfw3-dev cmake
+
+script:
+    - git submodule update --init
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make open_horizon
