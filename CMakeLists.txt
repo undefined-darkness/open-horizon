@@ -65,10 +65,13 @@ else ()
     find_package(Lua51 REQUIRED)
     include_directories(${LUA_INCLUDE_DIR})
     target_link_libraries(open_horizon lua5.1)
-    add_subdirectory(deps/glfw)
-    include_directories(deps/glfw/include)
-    target_link_libraries(open_horizon glfw)
-    target_link_libraries(open_horizon X11 Xxf86vm Xrandr Xi Xinerama Xcursor pthread openal)
+
+    target_link_libraries(open_horizon openal)
+
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/deps/cmake")
+    find_package(GLFW REQUIRED)
+    include_directories(${GLFW_INCLUDE_DIR})
+    target_link_libraries(open_horizon ${GLFW_LIBRARIES})
 endif ()
 
 add_custom_command(TARGET open_horizon POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory
