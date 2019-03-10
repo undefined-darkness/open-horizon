@@ -204,22 +204,6 @@ void hud::draw(const render &r)
             z.mesh.draw();
     }
 
-    wchar_t buf[255];
-    m_fonts.draw_text(r, L"SPEED", "Zurich14", r.get_width()/2 - 210, r.get_height()/2 - 33, alert_color);
-    swprintf(buf, sizeof(buf), L"%4d", (int)m_speed);
-    m_fonts.draw_text(r, buf, "OCRB15", r.get_width()/2 - 212, r.get_height()/2 - 8, alert_color);
-    m_fonts.draw_text(r, L"ALT", "Zurich14", r.get_width()/2 + 170, r.get_height()/2 - 33, alert_color);
-    swprintf(buf, sizeof(buf), L"%5d", (int)m_alt);
-    m_fonts.draw_text(r, buf, "OCRB15", r.get_width()/2 + 158, r.get_height()/2 - 8, alert_color);
-
-    swprintf(buf, sizeof(buf), L"pos   %ld   %ld   %ld", long(m_pos.x),long(m_pos.y),long(m_pos.z));
-    m_fonts.draw_text(r, buf, "Zurich14", 20, r.get_height() - 20, green);
-
-    m_common.draw(r, 10, r.get_width()/2 - 150, r.get_height()/2, alert_color);
-    m_common.draw(r, 16, r.get_width()/2 + 150, r.get_height()/2, alert_color);
-    if (m_ab)
-        m_common.draw(r, 5, r.get_width()/2 - 245, r.get_height()/2 + 2, alert_color);
-
     //m_common.debug_draw_tx(r);
     //m_aircraft.debug_draw_tx(r);
     //m_common.debug_draw(r, debug_variable::get()); static int last_idx = 0; if (last_idx != debug_variable::get()) printf("idx %d id %d\n", debug_variable::get(), m_common.get_id(debug_variable::get())); last_idx = debug_variable::get();
@@ -230,6 +214,10 @@ void hud::draw(const render &r)
     //m_common.draw(r, 159, green);
     //m_common.draw(r, 214, green);
 
+    wchar_t buf[255];
+    swprintf(buf, sizeof(buf), L"pos   %ld   %ld   %ld", long(m_pos.x),long(m_pos.y),long(m_pos.z));
+    m_fonts.draw_text(r, buf, "Zurich14", 20, r.get_height() - 20, green);
+
     vec2 proj_pos;
     if (get_project_pos(r, m_project_pos, proj_pos))
     {
@@ -237,6 +225,18 @@ void hud::draw(const render &r)
 
         if (m_jammed)
             proj_pos += jam_glitch;
+
+        m_fonts.draw_text(r, L"SPEED", "Zurich14", proj_pos.x - 210, proj_pos.y - 33, alert_color);
+        swprintf(buf, sizeof(buf), L"%4d", (int)m_speed);
+        m_fonts.draw_text(r, buf, "OCRB15", proj_pos.x - 212, proj_pos.y - 8, alert_color);
+        m_fonts.draw_text(r, L"ALT", "Zurich14", proj_pos.x + 170, proj_pos.y - 33, alert_color);
+        swprintf(buf, sizeof(buf), L"%5d", (int)m_alt);
+        m_fonts.draw_text(r, buf, "OCRB15", proj_pos.x + 158, proj_pos.y - 8, alert_color);
+
+        m_common.draw(r, 10, proj_pos.x - 150, proj_pos.y, alert_color);
+        m_common.draw(r, 16, proj_pos.x + 150, proj_pos.y, alert_color);
+        if (m_ab)
+            m_common.draw(r, 5, proj_pos.x - 245,  proj_pos.y + 2, alert_color);
 
         //m_common.draw(r, 215, proj_pos.x, proj_pos.y, green);
         m_common.draw(r, m_mgun ? 141 : 2, proj_pos.x, proj_pos.y, green);
@@ -266,6 +266,100 @@ void hud::draw(const render &r)
                 r.draw(line, m_bomb_target.c);
             }
         }
+
+        if (m_pitch_ladder)
+        {
+            //pitch ladder
+
+            static std::vector<vec2> lines;
+            lines.clear();
+
+            float offset = m_pitch * 180.0f / nya_math::constants::pi;
+            int idx_offset = offset / 5;
+            float doff = offset - idx_offset * 5;
+            for (int i = 0; i < 2; ++i)
+            {
+                float right = i == 0 ? 1.0f : -1.0f;
+                for (int j = -3; j <= 3; ++j)
+                {
+                    const float y = (j - doff / 5) * 56;
+                    if (fabsf(y) > 140.0f)
+                        continue;
+
+                    int idx = idx_offset + j;
+                    vec2 rp = vec2(right * 105, y);
+                    if (idx <= 0)
+                    {
+                        lines.push_back(rp - vec2(right * 32, 0)), lines.push_back(rp);
+                        if (idx < 0)
+                        {
+                            lines.push_back(rp), lines.push_back(rp + vec2(0, 8));
+                            idx = -idx;
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < 3; ++i)
+                            lines.push_back(rp - vec2(right * 11 * i, 0)), lines.push_back(rp - vec2(right * (10 * i + 8), 0));
+
+                        lines.push_back(rp), lines.push_back(rp + vec2(0, -8));
+                    }
+
+                    auto fp = vec2(right * 120, rp.y).rotate(-m_roll) + proj_pos;
+                    auto t = std::to_wstring(idx * 5);
+                    m_fonts.draw_text(r, t.c_str(), "Zurich12", fp.x - m_fonts.get_text_width(t.c_str(), "Zurich12")/2, fp.y - 6, alert_color);
+                }
+            }
+
+            render::transform t;
+            t.x = proj_pos.x;
+            t.y = proj_pos.y;
+            t.yaw = -m_roll;
+            r.draw(lines, alert_color, t, false);
+
+            //compass
+
+            const float yaw = m_yaw * 180.0f / nya_math::constants::pi;
+            auto text = std::to_wstring(int(360 - yaw) % 360);
+            m_fonts.draw_text(r, text.c_str(), "Zurich12", proj_pos.x - m_fonts.get_text_width(text.c_str(), "Zurich12")/2, proj_pos.y - 163, alert_color);
+
+            m_common.draw(r, 1, proj_pos.x, proj_pos.y, alert_color);
+
+            lines.clear();
+            vec2 q(20, 7);
+            lines.push_back(vec2(-q.x, -q.y));
+            lines.push_back(vec2(q.x, -q.y));
+            lines.push_back(vec2(q.x, q.y));
+            lines.push_back(vec2(-q.x, q.y));
+            lines.push_back(vec2(-q.x, -q.y));
+
+            t.y = proj_pos.y - 156;
+            t.yaw = 0;
+            r.draw(lines, alert_color, t, true);
+
+            lines.clear();
+
+            int idx_yoff = yaw / 5;
+            auto yoff = yaw - idx_yoff * 5.0f;
+            for (int i = -5; i <= 5; ++i)
+            {
+                const float x = q.x - (i - yoff / 5) * 33;
+                if (fabsf(x) < 25.0f || fabsf(x) > 110.0f)
+                    continue;
+
+                if ((idx_yoff + i) * 5 % 90)
+                {
+                    lines.push_back(vec2(x, -3)), lines.push_back(vec2(x, 3));
+                    continue;
+                }
+
+                auto lidx = ((idx_yoff + i) * 5 / 90 + 4) % 4;
+                wchar_t letters[][2] = {L"N", L"W", L"S", L"E"};
+                m_fonts.draw_text(r, letters[lidx], "Zurich14", proj_pos.x + x - m_fonts.get_text_width(letters[lidx], "Zurich14") / 2, t.y - 9, green);
+            }
+
+            r.draw(lines, alert_color, t, false);
+        }
     }
 
     if (m_bomb_target_enabled)
@@ -277,100 +371,6 @@ void hud::draw(const render &r)
             m_bomb_target_mesh.set_color(t.c);
             m_bomb_target_mesh.draw();
         }
-    }
-
-    if (m_pitch_ladder)
-    {
-        //pitch ladder
-
-        static std::vector<vec2> lines;
-        lines.clear();
-
-        float offset = m_pitch * 180.0f / nya_math::constants::pi;
-        int idx_offset = offset / 5;
-        float doff = offset - idx_offset * 5;
-        for (int i = 0; i < 2; ++i)
-        {
-            float right = i == 0 ? 1.0f : -1.0f;
-            for (int j = -3; j <= 3; ++j)
-            {
-                const float y = (j - doff / 5) * 56;
-                if (fabsf(y) > 140.0f)
-                    continue;
-
-                int idx = idx_offset + j;
-                vec2 rp = vec2(right * 105, y);
-                if (idx <= 0)
-                {
-                    lines.push_back(rp - vec2(right * 32, 0)), lines.push_back(rp);
-                    if (idx < 0)
-                    {
-                        lines.push_back(rp), lines.push_back(rp + vec2(0, 8));
-                        idx = -idx;
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < 3; ++i)
-                        lines.push_back(rp - vec2(right * 11 * i, 0)), lines.push_back(rp - vec2(right * (10 * i + 8), 0));
-
-                    lines.push_back(rp), lines.push_back(rp + vec2(0, -8));
-                }
-
-                auto fp = vec2(right * 120, rp.y).rotate(-m_roll) + vec2(r.get_width()/2, r.get_height()/2);
-                auto t = std::to_wstring(idx * 5);
-                m_fonts.draw_text(r, t.c_str(), "Zurich12", fp.x - m_fonts.get_text_width(t.c_str(), "Zurich12")/2, fp.y - 6, alert_color);
-            }
-        }
-
-        render::transform t;
-        t.x = r.get_width()/2;
-        t.y = r.get_height()/2;
-        t.yaw = -m_roll;
-        r.draw(lines, alert_color, t, false);
-
-        //compass
-
-        const float yaw = m_yaw * 180.0f / nya_math::constants::pi;
-        auto text = std::to_wstring(int(360 - yaw) % 360);
-        m_fonts.draw_text(r, text.c_str(), "Zurich12", r.get_width()/2 - m_fonts.get_text_width(text.c_str(), "Zurich12")/2, r.get_height()/2 - 163, alert_color);
-
-        m_common.draw(r, 1, r.get_width()/2, r.get_height()/2, alert_color);
-
-        lines.clear();
-        vec2 q(20, 7);
-        lines.push_back(vec2(-q.x, -q.y));
-        lines.push_back(vec2(q.x, -q.y));
-        lines.push_back(vec2(q.x, q.y));
-        lines.push_back(vec2(-q.x, q.y));
-        lines.push_back(vec2(-q.x, -q.y));
-
-        t.y = r.get_height()/2 - 156;
-        t.yaw = 0;
-        r.draw(lines, alert_color, t, true);
-
-        lines.clear();
-
-        int idx_yoff = yaw / 5;
-        auto yoff = yaw - idx_yoff * 5.0f;
-        for (int i = -5; i <= 5; ++i)
-        {
-            const float x = q.x - (i - yoff / 5) * 33;
-            if (fabsf(x) < 25.0f || fabsf(x) > 110.0f)
-                continue;
-
-            if ((idx_yoff + i) * 5 % 90)
-            {
-                lines.push_back(vec2(x, -3)), lines.push_back(vec2(x, 3));
-                continue;
-            }
-
-            auto lidx = ((idx_yoff + i) * 5 / 90 + 4) % 4;
-            wchar_t letters[][2] = {L"N", L"W", L"S", L"E"};
-            m_fonts.draw_text(r, letters[lidx], "Zurich14", r.get_width()/2 + x - m_fonts.get_text_width(letters[lidx], "Zurich14") / 2, t.y - 9, green);
-        }
-
-        r.draw(lines, alert_color, t, false);
     }
 
     //small lock icons
