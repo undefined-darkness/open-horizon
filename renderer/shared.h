@@ -6,6 +6,7 @@
 
 #include "scene/texture.h"
 #include "util/util.h"
+#include <functional>
 
 namespace shared
 {
