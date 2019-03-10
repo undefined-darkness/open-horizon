@@ -126,8 +126,8 @@ bool effect_clouds::load(const char *location_name, const location_params &param
 
     m_shader_obj.load("shaders/clouds.nsh");
     m_shader_hi_flat.load("shaders/clouds_hi_flat.nsh");
-    m_obj_tex = shared::get_texture(shared::load_texture((std::string("Effect/") + location_name + "/ObjCloud.nut").c_str()));
-    m_flat_tex = shared::get_texture(shared::load_texture((std::string("Effect/") + location_name + "/FlatCloud.nut").c_str()));
+    m_obj_tex = shared::load_texture_nocache((std::string("Effect/") + location_name + "/ObjCloud.nut").c_str());
+    m_flat_tex = shared::load_texture_nocache((std::string("Effect/") + location_name + "/FlatCloud.nut").c_str());
 
     for (int i = 0; i < m_shader_obj.internal().get_uniforms_count(); ++i)
     {

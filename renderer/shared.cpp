@@ -29,7 +29,7 @@ void add_texture(unsigned int hash_id, const nya_scene::texture &tex)
 
 //------------------------------------------------------------
 
-unsigned int load_texture(const char *name)
+unsigned int load_texture(const char *name, unsigned int aniso)
 {
     if (!name)
         return 0;
@@ -42,7 +42,7 @@ unsigned int load_texture(const char *name)
     if (!buf.get_data())
         return 0;
 
-    unsigned int hash_id = load_texture(buf.get_data(), buf.get_size());
+    unsigned int hash_id = load_texture(buf.get_data(), buf.get_size(), aniso);
     texture_names[name] = hash_id;
 
     update_loading();
@@ -51,7 +51,7 @@ unsigned int load_texture(const char *name)
 
 //------------------------------------------------------------
 
-nya_scene::texture load_texture_nocache(const char *name)
+nya_scene::texture load_texture_nocache(const char *name, unsigned int aniso)
 {
     nya_memory::tmp_buffer_scoped buf(load_resource(name));
     if (!buf.get_size())
@@ -68,7 +68,8 @@ nya_scene::texture load_texture_nocache(const char *name)
     data.copy_from(reader.get_data(), reader.get_remained());
     nya_scene::texture::load_dds(st, data, "");
     data.free();
-
+    if(aniso)
+        st.tex.set_aniso(aniso);
     nya_scene::texture tex;
     tex.create(st);
 
@@ -78,7 +79,7 @@ nya_scene::texture load_texture_nocache(const char *name)
 
 //------------------------------------------------------------
 
-unsigned int load_texture(const void *tex_data, size_t tex_size)
+unsigned int load_texture(const void *tex_data, size_t tex_size, unsigned int aniso)
 {
     assert(tex_data && tex_size);
 
@@ -98,10 +99,8 @@ unsigned int load_texture(const void *tex_data, size_t tex_size)
     data.copy_from(reader.get_data(), reader.get_remained());
     nya_scene::texture::load_dds(st, data, "");
     data.free();
-
-    if (hash_id > 1000000000) //ToDo
-        st.tex.set_aniso(16);
-
+    if(aniso)
+        st.tex.set_aniso(aniso);
     nya_scene::texture tex;
     tex.create(st);
     shared::add_texture(hash_id, tex);

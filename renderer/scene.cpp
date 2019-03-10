@@ -56,8 +56,6 @@ void scene::setup_shadow_camera(aircraft_ptr a)
 
 aircraft_ptr scene::add_aircraft(const char *name, int color, bool player)
 {
-    nya_render::texture::set_default_aniso(2);
-
     auto a = world::add_aircraft(name, color, player);
     if (!player)
         return a;
@@ -98,8 +96,6 @@ aircraft_ptr scene::add_aircraft(const char *name, int color, bool player)
 
 void scene::set_location(const char *name)
 {
-    nya_render::texture::set_default_aniso(2);
-
     if (!m_curve.is_valid())
     {
         m_curve.create();

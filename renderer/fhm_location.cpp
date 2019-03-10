@@ -1225,7 +1225,7 @@ void fhm_location::draw_landscape()
 
 bool fhm_location::read_ntxr(memory_reader &reader, fhm_location_load_data &load_data)
 {
-    uint r = shared::load_texture(reader.get_data(), reader.get_remained());
+    uint r = shared::load_texture(reader.get_data(), reader.get_remained(), 16);
     if (r > 1000000000) //ToDo //probably there is another way
     {
         auto rt = shared::get_texture(r);
