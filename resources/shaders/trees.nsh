@@ -13,6 +13,8 @@ varying float vfogf;
 uniform vec4 up;
 uniform vec4 right;
 
+float rand(vec2 co) { return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453); }
+
 void main()
 {
     vec4 p = vec4(gl_Vertex.x, floor(gl_Vertex.y/128.0) * (10000.0 / 131072.0), gl_Vertex.z, 1.0);
@@ -20,7 +22,7 @@ void main()
     float idx = mod(gl_Vertex.y, 4.0);
     vec2 d = vec2(2.0 * step(1.5, idx) - 1.0, 1.0 - 2.0 * step(0.5, idx) * (1.0 - step(2.5, idx)));
 
-    float tree_hsize = 16.0;
+    float tree_hsize = 7.0 + rand(gl_Vertex.xz) * 3.0;
     p.xyz += (d.x * right.xyz + d.y * up.xyz) * tree_hsize;
     p.y += tree_hsize;
 
