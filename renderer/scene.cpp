@@ -133,6 +133,9 @@ void scene::set_location(const char *name)
 
     world::set_location(name);
 
+    m_missile_trails.clear();
+    m_plane_trails.clear();
+
     for (auto &a: m_aircrafts)
         a->apply_location(m_location.get_ibl(), m_location.get_env(), m_location.get_params());
 

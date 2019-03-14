@@ -415,6 +415,9 @@ void world::set_location(const char *name)
 {
     update_difficulty();
 
+    m_missiles.clear();
+    m_bombs.clear();
+
     m_render_world.set_location(name);
     m_phys_world.set_location(name);
     m_hud.set_location(name);

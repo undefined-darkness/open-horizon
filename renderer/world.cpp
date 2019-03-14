@@ -79,11 +79,12 @@ void world::set_location(const char *name)
 {
     m_location.release();
     m_clouds.release();
-
     shared::clear_textures();
 
-    m_location.load(name);
+    m_explosions.clear();
+    m_missiles.clear();
 
+    m_location.load(name);
     m_location_name.assign(name ? name : "");
 
     if (is_native_location(m_location_name))
