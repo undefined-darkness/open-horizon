@@ -41,6 +41,8 @@ void plane::reset_state()
 
     jammed = false;
     ecm_time = 0;
+
+    first_update = true;
 }
 
 //------------------------------------------------------------
@@ -280,6 +282,12 @@ void plane::update(int dt, world &w)
 
     if (hp <= 0)
         return;
+
+    if (first_update)
+    {
+        first_update = false;
+        last_controls = controls;
+    }
 
     phys->wing_offset = render->get_wing_offset();
 

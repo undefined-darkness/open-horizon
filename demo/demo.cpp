@@ -173,7 +173,6 @@ int main()
                         loading_callback();
                         shared::set_loading_callback(loading_callback);
 
-                        controls = game::plane_controls(); //ToDo
                         sound_world.stop_music();
                         const char *music_names[] = {"BGM_ms10_08", "BGM_ms06", "BGM_ms08x", "BGM_ms11a", "BGM_ms11b", "BGM_ms12_02"};
                         sound_world.set_music(music_names[rand() % (sizeof(music_names) / sizeof(music_names[0]))]);

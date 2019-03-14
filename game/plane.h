@@ -86,6 +86,8 @@ struct plane: public object, public std::enable_shared_from_this<plane>
 
     std::vector<bomb_mark> bomb_marks;
 
+    bvalue first_update;
+
     void reset_state();
     void set_pos(const vec3 &pos) { if (phys) phys->pos = pos; }
     void set_rot(const quat &rot) { if (phys) phys->rot = rot; }

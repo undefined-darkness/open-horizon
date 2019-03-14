@@ -121,7 +121,7 @@ plane_ptr world::add_plane(const char *preset, const char *player_name, int colo
 
     p->sounds.load(renderer::aircraft::get_sound_name(preset));
 
-    p->hp = p->max_hp = int(p->phys->params.misc.maxHp);
+    p->max_hp = int(p->phys->params.misc.maxHp);
 
     p->hit_radius = preset[0] == 'b' ? 6.0f : 3.5f;
 
@@ -153,9 +153,6 @@ plane_ptr world::add_plane(const char *preset, const char *player_name, int colo
         p->special_max_count *= m_difficulty.ammo_ammount;
     }
 
-    p->missile_count = p->missile_max_count;
-    p->special_count = p->special_max_count;
-
     if (player)
     {
         m_hud.load(preset, m_render_world.get_location_name());
@@ -173,6 +170,8 @@ plane_ptr world::add_plane(const char *preset, const char *player_name, int colo
         std::transform(name.begin() + 1, name.end(), name.begin() + 1, ::tolower);
         p->player_name = std::wstring(name.begin(), name.end());
     }
+
+    p->reset_state();
 
     m_planes.push_back(p);
     get_arms_param(); //cache
