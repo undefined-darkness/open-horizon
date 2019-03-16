@@ -107,7 +107,6 @@ copy /Y "$(SolutionDir)..\deps\openal-soft\*.dll" "$(TargetDir)\"
     <ClCompile Include="..\deps\miso\src\client_tcp.cpp" />
     <ClCompile Include="..\deps\miso\src\dns.cpp" />
     <ClCompile Include="..\deps\miso\src\generic_socket.cpp" />
-    <ClCompile Include="..\deps\miso\src\node_tcp.cpp" />
     <ClCompile Include="..\deps\miso\src\platform.cpp" />
     <ClCompile Include="..\deps\miso\src\server_tcp.cpp" />
     <ClCompile Include="..\deps\miso\src\server_udp.cpp" />

@@ -182,9 +182,6 @@
     <ClCompile Include="..\deps\miso\src\generic_socket.cpp">
       <Filter>Source Files\deps\miso</Filter>
     </ClCompile>
-    <ClCompile Include="..\deps\miso\src\node_tcp.cpp">
-        <Filter>Source Files\deps\miso</Filter>
-    </ClCompile>
     <ClCompile Include="..\deps\miso\src\platform.cpp">
       <Filter>Source Files\deps\miso</Filter>
     </ClCompile>
