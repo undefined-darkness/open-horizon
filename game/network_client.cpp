@@ -148,22 +148,21 @@ void network_client::disconnect()
 
 //------------------------------------------------------------
 
-template<typename rs> bool receive_object(rs &objs, unsigned int client_id, std::istringstream &is, unsigned int time)
+template<typename rs> bool receive_object(rs &objs, unsigned int client_id, const std::vector<uint8_t> &msg, unsigned int time)
 {
-    unsigned int t, id;
-    is >> t, is >> id;
+    net_msg_header h;
+    h.deserialize(msg);
 
     for (auto &o: objs.objects)
     {
-        if (o.r.id == id && o.r.client_id != client_id)
+        if (o.r.id == h.id && o.r.client_id != client_id)
         {
             if (o.last_time > time)
                 return false;
 
-            read(is, o.net);
-            const int time_fix = int(time - t);
-            o.net->pos += o.net->vel * (0.001f * time_fix);
-            o.last_time = t;
+            o.net->deserialize(msg);
+            o.net->fix_time(int(time - h.time));
+            o.last_time = h.time;
             return true;
         }
     }
@@ -183,21 +182,19 @@ void network_client::update()
         if (m.empty())
             continue;
 
+        switch (m[0])
+        {
+            case net_msg_plane: receive_object(m_planes, m_id, m, m_time); continue;
+            case net_msg_missile: receive_object(m_missiles, m_id, m, m_time); continue;
+            default: break;
+        }
 
         const std::string str((char *)m.data(), m.size());
         std::istringstream is(str);
         std::string cmd;
         is >> cmd;
 
-        if (cmd == "plane")
-        {
-            receive_object(m_planes, m_id, is, m_time);
-        }
-        else if (cmd == "missile")
-        {
-            receive_object(m_missiles, m_id, is, m_time);
-        }
-        else if (cmd == "message")
+        if (cmd == "message")
         {
             std::string str;
             std::getline(is, str);
@@ -275,7 +272,15 @@ template<typename rs> void send_objects(rs &objs, miso::client_tcp &client, unsi
         if (o.net.unique())
             _send_string(client, "remove_" + type + " " + std::to_string(o.r.id));
         else
-            _send_string(client, type + " " + std::to_string(time) + " " + std::to_string(o.r.id) + " "+ to_string(o.net));
+        {
+            std::vector<uint8_t> msg;
+            net_msg_header h;
+            h.time = time;
+            h.id = o.r.id;
+            h.serialize(msg);
+            o.net->serialize(msg);
+            client.send_message(msg);
+        }
     }
 
     objs.remove_src_unique();

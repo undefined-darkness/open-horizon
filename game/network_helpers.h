@@ -14,13 +14,13 @@ namespace game
 {
 //------------------------------------------------------------
 
-static const int version = 1;
+static const int version = 2;
 static const char *server_header = "Open-Horizon server";
 static const unsigned int net_fps = 25;
 
 //------------------------------------------------------------
 
-static bool get_info(const std::string &s, server_info &info)
+inline bool get_info(const std::string &s, server_info &info)
 {
     if (s.compare(0, strlen(server_header), server_header) != 0)
         return false;
@@ -88,30 +88,6 @@ inline void read(std::istringstream &is, nya_math::quat &q)
 
 //------------------------------------------------------------
 
-inline std::string to_string(const net_plane_ptr &n)
-{
-    if (!n)
-        return "";
-
-    return to_string(n->pos) + " " + to_string(n->vel) + " " + to_string(n->rot) + " " + to_string(n->ctrl_rot) + " "
-    + std::to_string(n->ctrl_throttle) + " " + std::to_string(n->ctrl_brake) + " "
-    + (n->ctrl_mgun ? '1' : '0') + " " + (n->ctrl_mgp ? '1' : '0');
-}
-
-//------------------------------------------------------------
-
-inline void read(std::istringstream &is, net_plane_ptr &n)
-{
-    if (!n)
-        return;
-
-    read(is, n->pos), read(is, n->vel), read(is, n->rot);
-    read(is, n->ctrl_rot), is >> n->ctrl_throttle, is >> n->ctrl_brake;
-    is >> n->ctrl_mgun, is >> n->ctrl_mgp;
-}
-
-//------------------------------------------------------------
-
 inline std::string to_string(const network_interface::msg_add_plane &m)
 {
     return std::to_string(m.client_id) + " " + std::to_string(m.id) + " " + m.preset + " " + m.player_name + " " + std::to_string(m.color);
@@ -122,26 +98,6 @@ inline std::string to_string(const network_interface::msg_add_plane &m)
 inline void read(std::istringstream &is, network_interface::msg_add_plane &m)
 {
     is>>m.client_id, is>>m.id, is>>m.preset, is>>m.player_name, is>>m.color;
-}
-
-//------------------------------------------------------------
-
-inline std::string to_string(const net_missile_ptr &n)
-{
-    if (!n)
-        return "";
-
-    return to_string(n->pos) + " " + to_string(n->vel) + " " + to_string(n->rot) + " " + to_string(n->target_dir) + " " + std::to_string(n->target) + " " + (n->engine_started ? '1' : '0');
-}
-
-//------------------------------------------------------------
-
-inline void read(std::istringstream &is, net_missile_ptr &n)
-{
-    if (!n)
-        return;
-
-    read(is, n->pos), read(is, n->vel), read(is, n->rot), read(is, n->target_dir), is >> n->target, is >> n->engine_started;
 }
 
 //------------------------------------------------------------

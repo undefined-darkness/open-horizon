@@ -156,75 +156,79 @@ void network_server::cache_net_game_data(const msg_game_data &data)
 
 //------------------------------------------------------------
 
+/*
+template<typename rs> bool receive_object(rs &objs, unsigned int client_id, const std::vector<uint8_t> &msg, unsigned int time)
+{
+    net_msg_header h;
+    h.deserialize(msg);
+
+    for (auto &o: objs.objects)
+    {
+        if (o.r.id == h.id && o.r.client_id != client_id)
+        {
+            if (o.last_time > time)
+                return false;
+
+            o.net->deserialize(msg);
+            o.net->fix_time(int(time - h.time));
+            o.last_time = h.time;
+            return true;
+        }
+    }
+
+    return false;
+}
+*/
+
+template<typename rs, typename cs> bool receive_object(rs &objs, unsigned int client_id, cs &clients, miso::server_tcp &server, const std::vector<uint8_t> &msg, unsigned int time)
+{
+    net_msg_header h;
+    h.deserialize(msg);
+
+    for (auto &o: objs.objects)
+    {
+        if (o.r.id == h.id)
+        {
+            if (o.last_time > time)
+                return false;
+
+            o.net->deserialize(msg);
+
+            for (auto &oc: clients)
+            {
+                if (oc.first != client_id)
+                    server.send_message(oc.first, msg);
+            }
+
+            o.net->fix_time(int(time - h.time));
+            o.last_time = h.time;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+//------------------------------------------------------------
+
 void network_server::process_msg(client &c, const std::vector<uint8_t> &msg)
 {
     if (msg.empty())
         return;
+
+    switch (msg[0])
+    {
+        case net_msg_plane: receive_object(m_planes, c.id, m_clients, m_server, msg, m_time); return;
+        case net_msg_missile: receive_object(m_missiles, c.id, m_clients, m_server, msg, m_time); return;
+        default: break;
+    }
 
     std::string str((char *)msg.data(), msg.size());
     std::istringstream is(str);
     std::string cmd;
     is>>cmd;
 
-    if (cmd == "plane")
-    {
-        unsigned int time, plane_id;
-        is >> time, is >> plane_id;
-
-        for (auto &p: m_planes.objects)
-        {
-            if (p.r.id == plane_id)
-            {
-                if (p.last_time > time)
-                    break;
-
-                read(is, p.net);
-                const int time_fix = int(m_time - time);
-
-                for (auto &oc: m_clients)
-                {
-                    if (oc.first == c.id)
-                        continue;
-
-                    send_string(oc.first, "plane " + std::to_string(time) + " " + std::to_string(p.r.id) + " "+ to_string(p.net));
-                }
-
-                p.net->pos += p.net->vel * (0.001f * time_fix);
-                p.last_time = time;
-                break;
-            }
-        }
-    }
-    else if (cmd == "missile")
-    {
-        unsigned int time, missile_id;
-        is >> time, is >> missile_id;
-
-        for (auto &m: m_missiles.objects)
-        {
-            if (m.r.id == missile_id)
-            {
-                if (m.last_time > time)
-                    break;
-
-                read(is, m.net);
-                const int time_fix = int(m_time - time);
-
-                for (auto &oc: m_clients)
-                {
-                    if (oc.first == c.id)
-                        continue;
-
-                    send_string(oc.first, "missile " + std::to_string(time) + " " + std::to_string(m.r.id) + " "+ to_string(m.net));
-                }
-
-                m.net->pos += m.net->vel * (0.001f * time_fix);
-                m.last_time = time;
-                break;
-            }
-        }
-    }
-    else if (cmd == "message")
+    if (cmd == "message")
     {
         std::string str;
         std::getline(is, str);
@@ -383,7 +387,15 @@ template<typename rs, typename cs> void send_objects(rs &objs, cs &clients, miso
             if (o.net.unique())
                 _send_string(server, c.first, "remove_" + type + " " + std::to_string(o.r.id));
             else
-                _send_string(server, c.first, type + " " + std::to_string(time) + " " + std::to_string(o.r.id) + " "+ to_string(o.net));
+            {
+                std::vector<uint8_t> msg;
+                net_msg_header h;
+                h.time = time;
+                h.id = o.r.id;
+                h.serialize(msg);
+                o.net->serialize(msg);
+                server.send_message(c.first, msg);
+            }
         }
     }
 

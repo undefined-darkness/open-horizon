@@ -6,6 +6,7 @@
 
 #include "util/util.h"
 #include "math/quaternion.h"
+#include "memory/memory_writer.h"
 
 #include <vector>
 #include <deque>
@@ -75,6 +76,45 @@ struct game_data
 
 //------------------------------------------------------------
 
+enum net_message_type
+{
+    net_char_max = 127,
+    net_msg_plane,
+    net_msg_missile,
+};
+
+//------------------------------------------------------------
+
+struct net_msg_header
+{
+    net_message_type type = net_char_max;
+    unsigned int time = 0;
+    unsigned int id = invalid_id;
+
+    static size_t get_size() { return sizeof(uint32_t) * 2 + 1; }
+
+    void serialize(std::vector<uint8_t> &data) const
+    {
+        if (data.size() < get_size())
+            data.resize(get_size());
+        nya_memory::memory_writer w(data.data(), data.size());
+        w.write<uint8_t>(type);
+        w.write(time);
+        w.write(id);
+    }
+
+    bool deserialize(const std::vector<uint8_t> &data)
+    {
+        nya_memory::memory_reader r(data.data(), data.size());
+        type = (net_message_type)r.read<uint8_t>();
+        time = r.read<uint32_t>();
+        id = r.read<uint32_t>();
+        return true;
+    }
+};
+
+//------------------------------------------------------------
+
 struct net_plane
 {
     nya_math::vec3 pos;
@@ -88,6 +128,54 @@ struct net_plane
     bool ctrl_mgp = false;
 
     bool source = false;
+
+    void fix_time(int dt) { pos += vel * (0.001f * dt); }
+
+    void serialize(std::vector<uint8_t> &data) const
+    {
+        assert(source);
+
+        data.resize(sizeof(net_plane) + net_msg_header::get_size());
+        nya_memory::memory_writer w(data.data(), data.size());
+
+        w.write<uint8_t>(net_msg_plane);
+        w.seek(net_msg_header::get_size());
+
+        w.write(pos);
+        w.write(vel);
+        w.write(rot);
+
+        w.write(ctrl_rot);
+        w.write(ctrl_throttle);
+        w.write(ctrl_brake);
+        w.write<uint8_t>(ctrl_mgun);
+        w.write<uint8_t>(ctrl_mgp);
+
+        data.resize(w.get_offset());
+    }
+
+    bool deserialize(const std::vector<uint8_t> &data)
+    {
+        assert(!source);
+
+        nya_memory::memory_reader r(data.data(), data.size());
+        if (r.read<uint8_t>() != net_msg_plane)
+            return false;
+
+        r.seek(net_msg_header::get_size());
+
+        pos = r.read<nya_math::vec3>();
+        vel = r.read<nya_math::vec3>();
+        rot = r.read<nya_math::quat>();
+
+        ctrl_rot = r.read<nya_math::vec3>();
+        ctrl_throttle = r.read<float>();
+        ctrl_brake = r.read<float>();
+        ctrl_mgun = r.read<uint8_t>() != 0;
+        ctrl_mgp = r.read<uint8_t>() != 0;
+
+        return true;
+    }
 };
 
 typedef std::shared_ptr<net_plane> net_plane_ptr;
@@ -104,6 +192,50 @@ struct net_missile
     bool engine_started = false;
 
     bool source = false;
+
+    void fix_time(int dt) { pos += vel * (0.001f * dt); }
+
+    void serialize(std::vector<uint8_t> &data) const
+    {
+        assert(source);
+
+        data.resize(sizeof(net_missile) + net_msg_header::get_size());
+        nya_memory::memory_writer w(data.data(), data.size());
+
+        w.write<uint8_t>(net_msg_missile);
+        w.seek(net_msg_header::get_size());
+
+        w.write(pos);
+        w.write(vel);
+        w.write(rot);
+
+        w.write(target_dir);
+        w.write<uint32_t>(target);
+        w.write<uint8_t>(engine_started);
+
+        data.resize(w.get_offset());
+    }
+
+    bool deserialize(const std::vector<uint8_t> &data)
+    {
+        assert(!source);
+
+        nya_memory::memory_reader r(data.data(), data.size());
+        if (r.read<uint8_t>() != net_msg_missile)
+            return false;
+
+        r.seek(net_msg_header::get_size());
+
+        pos = r.read<nya_math::vec3>();
+        vel = r.read<nya_math::vec3>();
+        rot = r.read<nya_math::quat>();
+
+        target_dir = r.read<nya_math::vec3>();
+        target = r.read<uint32_t>();
+        engine_started = r.read<uint8_t>() != 0;
+
+        return true;
+    }
 };
 
 typedef std::shared_ptr<net_missile> net_missile_ptr;
