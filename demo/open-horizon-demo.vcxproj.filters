@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -176,8 +176,14 @@
     <ClCompile Include="..\deps\miso\src\client_tcp.cpp">
       <Filter>Source Files\deps\miso</Filter>
     </ClCompile>
+    <ClCompile Include="..\deps\miso\src\dns.cpp">
+        <Filter>Source Files\deps\miso</Filter>
+    </ClCompile>
     <ClCompile Include="..\deps\miso\src\generic_socket.cpp">
       <Filter>Source Files\deps\miso</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\miso\src\node_tcp.cpp">
+        <Filter>Source Files\deps\miso</Filter>
     </ClCompile>
     <ClCompile Include="..\deps\miso\src\platform.cpp">
       <Filter>Source Files\deps\miso</Filter>
@@ -187,6 +193,9 @@
     </ClCompile>
     <ClCompile Include="..\deps\miso\src\server_udp.cpp">
       <Filter>Source Files\deps\miso</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\miso\src\socketdef.cpp">
+        <Filter>Source Files\deps\miso</Filter>
     </ClCompile>
     <ClCompile Include="..\containers\cpk.cpp">
       <Filter>Source Files\containers</Filter>
@@ -214,12 +223,6 @@
     </ClCompile>
     <ClCompile Include="..\renderer\mesh_obj.cpp">
       <Filter>Source Files\renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="..\deps\miso\src\ipv4.cpp">
-      <Filter>Source Files\deps\miso</Filter>
-    </ClCompile>
-    <ClCompile Include="..\deps\miso\src\ipv6.cpp">
-      <Filter>Source Files\deps\miso</Filter>
     </ClCompile>
     <ClCompile Include="..\game\plane.cpp">
       <Filter>Source Files\game</Filter>
@@ -381,9 +384,6 @@
     </ClInclude>
     <ClInclude Include="..\deps\pugixml-1.4\src\pugixml.hpp">
       <Filter>Source Files\deps\pugi</Filter>
-    </ClInclude>
-    <ClInclude Include="..\deps\miso\src\node_tcp.h">
-      <Filter>Source Files\deps\miso</Filter>
     </ClInclude>
     <ClInclude Include="..\containers\cpk.h">
       <Filter>Source Files\containers</Filter>

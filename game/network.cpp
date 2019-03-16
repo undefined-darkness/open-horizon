@@ -5,16 +5,8 @@
 #include "network.h"
 #include "network_helpers.h"
 #include "miso/socket/socket.h"
-#include "miso/ipv4.h"
+#include "miso/dns/dns.h"
 #include "system/system.h"
-
-#ifdef _WIN32
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
-#else
-    #include <netdb.h>
-    #include <arpa/inet.h>
-#endif
 
 #include <thread>
 #include <chrono>
@@ -23,36 +15,19 @@ namespace game
 {
 //------------------------------------------------------------
 
-inline std::string resolve(const std::string &url)
-{
-#ifdef _WIN32
-    static WSADATA wsaData;
-    static bool once = true;
-    if (once)
-    {
-        WSAStartup(MAKEWORD(2, 2), &wsaData);
-        once = false;
-    }
-#endif
-
-    const hostent *hp = gethostbyname(url.c_str());
-    if (!hp || !hp->h_addr_list[0])
-        return "";
-
-    return inet_ntoa(*(in_addr*)(hp -> h_addr_list[0]));
-}
-
-//------------------------------------------------------------
-
 bool http_get(const char *url, const char *arg, std::string &data)
 {
     data.clear();
     if (!url || !arg)
         return false;
 
-    auto ip = resolve("http://" + std::string(url));
-    miso::socket_sync<miso::tcp> socket;
-    if (!socket.connect(miso::ipv4_address(ip.c_str()), 80))
+    std::string url_str(url);
+    if (url_str.find("://") == std::string::npos)
+        url_str = "http://" + url_str;
+
+    auto ip = miso::dns::resolve_ipv4_sync(url_str.c_str());
+    miso::generic_socket socket;
+    if (!socket.connect(ip, 80))
         return false;
 
     std::string request = "GET " + std::string(arg) + " HTTP/1.0\r\n";

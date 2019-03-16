@@ -10,6 +10,8 @@
 		0E31B74D206C87D7007EF689 /* difficulty.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0E548BE4206C839300139A4E /* difficulty.xml */; };
 		0E548BE5206C839300139A4E /* difficulty.xml in Resources */ = {isa = PBXBuildFile; fileRef = 0E548BE4206C839300139A4E /* difficulty.xml */; };
 		0EB17DA9200BCE6700F5328C /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0EB17DA6200BCE5500F5328C /* Metal.framework */; };
+		0EEDDFA422389A1600E3B51B /* socketdef.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0EEDDF9C22389A1100E3B51B /* socketdef.cpp */; };
+		0EEDDFA522389A1600E3B51B /* dns.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0EEDDFA222389A1500E3B51B /* dns.cpp */; };
 		F503E4DB19048C6700C3590A /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E4DA19048C6700C3590A /* Cocoa.framework */; };
 		F503E52419048E2D00C3590A /* libglfw3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52319048E2D00C3590A /* libglfw3.a */; };
 		F503E52619048E5000C3590A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F503E52519048E5000C3590A /* OpenGL.framework */; };
@@ -83,8 +85,6 @@
 		F5C6D3A01AF96A18006FB7E6 /* shaders in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5C6D39D1AF96A08006FB7E6 /* shaders */; };
 		F5CD8DF31D50672A00337674 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5CD8DF21D50672A00337674 /* CoreVideo.framework */; };
 		F5D209F31CC18DA800189814 /* generic_socket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209EC1CC18DA800189814 /* generic_socket.cpp */; };
-		F5D209F41CC18DA800189814 /* ipv4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209ED1CC18DA800189814 /* ipv4.cpp */; };
-		F5D209F51CC18DA800189814 /* ipv6.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209EE1CC18DA800189814 /* ipv6.cpp */; };
 		F5D209F61CC18DA800189814 /* platform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209EF1CC18DA800189814 /* platform.cpp */; };
 		F5D20A091CC1936700189814 /* server_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209F21CC18DA800189814 /* server_udp.cpp */; };
 		F5D20A0B1CC2228100189814 /* server_tcp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5D209F11CC18DA800189814 /* server_tcp.cpp */; };
@@ -140,6 +140,14 @@
 		0E548BE1206C812000139A4E /* difficulty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = difficulty.h; path = ../game/difficulty.h; sourceTree = "<group>"; };
 		0E548BE4206C839300139A4E /* difficulty.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = difficulty.xml; path = ../resources/difficulty.xml; sourceTree = "<group>"; };
 		0EB17DA6200BCE5500F5328C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		0EEDDF9C22389A1100E3B51B /* socketdef.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = socketdef.cpp; path = ../deps/miso/src/socketdef.cpp; sourceTree = "<group>"; };
+		0EEDDF9E22389A1200E3B51B /* ipv4.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ipv4.h; sourceTree = "<group>"; };
+		0EEDDF9F22389A1300E3B51B /* ipv6.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ipv6.h; sourceTree = "<group>"; };
+		0EEDDFA022389A1300E3B51B /* socketdef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = socketdef.h; path = ../deps/miso/include/miso/socket/socketdef.h; sourceTree = "<group>"; };
+		0EEDDFA122389A1400E3B51B /* socket_tools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = socket_tools.h; path = ../deps/miso/src/socket_tools.h; sourceTree = "<group>"; };
+		0EEDDFA222389A1500E3B51B /* dns.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dns.cpp; path = ../deps/miso/src/dns.cpp; sourceTree = "<group>"; };
+		0EEDDFA322389A1500E3B51B /* node_tcp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = node_tcp.h; path = ../deps/miso/src/node_tcp.h; sourceTree = "<group>"; };
+		0EEDDFA922389B0600E3B51B /* dns.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dns.h; sourceTree = "<group>"; };
 		F503E4D719048C6700C3590A /* open-horizon-demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "open-horizon-demo.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F503E4DA19048C6700C3590A /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		F503E4DD19048C6700C3590A /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -288,13 +296,9 @@
 		F5CB42051CA1F14100F725CE /* zip.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = zip.h; path = ../util/zip.h; sourceTree = "<group>"; };
 		F5CD8DF21D50672A00337674 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		F5D209EC1CC18DA800189814 /* generic_socket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = generic_socket.cpp; path = ../deps/miso/src/generic_socket.cpp; sourceTree = "<group>"; };
-		F5D209ED1CC18DA800189814 /* ipv4.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ipv4.cpp; path = ../deps/miso/src/ipv4.cpp; sourceTree = "<group>"; };
-		F5D209EE1CC18DA800189814 /* ipv6.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ipv6.cpp; path = ../deps/miso/src/ipv6.cpp; sourceTree = "<group>"; };
 		F5D209EF1CC18DA800189814 /* platform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = platform.cpp; path = ../deps/miso/src/platform.cpp; sourceTree = "<group>"; };
 		F5D209F11CC18DA800189814 /* server_tcp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = server_tcp.cpp; path = ../deps/miso/src/server_tcp.cpp; sourceTree = "<group>"; };
 		F5D209F21CC18DA800189814 /* server_udp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = server_udp.cpp; path = ../deps/miso/src/server_udp.cpp; sourceTree = "<group>"; };
-		F5D209FC1CC18DBA00189814 /* ipv4.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ipv4.h; sourceTree = "<group>"; };
-		F5D209FD1CC18DBA00189814 /* ipv6.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ipv6.h; sourceTree = "<group>"; };
 		F5D209FE1CC18DBA00189814 /* platform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = platform.h; sourceTree = "<group>"; };
 		F5D20A011CC18DBA00189814 /* server_interface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = server_interface.h; sourceTree = "<group>"; };
 		F5D20A021CC18DBA00189814 /* server_tcp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = server_tcp.h; sourceTree = "<group>"; };
@@ -341,6 +345,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0EEDDFA822389ADA00E3B51B /* dns */ = {
+			isa = PBXGroup;
+			children = (
+				0EEDDFA922389B0600E3B51B /* dns.h */,
+			);
+			path = dns;
+			sourceTree = "<group>";
+		};
 		F503E4CE19048C6700C3590A = {
 			isa = PBXGroup;
 			children = (
@@ -613,15 +625,18 @@
 		F5D209E91CC18D8A00189814 /* miso */ = {
 			isa = PBXGroup;
 			children = (
-				F5D209FA1CC18DBA00189814 /* include */,
 				F538BB0A1CC2B8EA0055F394 /* app_protocol_simple.cpp */,
 				F5D20A0D1CC235EA00189814 /* client_tcp.cpp */,
+				0EEDDFA222389A1500E3B51B /* dns.cpp */,
 				F5D209EC1CC18DA800189814 /* generic_socket.cpp */,
-				F5D209ED1CC18DA800189814 /* ipv4.cpp */,
-				F5D209EE1CC18DA800189814 /* ipv6.cpp */,
+				F5D209FA1CC18DBA00189814 /* include */,
+				0EEDDFA322389A1500E3B51B /* node_tcp.h */,
 				F5D209EF1CC18DA800189814 /* platform.cpp */,
 				F5D209F11CC18DA800189814 /* server_tcp.cpp */,
 				F5D209F21CC18DA800189814 /* server_udp.cpp */,
+				0EEDDFA122389A1400E3B51B /* socket_tools.h */,
+				0EEDDF9C22389A1100E3B51B /* socketdef.cpp */,
+				0EEDDFA022389A1300E3B51B /* socketdef.h */,
 			);
 			name = miso;
 			sourceTree = "<group>";
@@ -639,8 +654,7 @@
 			isa = PBXGroup;
 			children = (
 				F5D20A101CC2360100189814 /* client */,
-				F5D209FC1CC18DBA00189814 /* ipv4.h */,
-				F5D209FD1CC18DBA00189814 /* ipv6.h */,
+				0EEDDFA822389ADA00E3B51B /* dns */,
 				F5D209FE1CC18DBA00189814 /* platform.h */,
 				F5D20A141CC27C3400189814 /* protocol */,
 				F5D209FF1CC18DBA00189814 /* server */,
@@ -664,6 +678,8 @@
 			isa = PBXGroup;
 			children = (
 				F5D20A051CC18DBA00189814 /* generic_socket.h */,
+				0EEDDF9E22389A1200E3B51B /* ipv4.h */,
+				0EEDDF9F22389A1300E3B51B /* ipv6.h */,
 				F5D20A061CC18DBA00189814 /* socket.h */,
 			);
 			path = socket;
@@ -834,13 +850,11 @@
 				F5A2A2D71AFE3258009765C1 /* missile_trail.cpp in Sources */,
 				F5A2A2E61B05466C009765C1 /* free_flight.cpp in Sources */,
 				F59AB5A81AFA4F1800137527 /* fhm_location.cpp in Sources */,
-				F5D209F51CC18DA800189814 /* ipv6.cpp in Sources */,
 				F5272D001D9BBE4F000FF7C8 /* location.cpp in Sources */,
 				F5A2A2DC1AFE86E4009765C1 /* hud.cpp in Sources */,
 				F504CB1E1C5B9FA200FBB72D /* network.cpp in Sources */,
 				F5D20A091CC1936700189814 /* server_udp.cpp in Sources */,
 				F5C6D3921AF969A5006FB7E6 /* fhm.cpp in Sources */,
-				F5D209F41CC18DA800189814 /* ipv4.cpp in Sources */,
 				F50D9C9B1C9F2E5700A56812 /* pac5.cpp in Sources */,
 				F530D2461E016E430072BB48 /* script.cpp in Sources */,
 				F5DC44881C7CD9AF00F68115 /* mesh.cpp in Sources */,
@@ -856,6 +870,7 @@
 				F59AB5A91AFA4F1800137527 /* fhm_mesh.cpp in Sources */,
 				F5961A291CCCBFEE00B92BE4 /* network_server.cpp in Sources */,
 				F538BB0B1CC2B8EA0055F394 /* app_protocol_simple.cpp in Sources */,
+				0EEDDFA522389A1600E3B51B /* dns.cpp in Sources */,
 				F59AB5AE1AFA4F1800137527 /* location.cpp in Sources */,
 				F5C6D3931AF969A5006FB7E6 /* qdf.cpp in Sources */,
 				F50DADAC1C3047D5000DD3EA /* hangar.cpp in Sources */,
@@ -885,6 +900,7 @@
 				F5D796A219B3432C006269F0 /* pugixml.cpp in Sources */,
 				F59AB5921AFA389500137527 /* game.cpp in Sources */,
 				F50D9C941C9E946B00A56812 /* cdp.cpp in Sources */,
+				0EEDDFA422389A1600E3B51B /* socketdef.cpp in Sources */,
 				F5C3B6FE1B2C809000479524 /* particles.cpp in Sources */,
 				F59AB5B11AFA4FEC00137527 /* world.cpp in Sources */,
 				F50EE62A1CD3BA2D00DDED72 /* sound.cpp in Sources */,

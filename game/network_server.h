@@ -33,9 +33,10 @@ private:
 
 private:
     struct client;
-    void process_msg(const std::pair<miso::server_tcp::client_id, std::string> &msg);
-    void process_msg(client &c, const std::string &msg);
+    void process_msg(const std::pair<miso::server_tcp::client_id, std::vector<uint8_t> > &msg);
+    void process_msg(client &c, const std::vector<uint8_t> &msg);
     void remove_client(miso::server_tcp::client_id id);
+    bool send_string(miso::server_tcp::client_id, const std::string &str);
 
 private:
     miso::server_tcp m_server;

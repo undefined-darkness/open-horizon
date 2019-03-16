@@ -6,7 +6,7 @@
 #include "network_helpers.h"
 #include "system/system.h"
 #include "miso/protocol/app_protocol_simple.h"
-#include "miso/ipv4.h"
+#include "miso/socket/ipv4.h"
 
 #include <thread>
 #include <chrono>
@@ -26,7 +26,7 @@ bool network_client::connect(const char *address, short port)
 
     static miso::app_protocol_simple protocol;
     m_client.set_app_protocol(&protocol);
-    if (!m_client.connect_wait(miso::ipv4_address(address), port, timeout))
+    if (!m_client.connect_wait(miso::ipv4_address::create(address), port, timeout))
     {
         m_error = "Unable to connect";
         return false;
@@ -39,10 +39,10 @@ bool network_client::connect(const char *address, short port)
         m_client.update();
         for (size_t j = 0; j < m_client.get_message_count(); ++j)
         {
-            const std::string &m = m_client.get_message(j);
+            const std::vector<uint8_t> &m = m_client.get_message(j);
             if (!has_info)
             {
-                if (!get_info(m, m_server_info))
+                if (!get_info((char *)m.data(), m_server_info))
                 {
                     m_client.disconnect();
                     m_error = "Invalid server response";
@@ -59,11 +59,12 @@ bool network_client::connect(const char *address, short port)
                 }
 
                 has_info = true;
-                m_client.send_message("connect");
+                send_string("connect");
             }
             else
             {
-                std::istringstream ss(m);
+                const std::string str((char *)m.data(), m.size());
+                std::istringstream ss(str);
                 std::string command;
                 ss >> command;
 
@@ -95,20 +96,20 @@ void network_client::start()
     if (!m_client.is_open())
         return;
 
-    m_client.send_message("sync_time");
+    send_string("sync_time");
     bool ready = false;
     while (m_client.is_connected() && !ready)
     {
         m_client.update();
         for (int j = 0; j < m_client.get_message_count(); ++j)
         {
-            if(m_client.get_message(j)=="ready")
+            if (strcmp((char *)m_client.get_message(j).data(), "ready") == 0)
                 ready = true;
         }
     }
 
     const auto time = nya_system::get_time();
-    m_client.send_message("sync");
+    send_string("sync");
 
     ready = false;
     while (m_client.is_connected() && !ready)
@@ -116,7 +117,9 @@ void network_client::start()
         m_client.update();
         for (int j = 0; j < m_client.get_message_count(); ++j)
         {
-            std::istringstream ss(m_client.get_message(j));
+            const auto &m = m_client.get_message(j);
+            const std::string str((char *)m.data(), m.size());
+            std::istringstream ss(str);
             std::string command;
             ss >> command;
             if (command == "time")
@@ -127,7 +130,7 @@ void network_client::start()
     auto ping = nya_system::get_time() - time;
     m_time += ping / 2; // client->server->client, assume symmetric lag
 
-    m_client.send_message("start");
+    send_string("start");
 }
 
 //------------------------------------------------------------
@@ -139,7 +142,7 @@ void network_client::disconnect()
     if (!m_client.is_open())
         return;
 
-    m_client.send_message("disconnect");
+    send_string("disconnect");
     m_client.disconnect();
 }
 
@@ -177,8 +180,12 @@ void network_client::update()
     for (size_t i = 0; i < m_client.get_message_count(); ++i)
     {
         auto &m = m_client.get_message(i);
+        if (m.empty())
+            continue;
 
-        std::istringstream is(m);
+
+        const std::string str((char *)m.data(), m.size());
+        std::istringstream is(str);
         std::string cmd;
         is >> cmd;
 
@@ -231,8 +238,15 @@ void network_client::update()
             m_client.disconnect();
         }
         else
-            printf("client received: %s\n", m.c_str());
+            printf("client received: %s\n", str.c_str());
     }
+}
+
+//------------------------------------------------------------
+
+inline bool _send_string(miso::client_tcp &client, const std::string &str)
+{
+    return client.send_message_cstr(str.c_str());
 }
 
 //------------------------------------------------------------
@@ -243,15 +257,15 @@ template<typename rs> void send_requests(rs &requests, miso::client_tcp &client,
         return;
 
     for (auto &r: requests)
-        client.send_message(msg + " " + to_string(r));
+        _send_string(client, msg + " " + to_string(r));
     requests.clear();
 }
 
 //------------------------------------------------------------
 
-template<typename rs> void send_objects(rs &objs, miso::client_tcp &client, unsigned int time, const std::string &msg)
+template<typename rs> void send_objects(rs &objs, miso::client_tcp &client, unsigned int time, const std::string &type)
 {
-    send_requests(objs.add_requests, client, "add_" + msg);
+    send_requests(objs.add_requests, client, "add_" + type);
 
     for (auto &o: objs.objects)
     {
@@ -259,9 +273,9 @@ template<typename rs> void send_objects(rs &objs, miso::client_tcp &client, unsi
             continue;
 
         if (o.net.unique())
-            client.send_message("remove_" + msg + " " + std::to_string(o.r.id));
+            _send_string(client, "remove_" + type + " " + std::to_string(o.r.id));
         else
-            client.send_message(msg + " " + std::to_string(time) + " " + std::to_string(o.r.id) + " "+ to_string(o.net));
+            _send_string(client, type + " " + std::to_string(time) + " " + std::to_string(o.r.id) + " "+ to_string(o.net));
     }
 
     objs.remove_src_unique();
@@ -280,6 +294,13 @@ void network_client::update_post(int dt)
     send_objects(m_missiles, m_client, m_time, "missile");
     send_requests(m_general_msg_requests, m_client, "message");
     send_requests(m_game_data_msg_requests, m_client, "game_data");
+}
+
+//------------------------------------------------------------
+
+bool network_client::send_string(const std::string &str)
+{
+    return _send_string(m_client, str);
 }
 
 //------------------------------------------------------------

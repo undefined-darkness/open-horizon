@@ -26,7 +26,7 @@ bool network_server::open(unsigned short port, const char *name, const char *gam
     m_header.append(" location ").append(location);
     m_header.append(" players ").append("1"); //ToDo
     m_header.append(" max_players ").append(std::to_string(max_players));
-    m_header.append(" end\n");
+    m_header.append(" end");
 
     //self-check
     server_info i;
@@ -48,7 +48,7 @@ bool network_server::open(unsigned short port, const char *name, const char *gam
 void network_server::close()
 {
     for (auto &c: m_clients)
-        m_server.send_message(c.first, "disconnect");
+        send_string(c.first, "disconnect");
 
     m_server.close(true);
     m_planes.clear();
@@ -78,7 +78,7 @@ void network_server::update()
     {
         auto id = m_server.get_new_client(i);
 
-        if (!m_server.send_message(id, m_header))
+        if (!send_string(id, m_header))
         {
             m_server.disconnect_user(id);
             continue;
@@ -86,7 +86,7 @@ void network_server::update()
 
         if (m_max_players > 0 && get_players_count() >= m_max_players)
         {
-            m_server.send_message(id, "max_players_limit");
+            send_string(id, "max_players_limit");
             m_server.disconnect_user(id);
             continue;
         }
@@ -103,7 +103,7 @@ void network_server::update()
 
 //------------------------------------------------------------
 
-void network_server::process_msg(const std::pair<miso::server_tcp::client_id, std::string> &msg)
+void network_server::process_msg(const std::pair<miso::server_tcp::client_id, std::vector<uint8_t> > &msg)
 {
     const auto id = msg.first;
 
@@ -118,11 +118,11 @@ void network_server::process_msg(const std::pair<miso::server_tcp::client_id, st
     if (r == m_requests.end())
         return;
 
-    if (msg.second == "connect")
+    if (strcmp((char *)msg.second.data(), "connect") == 0)
     {
         if (m_max_players > 0 && get_players_count() >= m_max_players)
         {
-            m_server.send_message(id, "max_players_limit");
+            send_string(id, "max_players_limit");
             m_server.disconnect_user(id);
             m_requests.erase(id);
         }
@@ -130,7 +130,7 @@ void network_server::process_msg(const std::pair<miso::server_tcp::client_id, st
         {
             const unsigned int client_range = (unsigned int)(-1) / 1024;
             m_last_client_range += client_range;
-            m_server.send_message(id, "connected " + std::to_string(id) + " " + std::to_string(m_last_client_range));
+            send_string(id, "connected " + std::to_string(id) + " " + std::to_string(m_last_client_range));
             m_requests.erase(id);
             client &c = m_clients[id];
             c.id = id;
@@ -156,9 +156,13 @@ void network_server::cache_net_game_data(const msg_game_data &data)
 
 //------------------------------------------------------------
 
-void network_server::process_msg(client &c, const std::string &msg)
+void network_server::process_msg(client &c, const std::vector<uint8_t> &msg)
 {
-    std::istringstream is(msg);
+    if (msg.empty())
+        return;
+
+    std::string str((char *)msg.data(), msg.size());
+    std::istringstream is(str);
     std::string cmd;
     is>>cmd;
 
@@ -182,7 +186,7 @@ void network_server::process_msg(client &c, const std::string &msg)
                     if (oc.first == c.id)
                         continue;
 
-                    m_server.send_message(oc.first, "plane " + std::to_string(time) + " " + std::to_string(p.r.id) + " "+ to_string(p.net));
+                    send_string(oc.first, "plane " + std::to_string(time) + " " + std::to_string(p.r.id) + " "+ to_string(p.net));
                 }
 
                 p.net->pos += p.net->vel * (0.001f * time_fix);
@@ -211,7 +215,7 @@ void network_server::process_msg(client &c, const std::string &msg)
                     if (oc.first == c.id)
                         continue;
 
-                    m_server.send_message(oc.first, "missile " + std::to_string(time) + " " + std::to_string(m.r.id) + " "+ to_string(m.net));
+                    send_string(oc.first, "missile " + std::to_string(time) + " " + std::to_string(m.r.id) + " "+ to_string(m.net));
                 }
 
                 m.net->pos += m.net->vel * (0.001f * time_fix);
@@ -261,7 +265,7 @@ void network_server::process_msg(client &c, const std::string &msg)
             if(oc.first == c.id)
                 continue;
 
-            m_server.send_message(oc.first, "add_plane " + to_string(ap));
+            send_string(oc.first, "add_plane " + to_string(ap));
         }
     }
     else if (cmd == "add_missile")
@@ -277,7 +281,7 @@ void network_server::process_msg(client &c, const std::string &msg)
             if(oc.first == c.id)
                 continue;
 
-            m_server.send_message(oc.first, "add_missile " + to_string(am));
+            send_string(oc.first, "add_missile " + to_string(am));
         }
     }
     else if (cmd == "remove_missile")
@@ -297,9 +301,9 @@ void network_server::process_msg(client &c, const std::string &msg)
     }
     else if (cmd == "sync_time")
     {
-        m_server.send_message(c.id, "ready");
+        send_string(c.id, "ready");
 
-        std::vector<std::pair<miso::server_interface::client_id, std::string> > other_messages;
+        std::vector<std::pair<miso::server_interface::client_id, std::vector<uint8_t> > > other_messages;
 
         bool ready = false;
         while (m_server.is_open() && !ready)
@@ -308,14 +312,14 @@ void network_server::process_msg(client &c, const std::string &msg)
             for (int j = 0; j < m_server.get_message_count(); ++j)
             {
                 auto &m = m_server.get_message(j);
-                if(m.first == c.id && m.second=="sync")
+                if(m.first == c.id && strcmp((char *)m.second.data(), "sync") == 0)
                     ready = true;
                 else
                     other_messages.push_back(m);
             }
         }
 
-        m_server.send_message(c.id, "time " + std::to_string(m_time));
+        send_string(c.id, "time " + std::to_string(m_time));
 
         for (auto &o: other_messages)
             process_msg(o);
@@ -323,15 +327,22 @@ void network_server::process_msg(client &c, const std::string &msg)
     else if (cmd == "start")
     {
         for (auto &p: m_planes.objects)
-            m_server.send_message(c.id, "add_plane " + to_string(p.r));
+            send_string(c.id, "add_plane " + to_string(p.r));
 
         for (auto &d: m_game_data_cache)
-            m_server.send_message(c.id, "game_data " + to_string(d));
+            send_string(c.id, "game_data " + to_string(d));
 
         c.started = true;
     }
     else
-        printf("server received: %s\n", msg.c_str());
+        printf("server received: %s\n", str.c_str());
+}
+
+//------------------------------------------------------------
+
+inline bool _send_string(miso::server_tcp &server, miso::server_tcp::client_id id, const std::string &str)
+{
+    return server.send_message_cstr(id, str.c_str());
 }
 
 //------------------------------------------------------------
@@ -347,7 +358,7 @@ template<typename rs, typename cs> void send_requests(rs &requests, cs &clients,
             continue;
 
         for (auto &r: requests)
-            server.send_message(c.first, msg + " " + to_string(r));
+            _send_string(server, c.first, msg + " " + to_string(r));
     }
 
     requests.clear();
@@ -355,9 +366,9 @@ template<typename rs, typename cs> void send_requests(rs &requests, cs &clients,
 
 //------------------------------------------------------------
 
-template<typename rs, typename cs> void send_objects(rs &objs, cs &clients, miso::server_tcp &server, unsigned int time, const std::string &msg)
+template<typename rs, typename cs> void send_objects(rs &objs, cs &clients, miso::server_tcp &server, unsigned int time, const std::string &type)
 {
-    send_requests(objs.add_requests, clients, server, "add_" + msg);
+    send_requests(objs.add_requests, clients, server, "add_" + type);
 
     for (auto &c: clients)
     {
@@ -370,9 +381,9 @@ template<typename rs, typename cs> void send_objects(rs &objs, cs &clients, miso
                 continue;
 
             if (o.net.unique())
-                server.send_message(c.first, "remove_" + msg + " " + std::to_string(o.r.id));
+                _send_string(server, c.first, "remove_" + type + " " + std::to_string(o.r.id));
             else
-                server.send_message(c.first, msg + " " + std::to_string(time) + " " + std::to_string(o.r.id) + " "+ to_string(o.net));
+                _send_string(server, c.first, type + " " + std::to_string(time) + " " + std::to_string(o.r.id) + " "+ to_string(o.net));
         }
     }
 
@@ -407,7 +418,7 @@ void network_server::remove_client(miso::server_tcp::client_id id)
             continue;
 
         for (auto &c: m_clients)
-            m_server.send_message(c.first, "remove_plane " + std::to_string(p.r.id));
+            send_string(c.first, "remove_plane " + std::to_string(p.r.id));
     }
 
     m_planes.remove_by_client_id(id);
@@ -418,10 +429,17 @@ void network_server::remove_client(miso::server_tcp::client_id id)
             continue;
 
         for (auto &c: m_clients)
-            m_server.send_message(c.first, "remove_missile " + std::to_string(m.r.id));
+            send_string(c.first, "remove_missile " + std::to_string(m.r.id));
     }
 
     m_missiles.remove_by_client_id(id);
+}
+
+//------------------------------------------------------------
+
+bool network_server::send_string(miso::server_tcp::client_id id, const std::string &str)
+{
+    return _send_string(m_server, id, str);
 }
 
 //------------------------------------------------------------

@@ -30,6 +30,7 @@ public:
 private:
     void update() override;
     void update_post(int dt) override;
+    bool send_string(const std::string &str);
 
 private:
     miso::client_tcp m_client;
