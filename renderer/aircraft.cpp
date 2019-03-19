@@ -445,42 +445,28 @@ private:
 
 //------------------------------------------------------------
 
-bool aircraft::load(const char *name, unsigned int color_idx, const location_params &params, bool player)
+bool aircraft::load(const char *name, bool hd)
 {
-    if (!name)
-        return false;
-
-    std::string name_str(name);
-
-    m_half_flaps_flag = name_str == "f22a" || name_str == "m21b" || name_str == "av8b";
-
-    m_engine_lod_idx = 3; //ToDo: player ? 3 : -1;
-    if (name_str == "av8b")
-        m_engine_lod_idx = -1;
-
-    std::string name_tmp_str = "p_" + name_str; //ToDo: load d_ models
-    name_str = (player ? "p_" : "d_") + name_str;
-
-    const std::string tex_pref = std::string("model_id/tdb/mech/") + (player ? "plyr/" : "airp/");
-    const std::string mesh_pref = std::string("model_id/mech/") + "plyr/"; //ToDo: + (player ? "plyr/" : "airp/");
-
     auto info = aircraft_information::get().get_info(name);
     if (!info)
         return false;
 
-    if (color_idx >= info->colors.size() + info->color_mods.size())
-        return false;
+    m_name = name;
 
-    const auto base_color_idx = color_idx < info->colors.size() ? color_idx : info->color_mods[color_idx - info->colors.size()].coledit_idx;
+    m_half_flaps_flag = m_name == "f22a" || m_name == "m21b" || m_name == "av8b";
 
-    assert(base_color_idx < info->colors.size());
-    auto &color = info->colors[base_color_idx];
+    m_engine_lod_idx = 3; //ToDo: hd ? 3 : -1;
+    if (m_name == "av8b")
+        m_engine_lod_idx = -1;
 
-    m_camera_offset = info->camera_offset;
+    std::string name_str = (hd ? "p_" : "d_") + m_name;
+    std::string name_tmp_str = "p_" + m_name; //ToDo: load d_ models
+    m_mesh.load(name_tmp_str.c_str(), location_params());
 
-    m_mesh.load(name_tmp_str.c_str(), params);
+    const std::string tex_pref = std::string("model_id/tdb/mech/") + (hd ? "plyr/" : "airp/");
+    const std::string mesh_pref = std::string("model_id/mech/") + "plyr/"; //ToDo: + (player ? "plyr/" : "airp/");
 
-    if (player)
+    if (hd)
     {
         auto amb_name = tex_pref + name_str + "/00/" + name_str + "_00_amb.img";
         m_mesh.set_texture(0, "ambient", amb_name.c_str());
@@ -495,110 +481,7 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
         m_mesh.set_texture(0, "normal", shared::get_normal_texture());
     }
 
-    char cfldr[256];
-    sprintf(cfldr, "%02d", color.coledit_idx);
-    std::string cfldr2 = std::string(cfldr) + (player ? "" : "_l");
-
-    const std::string mat_name = mesh_pref + name_tmp_str + "/" + name_tmp_str + "_pcol" + cfldr + ".fhm";
-    fhm_materials mat;
-    mat.load(mat_name.c_str());
-    assert(!mat.materials.empty());
-
-    color_baker baker;
-
-    nya_scene::texture spec_tex;
-
-    if(!mat.textures.empty())
-    {
-        assert(mat.textures.size() == 2);
-
-        baker.set_base(mat.textures[0]);
-        spec_tex = mat.textures[1];
-
-        m_mesh.set_texture(m_engine_lod_idx, "specular", spec_tex);
-
-         // made up _pcoledit name to bind data.pac.xml entry somehow
-        const std::string mat_name = mesh_pref + name_tmp_str + "/" + name_tmp_str + "_pcoledit" + cfldr + ".fhm";
-
-        fhm_materials mat;
-        mat.load(mat_name.c_str());
-        assert(mat.textures.size() == 2);
-
-        baker.set_colx(mat.textures[0]);
-        baker.set_coly(mat.textures[1]);
-    }
-    else
-    {
-        baker.set_base((tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_col.img").c_str());
-        baker.set_colx((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mkx.img").c_str());
-        baker.set_coly((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mky.img").c_str());
-
-        spec_tex.load((tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_spe.img").c_str());
-    }
-
-    for (int i = 0; i < 6; ++i)
-        baker.set_color(i, color.colors[i]);
-
-    if (color_idx >= info->colors.size())
-    {
-        auto &cm = info->color_mods[color_idx - info->colors.size()];
-        if (!cm.tex_name.empty())
-            baker.set_decal(cm.load_texture(cm.tex_name));
-
-        for (int i = 0; i < 6; ++i)
-        {
-            if (cm.override_colors[i])
-                baker.set_color(i, cm.colors[i]);
-        }
-
-        if (!cm.spec_name.empty())
-        {
-            color_baker spec_baker;
-            spec_baker.set_base(spec_tex);
-            spec_baker.set_decal(cm.load_texture(cm.spec_name));
-            spec_tex = spec_baker.bake();
-        }
-    }
-
-    m_mesh.set_material(0, mat.materials[0], "shaders/player_plane.nsh");
-    if (player && m_engine_lod_idx >= 0 && mat.materials.size() > 2)
-        m_mesh.set_material(m_engine_lod_idx, mat.materials[2], "shaders/player_plane.nsh");
-
-    auto diff_tex = baker.bake();
-
-    int lods[] = {0, m_engine_lod_idx};
-    for (auto &l: lods)
-    {
-        if (l < 0)
-            continue;
-
-        m_mesh.set_texture(l, "diffuse", diff_tex );
-        m_mesh.set_texture(l, "specular", spec_tex);
-        m_mesh.set_texture(l, "shadows", shared::get_white_texture());
-    }
-
-    //ToDo: add single group in fhm_mesh instead
-    if (player)
-    {
-        int lods[] = {0, m_engine_lod_idx};
-        for (auto &l: lods)
-        {
-            if (l < 0)
-                continue;
-
-            auto &mesh = m_mesh.get_mesh(l);
-            for (int i = 0; i < mesh.get_groups_count(); ++i)
-            {
-                auto &mat = mesh.modify_material(i);
-                if (mat.get_default_pass().get_state().blend)
-                    continue;
-
-                auto &p = mat.get_pass(mat.add_pass("caster"));
-                p.set_shader("shaders/caster.nsh");
-                p.get_state().set_cull_face(true, nya_render::cull_face::cw);
-            }
-        }
-    }
+    m_camera_offset = info->camera_offset;
 
     m_mesh.set_relative_anim_time(0, 'rudl', 0.5);
     m_mesh.set_relative_anim_time(0, 'rudr', 0.5);
@@ -703,6 +586,135 @@ bool aircraft::load(const char *name, unsigned int color_idx, const location_par
         else
             m_tvc_param = ei.tvc / 180.0f * nya_math::constants::pi;
         m_engines.push_back({plane_engine(ei.radius, ei.dist, ei.yscale), m_mesh.get_bone_idx(0, bname.c_str())});
+    }
+
+    //ToDo: add single group in fhm_mesh instead
+    if (hd)
+    {
+        int lods[] = {0, m_engine_lod_idx};
+        for (auto &l: lods)
+        {
+            if (l < 0)
+                continue;
+
+            auto &mesh = m_mesh.get_mesh(l);
+            for (int i = 0; i < mesh.get_groups_count(); ++i)
+            {
+                auto &mat = mesh.modify_material(i);
+                if (mat.get_default_pass().get_state().blend)
+                    continue;
+
+                auto &p = mat.get_pass(mat.add_pass("caster"));
+                p.set_shader("shaders/caster.nsh");
+                p.get_state().set_cull_face(true, nya_render::cull_face::cw);
+            }
+        }
+    }
+    return true;
+}
+
+//------------------------------------------------------------
+
+bool aircraft::set_decal(unsigned int color_idx, bool hd)
+{
+    auto info = aircraft_information::get().get_info(m_name.c_str());
+    if (!info)
+        return false;
+
+    if (color_idx >= info->colors.size() + info->color_mods.size())
+        return false;
+
+    const auto base_color_idx = color_idx < info->colors.size() ? color_idx : info->color_mods[color_idx - info->colors.size()].coledit_idx;
+
+    assert(base_color_idx < info->colors.size());
+    auto &color = info->colors[base_color_idx];
+
+    const std::string tex_pref = std::string("model_id/tdb/mech/") + (hd ? "plyr/" : "airp/");
+    const std::string mesh_pref = std::string("model_id/mech/") + "plyr/"; //ToDo: + (player ? "plyr/" : "airp/");
+
+    char cfldr[256];
+    sprintf(cfldr, "%02d", color.coledit_idx);
+    std::string cfldr2 = std::string(cfldr) + (hd ? "" : "_l");
+
+    std::string name_tmp_str = "p_" + m_name; //ToDo: load d_ models
+    std::string name_str = (hd ? "p_" : "d_") + m_name;
+
+    const std::string mat_name = mesh_pref + name_tmp_str + "/" + name_tmp_str + "_pcol" + cfldr + ".fhm";
+    fhm_materials mat;
+    mat.load(mat_name.c_str());
+    assert(!mat.materials.empty());
+
+    color_baker baker;
+
+    nya_scene::texture spec_tex;
+
+    if(!mat.textures.empty())
+    {
+        assert(mat.textures.size() == 2);
+
+        baker.set_base(mat.textures[0]);
+        spec_tex = mat.textures[1];
+
+        m_mesh.set_texture(m_engine_lod_idx, "specular", spec_tex);
+
+        // made up _pcoledit name to bind data.pac.xml entry somehow
+        const std::string mat_name = mesh_pref + name_tmp_str + "/" + name_tmp_str + "_pcoledit" + cfldr + ".fhm";
+
+        fhm_materials mat;
+        mat.load(mat_name.c_str());
+        assert(mat.textures.size() == 2);
+
+        baker.set_colx(mat.textures[0]);
+        baker.set_coly(mat.textures[1]);
+    }
+    else
+    {
+        baker.set_base((tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_col.img").c_str());
+        baker.set_colx((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mkx.img").c_str());
+        baker.set_coly((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mky.img").c_str());
+
+        spec_tex.load((tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_spe.img").c_str());
+    }
+
+    for (int i = 0; i < 6; ++i)
+        baker.set_color(i, color.colors[i]);
+
+    if (color_idx >= info->colors.size())
+    {
+        auto &cm = info->color_mods[color_idx - info->colors.size()];
+        if (!cm.tex_name.empty())
+            baker.set_decal(cm.load_texture(cm.tex_name));
+
+        for (int i = 0; i < 6; ++i)
+        {
+            if (cm.override_colors[i])
+                baker.set_color(i, cm.colors[i]);
+        }
+
+        if (!cm.spec_name.empty())
+        {
+            color_baker spec_baker;
+            spec_baker.set_base(spec_tex);
+            spec_baker.set_decal(cm.load_texture(cm.spec_name));
+            spec_tex = spec_baker.bake();
+        }
+    }
+
+    m_mesh.set_material(0, mat.materials[0], "shaders/player_plane.nsh");
+    if (hd && m_engine_lod_idx >= 0 && mat.materials.size() > 2)
+        m_mesh.set_material(m_engine_lod_idx, mat.materials[2], "shaders/player_plane.nsh");
+
+    auto diff_tex = baker.bake();
+
+    int lods[] = {0, m_engine_lod_idx};
+    for (auto &l: lods)
+    {
+        if (l < 0)
+            continue;
+
+        m_mesh.set_texture(l, "diffuse", diff_tex );
+        m_mesh.set_texture(l, "specular", spec_tex);
+        m_mesh.set_texture(l, "shadows", shared::get_white_texture());
     }
 
     return true;

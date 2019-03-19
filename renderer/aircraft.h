@@ -18,7 +18,8 @@ class scene;
 class aircraft
 {
 public:
-    bool load(const char *name, unsigned int color_idx, const location_params &params, bool player);
+    bool load(const char *name, bool hd);
+    bool set_decal(unsigned int color_idx, bool hd);
     void load_missile(const char *name, const location_params &params);
     void load_special(const char *name, const location_params &params);
     void apply_location(const nya_scene::texture &ibl, const nya_scene::texture &env, const location_params &params);
@@ -120,6 +121,8 @@ public:
     }
 
 private:
+    std::string m_name;
+
     float clamp(float value, float from, float to) { if (value < from) return from; if (value > to) return to; return value; }
     float tend(float value, float target, float speed)
     {

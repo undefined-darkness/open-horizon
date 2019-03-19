@@ -37,7 +37,8 @@ object_ptr world::add_object(const model &mdl)
 aircraft_ptr world::add_aircraft(const char *name, int color, bool player)
 {
     aircraft_ptr a(true);
-    a->load(name, color, m_location.get_params(), player);
+    a->load(name, player);
+    a->set_decal(color, player);
     a->apply_location(m_location.get_ibl(), m_location.get_env(), m_location.get_params());
 
     if (player)
