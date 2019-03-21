@@ -120,6 +120,9 @@ bool mesh_ndxr::load(const void *data, size_t size, const nya_render::skeleton &
     if (endianness)
         header.change_endianness();
 
+    m_bbox_origin = nya_math::vec3(header.bbox_origin);
+    m_bbox_size = header.bbox_size;
+
     assume(header.size <= size);
     assume(header.version == 2);
 

@@ -821,6 +821,8 @@ bool fhm_mesh::read_ndxr(memory_reader &reader, const fhm_mnt &mnt, const fhm_mo
 
     nya_scene::shared_mesh mesh;
     mesh.skeleton = mnt.skeleton;
+    mesh.aabb.origin = nmesh.m_bbox_origin;
+    mesh.aabb.delta = nya_math::vec3::one() * (nmesh.m_bbox_size * 0.5f);
 
     nya_scene::material mat;
     auto &p=mat.get_pass(mat.add_pass(nya_scene::material::default_pass));

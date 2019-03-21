@@ -54,6 +54,9 @@ struct mesh_ndxr
 
     std::vector<group> groups;
 
+    nya_math::vec3 m_bbox_origin;
+    float m_bbox_size;
+
 public:
     bool load(const void *data, size_t size, const nya_render::skeleton &skeleton, bool endianness);
     void reduce_groups();
