@@ -44,7 +44,7 @@ void scene::setup_shadow_camera(aircraft_ptr a)
     if (!a.is_valid())
         return;
 
-    const float hsize = std::max(fabsf(a->get_wing_offset().x) * 1.2f, 7.0f);//ToDo: aabb.dir.length()
+    const float hsize = a->get_aabb().delta.length() * 1.2f;
     nya_math::mat4 proj;
     proj.ortho(-hsize, hsize, -hsize, hsize, -hsize, hsize);
     m_shadow_camera->set_proj(proj);
