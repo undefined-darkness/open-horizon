@@ -3,13 +3,12 @@
 //
 
 #include "aircraft.h"
-#include "extensions/zip_resources_provider.h"
+#include "aircraft_info.h"
 #include "memory/tmp_buffer.h"
 #include "render/screen_quad.h"
 #include "render/fbo.h"
 #include "math/scalar.h"
 #include "containers/fhm.h"
-#include "containers/dpl.h"
 #include "renderer/shared.h"
 #include "renderer/scene.h"
 #include "renderer/texture.h"
@@ -28,15 +27,13 @@ public:
     void set_coly(const nya_scene::texture &tex) { m_mat.set_texture("coly", tex); }
     void set_decal(const nya_scene::texture &tex) { m_mat.set_texture("decal", tex); }
 
-    void set_color(unsigned int idx, const nya_math::vec3 &color)
+    void set_colors(const unsigned char (&color)[6][3])
     {
         if (!m_colors.get_count())
-        {
             m_colors.set_count(6);
-            //for (int i=0;i<m_colors.get_count();++i) m_colors.set(i,nya_math::vec3(1.0,1.0,1.0));
-        }
 
-        m_colors.set(idx,color);
+        for (int i = 0; i < 6; ++i)
+            m_colors.set(i, vec3(color[i][0]/255.0f, color[i][1]/255.0f, color[i][2]/255.0f), 1.0f);
     }
 
     nya_scene::texture bake()
@@ -83,364 +80,6 @@ public:
 private:
     nya_scene::material m_mat;
     nya_scene::material::param_array m_colors;
-};
-
-//------------------------------------------------------------
-
-class aircraft_information
-{
-public:
-    struct color_info
-    {
-        std::string name;
-        int coledit_idx;
-        nya_math::vec3 colors[6];
-    };
-
-    struct mod_info: public color_info
-    {
-        std::string zip_name, tex_name, spec_name;
-        bool override_colors[6] = { false };
-
-        nya_scene::texture load_texture(std::string name)
-        {
-            nya_resources::zip_resources_provider z(zip_name.c_str());
-            return renderer::load_texture(z, name.c_str());
-        }
-    };
-
-    struct engine_info
-    {
-        float radius = 0.0f, dist = 0.0f, yscale = 1.0f;
-        nya_math::vec2 tvc;
-    };
-
-    struct info
-    {
-        std::string name;
-        nya_math::vec3 camera_offset;
-        std::vector<color_info> colors;
-        std::vector<mod_info> color_mods;
-        std::string sound, voice;
-        std::vector<engine_info> engines;
-    };
-
-    info *get_info(const char *name)
-    {
-        if (!name)
-            return 0;
-
-        std::string name_str(name);
-        std::transform(name_str.begin(), name_str.end(), name_str.begin(), ::tolower);
-
-        for (auto &i: m_infos)
-        {
-            if (i.name == name_str)
-                return &i;
-        }
-
-        return 0;
-    }
-
-    static aircraft_information &get()
-    {
-        static aircraft_information info("target/Information/AircraftInformation.AIN");
-        static bool once = true;
-        if (once)
-        {
-            aircraft_information info5("target/Information/AircraftInformationC05.AIN"); //ToDo
-            *info.get_info("tnd4") = *info5.get_info("tnd4");
-
-            auto &f14d = *info.get_info("f14d");
-            if (f14d.colors.size() > 1)
-                std::swap(f14d.colors.back().coledit_idx, f14d.colors[f14d.colors.size() - 2].coledit_idx);
-
-            auto &av8b = *info.get_info("av8b");
-            av8b.colors.resize(3);
-            av8b.colors.back().coledit_idx = 3;
-
-            pugi::xml_document doc;
-            if (load_xml("aircrafts.xml", doc))
-            {
-                auto root = doc.first_child();
-                for (pugi::xml_node ac = root.child("aircraft"); ac; ac = ac.next_sibling("aircraft"))
-                {
-                    auto inf = info.get_info(ac.attribute("id").as_string(""));
-                    if (!inf)
-                        continue;
-
-                    for (int i = 0; i < (int)inf->colors.size(); ++i)
-                    {
-                        auto d = ac.child(("decal" + std::to_string(i)).c_str());
-                        if (!d)
-                            continue;
-
-                        inf->colors[i].name = d.attribute("name").as_string();
-
-                        if (!d.first_child())
-                            continue;
-
-                        for (int j = 0; j < 6; ++j)
-                        {
-                            auto c = d.child(("color" + std::to_string(j)).c_str());
-                            if (c)
-                                inf->colors[i].colors[j] = vec3(c.attribute("r").as_int(), c.attribute("g").as_int(), c.attribute("b").as_int()) / 255.0;
-                        }
-                    }
-
-                    for (pugi::xml_node eng = ac.child("engine"); eng; eng = eng.next_sibling("engine"))
-                    {
-                        engine_info ei;
-                        ei.radius = eng.attribute("radius").as_float();
-                        ei.dist = eng.attribute("dist").as_float();
-                        ei.yscale = eng.attribute("yscale").as_float(1.0f);
-                        ei.tvc.x = ei.tvc.y = eng.attribute("tvc_xy").as_float();
-                        ei.tvc.y = eng.attribute("tvc_y").as_float(ei.tvc.y);
-                        inf->engines.push_back(ei);
-                    }
-                }
-            }
-
-            auto custom_decals = list_files("decals/");
-            for (auto &d: custom_decals)
-            {
-                nya_resources::zip_resources_provider zprov;
-                if (!zprov.open_archive(d.c_str()))
-                    continue;
-
-                pugi::xml_document doc;
-                if (!load_xml(zprov.access("info.xml"), doc))
-                    continue;
-
-                auto root = doc.first_child();
-                auto plane_id = root.attribute("plane").as_string();
-
-                auto pi = info.get_info(plane_id);
-                if (!pi)
-                {
-                    printf("plane '%s' not found for decal mod '%s'\n", plane_id, d.c_str());
-                    continue;
-                }
-
-                mod_info m;
-                m.name = root.attribute("name").as_string();
-                m.zip_name = d;
-                m.coledit_idx = root.attribute("base").as_int();
-
-                if (m.coledit_idx < 0 || m.coledit_idx >= pi->colors.size())
-                {
-                    printf("invalid base idx %d for decal mod '%s', base count: %d\n", m.coledit_idx, d.c_str(), (int)pi->colors.size());
-                    continue;
-                }
-
-                auto img = root.child("image");
-                if (img)
-                    m.tex_name = img.attribute("file").as_string();
-
-                auto simg = root.child("specular");
-                if (simg)
-                    m.spec_name = simg.attribute("file").as_string();
-
-                for (int i = 0; i < sizeof(m.colors) / sizeof(m.colors[0]); ++i)
-                {
-                    auto c = root.child(("color" + std::to_string(i)).c_str());
-                    if (!c)
-                        continue;
-
-                    m.override_colors[i] = true;
-                    m.colors[i].set(c.attribute("r").as_int() / 255.0f, c.attribute("g").as_int() / 255.0f, c.attribute("b").as_int() / 255.0f);
-                }
-
-                pi->color_mods.push_back(m);
-            }
-
-            once = false;
-        }
-
-        return info;
-    }
-
-    aircraft_information(const char *name)
-    {
-        //ToDo: don't determine aircraft order by camera offsets file
-
-        auto r = load_resource("Camera/AdjustedCameraOffset.txt");
-
-        std::vector<std::string> values;
-        std::string tmp;
-        for (size_t i = 0; i < r.get_size(); ++i)
-        {
-            char c=((char *)r.get_data())[i];
-            if (c=='\n' || c=='\r')
-            {
-                if (tmp.empty())
-                    continue;
-
-                auto t = tmp.substr(0,7);
-
-                if (t !="float\t.")
-                {
-                    tmp.clear();
-                    continue;
-                }
-
-                tmp = tmp.substr(t.length());
-
-                for (size_t j = 0; j < tmp.size(); ++j)
-                {
-                    std::string type = tmp.substr(0, j);
-                    if (tmp[j] == '\t')
-                    {
-                        tmp = tmp.substr(j + 1);
-                        break;
-                    }
-                }
-
-                std::string plane_name = tmp.substr(0,4);
-                std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
-
-                auto info = get_info(plane_name.c_str());
-                if (!info)
-                {
-                    m_infos.resize(m_infos.size() + 1);
-                    m_infos.back().name = plane_name;
-                    info = &m_infos.back();
-                    //printf("%s\n",plane_name.c_str());
-                }
-
-                auto d = tmp.find(':');
-                auto vname = tmp.substr(d + 1);
-                tmp = tmp.substr(5, d - 1 - 5);
-                float v = atof(vname.c_str());
-
-                if (tmp == "AroundLook.Offset.X") info->camera_offset.x = v;
-                if (tmp == "AroundLook.Offset.Y") info->camera_offset.y = v;
-                if (tmp == "AroundLook.Offset.Z") info->camera_offset.z = v;
-
-                //printf("%s=%f\n",tmp.c_str(),v);
-
-                tmp.clear();
-                continue;
-            }
-
-            tmp.push_back(c);
-        }
-
-        r.free();
-
-        r = load_resource(name);
-        nya_memory::memory_reader reader(r.get_data(),r.get_size());
-
-        struct ain_header
-        {
-            char sign[4];
-            uint32_t unknown;
-            uint32_t count;
-            uint32_t zero;
-        };
-
-        auto header = reader.read<ain_header>();
-        if (memcmp(header.sign, "AIN", 3) == 0)
-        {
-            struct ain_entry
-            {
-                uint16_t color_num;
-                uint16_t plane_num;
-                uint32_t unknown[39];
-                uint8_t colors[6][4];
-                uint32_t unknown2[6];
-            };
-
-            std::vector<ain_entry> entries(header.count);
-            for (auto &e: entries)
-            {
-                e = reader.read<ain_entry>();
-                auto plane_idx = int(e.plane_num)-1;
-                assert(plane_idx >= 0);
-
-                if (plane_idx >= m_infos.size())
-                    continue;
-
-                auto &info = m_infos[plane_idx];
-                auto color_idx = int(e.color_num)-1;
-                if (color_idx >= (int)info.colors.size())
-                     info.colors.resize(color_idx + 1);
-
-                auto &c = info.colors[color_idx];
-                c.coledit_idx = -1;
-                for (int i = 0; i < 6; ++i)
-                {
-                    auto ec = e.colors[i];
-                    c.colors[i] = nya_math::vec3(ec[3], ec[2], ec[1]) / 255.0;
-                }
-            }
-        }
-        r.free();
-
-        //ToDo
-
-        std::map<std::string,std::vector<int> > ints;
-        std::map<std::string, std::pair<std::string, std::string> > sounds;
-
-        dpl_file dp;
-        dp.open("datapack.bin");
-
-        std::string buf;
-        for (int i = 0; i < dp.get_files_count(); ++i)
-        {
-            buf.resize(dp.get_file_size(i));
-            dp.read_file_data(i, &buf[0]);
-            assert(buf.size()>16);
-            if (strncmp(buf.c_str(), ";DPL_P_", 7) != 0)
-                continue;
-
-            std::string plane_name = buf.substr(7,4);
-            std::transform(plane_name.begin(), plane_name.end(), plane_name.begin(), ::tolower);
-
-            if (buf[7+4] == '\n')
-            {
-                auto s0 = buf.find("ound/");     if (s0 == std::string::npos) continue;
-                auto e0 = buf.find('\x9', s0);    if (e0 == std::string::npos) continue;
-                auto s1 = buf.find("ound/", e0); if (s1 == std::string::npos) continue;
-                auto e1 = buf.find('\x9', s1);    if (e1 == std::string::npos) continue;
-
-                auto test = sounds[plane_name] = std::make_pair('s' + buf.substr(s0, e0 - s0), 's' + buf.substr(s1, e1 - s1));
-                test = test;
-            }
-            else if (buf[7+4] == '_' && buf[7+4+1] == 'T')
-            {
-                int idx = atoi(&buf[7+4+2]);
-                ints[plane_name].push_back(idx);
-            }
-        }
-
-        dp.close();
-
-        for (auto &info: m_infos)
-        {
-            auto &in = ints[info.name];
-
-            auto s = sounds.find(info.name);
-            if (s != sounds.end())
-                info.sound = s->second.first, info.voice = s->second.second;
-
-            int last_idx = 0;
-            for (size_t i = 0; i < info.colors.size(); ++i)
-            {
-                //assert(i < in.size());
-                if (i < in.size())
-                {
-                    info.colors[i].coledit_idx = in[i];
-                    last_idx = in[i];
-                }
-                else
-                    info.colors[i].coledit_idx = ++last_idx;
-            }
-        }
-    }
-
-private:
-    std::vector<info> m_infos;
 };
 
 //------------------------------------------------------------
@@ -624,7 +263,7 @@ bool aircraft::set_decal(unsigned int color_idx, bool hd)
     if (color_idx >= info->colors.size() + info->color_mods.size())
         return false;
 
-    const auto base_color_idx = color_idx < info->colors.size() ? color_idx : info->color_mods[color_idx - info->colors.size()].coledit_idx;
+    const int base_color_idx = color_idx < info->colors.size() ? color_idx : info->color_mods[color_idx - info->colors.size()].coledit_idx;
 
     assert(base_color_idx < info->colors.size());
     auto &color = info->colors[base_color_idx];
@@ -655,7 +294,108 @@ bool aircraft::set_decal(unsigned int color_idx, bool hd)
         baker.set_base(mat.textures[0]);
         spec_tex = mat.textures[1];
 
-        m_mesh.set_texture(m_engine_lod_idx, "specular", spec_tex);
+        // made up _pcoledit name to bind data.pac.xml entry somehow
+        const std::string mat_name = mesh_pref + name_tmp_str + "/" + name_tmp_str + "_pcoledit" + cfldr + ".fhm";
+
+        fhm_materials mat;
+        mat.load(mat_name.c_str());
+        assert(mat.textures.size() == 2);
+
+        baker.set_colx(mat.textures[0]);
+        baker.set_coly(mat.textures[1]);
+    }
+    else
+    {
+        baker.set_base((tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_col.img").c_str());
+        baker.set_colx((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mkx.img").c_str());
+        baker.set_coly((tex_pref + name_str + "/coledit" + cfldr + "/" + name_str + "_" + cfldr2 + "_mky.img").c_str());
+
+        spec_tex.load((tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_spe.img").c_str());
+    }
+
+    baker.set_colors(color.colors);
+
+    if (color_idx >= info->colors.size())
+    {
+        auto &cm = info->color_mods[color_idx - info->colors.size()];
+        if (!cm.tex_name.empty())
+            baker.set_decal(cm.load_texture(cm.tex_name));
+
+        baker.set_colors(cm.colors);
+
+        if (!cm.spec_name.empty())
+        {
+            color_baker spec_baker;
+            spec_baker.set_base(spec_tex);
+            spec_baker.set_decal(cm.load_texture(cm.spec_name));
+            spec_tex = spec_baker.bake();
+        }
+    }
+
+    m_mesh.set_material(0, mat.materials[0], "shaders/player_plane.nsh");
+    if (m_engine_lod_idx >= 0 && mat.materials.size() > 2)
+        m_mesh.set_material(m_engine_lod_idx, mat.materials[2], "shaders/player_plane.nsh");
+
+    auto diff_tex = baker.bake();
+
+    int lods[] = {0, m_engine_lod_idx};
+    for (auto &l: lods)
+    {
+        if (l < 0)
+            continue;
+
+        m_mesh.set_texture(l, "diffuse", diff_tex );
+        m_mesh.set_texture(l, "specular", spec_tex);
+        m_mesh.set_texture(l, "shadows", shared::get_white_texture());
+    }
+
+    return true;
+}
+
+//------------------------------------------------------------
+
+template<int size> nya_scene::texture tex_from_netimg(const netimg<size> &src)
+{
+    nya_scene::texture result;
+    nya_memory::tmp_buffer_scoped buf(src.raw_size);
+    src.decode(buf.get_data());
+    result.build(buf.get_data(), src.get_width(), src.get_height(), nya_render::texture::color_rgba);
+    return result;
+}
+
+//------------------------------------------------------------
+
+bool aircraft::set_decal(const net_decal &decal)
+{
+    auto info = aircraft_information::get().get_info(m_name.c_str());
+    if (!info)
+        return false;
+
+    const std::string tex_pref = std::string("model_id/tdb/mech/airp/");
+    const std::string mesh_pref = std::string("model_id/mech/") + "plyr/"; //ToDo: + (player ? "plyr/" : "airp/");
+
+    char cfldr[256];
+    sprintf(cfldr, "%02d", decal.coledit_idx);
+    std::string cfldr2 = std::string(cfldr) + "_l";
+
+    std::string name_tmp_str = "p_" + m_name; //ToDo: load d_ models
+    std::string name_str = "d_" + m_name;
+
+    const std::string mat_name = mesh_pref + name_tmp_str + "/" + name_tmp_str + "_pcol" + cfldr + ".fhm";
+    fhm_materials mat;
+    mat.load(mat_name.c_str());
+    assert(!mat.materials.empty());
+
+    color_baker baker;
+
+    nya_scene::texture spec_tex;
+
+    if(!mat.textures.empty())
+    {
+        assert(mat.textures.size() == 2);
+
+        baker.set_base(mat.textures[0]);
+        spec_tex = mat.textures[1];
 
         // made up _pcoledit name to bind data.pac.xml entry somehow
         const std::string mat_name = mesh_pref + name_tmp_str + "/" + name_tmp_str + "_pcoledit" + cfldr + ".fhm";
@@ -676,35 +416,18 @@ bool aircraft::set_decal(unsigned int color_idx, bool hd)
         spec_tex.load((tex_pref + name_str + "/" + cfldr + "/" + name_str + "_" + cfldr2 + "_spe.img").c_str());
     }
 
-    for (int i = 0; i < 6; ++i)
-        baker.set_color(i, color.colors[i]);
+    baker.set_colors(decal.colors);
+    baker.set_decal(tex_from_netimg(decal.diffuse));
+    auto diff_tex = baker.bake();
 
-    if (color_idx >= info->colors.size())
-    {
-        auto &cm = info->color_mods[color_idx - info->colors.size()];
-        if (!cm.tex_name.empty())
-            baker.set_decal(cm.load_texture(cm.tex_name));
-
-        for (int i = 0; i < 6; ++i)
-        {
-            if (cm.override_colors[i])
-                baker.set_color(i, cm.colors[i]);
-        }
-
-        if (!cm.spec_name.empty())
-        {
-            color_baker spec_baker;
-            spec_baker.set_base(spec_tex);
-            spec_baker.set_decal(cm.load_texture(cm.spec_name));
-            spec_tex = spec_baker.bake();
-        }
-    }
+    color_baker spec_baker;
+    spec_baker.set_base(spec_tex);
+    spec_baker.set_decal(tex_from_netimg(decal.specular));
+    spec_tex = spec_baker.bake();
 
     m_mesh.set_material(0, mat.materials[0], "shaders/player_plane.nsh");
-    if (hd && m_engine_lod_idx >= 0 && mat.materials.size() > 2)
+    if (m_engine_lod_idx >= 0 && mat.materials.size() > 2)
         m_mesh.set_material(m_engine_lod_idx, mat.materials[2], "shaders/player_plane.nsh");
-
-    auto diff_tex = baker.bake();
 
     int lods[] = {0, m_engine_lod_idx};
     for (auto &l: lods)
@@ -712,7 +435,7 @@ bool aircraft::set_decal(unsigned int color_idx, bool hd)
         if (l < 0)
             continue;
 
-        m_mesh.set_texture(l, "diffuse", diff_tex );
+        m_mesh.set_texture(l, "diffuse", diff_tex);
         m_mesh.set_texture(l, "specular", spec_tex);
         m_mesh.set_texture(l, "shadows", shared::get_white_texture());
     }
@@ -822,6 +545,40 @@ std::string aircraft::get_voice_name(const char *plane_name)
         return "";
 
     return info->voice;
+}
+
+//------------------------------------------------------------
+
+aircraft::net_decal aircraft::get_net_decal(const char *plane_name, int color_idx)
+{
+    net_decal result;
+    const auto &info = aircraft_information::get().get_info(plane_name);
+    if (!info)
+        return result;
+
+    if (color_idx < (int)info->colors.size())
+    {
+        memcpy(result.colors, info->colors[color_idx].colors, sizeof(result.colors));
+        result.coledit_idx = info->colors[color_idx].coledit_idx;
+        return result;
+    }
+
+    if (color_idx >= info->colors.size() + info->color_mods.size())
+        return result;
+
+    const auto &cm = info->color_mods[color_idx - (int)info->colors.size()];
+    memcpy(result.colors, cm.colors, sizeof(result.colors));
+    result.decal_crc32 = cm.decal_crc32;
+    result.spec_crc32 = cm.specular_crc32;
+    result.coledit_idx = info->colors[cm.coledit_idx].coledit_idx;
+
+    if (!cm.tex_name.empty())
+        cm.load_netimg(cm.tex_name, result.diffuse);
+
+    if (!cm.spec_name.empty())
+        cm.load_netimg(cm.spec_name, result.specular);
+
+    return result;
 }
 
 //------------------------------------------------------------

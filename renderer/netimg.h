@@ -84,6 +84,9 @@ template<int width,int height=width> struct netimg
             *udata = (buf[i] & 0x0f) * 0x11, udata += 4;
         }
     }
+
+    int get_width() const { return width; }
+    int get_height() const { return height; }
 };
 
 }

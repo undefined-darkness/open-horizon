@@ -8,6 +8,7 @@
 #include "model.h"
 #include "location_params.h"
 #include "particles.h"
+#include "netimg.h"
 
 namespace renderer
 {
@@ -20,9 +21,22 @@ class aircraft
 public:
     bool load(const char *name, bool hd);
     bool set_decal(unsigned int color_idx, bool hd);
+
+    struct net_decal
+    {
+        unsigned char colors[6][3] = {0};
+        unsigned short coledit_idx = 0;
+        unsigned int decal_crc32 = 0;
+        unsigned int spec_crc32 = 0;
+        netimg<128> diffuse;
+        netimg<64> specular;
+    };
+    bool set_decal(const net_decal &decal);
+
     void load_missile(const char *name, const location_params &params);
     void load_special(const char *name, const location_params &params);
     void apply_location(const nya_scene::texture &ibl, const nya_scene::texture &env, const location_params &params);
+
     void draw(int lod_idx);
     void draw_player();
     void draw_cockpit();
@@ -47,6 +61,7 @@ public:
     nya_math::quat get_rot() { return m_mesh.get_rot(); }
     nya_math::vec3 get_bone_pos(const char *name);
     nya_math::vec3 get_wing_offset();
+    nya_math::aabb get_aabb() { return m_mesh.get_mesh(0).get_aabb(); }
 
     void set_damage(float value) { m_damage = value; }
     float get_damage() const { return m_damage; }
@@ -111,6 +126,7 @@ public:
     static std::string get_color_name(const char *plane_name, int idx);
     static std::string get_sound_name(const char *plane_name);
     static std::string get_voice_name(const char *plane_name);
+    static net_decal get_net_decal(const char *plane_name, int idx);
 
     aircraft(): m_hide(false), m_time(0), m_camera_mode(camera_mode_third), m_half_flaps_flag(false),
                 m_engine_lod_idx(0), m_dead(false), m_has_trail(false)

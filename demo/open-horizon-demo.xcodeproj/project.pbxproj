@@ -139,6 +139,7 @@
 /* Begin PBXFileReference section */
 		0E548BE1206C812000139A4E /* difficulty.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = difficulty.h; path = ../game/difficulty.h; sourceTree = "<group>"; };
 		0E548BE4206C839300139A4E /* difficulty.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = difficulty.xml; path = ../resources/difficulty.xml; sourceTree = "<group>"; };
+		0E6079ED22446E6500C3FC5F /* aircraft_info.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = aircraft_info.h; path = ../renderer/aircraft_info.h; sourceTree = "<group>"; };
 		0E78ACE6223DDFF2006E8584 /* netimg.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = netimg.h; path = ../renderer/netimg.h; sourceTree = "<group>"; };
 		0EB17DA6200BCE5500F5328C /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		0EEDDF9C22389A1100E3B51B /* socketdef.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = socketdef.cpp; path = ../deps/miso/src/socketdef.cpp; sourceTree = "<group>"; };
@@ -516,6 +517,7 @@
 			children = (
 				F59AB5B91AFAA0C000137527 /* aircraft.cpp */,
 				F59AB5B81AFAA0C000137527 /* aircraft.h */,
+				0E6079ED22446E6500C3FC5F /* aircraft_info.h */,
 				F59AB59E1AFA4F1800137527 /* clouds.cpp */,
 				F59AB5A61AFA4F1800137527 /* clouds.h */,
 				F59AB5991AFA4F1800137527 /* fhm_location.cpp */,
