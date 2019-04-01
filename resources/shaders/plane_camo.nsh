@@ -36,6 +36,7 @@ void main()
     col = mix(colors[4], col, colx.z);
     col = mix(colors[5], col, colx.x);
     col = mix(col, base, colx.w);
+    col = mix(base, col, col.a);
 
     col.rgb = mix(col.rgb, decal.rgb, decal.a);
 

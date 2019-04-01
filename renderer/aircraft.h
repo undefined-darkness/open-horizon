@@ -24,12 +24,14 @@ public:
 
     struct net_decal
     {
-        unsigned char colors[6][3] = {0};
+        unsigned char colors[6][3];
         unsigned short coledit_idx = 0;
         unsigned int decal_crc32 = 0;
         unsigned int spec_crc32 = 0;
         netimg<128> diffuse;
         netimg<64> specular;
+
+        net_decal() { memset(colors, 0, sizeof(colors)); }
     };
     bool set_decal(const net_decal &decal);
 
