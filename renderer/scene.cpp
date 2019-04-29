@@ -390,21 +390,23 @@ void scene::draw_scene(const char *pass,const nya_scene::tags &t)
     {
         if (m_player_aircraft.is_valid() && m_player_aircraft->is_visible() && m_player_aircraft->get_camera_mode() == aircraft::camera_mode_cockpit)
         {
-             nya_render::clear(false, true);
-             auto cam_pos = camera.get_pos();
-             camera.set_pos(m_player_aircraft->get_rot().rotate(m_cam_fp_off));
-             camera.set_near_far(0.01,10.0);
-             m_player_aircraft->draw_cockpit();
+            nya_render::clear(false, true);
+            auto cam_pos = camera.get_pos();
+            camera.set_pos(m_player_aircraft->get_rot().rotate(m_cam_fp_off));
+            camera.set_near_far(0.01,10.0);
+            nya_scene::mesh::set_frustum_cull(false);
+            m_player_aircraft->draw_cockpit();
+            nya_scene::mesh::set_frustum_cull(true);
 
-             //fill holes
-             nya_render::set_state(nya_render::state());
-             nya_render::depth_test::enable(nya_render::depth_test::not_greater);
-             m_cockpit_black.internal().set();
-             m_cockpit_black_quad.draw();
-             m_cockpit_black.internal().unset();
+            //fill holes
+            nya_render::set_state(nya_render::state());
+            nya_render::depth_test::enable(nya_render::depth_test::not_greater);
+            m_cockpit_black.internal().set();
+            m_cockpit_black_quad.draw();
+            m_cockpit_black.internal().unset();
 
-             //restore
-             camera.set_pos(cam_pos);
+            //restore
+            camera.set_pos(cam_pos);
         }
     }
     if (t.has("clouds_flat"))
