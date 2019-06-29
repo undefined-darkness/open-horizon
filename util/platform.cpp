@@ -38,6 +38,10 @@ bool platform::init(int width, int height, const char *title, bool fullscreen)
 #endif
     */
 
+#if GLFW_VERSION_MAJOR > 3 || GLFW_VERSION_MINOR >= 3
+    glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
+#endif
+
     if (fullscreen)
     {
         auto monitor = glfwGetPrimaryMonitor();
@@ -50,7 +54,6 @@ bool platform::init(int width, int height, const char *title, bool fullscreen)
         glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
         glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
         m_window = glfwCreateWindow(mode->width, mode->height, title, monitor, NULL);
-        m_screen_w = mode->width, m_screen_h = mode->height;
     }
     else
         m_window = glfwCreateWindow(width, height, title, NULL, NULL);
@@ -62,7 +65,7 @@ bool platform::init(int width, int height, const char *title, bool fullscreen)
 
     glfwSetKeyCallback(m_window, key_func);
     glfwMakeContextCurrent(m_window);
-    glfwGetFramebufferSize(m_window, &m_screen_w, &m_screen_h);
+    UpdateSize();
 
     return true;
 }
@@ -99,7 +102,7 @@ void platform::end_frame()
     double mx,my;
     glfwGetCursorPos(m_window, &mx, &my);
     m_mouse_x = int(mx), m_mouse_y = int(my);
-    glfwGetFramebufferSize(m_window, &m_screen_w, &m_screen_h);
+    UpdateSize();
 
     glfwSwapBuffers(m_window);
 }
@@ -123,8 +126,10 @@ bool platform::get_mouse_lbtn() { return m_window ? glfwGetMouseButton(m_window,
 bool platform::get_mouse_rbtn() { return m_window ? glfwGetMouseButton(m_window, 1) > 0 : false; }
 int platform::get_mouse_x() { return m_mouse_x; }
 int platform::get_mouse_y() { return m_mouse_y; }
-int platform::get_width() { return m_screen_w; }
-int platform::get_height() { return m_screen_h; }
+int platform::get_frame_width() { return m_frame_w; }
+int platform::get_frame_height() { return m_frame_h; }
+int platform::get_window_width() { return m_window_w; }
+int platform::get_window_height() { return m_window_h; }
 
 //------------------------------------------------------------
 
@@ -144,14 +149,13 @@ void platform::set_fullscreen(bool value, int windowed_width, int windowed_heigh
     if (value)
     {
         glfwSetWindowMonitor(m_window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-        m_screen_w = mode->width, m_screen_h = mode->height;
     }
     else
     {
         const int x = (desktop_width - windowed_width) / 2, y = (desktop_height - windowed_height) / 2;
         glfwSetWindowMonitor(m_window, 0, x, y, windowed_width, windowed_height, 0);
-        m_screen_w = windowed_width, m_screen_h = windowed_height;
     }
+    UpdateSize();
 #endif
 }
 
@@ -193,6 +197,14 @@ void platform::key_func(GLFWwindow *, int key, int scancode, int action, int mod
     m_buttons[GLFW_KEY_LEFT_CONTROL] = mods & GLFW_MOD_CONTROL;
     m_buttons[GLFW_KEY_LEFT_SHIFT] = mods & GLFW_MOD_SHIFT;
 #endif
+}
+
+//------------------------------------------------------------
+
+void platform::UpdateSize()
+{
+    glfwGetWindowSize(m_window, &m_window_w, &m_window_h);
+    glfwGetFramebufferSize(m_window, &m_frame_w, &m_frame_h);
 }
 
 //------------------------------------------------------------

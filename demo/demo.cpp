@@ -146,13 +146,13 @@ int main()
                                 loading_shape.load("UI/comp_loading.lar");
                                 init = false;
                             }
-                            const int anim_time = (int)nya_system::get_time();
 
-                            if(!first && render.get_buffer_size()<16*1024*1024)
+                            if(!first && render.get_buffer_size() < 16 * 1024 * 1024)
                                 return;
 
                             first = false;
 
+                            const int anim_time = (int)nya_system::get_time();
                             nya_render::clear(true, true);
 
                             const auto color = nya_math::vec4::one();
@@ -317,8 +317,8 @@ int main()
 
                         if (!config::get_var_bool("fullscreen"))
                         {
-                            config::set_var("screen_width", std::to_string(screen_width));
-                            config::set_var("screen_height", std::to_string(screen_height));
+                            config::set_var("screen_width", std::to_string(platform_window_width));
+                            config::set_var("screen_height", std::to_string(platform_window_height));
                         }
                     }
 
@@ -463,6 +463,7 @@ int main()
 
         std::atomic<bool> platform_terminate, platform_fullscreen;
         std::atomic<int> platform_width, platform_height;
+        std::atomic<int> platform_window_width, platform_window_height;
         std::atomic<bool> mouse_l, mouse_r;
         std::atomic<int> mouse_x, mouse_y;
         std::atomic<bool> paused, exit;
@@ -493,7 +494,7 @@ int main()
             }
         }
 
-    } game_thread(render, platform.get_width(), platform.get_height());
+    } game_thread(render, platform.get_frame_width(), platform.get_frame_height());
 
     auto controls = game::plane_controls();
     auto menu_controls = gui::menu_controls();
@@ -515,8 +516,10 @@ int main()
 
         if(platform.should_terminate())
             game_thread.platform_terminate = true;
-        game_thread.platform_width = platform.get_width();
-        game_thread.platform_height = platform.get_height();
+        game_thread.platform_width = platform.get_frame_width();
+        game_thread.platform_height = platform.get_frame_height();
+        game_thread.platform_window_width = platform.get_window_width();
+        game_thread.platform_window_height = platform.get_window_height();
         if (game_thread.platform_fullscreen)
         {
             platform.set_fullscreen(config::get_var_bool("fullscreen"), config::get_var_int("screen_width"), config::get_var_int("screen_height"));
