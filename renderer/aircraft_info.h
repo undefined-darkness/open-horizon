@@ -5,7 +5,6 @@
 #pragma once
 
 #include "extensions/zip_resources_provider.h"
-#include "formats/tga.h"
 #include "memory/tmp_buffer.h"
 #include "math/scalar.h"
 #include "containers/dpl.h"
@@ -40,35 +39,10 @@ public:
 
         template<int size> void load_netimg(std::string name, netimg<size> & out) const
         {
-            //ToDo: should be unified with load_texture
-
             nya_resources::zip_resources_provider z(zip_name.c_str());
-            auto data = load_resource(z.access(name.c_str()));
-            if (!data.get_size())
-                return;
-
-            nya_formats::tga tga;
-            if (tga.decode_header(data.get_data(), data.get_size()))
-            {
-                const void *img_data = tga.data;
-                if (tga.rle)
-                {
-                    nya_memory::tmp_buffer_ref tmp(tga.uncompressed_size);
-                    tga.decode_rle(tmp.get_data());
-                    img_data = tmp.get_data();
-                    data.free();
-                    data = tmp;
-                }
-
-                if (tga.vertical_flip)
-                    tga.flip_vertical(img_data, (void*)img_data);
-
-                nya_render::bitmap_rgb_to_bgr((unsigned char *)img_data, tga.width, tga.height, tga.channels);
-                out = netimg<size>(tga.width, tga.height, tga.channels, (unsigned char *)img_data);
-            }
-            data.free();
+            auto tex=load_texture_data(z, name.c_str());
+            out = netimg<size>(tex.w, tex.h, 4, tex.rgba.data());
         }
-
     };
 
     struct engine_info
