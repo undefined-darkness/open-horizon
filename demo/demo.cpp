@@ -46,10 +46,6 @@
 
 //------------------------------------------------------------
 
-static const int target_fps = 60;
-
-//------------------------------------------------------------
-
 int main()
 {
     setup_resources();
@@ -450,9 +446,6 @@ int main()
                         scene.camera.add_delta_rot(-controls.cam_rot.x * nya_math::constants::pi_2, -controls.cam_rot.y * nya_math::constants::pi);
                     }
 */
-                    int sleep_time = 1000/target_fps - int(nya_system::get_time() - time)-1;
-                    if (sleep_time > 0)
-                        std::this_thread::sleep_for(std::chrono::milliseconds(sleep_time));
                 }
 
                 server.close();
@@ -482,7 +475,7 @@ int main()
             while (!platform_terminate)
             {
                 if(frame_pending)
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1000/target_fps/2));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 else
                 {
                     render.commit();
@@ -502,7 +495,7 @@ int main()
     {
         if(!game_thread.frame_pending)
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000/target_fps/2));
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
             continue;
         }
 
