@@ -50,7 +50,7 @@ static nya_scene::texture load_texture(nya_resources::resources_provider &prov, 
 
 struct texture_data
 {
-    uint w = 0, h = 0;
+    unsigned int w = 0, h = 0;
     std::vector<uint8_t> rgba;
 };
 

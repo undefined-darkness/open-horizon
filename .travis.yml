@@ -12,7 +12,7 @@ compiler:
 install: sudo apt-get install freeglut3-dev xorg-dev build-essential libopenal-dev lua5.1 lua5.1-dev libglfw3-dev cmake
 
 script:
-    - git submodule update --init
+    - git submodule update --init --recursive --recommend-shallow
     - mkdir build
     - cd build
     - cmake ..
