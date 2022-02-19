@@ -19,6 +19,8 @@
 #include "util/location.h"
 #include "util/xml.h"
 
+#include <limits>
+
 #include <math.h>
 #include <stdint.h>
 
